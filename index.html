@@ -95,7 +95,7 @@ async function refreshConversation(){
 }
 $('replyForm').onsubmit=async e=>{
  e.preventDefault();const text=$('replyText').value.trim(),btn=$('replyForm').querySelector('button[type=submit]');
- if(!text||!activeConversationId||!session)return;
+ if(!text||!activeConversationId||!session)return;if(text.length>2000){$('replyStatus').textContent='Wiadomość może mieć maksymalnie 2000 znaków.';return}
  btn.disabled=true;$('replyStatus').textContent='';
  try{
   const {error}=await sb.from('messages').insert({conversation_id:activeConversationId,sender_id:session.user.id,body:text});
@@ -110,7 +110,7 @@ async function sendMessage(listingId,sellerId,message){
  if(authError)throw authError;
  if(!user)throw new Error('Najpierw zaloguj się.');
  if(user.id===sellerId)throw new Error('Nie możesz pisać do siebie.');
- if(!Number.isSafeInteger(Number(listingId))||!String(message).trim()||String(message).trim().length>2000)throw new Error('Wiadomość musi mieć od 1 do 2000 znaków.');
+ if(!Number.isSafeInteger(Number(listingId))||Number(listingId)<=0||!String(message).trim()||String(message).trim().length>2000)throw new Error('Wiadomość musi mieć od 1 do 2000 znaków.');
  const {data:existing,error:findError}=await sb.from('conversations').select('id').eq('listing_id',listingId).eq('buyer_id',user.id).eq('seller_id',sellerId).limit(1);
  if(findError)throw findError;
  let conversationId=existing?.[0]?.id;
