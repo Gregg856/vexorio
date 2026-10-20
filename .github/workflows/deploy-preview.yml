@@ -5,6 +5,7 @@ on:
     branches:
       - development/vexorio-repairs
       - development/chat-polish-2
+      - development/listing-edit
   workflow_dispatch:
 
 permissions:
