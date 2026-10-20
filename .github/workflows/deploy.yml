@@ -1,0 +1,33 @@
+name: Deploy VEXORIO
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz pliki
+        uses: actions/checkout@v4
+
+      - name: Przygotuj strone
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+          cat > wrangler.toml <<'EOF'
+          name = "vexorio"
+          compatibility_date = "2026-10-20"
+          workers_dev = true
+
+          [assets]
+          directory = "./public"
+          EOF
+
+      - name: Publikuj w Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
