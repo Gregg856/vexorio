@@ -1,0 +1,41 @@
+name: Deploy VEXORIO Preview
+
+on:
+  push:
+    branches:
+      - development/vexorio-repairs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vexorio-preview-deploy
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@v4
+
+      - name: Prepare preview site
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+          cat > wrangler.toml <<'EOF'
+          name = "vexorio-preview"
+          compatibility_date = "2026-10-20"
+          workers_dev = true
+
+          [assets]
+          directory = "./public"
+          EOF
+
+      - name: Deploy preview to separate Cloudflare Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
