@@ -60,7 +60,7 @@ $('refreshInboxBtn').onclick=()=>loadConversations();
 async function loadConversations(){
  const box=$('myConversations');box.replaceChildren();
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
- const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('id',{ascending:false}).limit(100);
+ const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
  for(const c of data){
