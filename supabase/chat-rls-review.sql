@@ -43,7 +43,7 @@ CREATE POLICY "vexorio_chat_participants_send_messages"
 ON public.messages FOR INSERT TO authenticated
 WITH CHECK (
  sender_id = (select auth.uid())
- AND length(trim(content)) BETWEEN 1 AND 2000
+ AND length(trim(body)) BETWEEN 1 AND 2000
  AND EXISTS (
   SELECT 1 FROM public.conversations c
   WHERE c.id = conversation_id
