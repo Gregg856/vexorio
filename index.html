@@ -54,7 +54,7 @@ async function openAccount(){if(!session)return openAuth();$('accountEmail').tex
 async function loadMine(){if(!sb||!session)return;let {data,error}=await sb.from('listings').select('id,title,miasto').eq('owner_id',session.user.id).order('created_at',{ascending:false});$('myListings').replaceChildren();if(error){$('accountMsg').textContent=error.message;return}if(!data.length){$('myListings').textContent='Nie masz jeszcze ogłoszeń.';return}data.forEach(x=>{let row=document.createElement('div');row.className='info';let name=document.createElement('strong');name.textContent=x.title+' · '+x.miasto;let del=document.createElement('button');del.className='btn small';del.textContent='Usuń';del.style.marginLeft='12px';del.onclick=async()=>{if(!confirm('Usunąć to ogłoszenie?'))return;let {error}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id);if(error){$('accountMsg').textContent=error.message;return}await Promise.all([loadMine(),loadListings()])};row.append(name,del);$('myListings').append(row)})}
 $('logoutBtn').onclick=async()=>{if(sb)await sb.auth.signOut();$('accountDialog').close();await refreshUser()};async function refreshUser(){if(sb){let {data}=await sb.auth.getSession();session=data.session}else session=null;setLang(language)}async function loadListings(){if(!sb){allListings=demo;render();return}let {data,error}=await sb.from('listings').select('id,title,category,description,miasto,kraj,price,owner_id,created_at,Images').order('created_at',{ascending:false}).limit(200);if(error){allListings=demo;console.error('Błąd połączenia z bazą:',error.message);$('listingStatus').textContent='Błąd pobierania ogłoszeń: '+error.message}else{allListings=(data||[]).map(x=>({...x,city:x.miasto||'',country:x.kraj||'',currency:x.kraj==='PL'?'PLN':'EUR'}));if(!allListings.length){allListings=[]}}render()}
 (async()=>{await refreshUser();await loadListings();if(sb)sb.auth.onAuthStateChange((_event,s)=>{session=s;setLang(language)})})();
-</script></body></html>
+
 async function sendMessage(listingId, sellerId, message) {
   const { data: { user } } = await sb.auth.getUser();
 
@@ -116,3 +116,4 @@ async function sendMessage(listingId, sellerId, message) {
 
   alert('Wiadomość wysłana!');
 }
+</script></body></html>
