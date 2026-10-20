@@ -116,8 +116,12 @@ async function sendMessage(listingId,sellerId,message){
  let conversationId=existing?.[0]?.id;
  if(!conversationId){
   const {data, error:createError}=await sb.from('conversations').insert({listing_id:listingId,buyer_id:user.id,seller_id:sellerId}).select('id').single();
-  if(createError)throw createError;
-  conversationId=data.id;
+  if(createError){
+   if(createError.code!=='23505')throw createError;
+   const {data:retry,error:retryError}=await sb.from('conversations').select('id').eq('listing_id',listingId).eq('buyer_id',user.id).eq('seller_id',sellerId).single();
+   if(retryError)throw retryError;
+   conversationId=retry.id;
+  }else conversationId=data.id;
  }
  const {error:messageError}=await sb.from('messages').insert({conversation_id:conversationId,sender_id:user.id,body:message.trim()});
  if(messageError)throw messageError;
