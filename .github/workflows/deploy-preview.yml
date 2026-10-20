@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - development/vexorio-repairs
+      - development/chat-polish-2
   workflow_dispatch:
 
 permissions:
