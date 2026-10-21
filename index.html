@@ -312,7 +312,7 @@ try{
   ['admin_sort','dashSort',['newest','oldest']],
   ['admin_age','dashAge',['all','7','30','90']]
  ]){const value=saved.get(key);if(values.includes(value))$(id).value=value}
- const term=saved.get('admin_search');if(term)$('dashSearch').value=term.slice(0,120);const subcategory=saved.get('admin_subcategory');if(subcategory)$('dashSubcategory').dataset.restore=subcategory;const category=saved.get('admin_category');if(category)$('dashCategory').dataset.restore=category;const city=saved.get('admin_city');if(city)$('dashCity').value=city.slice(0,100);
+ const term=saved.get('admin_search');if(term)$('dashSearch').value=term.slice(0,120);const subcategory=saved.get('admin_subcategory');if(subcategory)$('dashSubcategory').dataset.restore=subcategory;const category=saved.get('admin_category');if(category&&Array.from($('dashCategory').options).some(o=>o.value===category)){$('dashCategory').value=category;refreshDashSubcategories();}const city=saved.get('admin_city');if(city)$('dashCity').value=city.slice(0,100);
 }catch(err){}
 $('dashCopyLink').onclick=async()=>{
  const params=new URLSearchParams();
