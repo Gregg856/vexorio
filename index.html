@@ -102,6 +102,16 @@
  .market-side .category{min-height:96px;padding:12px 5px}
  .monetization{margin-top:28px}
 }
+/* Desktop marketplace polish: larger listing cards, comfortable hero gutters */
+@media(min-width:851px){
+ .hero.wrap{padding-left:clamp(28px,3.2vw,46px);padding-right:clamp(28px,3.2vw,46px)}
+ .hero-showcase{gap:clamp(30px,4vw,56px)}
+ .market-main .cards{grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px}
+ .market-main .card{min-height:295px;padding:16px}
+ .market-main .listing-photo{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}
+ .market-main .card h3{font-size:18px;line-height:1.35;overflow-wrap:anywhere}
+ .market-main .card .price{font-size:21px}
+}
 /* Compact mobile account dashboard */
 #accountDialog .account-email{color:#a7c0d0;overflow-wrap:anywhere;margin:0 0 16px}
 .account-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}
