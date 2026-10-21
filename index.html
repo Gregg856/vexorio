@@ -1182,12 +1182,12 @@ function updateGeneralSubcategory(){
  const items=listingSubcategories[category]||[];
  const wrap=$('generalSubcategoryWrap'),sel=$('newGeneralSubcategory');
  const enabled=category!=='Usługi'&&items.length>0;
- wrap.classList.toggle('hide',!enabled);sel.required=enabled;
- const previous=sel.value;sel.replaceChildren();
+ wrap.classList.toggle('hide',!enabled);sel.required=enabled;sel.disabled=!enabled;
+ const previous=sel.value;const previousCategory=sel.dataset.parentCategory;sel.dataset.parentCategory=category;sel.replaceChildren();
  if(enabled){
   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent=({pl:'Wybierz podkategorię',de:'Unterkategorie wählen',en:'Choose subcategory'}[language]||'Wybierz podkategorię');sel.append(placeholder);
   for(const item of items){const option=document.createElement('option');option.value=item;option.textContent=item;sel.append(option)}
-  if(items.includes(previous))sel.value=previous;
+  if(previousCategory===category&&items.includes(previous))sel.value=previous;
   sel.setAttribute('aria-describedby','subcategoryHint');
  }
  const hint=$('subcategoryHint');if(hint){hint.textContent=enabled?(sel.value?({pl:'✓ Podkategoria wybrana — ogłoszenie trafi do właściwej sekcji.',de:'✓ Unterkategorie gewählt — deine Anzeige wird richtig zugeordnet.',en:'✓ Subcategory selected — your listing will appear in the right section.'}[language]):({pl:'Wybierz dokładną podkategorię, aby kupujący łatwiej znaleźli Twoją ofertę.',de:'Wähle eine passende Unterkategorie, damit Käufer dein Angebot leichter finden.',en:'Choose a specific subcategory so buyers can find your listing more easily.'}[language])):'';hint.classList.toggle('selected',Boolean(enabled&&sel.value));}
