@@ -741,12 +741,13 @@ async function loadConversations(){
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
  const latestByConversation=new Map();
- // Keep the inbox responsive without firing up to 100 database requests at once.
- for(let start=0;start<data.length;start+=10){
-  const batch=data.slice(start,start+10);
-  const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1)));
+ // Fetch latest incoming messages in batches instead of making one request per conversation.
+ for(let start=0;start<data.length;start+=25){
+  const ids=data.slice(start,start+25).map(c=>c.id);
+  const {data:incoming,error:incomingError}=await sb.from('messages').select('conversation_id,created_at,sender_id').in('conversation_id',ids).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1000);
   if(requestId!==inboxRequestId||session?.user?.id!==uid)return;
-  batch.forEach((c,i)=>{if(!results[i].error&&results[i].data?.[0])latestByConversation.set(String(c.id),results[i].data[0])});
+  if(incomingError){console.warn('Inbox unread lookup failed',incomingError);continue}
+  for(const msg of incoming||[]){const id=String(msg.conversation_id);if(!latestByConversation.has(id))latestByConversation.set(id,msg)}
  }
  for(const c of data){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
