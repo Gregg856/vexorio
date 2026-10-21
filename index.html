@@ -286,7 +286,8 @@ async function loadAdminDashboard(append=false){if(dashLoading)return;dashLoadin
 $('dashExportCsv').onclick=()=>{
  const entries=Array.from(document.querySelectorAll('#dashListings .admin-dashboard-entry'));
  if(!entries.length){$('dashStatus').textContent='Brak załadowanych wpisów do eksportu.';return}
- const quote=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
+ // Prevent spreadsheet applications from treating user-provided text as formulas.
+ const quote=value=>{const raw=String(value??'');const safe=/^[\s]*[=+@-]/.test(raw)&&!/^-[0-9]+(?:[.,][0-9]+)?$/.test(raw.trim())?"'"+raw:raw;return '"'+safe.replace(/"/g,'""')+'"'};
  const rows=[['Numer','Rodzaj','Tytuł','Miasto','Kraj','Cena','Data dodania'],...entries.map(node=>JSON.parse(node.dataset.export))];
  const csv='\uFEFF'+rows.map(row=>row.map(quote).join(';')).join('\r\n');
  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
