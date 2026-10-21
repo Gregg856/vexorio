@@ -355,7 +355,7 @@ const wasJob=publishingJob;$('addForm').reset();$('imagePreview').replaceChildre
 
 function showAccountSection(name){for(const key of ['Listings','Messages','Settings']){const section=$('account'+key+'Section');section.hidden=key!==name;const tile=$('account'+key+'Tile');tile?.setAttribute('aria-pressed',String(key===name))}}
 $('accountListingsTile').onclick=()=>showAccountSection('Listings');
-$('accountMessagesTile').onclick=()=>{showAccountSection('Messages');loadConversations()};
+$('accountMessagesTile').onclick=async()=>{showAccountSection('Messages');$('myConversations').textContent='Ładowanie rozmów…';await loadConversations();$('accountMessagesSection').scrollIntoView({behavior:'smooth',block:'nearest'})};
 $('accountSettingsTile').onclick=()=>showAccountSection('Settings');
 $('accountFavoritesTile').onclick=()=>{$('accountDialog').close();$('sortListings').value='fav';render();$('listTitle').scrollIntoView({behavior:'smooth',block:'start'})};
 async function openAccount(){if(!session)return openAuth();showAccountSection('Listings');$('accountEmail').textContent=session.user.email||'Konto';$('accountMsg').textContent='';show('accountDialog');await Promise.all([loadMine(),loadConversations(),loadMyPrivacyRequests()])}
@@ -402,12 +402,12 @@ async function checkUnreadMessages(){
  }
  if(session?.user?.id!==uid)return;
  const b=$('accountBtn');if(unread)b.dataset.unread=String(unread);else b.removeAttribute('data-unread');
- if($('accountDialog').open)loadConversations();
+ if($('accountDialog').open&&!$('accountMessagesSection').hidden)loadConversations();
 }
 
 $('refreshInboxBtn').onclick=()=>loadConversations();
 async function loadConversations(){
- const box=$('myConversations');box.replaceChildren();
+ const box=$('myConversations');box.replaceChildren();box.textContent='Ładowanie rozmów…';
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
