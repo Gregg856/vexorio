@@ -327,15 +327,15 @@ $('dashCopyLink').onclick=async()=>{
  catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>btn.textContent='🔗 Kopiuj link do filtrów',2500)}
 };
 
-let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>loadAdminDashboard(),450)}
+let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>loadAdminDashboard(),450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);loadAdminDashboard()}
 $('dashSearch').addEventListener('input',scheduleDashFilter);
 $('dashCity').addEventListener('input',scheduleDashFilter);
-$('dashSearch').addEventListener('change',()=>loadAdminDashboard());
+$('dashSearch').addEventListener('change',runDashFilterNow);
 $('dashKind').addEventListener('change',()=>loadAdminDashboard());
-$('dashCountry').addEventListener('change',()=>loadAdminDashboard());$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();loadAdminDashboard()});$('dashSubcategory').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',()=>loadAdminDashboard());
+$('dashCountry').addEventListener('change',()=>loadAdminDashboard());$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();loadAdminDashboard()});$('dashSubcategory').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',runDashFilterNow);
 $('dashSort').addEventListener('change',()=>loadAdminDashboard());
 $('dashAge').addEventListener('change',()=>loadAdminDashboard());
-$('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadAdminDashboard()}});
+$('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});
 for(const [tile,existing] of [['dashReports','adminReportsBtn'],['dashUsers','adminUsersBtn'],['dashAppeals','appealsAdminBtn'],['dashPrivacy','privacyAdminBtn']]){$(tile).onclick=()=>{$('adminDashboardDialog').close();$(existing).click()}}
 async function updateAdminReportsAccess(){
  const btn=$('adminReportsBtn');$('accountAdminLaunch').classList.add('hide');btn.classList.add('hide');$('adminUsersBtn').classList.add('hide');$('appealsAdminBtn').classList.add('hide');$('privacyAdminBtn').classList.add('hide');
