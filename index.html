@@ -1658,6 +1658,18 @@ async function sendMessage(listingId,sellerId,message){
  let enabled=false;
  try{enabled=localStorage.getItem(key)==='on'}catch(e){}
  const pushStatus=document.createElement('small');pushStatus.id='vexPushStatus';pushStatus.className='muted';pushStatus.style.display='block';pushStatus.style.marginTop='5px';button.parentElement?.append(pushStatus);
+ const testPushButton=document.createElement('button');testPushButton.type='button';testPushButton.className='btn small';testPushButton.textContent='Wyślij test push';testPushButton.style.marginTop='7px';testPushButton.hidden=true;button.parentElement?.append(testPushButton);
+ testPushButton.addEventListener('click',async()=>{
+  testPushButton.disabled=true;pushStatus.textContent='Wysyłanie testu push…';
+  try{
+   const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+   const {data:{session}}=await client.auth.getSession();if(!session)throw Error('Zaloguj się ponownie.');
+   const response=await fetch(SUPABASE_URL+'/functions/v1/vexorio-push-test',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action:'test-self'})});
+   const result=await response.json();if(!response.ok)throw Error(result.error||'Błąd wysyłania');
+   pushStatus.textContent=result.sent?'Wysłano test na '+result.sent+' urządzeń.':'Nie znaleziono aktywnego urządzenia push.';
+  }catch(e){pushStatus.textContent='Test push: '+(e.message||'błąd');}
+  finally{testPushButton.disabled=false}
+ });
  const vapidKey=()=>document.querySelector('meta[name="vexorio-vapid-public-key"]')?.content?.trim()||'';
  const decodeKey=value=>{const base64=value.replace(/-/g,'+').replace(/_/g,'/');const raw=atob(base64.padEnd(Math.ceil(base64.length/4)*4,'='));return Uint8Array.from(raw,c=>c.charCodeAt(0))};
  async function syncPushSubscription(){
@@ -1690,6 +1702,7 @@ async function sendMessage(listingId,sellerId,message){
   const granted=supported&&Notification.permission==='granted';
   button.textContent=!supported?'Niedostępne':enabled&&granted?'Włączone':'Wyłączone';
   button.setAttribute('aria-pressed',String(enabled&&granted));
+  testPushButton.hidden=!(enabled&&granted&&vapidKey());
  }
  button.addEventListener('click',async()=>{
   if(!supported){draw();return}
