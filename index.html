@@ -93,13 +93,33 @@ async function loadAdminReports(){
   const heading=document.createElement('h3');heading.textContent='Zgłoszenie #'+item.id+' · Ogłoszenie #'+(item.listing_id??'usunięte');
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString();
   const detail=document.createElement('p');detail.textContent=item.details;
+  const moderation=document.createElement('div');moderation.className='form';
+  if(item.listing_id){
+   const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.style.borderColor='#b95d5d';remove.textContent='Usuń ogłoszenie #'+item.listing_id;
+   const removeStatus=document.createElement('p');removeStatus.className='msg';
+   remove.onclick=async()=>{
+    const id=Number(item.listing_id);
+    if(!Number.isSafeInteger(id))return;
+    if(!confirm('Czy na pewno trwale usunąć ogłoszenie #'+id+'? Ta operacja jest nieodwracalna.'))return;
+    const typed=prompt('Aby potwierdzić, wpisz numer ogłoszenia: '+id);
+    if(typed!==String(id)){removeStatus.textContent='Anulowano usuwanie.';return}
+    remove.disabled=true;
+    const {data,error}=await sb.rpc('admin_delete_listing',{p_listing_id:id});
+    if(error){removeStatus.textContent='Błąd: '+error.message;remove.disabled=false;return}
+    if(data!==true){removeStatus.textContent='Nie znaleziono ogłoszenia.';remove.disabled=false;return}
+    removeStatus.textContent='Ogłoszenie usunięte.';remove.classList.add('hide');
+    await loadListings();
+   };
+   moderation.append(remove,removeStatus);
+  }
+
   const select=document.createElement('select');
   [['new','Nowe'],['reviewing','W trakcie'],['resolved','Rozpatrzone'],['dismissed','Odrzucone']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.append(opt)});
   select.value=item.status;
   const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='Zapisz status';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
   save.onclick=async()=>{save.disabled=true;feedback.textContent='';const {error:writeError}=await sb.from('listing_reports').update({status:select.value}).eq('id',item.id);feedback.textContent=writeError?'Błąd: '+writeError.message:'Status zapisany.';save.disabled=false};
-  box.append(heading,meta,detail,select,save,feedback);list.append(box);
+  box.append(heading,meta,detail,select,save,feedback,moderation);list.append(box);
  }
 }
 $('adminReportsBtn').onclick=()=>{$('adminReportsDialog').showModal();loadAdminReports()};
