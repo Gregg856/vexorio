@@ -507,7 +507,7 @@ async function loadConversations(){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
   const listing=allListings.find(x=>String(x.id)===String(c.listing_id));
   btn.textContent=(listing?.title||'Ogłoszenie #'+c.listing_id)+' — '+(c.buyer_id===session.user.id?'Kupuję':'Sprzedaję');
-  if($('accountBtn').dataset.unread&&getSeen(c.id)){const {data:last}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);if(last?.[0]?.sender_id!==session.user.id&&last?.[0]?.created_at>getSeen(c.id))btn.classList.add('unread-conversation')}
+  if($('accountBtn').dataset.unread){const {data:last}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);const latest=last?.[0],seen=getSeen(c.id);if(latest&&latest.sender_id!==session.user.id&&(!seen||latest.created_at>seen))btn.classList.add('unread-conversation')}
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);
  }
