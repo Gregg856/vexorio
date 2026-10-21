@@ -479,21 +479,30 @@ const seenKey=id=>'vexorio-seen-'+session?.user?.id+'-'+id;
 function getSeen(id){try{return localStorage.getItem(seenKey(id))}catch{return null}}
 function setSeen(id,stamp){if(!stamp)return;try{localStorage.setItem(seenKey(id),stamp)}catch{}}
 const vexOriginalTitle=document.title;let previousUnreadCount=null,previousUnreadUser=null;function updateUnreadBadges(count){const currentUser=session?.user?.id||null;if(currentUser!==previousUnreadUser){previousUnreadCount=null;previousUnreadUser=currentUser}document.title=count>0?'('+Math.min(count,99)+(count>99?'+':'')+') '+vexOriginalTitle:vexOriginalTitle;if(previousUnreadCount!==null&&count>previousUnreadCount&&session&&document.visibilityState==='visible'){const chat=$('vexMobileChat');if(chat){chat.classList.remove('vex-new-message');void chat.offsetWidth;chat.classList.add('vex-new-message')}if('vibrate' in navigator)try{navigator.vibrate(90)}catch(e){}}previousUnreadCount=count;const value=count>0?String(Math.min(count,99))+(count>99?'+':''):null;for(const id of ['accountBtn','vexMobileChat']){const el=$(id);if(!el)continue;if(value)el.dataset.unread=value;else el.removeAttribute('data-unread')}const chat=$('vexMobileChat');if(chat)chat.setAttribute('aria-label',count>0?'Czat, '+count+' nieprzeczytanych rozmów':'Czat')}
+let unreadCheckInProgress=false;
 async function checkUnreadMessages(){
+ if(unreadCheckInProgress)return;
  if(!sb||!session){updateUnreadBadges(0);return}
+ unreadCheckInProgress=true;
  const uid=session.user.id;
- const {data:convos,error}=await sb.from('conversations').select('id').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).limit(100);
- if(error||!convos?.length){updateUnreadBadges(0);return}
- let unread=0;
- for(const c of convos){
-  const {data:latest,error:e}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);
-  if(e||!latest?.length)continue;
-  const m=latest[0],seen=getSeen(c.id);
-  if(m.sender_id!==uid&&(!seen||m.created_at>seen)&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
- }
- if(session?.user?.id!==uid)return;
- updateUnreadBadges(unread);
- if($('accountDialog').open&&!$('accountMessagesSection').hidden)loadConversations();
+ try{
+  const {data:convos,error}=await sb.from('conversations').select('id').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).limit(100);
+  if(error){return}
+  if(!convos?.length){if(session?.user?.id===uid)updateUnreadBadges(0);return}
+  let unread=0;
+  for(let start=0;start<convos.length;start+=10){
+   const batch=convos.slice(start,start+10);
+   const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
+   if(session?.user?.id!==uid)return;
+   batch.forEach((c,i)=>{
+    const m=!results[i].error&&results[i].data?.[0],seen=getSeen(c.id);
+    if(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
+   });
+  }
+  if(session?.user?.id!==uid)return;
+  updateUnreadBadges(unread);
+  if($('accountDialog').open&&!$('accountMessagesSection').hidden)loadConversations();
+ }finally{unreadCheckInProgress=false}
 }
 
 $('refreshInboxBtn').onclick=()=>loadConversations();
