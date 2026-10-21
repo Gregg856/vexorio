@@ -583,7 +583,7 @@ async function refreshVisibleChat(){
  if($('chatDialog').open&&activeConversationId&&!chatRefreshInProgress){
   chatRefreshInProgress=true;
   try{await refreshConversation()}finally{chatRefreshInProgress=false}
- }else if($('accountDialog').open){await loadConversations()}
+ }else if($('accountDialog').open&&!$('accountMessagesSection').hidden){await loadConversations()}
 }
 setInterval(()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
