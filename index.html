@@ -758,17 +758,17 @@ async function loadMine(){
  }
  const summary=document.createElement('p');summary.className='my-listings-summary';summary.textContent='Twoje wpisy: '+data.length;box.append(summary);
  for(const x of data){
-  const row=document.createElement('article');row.className='account-listing my-listing-card';row.dataset.kind=x.rodzaj==='zlecenie'?'zlecenie':'ogloszenie';row.dataset.search=(String(x.title||'')+' '+String(x.miasto||'')+' '+String(x.kraj||'')).toLocaleLowerCase('pl');
+  const row=document.createElement('article');row.className='account-listing my-listing-card';row.dataset.kind=x.rodzaj==='zlecenie'?'zlecenie':'ogloszenie';row.dataset.search=(String(x.id)+' '+String(x.title||'')+' '+String(x.miasto||'')+' '+String(x.kraj||'')).toLocaleLowerCase('pl');
   const main=document.createElement('div');main.className='my-listing-details';
-  const kind=document.createElement('span');kind.className='my-listing-kind';kind.textContent=x.rodzaj==='zlecenie'?'Zlecenie':'Ogłoszenie';
+  const kind=document.createElement('span');kind.className='my-listing-kind';kind.textContent=(x.rodzaj==='zlecenie'?'Zlecenie':'Ogłoszenie')+' #'+x.id;
   const name=document.createElement('strong');name.textContent=x.title||'Bez tytułu';
   const info=document.createElement('span');info.className='my-listing-meta';
   const money=x.price===null||x.price===undefined?'Cena do uzgodnienia':Number(x.price).toLocaleString('pl-PL')+' '+(x.kraj==='PL'?'zł':'€');
-  info.textContent=[x.miasto,x.kraj,money].filter(Boolean).join(' · ');
+  const date=x.created_at?new Date(x.created_at):null;const dateLabel=date&&!Number.isNaN(date.getTime())?'Dodano: '+date.toLocaleDateString('pl-PL'):'';info.textContent=[x.miasto,x.kraj,money,dateLabel].filter(Boolean).join(' · ');
   main.append(kind,name,info);
   const actions=document.createElement('div');actions.className='listing-actions';
-  const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.onclick=()=>editListing(x.id);
-  const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';
+  const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.setAttribute('aria-label','Edytuj ogłoszenie numer '+x.id);edit.onclick=()=>editListing(x.id);
+  const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
   del.onclick=async()=>{
    if(!confirm('Na pewno usunąć wpis „'+(x.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;
    del.disabled=true;
