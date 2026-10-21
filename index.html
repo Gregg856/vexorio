@@ -1675,6 +1675,16 @@ async function sendMessage(listingId,sellerId,message){
   if(error)throw error;
   pushStatus.textContent='To urządzenie zapisano do powiadomień push.';
  }
+ async function disablePushSubscription(){
+  if(!('serviceWorker' in navigator)||!window.isSecureContext)return;
+  const registration=await navigator.serviceWorker.getRegistration('/');
+  const subscription=await registration?.pushManager?.getSubscription();
+  if(!subscription)return;
+  const client=window.supabase&&typeof SUPABASE_URL!=='undefined'&&typeof SUPABASE_PUBLISHABLE_KEY!=='undefined'?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
+  if(client){const {data:{user}}=await client.auth.getUser();if(user){const {error}=await client.from('push_subscriptions').delete().eq('user_id',user.id).eq('endpoint',subscription.endpoint);if(error)throw error}}
+  await subscription.unsubscribe();
+  pushStatus.textContent='Powiadomienia push wyłączone na tym urządzeniu.';
+ }
  const supported='Notification' in window;
  function draw(){
   const granted=supported&&Notification.permission==='granted';
@@ -1683,7 +1693,7 @@ async function sendMessage(listingId,sellerId,message){
  }
  button.addEventListener('click',async()=>{
   if(!supported){draw();return}
-  if(enabled){enabled=false}
+  if(enabled){try{await disablePushSubscription()}catch(e){pushStatus.textContent='Nie udało się usunąć subskrypcji push. Spróbuj ponownie.';console.warn('Push opt-out failed',e);return}enabled=false}
   else{
    if(Notification.permission==='default')try{await Notification.requestPermission()}catch(e){}
    enabled=Notification.permission==='granted';
