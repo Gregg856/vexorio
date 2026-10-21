@@ -77,6 +77,18 @@
 @media(max-width:440px){.account-tile{min-height:102px;padding:13px}}
 
 #vexMobileChat{position:relative}#vexMobileChat[data-unread]::after{content:attr(data-unread);position:absolute;top:2px;right:calc(50% - 29px);min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:12px;background:#ffb020;color:#152332;border:2px solid #071e2e;font-size:11px;font-weight:800;line-height:15px;text-align:center;pointer-events:none}
+
+/* Owned listing management */
+#accountDialog .my-listing-card{display:flex;align-items:flex-start;flex-direction:column;gap:12px;padding:15px}
+#accountDialog .my-listing-details{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;width:100%}
+#accountDialog .my-listing-kind{font-size:11px;color:#061c29;background:#19cadc;border-radius:99px;padding:4px 9px;font-weight:800}
+#accountDialog .my-listing-meta{font-size:13px;color:#a8c4d4;overflow-wrap:anywhere}
+#accountDialog .my-listing-card .listing-actions{width:100%;justify-content:flex-start}
+#accountDialog .my-listing-delete{border-color:#815261;color:#ffd6db}
+#accountDialog .my-listings-empty{padding:18px;border:1px dashed #326076;border-radius:15px;display:grid;gap:10px}
+#accountDialog .my-listings-empty p{color:#a8c4d4;margin:0}
+#accountDialog .my-listings-empty button{justify-self:start}
+#accountDialog .my-listings-summary{color:#a8c4d4;font-size:13px;margin:0 0 8px}
 </style></head><body>
 <header><div class="wrap nav"><a href="#top" class="brand"><span class="mark">V</span><div><div class="word">VEX<span>ORIO</span></div><div class="sub">LOCAL • GLOBAL</div></div></a><div class="actions"><select id="lang" aria-label="Język" style="width:auto"><option value="pl">🇵🇱 PL</option><option value="de">🇩🇪 DE</option><option value="en">🇬🇧 EN</option></select><button class="btn small" id="accountBtn">Zaloguj się</button><button class="btn primary" id="addBtn">＋ Dodaj ogłoszenie</button><button class="btn small header-job" type="button" id="headerJobBtn">＋ Dodaj zlecenie</button></div></div></header>
 <main id="top"><section class="hero wrap"><div class="eyebrow" data-i="eyebrow">TWOJA OKOLICA • TWOJE MOŻLIWOŚCI</div><h1 data-i="headline">Kupuj. Sprzedawaj.<br><span>Znajduj.</span></h1><p data-i="intro">Ogłoszenia, praca i usługi w jednym nowoczesnym miejscu.</p><div class="search"><input id="query" placeholder="Czego szukasz?" aria-label="Czego szukasz?"><button class="btn primary" id="searchBtn" data-i="search">⌕ Szukaj</button></div><div class="top-filters"><div class="filter-head"><strong id="filterHeading">Filtruj ogłoszenia</strong><button class="link" id="reset" data-i="reset">Wyczyść filtry →</button></div><div class="tools"><select id="filterServiceGroup" class="hide" aria-label="Rodzaj usługi"></select><select id="filterServiceSpecialty" class="hide" aria-label="Specjalizacja"></select><select id="country"><option value="all">🌍 Wszystkie kraje</option><option value="PL">🇵🇱 Polska</option><option value="DE">🇩🇪 Niemcy</option><option value="AT">🇦🇹 Austria</option><option value="BE">🇧🇪 Belgia</option><option value="CZ">🇨🇿 Czechy</option><option value="DK">🇩🇰 Dania</option><option value="FR">🇫🇷 Francja</option><option value="ES">🇪🇸 Hiszpania</option><option value="NL">🇳🇱 Holandia</option><option value="IE">🇮🇪 Irlandia</option><option value="IT">🇮🇹 Włochy</option><option value="NO">🇳🇴 Norwegia</option><option value="PT">🇵🇹 Portugalia</option><option value="SE">🇸🇪 Szwecja</option><option value="CH">🇨🇭 Szwajcaria</option><option value="GB">🇬🇧 Wielka Brytania</option><option value="US">🇺🇸 USA</option><option value="CA">🇨🇦 Kanada</option><option value="AU">🇦🇺 Australia</option><option value="UA">🇺🇦 Ukraina</option></select><input id="cityFilter" placeholder="Miasto / kod pocztowy" aria-label="Miasto"><input id="priceMin" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena od" aria-label="Cena minimalna"><input id="priceMax" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena do" aria-label="Cena maksymalna"><select id="sortListings" aria-label="Sortuj"><option value="new">Najnowsze</option><option value="cheap">Najtańsze</option><option value="expensive">Najdroższe</option><option value="fav">Ulubione</option></select></div></div><div class="features"><span data-i="free">Darmowe ogłoszenia</span><span data-i="countries">Ogłoszenia w Twojej okolicy</span><span data-i="mobile">Wygodnie na telefonie</span></div></section>
@@ -366,7 +378,43 @@ function renderEditPhotos(){const box=$('editPhotoPreview');box.replaceChildren(
 
 async function editListing(id){if(!sb||!session)return;const {data,error}=await sb.from('listings').select('id,title,description,category,price,kraj,miasto,Images').eq('id',id).eq('owner_id',session.user.id).single();if(error||!data){$('accountMsg').textContent='Nie można otworzyć ogłoszenia: '+(error?.message||'Brak dostępu');return}editingListingId=id;editingPhotos=photoUrls(data);$('editImages').value='';renderEditPhotos();const cat=$('editCategory');cat.replaceChildren(...Array.from($('newCategory').options).map(o=>o.cloneNode(true)));const country=$('editCountry');country.replaceChildren(...Array.from($('newCountry').options).map(o=>o.cloneNode(true)));$('editTitle').value=data.title||'';cat.value=data.category||'';$('editDesc').value=data.description||'';$('editPrice').value=data.price??'';country.value=data.kraj||'PL';$('editCity').value=data.miasto||'';$('editMsg').textContent='';$('accountDialog').close();show('editDialog')}
 $('editForm').onsubmit=async e=>{e.preventDefault();if(!sb||!session||!editingListingId)return;const btn=$('editForm').querySelector('[type=submit]');const title=$('editTitle').value.trim(),description=$('editDesc').value.trim(),miasto=$('editCity').value.trim();if(!title||!description||!miasto){$('editMsg').textContent='Uzupełnij wymagane pola.';return}const files=Array.from($('editImages').files);const allowed=['image/jpeg','image/png','image/webp'];if(editingPhotos.length+files.length>5){$('editMsg').textContent='Maksymalnie 5 zdjęć łącznie.';return}if(files.some(f=>!allowed.includes(f.type)||f.size>5*1024*1024)){$('editMsg').textContent='Dozwolone JPG, PNG, WebP do 5 MB.';return}btn.disabled=true;const uploaded=[];try{const urls=[...editingPhotos];for(const file of files){const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/'+crypto.randomUUID()+'.'+ext;const {error:uploadError}=await sb.storage.from('listing-images').upload(path,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;uploaded.push(path);const {data:publicUrl}=sb.storage.from('listing-images').getPublicUrl(path);urls.push(publicUrl.publicUrl)}const changes={title,description,category:$('editCategory').value,price:$('editPrice').value===''?null:Number($('editPrice').value),kraj:$('editCountry').value,miasto,Images:urls};const {data,error}=await sb.from('listings').update(changes).eq('id',editingListingId).eq('owner_id',session.user.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Brak uprawnień do zmiany tego ogłoszenia.');$('editDialog').close();editingListingId=null;await loadListings();await openAccount()}catch(err){if(uploaded.length)await sb.storage.from('listing-images').remove(uploaded);$('editMsg').textContent='Nie udało się zapisać: '+err.message}finally{btn.disabled=false}};
-async function loadMine(){if(!sb||!session)return;let {data,error}=await sb.from('listings').select('id,title,miasto').eq('owner_id',session.user.id).order('created_at',{ascending:false});$('myListings').replaceChildren();if(error){$('accountMsg').textContent=error.message;return}if(!data.length){$('myListings').textContent='Nie masz jeszcze ogłoszeń.';return}data.forEach(x=>{let row=document.createElement('div');row.className='account-listing';let name=document.createElement('strong');name.textContent=x.title+' · '+x.miasto;let edit=document.createElement('button');edit.className='btn small';edit.textContent='Edytuj';edit.onclick=()=>editListing(x.id);let del=document.createElement('button');del.className='btn small';del.textContent='Usuń';del.onclick=async()=>{if(!confirm('Usunąć to ogłoszenie?'))return;let {error}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id);if(error){$('accountMsg').textContent=error.message;return}await Promise.all([loadMine(),loadListings()])};let actions=document.createElement('div');actions.className='listing-actions';actions.append(edit,del);row.append(name,actions);$('myListings').append(row)})}
+async function loadMine(){
+ const box=$('myListings');box.replaceChildren();
+ if(!sb||!session){box.textContent='Zaloguj się, aby zarządzać wpisami.';return}
+ const {data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at').eq('owner_id',session.user.id).order('created_at',{ascending:false});
+ if(error){box.textContent='Nie udało się pobrać Twoich wpisów.';$('accountMsg').textContent=error.message;return}
+ if(!data?.length){
+  const empty=document.createElement('div');empty.className='my-listings-empty';
+  const title=document.createElement('strong');title.textContent='Nie masz jeszcze własnych ogłoszeń ani zleceń.';
+  const note=document.createElement('p');note.textContent='Dodaj pierwszy wpis, aby tutaj nim zarządzać.';
+  const add=document.createElement('button');add.type='button';add.className='btn primary';add.textContent='＋ Dodaj ogłoszenie';
+  add.onclick=()=>{$('accountDialog').close();$('addBtn').click()};
+  empty.append(title,note,add);box.append(empty);return
+ }
+ const summary=document.createElement('p');summary.className='my-listings-summary';summary.textContent='Twoje wpisy: '+data.length;box.append(summary);
+ for(const x of data){
+  const row=document.createElement('article');row.className='account-listing my-listing-card';
+  const main=document.createElement('div');main.className='my-listing-details';
+  const kind=document.createElement('span');kind.className='my-listing-kind';kind.textContent=x.rodzaj==='zlecenie'?'Zlecenie':'Ogłoszenie';
+  const name=document.createElement('strong');name.textContent=x.title||'Bez tytułu';
+  const info=document.createElement('span');info.className='my-listing-meta';
+  const money=x.price===null||x.price===undefined?'Cena do uzgodnienia':Number(x.price).toLocaleString('pl-PL')+' '+(x.kraj==='PL'?'zł':'€');
+  info.textContent=[x.miasto,x.kraj,money].filter(Boolean).join(' · ');
+  main.append(kind,name,info);
+  const actions=document.createElement('div');actions.className='listing-actions';
+  const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.onclick=()=>editListing(x.id);
+  const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';
+  del.onclick=async()=>{
+   if(!confirm('Na pewno usunąć wpis „'+(x.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;
+   del.disabled=true;
+   const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
+   if(removeError||!removed?.length){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(removeError?.message||'Brak uprawnień');del.disabled=false;return}
+   $('accountMsg').textContent='Wpis został usunięty.';
+   await Promise.all([loadMine(),loadListings()]);
+  };
+  actions.append(edit,del);row.append(main,actions);box.append(row)
+ }
+}
 $('logoutBtn').onclick=async()=>{if(sb)await sb.auth.signOut();$('accountDialog').close();await refreshUser()};async function refreshUser(){if(sb){let {data}=await sb.auth.getSession();session=data.session}else session=null;setLang(language);updateAdminReportsAccess();updateAppealAccess();if(session)checkUnreadMessages();else $('accountBtn').removeAttribute('data-unread')}async function loadListings(){
  if(!sb){listingLoadError='';allListings=demo;render();return}
  // Fetch in pages: the former 200-row limit silently hid older classifieds.
