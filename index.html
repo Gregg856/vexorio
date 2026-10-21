@@ -1149,20 +1149,32 @@ async function loadMine(){
  filterMyListings();
  return true;
 }
-$('logoutBtn').onclick=async()=>{if(!confirm('Czy na pewno chcesz się wylogować z VEXORIO?'))return;const btn=$('logoutBtn');btn.disabled=true;try{if(sb){const {error}=await sb.auth.signOut();if(error)throw error}$('accountDialog').close();await refreshUser()}catch(err){$('accountMsg').textContent='Nie udało się wylogować: '+(err?.message||'Spróbuj ponownie')}finally{btn.disabled=false}};async function refreshUser(){if(sb){let {data}=await sb.auth.getSession();session=data.session}else session=null;setLang(language);updateAdminReportsAccess();updateAppealAccess();if(session)checkUnreadMessages();else $('accountBtn').removeAttribute('data-unread')}async function loadListings(){
- if(!sb){listingLoadError='';allListings=demo;render();return}
- // Fetch in pages: the former 200-row limit silently hid older classifieds.
+$('logoutBtn').onclick=async()=>{if(!confirm('Czy na pewno chcesz się wylogować z VEXORIO?'))return;const btn=$('logoutBtn');btn.disabled=true;try{if(sb){const {error}=await sb.auth.signOut();if(error)throw error}$('accountDialog').close();await refreshUser()}catch(err){$('accountMsg').textContent='Nie udało się wylogować: '+(err?.message||'Spróbuj ponownie')}finally{btn.disabled=false}};async function refreshUser(){if(sb){let {data}=await sb.auth.getSession();session=data.session}else session=null;setLang(language);updateAdminReportsAccess();updateAppealAccess();if(session)checkUnreadMessages();else $('accountBtn').removeAttribute('data-unread')}let listingsLoadRequest=0;
+async function loadListings(){
+ const request=++listingsLoadRequest;
+ if(!sb){listingLoadError='';allListings=demo;render();return true}
+ // Keep previously loaded listings visible when the network is temporarily unavailable.
  const pageSize=200,maxPages=25,rows=[];let error=null,more=false;
  for(let page=0;page<maxPages;page++){
-  const result=await sb.from('listings').select('id,title,category,description,miasto,kraj,price,owner_id,created_at,rodzaj,subcategory,specialty,contact_phone,show_contact_phone,Images,status,view_count').order('created_at',{ascending:false}).order('id',{ascending:false}).range(page*pageSize,(page+1)*pageSize-1);
+  let result;
+  try{
+   result=await sb.from('listings').select('id,title,category,description,miasto,kraj,price,owner_id,created_at,rodzaj,subcategory,specialty,contact_phone,show_contact_phone,Images,status,view_count').order('created_at',{ascending:false}).order('id',{ascending:false}).range(page*pageSize,(page+1)*pageSize-1);
+  }catch(err){error=err;break}
+  if(request!==listingsLoadRequest)return false;
   if(result.error){error=result.error;break}
   rows.push(...(result.data||[]));
   if((result.data||[]).length<pageSize)break;
   if(page===maxPages-1)more=true;
  }
- if(error){allListings=[];listingLoadError='Błąd pobierania ogłoszeń: '+error.message;console.error('Błąd połączenia z bazą:',error.message)}
- else{listingLoadError=more?'Wyświetlamy pierwsze 5000 najnowszych ogłoszeń. Dalsze wyniki wymagają wyszukiwania po stronie serwera.':'';allListings=rows.filter(x=>x.status!=='closed').map(x=>({...x,city:x.miasto||'',country:x.kraj||'',currency:x.kraj==='PL'?'PLN':'EUR'}))}
- render();
+ if(request!==listingsLoadRequest)return false;
+ if(error){
+  listingLoadError='Nie udało się odświeżyć ogłoszeń. Pokazujemy ostatnio pobrane wyniki. Spróbuj ponownie.';
+  console.error('Błąd połączenia z bazą:',error.message||error);
+  render();return false;
+ }
+ listingLoadError=more?'Wyświetlamy pierwsze 5000 najnowszych ogłoszeń. Dalsze wyniki wymagają wyszukiwania po stronie serwera.':'';
+ allListings=rows.filter(x=>x.status!=='closed').map(x=>({...x,city:x.miasto||'',country:x.kraj||'',currency:x.kraj==='PL'?'PLN':'EUR'}));
+ render();return true;
 }
 (async()=>{await refreshUser();await loadContractorAccess();await loadListings();if(sb)sb.auth.onAuthStateChange((_event,s)=>{session=s;contractorAccess=null;loadContractorAccess();setLang(language);updateAdminReportsAccess();updateAppealAccess();checkUnreadMessages()})})();
 
