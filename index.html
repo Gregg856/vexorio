@@ -1481,7 +1481,7 @@ async function refreshVisibleChat(){
   try{await refreshConversation()}finally{chatRefreshInProgress=false}
  }else if($('accountDialog').open&&!$('accountMessagesSection').hidden){await loadConversations()}
 }
-setInterval(()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}},15000);
+setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void refreshVisibleChat()}},10000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
 async function sendMessage(listingId,sellerId,message){
  if(!sb)throw new Error('Brak połączenia z bazą.');
