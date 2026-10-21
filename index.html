@@ -327,6 +327,9 @@ $('dashCopyLink').onclick=async()=>{
  catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>btn.textContent='🔗 Kopiuj link do filtrów',2500)}
 };
 
+let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>loadAdminDashboard(),450)}
+$('dashSearch').addEventListener('input',scheduleDashFilter);
+$('dashCity').addEventListener('input',scheduleDashFilter);
 $('dashSearch').addEventListener('change',()=>loadAdminDashboard());
 $('dashKind').addEventListener('change',()=>loadAdminDashboard());
 $('dashCountry').addEventListener('change',()=>loadAdminDashboard());$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();loadAdminDashboard()});$('dashSubcategory').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',()=>loadAdminDashboard());
