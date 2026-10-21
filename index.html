@@ -337,7 +337,7 @@ const publishingJob=$('newKind').value==='zlecenie';const record={owner_id:sessi
 const {error}=await sb.from('listings').insert(record);if(error)throw error;
 // The listing is saved; never delete its uploaded photos if refreshing the UI fails.
 paths.length=0;
-const wasJob=publishingJob;$('addForm').reset();$('imagePreview').replaceChildren();$('addDialog').close();if(wasJob){listingView='zlecenie';category='all';renderCats();updateJobFilters()}await loadListings();alert(wasJob?'Zlecenie zostało opublikowane!':'Ogłoszenie zostało opublikowane!')
+const wasJob=publishingJob;$('addForm').reset();$('imagePreview').replaceChildren();$('addDialog').close();if(wasJob){listingView='zlecenie';category='all';renderCats();updateJobFilters()}try{await loadListings()}catch(refreshError){console.error('Nie udało się odświeżyć listy:',refreshError)}alert(wasJob?'Zlecenie zostało opublikowane!':'Ogłoszenie zostało opublikowane!')
 }catch(err){$('addMsg').textContent='Nie udało się opublikować: '+err.message;if(paths.length){await sb.storage.from('listing-images').remove(paths)}}finally{submit.disabled=false}
 };
 async function openAccount(){if(!session)return openAuth();$('accountEmail').textContent=session.user.email||'Konto';$('accountMsg').textContent='';show('accountDialog');await Promise.all([loadMine(),loadConversations(),loadMyPrivacyRequests()])}
