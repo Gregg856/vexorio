@@ -1074,7 +1074,7 @@ async function loadMine(){
   add.onclick=()=>{$('accountDialog').close();$('addBtn').click()};
   empty.append(title,note,add);box.append(empty);return
  }
- const summary=document.createElement('p');summary.className='my-listings-summary';summary.textContent='Twoje wpisy: '+data.length;box.append(summary);
+ const summary=document.createElement('p');summary.className='my-listings-summary';const offers=data.filter(x=>x.rodzaj!=='zlecenie').length;const jobs=data.length-offers;summary.textContent='Wszystkie: '+data.length+' · Ogłoszenia: '+offers+' · Zlecenia: '+jobs;box.append(summary);
  for(const x of data){
   const row=document.createElement('article');row.className='account-listing my-listing-card';row.dataset.kind=x.rodzaj==='zlecenie'?'zlecenie':'ogloszenie';row.dataset.search=(String(x.id)+' '+String(x.title||'')+' '+String(x.miasto||'')+' '+String(x.kraj||'')).toLocaleLowerCase('pl');
   const main=document.createElement('div');main.className='my-listing-details';
@@ -1084,7 +1084,7 @@ async function loadMine(){
   const money=x.price===null||x.price===undefined?'Cena do uzgodnienia':Number(x.price).toLocaleString('pl-PL')+' '+(x.kraj==='PL'?'zł':'€');
   const date=x.created_at?new Date(x.created_at):null;const dateLabel=date&&!Number.isNaN(date.getTime())?'Dodano: '+date.toLocaleDateString('pl-PL'):'';info.textContent=[x.miasto,x.kraj,money,dateLabel].filter(Boolean).join(' · ');
   main.append(kind,name,info);
-  const actions=document.createElement('div');actions.className='listing-actions';
+  const actions=document.createElement('div');actions.className='listing-actions';actions.setAttribute('role','group');actions.setAttribute('aria-label','Zarządzaj wpisem numer '+x.id);
   const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.setAttribute('aria-label','Edytuj ogłoszenie numer '+x.id);edit.onclick=()=>editListing(x.id);
   const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
   del.onclick=async()=>{
