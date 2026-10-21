@@ -314,7 +314,7 @@ $('dashExportCsv').onclick=()=>{
 $('dashBackToFilters').onclick=()=>{$('dashSearch').scrollIntoView({behavior:'smooth',block:'start'})};
 $('dashLoadMore').onclick=()=>{clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard(true)};
 $('dashRefresh').onclick=runDashFilterNow;
-$('dashReset').onclick=()=>{$('dashSearch').value='';$('dashKind').value='all';$('dashCountry').value='all';$('dashCategory').value='all';refreshDashSubcategories();$('dashCity').value='';$('dashSort').value='newest';$('dashAge').value='all';loadAdminDashboard()};
+$('dashReset').onclick=()=>{$('dashSearch').value='';$('dashKind').value='all';$('dashCountry').value='all';$('dashCategory').value='all';refreshDashSubcategories();$('dashCity').value='';$('dashSort').value='newest';$('dashAge').value='all';runDashFilterNow()};
 // Restore saved dashboard filters only after the administrator opens the panel.
 try{
  const saved=new URLSearchParams(location.search);
@@ -339,15 +339,15 @@ $('dashCopyLink').onclick=async()=>{
  catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
 };
 
-let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);if(!$('adminDashboardDialog').open)return;dashTypingTimer=setTimeout(()=>{if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()}
+let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);if(!$('adminDashboardDialog').open)return;dashTypingTimer=setTimeout(()=>{dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()}
 $('dashSearch').addEventListener('input',scheduleDashFilter);
 $('dashCity').addEventListener('input',scheduleDashFilter);
-$('dashSearch').addEventListener('change',runDashFilterNow);
+$('dashSearch').addEventListener('change',()=>{if(!dashTypingTimer)return;runDashFilterNow()});
 $('dashKind').addEventListener('change',runDashFilterNow);
-$('dashCountry').addEventListener('change',runDashFilterNow);$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();runDashFilterNow()});$('dashSubcategory').addEventListener('change',runDashFilterNow);$('dashCity').addEventListener('change',runDashFilterNow);
+$('dashCountry').addEventListener('change',runDashFilterNow);$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();runDashFilterNow()});$('dashSubcategory').addEventListener('change',runDashFilterNow);$('dashCity').addEventListener('change',()=>{if(!dashTypingTimer)return;runDashFilterNow()});
 $('dashSort').addEventListener('change',runDashFilterNow);
 $('dashAge').addEventListener('change',runDashFilterNow);
-$('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});
+$('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});$('dashCity').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});
 for(const [tile,existing] of [['dashReports','adminReportsBtn'],['dashUsers','adminUsersBtn'],['dashAppeals','appealsAdminBtn'],['dashPrivacy','privacyAdminBtn']]){$(tile).onclick=()=>{$('adminDashboardDialog').close();$(existing).click()}}
 async function updateAdminReportsAccess(){
  const btn=$('adminReportsBtn');$('accountAdminLaunch').classList.add('hide');btn.classList.add('hide');$('adminUsersBtn').classList.add('hide');$('appealsAdminBtn').classList.add('hide');$('privacyAdminBtn').classList.add('hide');
