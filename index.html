@@ -1088,12 +1088,14 @@ async function loadMine(){
  const request=++myListingsRequest;
  const box=$('myListings');
  if(!sb||!session){box.removeAttribute('aria-busy');box.textContent='Zaloguj się, aby zarządzać wpisami.';$('myListingsStats')?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
+ const ownerId=session.user.id;
  const stats=$('myListingsStats');
  box.setAttribute('aria-busy','true');
  let data,error;
  try{({data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at,status,view_count').eq('owner_id',session.user.id).order('created_at',{ascending:false}))}
  catch(err){error=err}
  if(request!==myListingsRequest)return false;
+ if(!session||session.user.id!==ownerId){box.removeAttribute('aria-busy');box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
  box.removeAttribute('aria-busy');
  if(error){$('accountMsg').textContent='Nie udało się pobrać wpisów: '+(error.message||'Błąd połączenia.');return false}
  box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();
