@@ -489,8 +489,7 @@ async function checkUnreadMessages(){
   const {data:latest,error:e}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);
   if(e||!latest?.length)continue;
   const m=latest[0],seen=getSeen(c.id);
-  if(!seen){setSeen(c.id,m.created_at);continue}
-  if(m.sender_id!==uid&&m.created_at>seen&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
+  if(m.sender_id!==uid&&(!seen||m.created_at>seen)&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
  }
  if(session?.user?.id!==uid)return;
  updateUnreadBadges(unread);
