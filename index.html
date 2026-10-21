@@ -324,16 +324,16 @@ try{
   ['admin_sort','dashSort',['newest','oldest']],
   ['admin_age','dashAge',['all','7','30','90']]
  ]){const value=saved.get(key);if(values.includes(value))$(id).value=value}
- const term=saved.get('admin_search');if(term)$('dashSearch').value=term.replace(/[\u0000-\u001f]/g,'').slice(0,120);const subcategory=saved.get('admin_subcategory');if(subcategory)$('dashSubcategory').dataset.restore=subcategory;const category=saved.get('admin_category');if(category&&Array.from($('dashCategory').options).some(o=>o.value===category)){$('dashCategory').value=category;}const city=saved.get('admin_city');if(city)$('dashCity').value=city.replace(/[\u0000-\u001f]/g,'').slice(0,100);
+ const term=saved.get('admin_search');if(term)$('dashSearch').value=term.replace(/[\u0000-\u001f]/g,'').slice(0,120);const subcategory=saved.get('admin_subcategory');if(subcategory)$('dashSubcategory').dataset.restore=subcategory.slice(0,120);const category=saved.get('admin_category');if(category&&Array.from($('dashCategory').options).some(o=>o.value===category)){$('dashCategory').value=category;}const city=saved.get('admin_city');if(city)$('dashCity').value=city.replace(/[\u0000-\u001f]/g,'').slice(0,100);
 }catch(err){}
 $('dashCopyLink').onclick=async()=>{
  const params=new URLSearchParams();
  params.set('admin_kind',$('dashKind').value);
- params.set('admin_category',$('dashCategory').value);params.set('admin_subcategory',$('dashSubcategory').value);params.set('admin_country',$('dashCountry').value);if($('dashCity').value.trim())params.set('admin_city',$('dashCity').value.trim());
+ params.set('admin_category',$('dashCategory').value);if($('dashSubcategory').value!=='all')params.set('admin_subcategory',$('dashSubcategory').value);params.set('admin_country',$('dashCountry').value);if($('dashCity').value.trim())params.set('admin_city',$('dashCity').value.trim().slice(0,100));
  params.set('admin_sort',$('dashSort').value);
  params.set('admin_age',$('dashAge').value);
- if($('dashSearch').value.trim())params.set('admin_search',$('dashSearch').value.trim());
- const url=location.origin+location.pathname+'?'+params.toString();
+ if($('dashSearch').value.trim())params.set('admin_search',$('dashSearch').value.trim().slice(0,120));
+ const url=location.origin+location.pathname+'?'+params.toString()+location.hash;
  const btn=$('dashCopyLink');
  try{btn.disabled=true;await navigator.clipboard.writeText(url);btn.textContent='✓ Link skopiowany';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2000)}
  catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
