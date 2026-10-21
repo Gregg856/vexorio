@@ -411,8 +411,10 @@ $('backToAccountBtn').onclick=()=>{if($('chatDialog').open)$('chatDialog').close
 $('refreshChatBtn').onclick=()=>refreshConversation();
 async function refreshConversation(){
  if(!activeConversationId||!sb)return;
+ const conversationId=activeConversationId;
  const box=$('chatMessages');
- const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',activeConversationId).order('created_at',{ascending:true}).limit(200);
+ const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:true}).limit(200);
+ if(activeConversationId!==conversationId||!$('chatDialog').open)return;
  box.replaceChildren();
  if(error){box.textContent='Błąd pobierania wiadomości: '+error.message;return}
  if(!data?.length){box.textContent='Brak wiadomości.';return}
@@ -424,7 +426,7 @@ async function refreshConversation(){
   row.append(sender,body,stamp);box.append(row);
  }
  box.scrollTop=box.scrollHeight;
- const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){setSeen(activeConversationId,latest.created_at)}
+ const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){setSeen(conversationId,latest.created_at)}
 }
 $('replyForm').onsubmit=async e=>{
  e.preventDefault();const text=$('replyText').value.trim(),btn=$('replyForm').querySelector('button[type=submit]');
