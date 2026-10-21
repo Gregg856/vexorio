@@ -1,26 +1,27 @@
-# VEXORIO — osobna baza testowa (staging)
+# VEXORIO — staging: stan i warunki przełączenia
 
-**Nie uruchamiać migracji bezpieczeństwa na obecnej bazie VEXORIO-PORTAL** — obsługuje produkcję i preview.
+## Stan na 2026-10-21
+- Osobny projekt Supabase: `owkjdlpawczrnwyszduj` (VEXORIO-STAGING).
+- **Preview nadal używa produkcyjnego Supabase. Nie traktować preview jako izolowanego.**
+- Na staging poprawiono RLS: zlecenia publiczne, rozpoczęcie czatu bez Premium dla zalogowanych. Premium pozostaje wyłączone.
+- Klucz publishable staging istnieje, ale nie jest jeszcze wstawiony do preview.
+- Nie kopiować danych użytkowników, ogłoszeń ani wiadomości z produkcji.
 
-## Kolejność uruchomienia
-1. Utwórz nowy projekt Supabase `VEXORIO-STAGING` w wybranej organizacji, najlepiej `eu-west-1` (zgodnie z istniejącym projektem). Sprawdź koszt przed potwierdzeniem utworzenia.
-2. Odtwórz schemat tabel, funkcji, RLS, bucket `listing-images`, ustawienia Google Auth oraz wymagane indeksy w osobnym projekcie. Nie kopiuj prawdziwych danych użytkowników ani wiadomości; użyj fikcyjnych kont i wpisów.
-3. W Cloudflare skonfiguruj osobne sekrety/zmienne dla preview (URL i publishable key projektu staging). **Nie** wprowadzaj `service_role` ani sekretów Stripe do przeglądarki.
-4. Dopiero po przełączeniu preview na staging zastosuj kolejno `20261021_billing_staging_only.sql` i `20261021_security_staging_only.sql`, po audycie zależności RLS.
-5. Przebuduj publiczne pobieranie listy zleceń: osobny widok streszczeń bez opisu, telefonu, właściciela i zdjęć mogących ujawniać dane kontaktowe; pełne szczegóły tylko przez serwerową autoryzację (właściciel lub opłacony abonent).
-6. Weryfikuj uprawnienia do rozpoczęcia rozmowy i dostępu do wiadomości w bazie, nie tylko w JS.
-7. Sprawdź płatności Stripe wyłącznie w trybie testowym i webhook z walidacją podpisu.
+## Blokery przełączenia
+Kontrola `information_schema.columns` wykazała brak tabel w staging wymaganych przez aktualny frontend:
+- `admin_members` (niezmienna lista administratorów)
+- `privacy_requests` (wnioski RODO)
+- `moderation_blocks` (blokady użytkowników)
+- `moderation_appeals` (odwołania)
 
-## Testy regresji
-- Gość: może przeglądać ogłoszenia i publiczne streszczenia zleceń; nie odczytuje poufnych danych.
-- Autor zlecenia: widzi i edytuje własne zlecenie.
-- Fachowiec bez Premium: nie odczytuje szczegółów zlecenia przez API i nie może rozpocząć rozmowy.
-- Fachowiec z aktywną, potwierdzoną subskrypcją: ma dostęp do szczegółów i odpowiedzi.
-- Po wygaśnięciu: nowy dostęp do zleceń zablokowany.
-- Zwykłe ogłoszenia i ich czat działają jak dotąd.
-- Użytkownik nie może sam nadać sobie roli admin, aktywnej subskrypcji ani płatnej reklamy.
-- Test PL/DE/EN i Android.
-- Żadnych prawdziwych obciążeń ani danych osobowych w staging.
+W staging istnieje `listing_reports`, ale przed przełączeniem trzeba jeszcze porównać polityki RLS, RPC i funkcje moderacji, przechowywanie zdjęć, konfigurację Auth (w tym Google OAuth i redirect URLs), uprawnienia do profili, migracje oraz polityki dla wiadomości.
 
-## Warunek wdrożenia produkcyjnego
-Po testach, kopii zapasowej i zatwierdzeniu przez właściciela VEXORIO. Nigdy automatycznie.
+## Bezpieczna kolejność
+1. Uzupełnić brakujące tabele, funkcje i RLS **wyłącznie na staging**; sprawdzić bezpieczeństwo ról i blokad.
+2. Skonfigurować Google Auth, callbacki oraz storage `listing-images` na staging.
+3. Utworzyć fikcyjne konta i dane testowe; sprawdzić logowanie, ogłoszenia, czat, zgłoszenia, panel admina i RODO.
+4. Dopiero potem zmienić publiczny URL Supabase i klucz publishable w **gałęzi preview**; sprawdzić czy nie ma żadnych połączeń z produkcyjną bazą.
+5. Wdrożenie na `main` wymaga osobnej, wyraźnej zgody właściciela.
+
+## Obowiązująca polityka biznesowa
+Ogłoszenia, publikowanie i pełne przeglądanie zleceń oraz kontakt przez czat są teraz darmowe. Nie aktywować bramek Premium, płatności ani próbnych abonamentów. Dokumenty `20261021_billing_staging_only.sql` i `20261021_security_staging_only.sql` zawierają wcześniejsze założenia paywalla: nie stosować bez audytu i dostosowania.
