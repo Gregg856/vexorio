@@ -1665,10 +1665,10 @@ async function sendMessage(listingId,sellerId,message){
    const client=typeof sb!=='undefined'?sb:null;
    if(!client)throw Error('Brak połączenia z kontem.');
    const {data:{session}}=await client.auth.getSession();if(!session)throw Error('Zaloguj się ponownie.');
-   const response=await fetch(SUPABASE_URL+'/functions/v1/vexorio-push-test',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action:'test-self'})});
+   const response=await fetch(SUPABASE_URL+'/functions/v1/vexorio-push-test',{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action:'test-self'})});
    const result=await response.json();if(!response.ok)throw Error(result.error||'Błąd wysyłania');
    pushStatus.textContent=result.sent?'Wysłano test na '+result.sent+' urządzeń.':'Nie znaleziono aktywnego urządzenia push.';
-  }catch(e){pushStatus.textContent='Test push: '+(e.message||'błąd');}
+  }catch(e){pushStatus.textContent='Test push (diag. 2): '+(e.message||'błąd')+(e instanceof TypeError?' — problem z połączeniem/CORS. Sprawdź w Chrome bez VPN lub blokady reklam.':'');}
   finally{testPushButton.disabled=false}
  });
  const vapidKey=()=>document.querySelector('meta[name="vexorio-vapid-public-key"]')?.content?.trim()||'';
