@@ -257,6 +257,25 @@
  .market-side .section{padding:15px}
  .market-side .heading h2{font-size:18px}
 }
+
+/* Desktop header, search and filters: unified premium hierarchy */
+@media(min-width:851px){
+ header .nav{gap:18px;min-height:72px}
+ header .actions{gap:10px;flex-wrap:wrap;justify-content:flex-end}
+ .hero.wrap{padding-top:32px;padding-bottom:16px}
+ .hero-showcase{grid-template-columns:minmax(0,1.55fr) minmax(240px,.65fr);gap:32px}
+ .hero-logo-panel{min-height:185px;border-radius:22px}
+ .hero-copy h1{font-size:clamp(34px,3.5vw,54px);line-height:1.12;letter-spacing:-.025em}
+ .hero .search{gap:12px;padding:12px;border:1px solid #25556d;border-radius:19px;background:#0a263a;box-shadow:0 8px 28px #0002}
+ .hero .search #query{min-height:52px;font-size:16px;border-radius:12px}
+ .hero .search #searchBtn{min-width:142px;border-radius:12px;font-weight:800}
+ .top-filters{margin-top:14px;padding:17px 19px;border-radius:17px}
+ .top-filters .filter-head{margin-bottom:14px}
+ .top-filters .tools{gap:10px;align-items:stretch}
+ .top-filters .tools input,.top-filters .tools select{min-height:44px;border-radius:11px}
+ .market-quicknav{margin-top:15px;margin-bottom:4px;gap:10px}
+ .market-quicknav a,.market-quicknav button{transition:border-color .18s ease,background .18s ease}
+}
 </style></head><body>
 <header><div class="wrap nav"><a href="#top" class="brand"><span class="mark">V</span><div><div class="word">VEX<span>ORIO</span></div><div class="sub">LOCAL • GLOBAL</div></div></a><div class="actions"><select id="lang" aria-label="Język" style="width:auto"><option value="pl">🇵🇱 PL</option><option value="de">🇩🇪 DE</option><option value="en">🇬🇧 EN</option></select><button class="btn small" id="accountBtn">Zaloguj się</button><button class="btn primary" id="addBtn">＋ Dodaj ogłoszenie</button><button class="btn small header-job" type="button" id="headerJobBtn">＋ Dodaj zlecenie</button></div></div></header>
 <main id="top"><section class="hero wrap"><div class="hero-showcase"><div class="hero-copy"><div class="eyebrow" data-i="eyebrow">TWOJA OKOLICA • TWOJE MOŻLIWOŚCI</div><h1 data-i="headline">Kupuj. Sprzedawaj.<br><span>Znajduj.</span></h1><p data-i="intro">Ogłoszenia, praca i usługi w jednym nowoczesnym miejscu.</p></div><div class="hero-logo-panel" aria-label="VEXORIO — Local Global"><div class="hero-logo-symbol">V</div><div class="hero-logo-name">VEX<span>ORIO</span></div><div class="hero-logo-tagline">LOCAL · GLOBAL</div></div></div><div class="search"><input id="query" placeholder="Czego szukasz?" aria-label="Czego szukasz?"><button class="btn primary" id="searchBtn" data-i="search">⌕ Szukaj</button></div><div class="top-filters"><div class="filter-head"><button type="button" id="mobileFilterToggle" aria-expanded="false" aria-controls="listingFilterTools"><span id="filterHeading">Filtruj ogłoszenia</span><span class="filter-chevron" aria-hidden="true">⌄</span></button><button class="link" id="reset" data-i="reset">Wyczyść filtry →</button></div><div class="tools" id="listingFilterTools"><select id="filterServiceGroup" class="hide" aria-label="Rodzaj usługi"></select><select id="filterServiceSpecialty" class="hide" aria-label="Specjalizacja"></select><select id="country"><option value="all">🌍 Wszystkie kraje</option><option value="PL">🇵🇱 Polska</option><option value="DE">🇩🇪 Niemcy</option><option value="AT">🇦🇹 Austria</option><option value="BE">🇧🇪 Belgia</option><option value="CZ">🇨🇿 Czechy</option><option value="DK">🇩🇰 Dania</option><option value="FR">🇫🇷 Francja</option><option value="ES">🇪🇸 Hiszpania</option><option value="NL">🇳🇱 Holandia</option><option value="IE">🇮🇪 Irlandia</option><option value="IT">🇮🇹 Włochy</option><option value="NO">🇳🇴 Norwegia</option><option value="PT">🇵🇹 Portugalia</option><option value="SE">🇸🇪 Szwecja</option><option value="CH">🇨🇭 Szwajcaria</option><option value="GB">🇬🇧 Wielka Brytania</option><option value="US">🇺🇸 USA</option><option value="CA">🇨🇦 Kanada</option><option value="AU">🇦🇺 Australia</option><option value="UA">🇺🇦 Ukraina</option></select><input id="cityFilter" placeholder="Miasto / kod pocztowy" aria-label="Miasto"><input id="priceMin" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena od" aria-label="Cena minimalna"><input id="priceMax" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena do" aria-label="Cena maksymalna"><select id="sortListings" aria-label="Sortuj"><option value="new">Najnowsze</option><option value="cheap">Najtańsze</option><option value="expensive">Najdroższe</option><option value="fav">Ulubione</option></select></div></div><div class="features"><span data-i="free">Darmowe ogłoszenia</span><span data-i="countries">Ogłoszenia w Twojej okolicy</span><span data-i="mobile">Wygodnie na telefonie</span></div></section>
