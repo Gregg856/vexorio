@@ -500,8 +500,9 @@ async function checkUnreadMessages(){
    });
   }
   if(session?.user?.id!==uid)return;
+  const countChanged=previousUnreadCount!==unread;
   updateUnreadBadges(unread);
-  if($('accountDialog').open&&!$('accountMessagesSection').hidden)loadConversations();
+  if(countChanged&&$('accountDialog').open&&!$('accountMessagesSection').hidden)loadConversations();
  }finally{unreadCheckInProgress=false}
 }
 
