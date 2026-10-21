@@ -1433,6 +1433,8 @@ async function openConversation(id,title){
  $('chatMessages').textContent='Ładowanie…';
  delete $('chatMessages').dataset.lastMessageId;
  delete $('chatMessages').dataset.conversationId;
+ delete $('chatMessages').dataset.firstMessageId;
+ delete $('chatMessages').dataset.messageCount;
  $('chatJumpBottom').hidden=true;
  if($('accountDialog').open)$('accountDialog').close();
  show('chatDialog');$('replyText').focus({preventScroll:true});await refreshConversation();await checkUnreadMessages();
@@ -1449,17 +1451,21 @@ async function refreshConversation(){
  const wasNearBottom=firstLoad||box.scrollHeight-box.scrollTop-box.clientHeight<90;
  const previousScrollHeight=box.scrollHeight,previousScrollTop=box.scrollTop;
  const previousLastMessageId=box.dataset.lastMessageId||'';
+ const readingUserId=session?.user?.id;
  const jump=$('chatJumpBottom');
  const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
- if(activeConversationId!==conversationId||!$('chatDialog').open||!session)return;
+ if(activeConversationId!==conversationId||!$('chatDialog').open||session?.user?.id!==readingUserId)return;
  if(error){if(!box.querySelector('.chat-bubble'))box.textContent='Błąd pobierania wiadomości: '+error.message;return}
- if(!data?.length){box.replaceChildren();delete box.dataset.lastMessageId;box.textContent='Brak wiadomości.';if(jump)jump.hidden=true;return}
+ if(!data?.length){box.replaceChildren();delete box.dataset.lastMessageId;delete box.dataset.firstMessageId;delete box.dataset.messageCount;box.textContent='Brak wiadomości.';if(jump)jump.hidden=true;return}
  data.reverse(); // Show the newest 200 messages in chronological order.
  const lastMessageId=String(data[data.length-1]?.id||'');
- if(!firstLoad&&previousLastMessageId===lastMessageId&&box.dataset.conversationId===String(conversationId)&&box.querySelector('.chat-bubble'))return;
+ const firstMessageId=String(data[0]?.id||'');
+ if(!firstLoad&&previousLastMessageId===lastMessageId&&box.dataset.firstMessageId===firstMessageId&&box.dataset.messageCount===String(data.length)&&box.dataset.conversationId===String(conversationId)&&box.querySelector('.chat-bubble'))return;
  box.replaceChildren();
  box.dataset.conversationId=String(conversationId);
  box.dataset.lastMessageId=lastMessageId;
+ box.dataset.firstMessageId=firstMessageId;
+ box.dataset.messageCount=String(data.length);
  for(const msg of data){
   const row=document.createElement('div');row.className='chat-bubble'+(msg.sender_id===session?.user?.id?' mine':'');
   const sender=document.createElement('span');sender.className='chat-sender';sender.textContent=msg.sender_id===session?.user?.id?'Ty':'Rozmówca';
@@ -1483,7 +1489,7 @@ $('replyForm').onsubmit=async e=>{
   if(error)throw error;
   if(activeConversationId!==sendingConversationId||session?.user?.id!==sendingUserId)return;
   $('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));$('chatMessages').scrollTop=$('chatMessages').scrollHeight;await refreshConversation();$('chatMessages').scrollTop=$('chatMessages').scrollHeight;$('replyStatus').textContent='Wysłano ✓';
- }catch(err){$('replyStatus').textContent='Nie udało się wysłać: '+friendlyLimitError(err)}
+ }catch(err){if(activeConversationId===sendingConversationId&&session?.user?.id===sendingUserId)$('replyStatus').textContent='Nie udało się wysłać: '+friendlyLimitError(err)}
  finally{btn.disabled=false;btn.removeAttribute('aria-busy')}
 };
 // Keep the currently open conversation fresh while the page is visible.
