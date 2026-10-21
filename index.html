@@ -78,7 +78,7 @@
 
 #vexMobileChat{position:relative}#vexMobileChat[data-unread]::after{content:attr(data-unread);position:absolute;top:2px;right:calc(50% - 29px);min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:12px;background:#ffb020;color:#152332;border:2px solid #071e2e;font-size:11px;font-weight:800;line-height:15px;text-align:center;pointer-events:none}
 
-/* Owned listing management */
+ #vexMobileChat.vex-new-message{animation:vex-chat-notice .65s ease-out 2}@keyframes vex-chat-notice{0%,100%{transform:scale(1)}45%{transform:scale(1.15)}}@media(prefers-reduced-motion:reduce){#vexMobileChat.vex-new-message{animation:none}} /* Owned listing management */
 #accountDialog .my-listing-card{display:flex;align-items:flex-start;flex-direction:column;gap:12px;padding:15px}
 #accountDialog .my-listing-details{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;width:100%}
 #accountDialog .my-listing-kind{font-size:11px;color:#061c29;background:#19cadc;border-radius:99px;padding:4px 9px;font-weight:800}
@@ -478,7 +478,7 @@ let activeConversationId=null;
 const seenKey=id=>'vexorio-seen-'+session?.user?.id+'-'+id;
 function getSeen(id){try{return localStorage.getItem(seenKey(id))}catch{return null}}
 function setSeen(id,stamp){if(!stamp)return;try{localStorage.setItem(seenKey(id),stamp)}catch{}}
-function updateUnreadBadges(count){const value=count>0?String(Math.min(count,99))+(count>99?'+':''):null;for(const id of ['accountBtn','vexMobileChat']){const el=$(id);if(!el)continue;if(value)el.dataset.unread=value;else el.removeAttribute('data-unread')}const chat=$('vexMobileChat');if(chat)chat.setAttribute('aria-label',count>0?'Czat, '+count+' nieprzeczytanych rozmów':'Czat')}
+const vexOriginalTitle=document.title;let previousUnreadCount=null,previousUnreadUser=null;function updateUnreadBadges(count){const currentUser=session?.user?.id||null;if(currentUser!==previousUnreadUser){previousUnreadCount=null;previousUnreadUser=currentUser}document.title=count>0?'('+Math.min(count,99)+(count>99?'+':'')+') '+vexOriginalTitle:vexOriginalTitle;if(previousUnreadCount!==null&&count>previousUnreadCount&&session&&document.visibilityState==='visible'){const chat=$('vexMobileChat');if(chat){chat.classList.remove('vex-new-message');void chat.offsetWidth;chat.classList.add('vex-new-message')}if('vibrate' in navigator)try{navigator.vibrate(90)}catch(e){}}previousUnreadCount=count;const value=count>0?String(Math.min(count,99))+(count>99?'+':''):null;for(const id of ['accountBtn','vexMobileChat']){const el=$(id);if(!el)continue;if(value)el.dataset.unread=value;else el.removeAttribute('data-unread')}const chat=$('vexMobileChat');if(chat)chat.setAttribute('aria-label',count>0?'Czat, '+count+' nieprzeczytanych rozmów':'Czat')}
 async function checkUnreadMessages(){
  if(!sb||!session){updateUnreadBadges(0);return}
  const uid=session.user.id;
@@ -489,8 +489,7 @@ async function checkUnreadMessages(){
   const {data:latest,error:e}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);
   if(e||!latest?.length)continue;
   const m=latest[0],seen=getSeen(c.id);
-  if(!seen){setSeen(c.id,m.created_at);continue}
-  if(m.sender_id!==uid&&m.created_at>seen&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
+  if(m.sender_id!==uid&&(!seen||m.created_at>seen)&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
  }
  if(session?.user?.id!==uid)return;
  updateUnreadBadges(unread);
@@ -498,17 +497,29 @@ async function checkUnreadMessages(){
 }
 
 $('refreshInboxBtn').onclick=()=>loadConversations();
+let inboxRequestId=0;
 async function loadConversations(){
+ const requestId=++inboxRequestId;
+ const uid=session?.user?.id;
  const box=$('myConversations');box.replaceChildren();box.textContent='Ładowanie rozmów…';
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
+ if(requestId!==inboxRequestId||session?.user?.id!==uid)return;
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
+ const latestByConversation=new Map();
+ // Keep the inbox responsive without firing up to 100 database requests at once.
+ for(let start=0;start<data.length;start+=10){
+  const batch=data.slice(start,start+10);
+  const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
+  if(requestId!==inboxRequestId||session?.user?.id!==uid)return;
+  batch.forEach((c,i)=>{if(!results[i].error&&results[i].data?.[0])latestByConversation.set(String(c.id),results[i].data[0])});
+ }
  for(const c of data){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
   const listing=allListings.find(x=>String(x.id)===String(c.listing_id));
   btn.textContent=(listing?.title||'Ogłoszenie #'+c.listing_id)+' — '+(c.buyer_id===session.user.id?'Kupuję':'Sprzedaję');
-  if($('accountBtn').dataset.unread&&getSeen(c.id)){const {data:last}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);if(last?.[0]?.sender_id!==session.user.id&&last?.[0]?.created_at>getSeen(c.id))btn.classList.add('unread-conversation')}
+  const latest=latestByConversation.get(String(c.id)),seen=getSeen(c.id);if(latest&&latest.sender_id!==session.user.id&&(!seen||latest.created_at>seen))btn.classList.add('unread-conversation')
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);
  }
@@ -526,6 +537,8 @@ async function refreshConversation(){
  if(!activeConversationId||!sb)return;
  const conversationId=activeConversationId;
  const box=$('chatMessages');
+ const wasNearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<90;
+ const previousScrollHeight=box.scrollHeight,previousScrollTop=box.scrollTop;
  const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
  if(activeConversationId!==conversationId||!$('chatDialog').open)return;
  box.replaceChildren();
@@ -539,7 +552,7 @@ async function refreshConversation(){
   const stamp=document.createElement('time');stamp.className='chat-time';if(msg.created_at){const dt=new Date(msg.created_at);if(!Number.isNaN(dt.getTime())){stamp.dateTime=dt.toISOString();stamp.textContent=new Intl.DateTimeFormat('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(dt)}}
   row.append(sender,body,stamp);box.append(row);
  }
- box.scrollTop=box.scrollHeight;
+ if(wasNearBottom)box.scrollTop=box.scrollHeight;else box.scrollTop=previousScrollTop+(box.scrollHeight-previousScrollHeight);
  const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){setSeen(conversationId,latest.created_at)}
 }
 $('replyForm').onsubmit=async e=>{
