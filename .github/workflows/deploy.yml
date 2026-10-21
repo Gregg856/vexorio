@@ -25,9 +25,48 @@ jobs:
           directory = "./public"
           EOF
 
+      - name: Sprawdz skladnie JavaScript
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]).filter(Boolean);
+          for (const [i, script] of scripts.entries()) new vm.Script(script, {filename: `inline-${i+1}.js`});
+          for (const id of ['query', 'searchBtn', 'cards', 'myConversations']) {
+            if (!html.includes(`id="${id}"`)) throw new Error(`Missing control: ${id}`);
+          }
+          console.log('PASS: syntax and essential controls');
+          NODE
+
       - name: Publikuj w Cloudflare
+        id: publish
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+
+      - name: Sprawdz publiczna strone HTTPS
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.deployment-url }}
+        run: |
+          if [ -z "$DEPLOY_URL" ]; then
+            echo 'Cloudflare did not return deployment URL; cannot verify production.'
+            exit 1
+          fi
+          case "$DEPLOY_URL" in
+            https://*.workers.dev|https://*.workers.dev/) ;;
+            *) echo 'Unexpected deployment URL'; exit 1 ;;
+          esac
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --location --max-time 15 "$DEPLOY_URL" -o /tmp/vexorio-production.html; then
+              if grep -q 'VEXORIO' /tmp/vexorio-production.html && grep -q 'id="query"' /tmp/vexorio-production.html; then
+                echo "PASS: public VEXORIO is reachable at $DEPLOY_URL"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Public production smoke test failed'
+          exit 1
