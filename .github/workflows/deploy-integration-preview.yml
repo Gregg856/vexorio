@@ -26,12 +26,12 @@ jobs:
           const fs = require('node:fs');
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html','utf8');
-          const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)]
+          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
             .map(match => match[1]).filter(Boolean);
           for (const [index, script] of scripts.entries()) {
             new vm.Script(script, {filename: 'inline-script-' + (index + 1) + '.js'});
           }
-          const ids = [...html.matchAll(/\\bid="([^"]+)"/g)].map(match => match[1]);
+          const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
           const duplicates = ids.filter((id, i) => ids.indexOf(id) !== i);
           if (duplicates.length) throw new Error('Duplicate element IDs: ' + duplicates.join(', '));
           for (const id of ['query','searchBtn','sortListings','addBtn','accountBtn','myConversations','vexMobileSearch','vexMobileFav','vexMobileAdd','vexMobileChat','vexMobileAccount']) {
