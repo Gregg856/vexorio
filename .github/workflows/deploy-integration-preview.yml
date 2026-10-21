@@ -61,6 +61,33 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
 
+      - name: Smoke test deployed preview over HTTPS
+        if: success()
+        env:
+          PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
+        run: |
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "::warning::Cloudflare did not expose a deployment URL; HTTP smoke test skipped."
+            exit 0
+          fi
+          case "$PREVIEW_URL" in
+            https://*.workers.dev|https://*.workers.dev/) ;;
+            *) echo "::error::Unexpected preview URL"; exit 1 ;;
+          esac
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --location --max-time 15 "$PREVIEW_URL" -o /tmp/vexorio-preview.html; then
+              if grep -q 'VEXORIO' /tmp/vexorio-preview.html && grep -q 'id="query"' /tmp/vexorio-preview.html; then
+                echo "PASS: HTTPS preview serves VEXORIO and search control"
+                exit 0
+              fi
+              echo "::error::Preview response does not contain expected VEXORIO markup"
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "::error::Preview URL did not respond successfully"
+          exit 1
+
       - name: Show preview URL in GitHub summary
         if: success()
         env:
