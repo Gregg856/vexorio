@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 concurrency:
   group: vexorio-integration-preview
@@ -103,3 +105,19 @@ jobs:
           else
             echo "Adres nie został zwrócony przez Cloudflare. Sprawdź log kroku wdrożenia." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Publish preview address to integration pull request
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
+        run: |
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "::warning::No preview URL to publish"
+            exit 0
+          fi
+          case "$PREVIEW_URL" in
+            https://*.workers.dev|https://*.workers.dev/) ;;
+            *) echo "::error::Unexpected preview URL"; exit 1 ;;
+          esac
+          gh issue comment 6 --repo "$GITHUB_REPOSITORY" --body "VEXORIO integration preview: $PREVIEW_URL (commit $GITHUB_SHA)"
