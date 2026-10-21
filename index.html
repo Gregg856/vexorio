@@ -1082,19 +1082,28 @@ function filterMyListings(resetPage=false){
 }
 for(const id of ['myListingsSearch','myListingsKind','myListingsStatus','myListingsSort','myListingsPageSize'])$(id).addEventListener(id==='myListingsSearch'?'input':'change',()=>filterMyListings(true));
 $('myListingsReset').onclick=()=>{$('myListingsSearch').value='';$('myListingsKind').value='all';$('myListingsStatus').value='all';$('myListingsSort').value='newest';$('myListingsPageSize').value='10';filterMyListings(true)};
-$('myListingsRefresh').onclick=async()=>{const btn=$('myListingsRefresh');btn.disabled=true;btn.textContent='Odświeżanie…';try{await loadMine();$('accountMsg').textContent='Dane ogłoszeń zostały odświeżone.'}finally{btn.disabled=false;btn.textContent='↻ Odśwież dane'}};
+$('myListingsRefresh').onclick=async()=>{const btn=$('myListingsRefresh');btn.disabled=true;btn.textContent='Odświeżanie…';try{const ok=await loadMine();if(ok)$('accountMsg').textContent='Dane ogłoszeń zostały odświeżone.'}catch(err){$('accountMsg').textContent='Błąd odświeżania: '+(err?.message||'Spróbuj ponownie.')}finally{btn.disabled=false;btn.textContent='↻ Odśwież dane'}};
+let myListingsRequest=0;
 async function loadMine(){
- const box=$('myListings');box.replaceChildren();$('myListingsStats')?.replaceChildren();
- if(!sb||!session){box.textContent='Zaloguj się, aby zarządzać wpisami.';return}
- const {data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at,status,view_count').eq('owner_id',session.user.id).order('created_at',{ascending:false});
- if(error){box.textContent='Nie udało się pobrać Twoich wpisów.';$('accountMsg').textContent=error.message;return}
+ const request=++myListingsRequest;
+ const box=$('myListings');
+ if(!sb||!session){box.textContent='Zaloguj się, aby zarządzać wpisami.';return false}
+ const previous=box.innerHTML;const stats=$('myListingsStats');const previousStats=stats?.innerHTML||'';
+ box.setAttribute('aria-busy','true');
+ let data,error;
+ try{({data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at,status,view_count').eq('owner_id',session.user.id).order('created_at',{ascending:false}))}
+ catch(err){error=err}
+ if(request!==myListingsRequest)return false;
+ box.removeAttribute('aria-busy');
+ if(error){$('accountMsg').textContent='Nie udało się pobrać wpisów: '+(error.message||'Błąd połączenia.');return false}
+ box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();
  if(!data?.length){
   const empty=document.createElement('div');empty.className='my-listings-empty';
   const title=document.createElement('strong');title.textContent='Nie masz jeszcze własnych ogłoszeń ani zleceń.';
   const note=document.createElement('p');note.textContent='Dodaj pierwszy wpis, aby tutaj nim zarządzać.';
   const add=document.createElement('button');add.type='button';add.className='btn primary';add.textContent='＋ Dodaj ogłoszenie';
   add.onclick=()=>{$('accountDialog').close();$('addBtn').click()};
-  empty.append(title,note,add);box.append(empty);return
+  empty.append(title,note,add);box.append(empty);return true
  }
  const stats=$('myListingsStats');if(stats){const active=data.filter(x=>x.status!=='closed').length;const closed=data.length-active;const views=data.reduce((sum,x)=>sum+Math.max(0,Number(x.view_count)||0),0);stats.replaceChildren();for(const [label,value] of [['Wszystkie',data.length],['Aktywne',active],['Zakończone',closed],['Wyświetlenia',views]]){const tile=document.createElement('div');tile.className='my-stats-tile';const num=document.createElement('strong');num.textContent=value.toLocaleString('pl-PL');const caption=document.createElement('span');caption.textContent=label;tile.append(num,caption);stats.append(tile)}}
  const summary=document.createElement('p');summary.className='my-listings-summary';const offers=data.filter(x=>x.rodzaj!=='zlecenie').length;const jobs=data.length-offers;summary.textContent='Wszystkie: '+data.length+' · Ogłoszenia: '+offers+' · Zlecenia: '+jobs;box.append(summary);
@@ -1123,6 +1132,7 @@ async function loadMine(){
   actions.append(edit,toggle,del);row.append(main,actions);box.append(row)
  }
  filterMyListings();
+ return true;
 }
 $('logoutBtn').onclick=async()=>{if(!confirm('Czy na pewno chcesz się wylogować z VEXORIO?'))return;const btn=$('logoutBtn');btn.disabled=true;try{if(sb){const {error}=await sb.auth.signOut();if(error)throw error}$('accountDialog').close();await refreshUser()}catch(err){$('accountMsg').textContent='Nie udało się wylogować: '+(err?.message||'Spróbuj ponownie')}finally{btn.disabled=false}};async function refreshUser(){if(sb){let {data}=await sb.auth.getSession();session=data.session}else session=null;setLang(language);updateAdminReportsAccess();updateAppealAccess();if(session)checkUnreadMessages();else $('accountBtn').removeAttribute('data-unread')}async function loadListings(){
  if(!sb){listingLoadError='';allListings=demo;render();return}
