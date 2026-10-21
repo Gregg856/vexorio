@@ -163,8 +163,11 @@ async function loadAdminReports(){
  if(accessError||allowed!==true){status.textContent='Brak uprawnień administratora.';return}
  let reportQuery=sb.from('listing_reports').select('id,listing_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);if(adminReportListingFilter!==null)reportQuery=reportQuery.eq('listing_id',adminReportListingFilter);const {data,error}=await reportQuery;
  if(error){status.textContent='Błąd: '+error.message;return}
- if(!data?.length){status.textContent=adminReportListingFilter===null?'Brak zgłoszeń.':'Brak zgłoszeń dla ogłoszenia #'+adminReportListingFilter+'.';return}
- for(const item of data){
+ const selectedListing=adminReportListingFilter;
+ const filteredData=selectedListing===null?(data||[]):(data||[]).filter(item=>Number(item.listing_id)===Number(selectedListing));
+ status.textContent=selectedListing===null?'Wszystkie zgłoszenia':'Zgłoszenia wyłącznie dla ogłoszenia #'+selectedListing;
+ if(!filteredData.length){status.textContent=selectedListing===null?'Brak zgłoszeń.':'Brak zgłoszeń dla ogłoszenia #'+selectedListing+'.';return}
+ for(const item of filteredData){
   const box=document.createElement('div');box.className='info';box.style.margin='0';
   const heading=document.createElement('h3');heading.textContent='Zgłoszenie #'+item.id+' · Ogłoszenie #'+(item.listing_id??'usunięte');
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString();
