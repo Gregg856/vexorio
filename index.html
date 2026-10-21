@@ -302,7 +302,7 @@ $('dashExportCsv').onclick=()=>{
 $('dashBackToFilters').onclick=()=>{$('dashSearch').scrollIntoView({behavior:'smooth',block:'start'})};
 $('dashLoadMore').onclick=()=>loadAdminDashboard(true);
 $('dashRefresh').onclick=()=>loadAdminDashboard();
-$('dashReset').onclick=()=>{$('dashSearch').value='';$('dashKind').value='all';$('dashCountry').value='all';$('dashSort').value='newest';$('dashAge').value='all';loadAdminDashboard()};
+$('dashReset').onclick=()=>{$('dashSearch').value='';$('dashKind').value='all';$('dashCountry').value='all';$('dashCity').value='';$('dashSort').value='newest';$('dashAge').value='all';loadAdminDashboard()};
 // Restore saved dashboard filters only after the administrator opens the panel.
 try{
  const saved=new URLSearchParams(location.search);
@@ -312,12 +312,12 @@ try{
   ['admin_sort','dashSort',['newest','oldest']],
   ['admin_age','dashAge',['all','7','30','90']]
  ]){const value=saved.get(key);if(values.includes(value))$(id).value=value}
- const term=saved.get('admin_search');if(term)$('dashSearch').value=term.slice(0,120);
+ const term=saved.get('admin_search');if(term)$('dashSearch').value=term.slice(0,120);const city=saved.get('admin_city');if(city)$('dashCity').value=city.slice(0,100);
 }catch(err){}
 $('dashCopyLink').onclick=async()=>{
  const params=new URLSearchParams();
  params.set('admin_kind',$('dashKind').value);
- params.set('admin_country',$('dashCountry').value);
+ params.set('admin_country',$('dashCountry').value);if($('dashCity').value.trim())params.set('admin_city',$('dashCity').value.trim());
  params.set('admin_sort',$('dashSort').value);
  params.set('admin_age',$('dashAge').value);
  if($('dashSearch').value.trim())params.set('admin_search',$('dashSearch').value.trim());
@@ -329,7 +329,7 @@ $('dashCopyLink').onclick=async()=>{
 
 $('dashSearch').addEventListener('change',()=>loadAdminDashboard());
 $('dashKind').addEventListener('change',()=>loadAdminDashboard());
-$('dashCountry').addEventListener('change',()=>loadAdminDashboard());
+$('dashCountry').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',()=>loadAdminDashboard());
 $('dashSort').addEventListener('change',()=>loadAdminDashboard());
 $('dashAge').addEventListener('change',()=>loadAdminDashboard());
 $('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadAdminDashboard()}});
