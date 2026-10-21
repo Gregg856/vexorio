@@ -39,6 +39,25 @@ jobs:
           console.log('PASS: syntax and essential controls');
           NODE
 
+      - name: Sprawdz funkcje logowania, ogloszen i czatu
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const checks = [
+            ['Logowanie Supabase', /sb\.auth\.(signInWithPassword|signInWithOAuth)/],
+            ['Pobieranie ogloszen', /\.from\(['"]listings['"]\)/],
+            ['Wiadomosci', /\.from\(['"]messages['"]\)/],
+            ['Rozmowy', /\.from\(['"]conversations['"]\)/],
+            ['Formularz ogloszenia', /id=["']addBtn["']/],
+            ['Lista rozmow', /id=["']myConversations["']/],
+          ];
+          for (const [label, pattern] of checks) {
+            if (!pattern.test(html)) throw new Error('Missing feature: ' + label);
+            console.log('PASS: ' + label);
+          }
+          NODE
+
       - name: Publikuj w Cloudflare
         id: publish
         uses: cloudflare/wrangler-action@v3
