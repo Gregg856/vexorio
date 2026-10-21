@@ -1447,7 +1447,7 @@ async function refreshConversation(){
   row.append(sender,body,stamp);box.append(row);
  }
  if(wasNearBottom)box.scrollTop=box.scrollHeight;else box.scrollTop=previousScrollTop+(box.scrollHeight-previousScrollHeight);
- const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){setSeen(conversationId,latest.created_at)}
+ const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){const previouslySeen=getSeen(conversationId);if(!previouslySeen||latest.created_at>previouslySeen){setSeen(conversationId,latest.created_at);if(!unreadCheckInProgress)void checkUnreadMessages()}}
 }
 $('replyForm').onsubmit=async e=>{
  e.preventDefault();const text=$('replyText').value.trim(),btn=$('replyForm').querySelector('button[type=submit]');
