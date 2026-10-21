@@ -413,11 +413,12 @@ async function refreshConversation(){
  if(!activeConversationId||!sb)return;
  const conversationId=activeConversationId;
  const box=$('chatMessages');
- const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:true}).limit(200);
+ const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
  if(activeConversationId!==conversationId||!$('chatDialog').open)return;
  box.replaceChildren();
  if(error){box.textContent='Błąd pobierania wiadomości: '+error.message;return}
  if(!data?.length){box.textContent='Brak wiadomości.';return}
+ data.reverse(); // Show the newest 200 messages in chronological order.
  for(const msg of data){
   const row=document.createElement('div');row.className='chat-bubble'+(msg.sender_id===session?.user?.id?' mine':'');
   const sender=document.createElement('span');sender.className='chat-sender';sender.textContent=msg.sender_id===session?.user?.id?'Ty':'Rozmówca';
