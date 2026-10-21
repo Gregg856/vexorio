@@ -1662,7 +1662,8 @@ async function sendMessage(listingId,sellerId,message){
  testPushButton.addEventListener('click',async()=>{
   testPushButton.disabled=true;pushStatus.textContent='Wysyłanie testu push…';
   try{
-   const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+   const client=typeof sb!=='undefined'?sb:null;
+   if(!client)throw Error('Brak połączenia z kontem.');
    const {data:{session}}=await client.auth.getSession();if(!session)throw Error('Zaloguj się ponownie.');
    const response=await fetch(SUPABASE_URL+'/functions/v1/vexorio-push-test',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action:'test-self'})});
    const result=await response.json();if(!response.ok)throw Error(result.error||'Błąd wysyłania');
@@ -1675,7 +1676,7 @@ async function sendMessage(listingId,sellerId,message){
  async function syncPushSubscription(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!window.isSecureContext){pushStatus.textContent='Push nie jest obsługiwany na tym urządzeniu.';return}
   const key=vapidKey();if(!key){pushStatus.textContent='Powiadomienia push: oczekują na konfigurację serwera.';return}
-  const client=window.supabase&&typeof SUPABASE_URL!=='undefined'&&typeof SUPABASE_PUBLISHABLE_KEY!=='undefined'?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
+  const client=typeof sb!=='undefined'?sb:null;
   if(!client){pushStatus.textContent='Brak połączenia z bazą powiadomień.';return}
   const {data:{user}}=await client.auth.getUser();if(!user){pushStatus.textContent='Zaloguj się, aby włączyć push.';return}
   const registration=await navigator.serviceWorker.register('/push-sw.js',{scope:'/'});
@@ -1692,7 +1693,7 @@ async function sendMessage(listingId,sellerId,message){
   const registration=await navigator.serviceWorker.getRegistration('/');
   const subscription=await registration?.pushManager?.getSubscription();
   if(!subscription)return;
-  const client=window.supabase&&typeof SUPABASE_URL!=='undefined'&&typeof SUPABASE_PUBLISHABLE_KEY!=='undefined'?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
+  const client=typeof sb!=='undefined'?sb:null;
   if(client){const {data:{user}}=await client.auth.getUser();if(user){const {error}=await client.from('push_subscriptions').delete().eq('user_id',user.id).eq('endpoint',subscription.endpoint);if(error)throw error}}
   await subscription.unsubscribe();
   pushStatus.textContent='Powiadomienia push wyłączone na tym urządzeniu.';
@@ -1716,7 +1717,7 @@ async function sendMessage(listingId,sellerId,message){
   if(enabled&&Notification.permission==='granted')try{await syncPushSubscription()}catch(e){pushStatus.textContent='Nie udało się włączyć push na tym urządzeniu.';console.warn('Push subscription failed',e)}
   draw();
  });
- if(enabled&&supported&&Notification.permission==='granted'&&'serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('/push-sw.js',{scope:'/'}).catch(e=>console.warn('VEXORIO push worker registration unavailable',e))}
+ if(enabled&&supported&&Notification.permission==='granted'&&'serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('/push-sw.js',{scope:'/'}).then(()=>syncPushSubscription()).catch(e=>{pushStatus.textContent='Nie udało się odnowić powiadomień push.';console.warn('VEXORIO push sync failed',e)})}
  draw();
 })();
 </script>
