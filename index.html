@@ -713,14 +713,14 @@ async function checkUnreadMessages(){
   if(error){return}
   if(!convos?.length){if(session?.user?.id===uid)updateUnreadBadges(0);return}
   let unread=0;
-  for(let start=0;start<convos.length;start+=10){
-   const batch=convos.slice(start,start+10);
-   const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1)));
+  for(let start=0;start<convos.length;start+=25){
+   const ids=convos.slice(start,start+25).map(c=>c.id);
+   const {data:incoming,error:incomingError}=await sb.from('messages').select('conversation_id,created_at,sender_id').in('conversation_id',ids).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1000);
    if(session?.user?.id!==uid)return;
-   batch.forEach((c,i)=>{
-    const m=!results[i].error&&results[i].data?.[0],seen=getSeen(c.id);
-    if(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&c.id!==($('chatDialog').open?activeConversationId:null))unread++;
-   });
+   if(incomingError){console.warn('Unread message check failed',incomingError);return}
+   const latest=new Map();
+   for(const m of incoming||[]){const id=String(m.conversation_id);if(!latest.has(id))latest.set(id,m)}
+   for(const id of ids){const m=latest.get(String(id)),seen=getSeen(id);if(m&&(!seen||m.created_at>seen)&&String(id)!==String($('chatDialog').open?activeConversationId:null))unread++}
   }
   if(session?.user?.id!==uid)return;
   const countChanged=previousUnreadCount!==unread;
