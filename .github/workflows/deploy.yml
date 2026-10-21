@@ -81,13 +81,13 @@ jobs:
             *) echo 'Unexpected deployment URL'; exit 1 ;;
           esac
           for attempt in 1 2 3 4 5; do
-            if curl --fail --silent --show-error --location --max-time 15 "$DEPLOY_URL" -o /tmp/vexorio-production.html; then
-              if grep -q 'VEXORIO' /tmp/vexorio-production.html && grep -q 'id="query"' /tmp/vexorio-production.html; then
+            if curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL?deploy_check=${GITHUB_SHA}" -o /tmp/vexorio-production.html; then
+              if grep -q 'VEXORIO' /tmp/vexorio-production.html && grep -q 'id="query"' /tmp/vexorio-production.html && grep -q 'function listingRiskSignals' /tmp/vexorio-production.html; then
                 echo "PASS: public VEXORIO is reachable at $DEPLOY_URL"
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo 'Public production smoke test failed'
+          echo 'Public production smoke test failed: missing current listing safety check or page unavailable'
           exit 1
