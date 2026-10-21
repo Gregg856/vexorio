@@ -1,0 +1,41 @@
+name: Deploy VEXORIO Integration Preview
+
+on:
+  push:
+    branches:
+      - integration/site-updates-production-auth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vexorio-integration-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+
+      - name: Prepare isolated preview Worker
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+          cat > wrangler.toml <<'EOF'
+          name = "vexorio-integration-preview"
+          compatibility_date = "2026-10-20"
+          workers_dev = true
+
+          [assets]
+          directory = "./public"
+          EOF
+
+      - name: Deploy separate integration preview
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
