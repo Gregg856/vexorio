@@ -66,6 +66,13 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
 
+      - name: Sprawdz opublikowana wersje
+        run: |
+          test -f public/index.html
+          grep -q 'function listingRiskSignals' public/index.html
+          grep -q 'riskSignals=listingRiskSignals' public/index.html
+          echo "PASS: ostrzezenia przed oszustwami sa w paczce publikacyjnej"
+
       - name: Sprawdz publiczna strone HTTPS
         env:
           DEPLOY_URL: ${{ steps.publish.outputs.deployment-url }}
