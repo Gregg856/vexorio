@@ -1400,7 +1400,7 @@ let inboxRequestId=0;
 async function loadConversations(){
  const requestId=++inboxRequestId;
  const uid=session?.user?.id;
- const box=$('myConversations');box.replaceChildren();box.textContent='Ładowanie rozmów…';
+ const box=$('myConversations');if(!box.children.length)box.textContent='Ładowanie rozmów…';
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
@@ -1430,6 +1430,8 @@ async function openConversation(id,title){
  if(!sb||!session)return openAuth();
  activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
  $('chatMessages').textContent='Ładowanie…';
+ delete $('chatMessages').dataset.lastMessageId;
+ delete $('chatMessages').dataset.conversationId;
  $('replyText').focus({preventScroll:true});
  if($('accountDialog').open)$('accountDialog').close();
  show('chatDialog');await refreshConversation();await checkUnreadMessages();
@@ -1447,11 +1449,12 @@ async function refreshConversation(){
  const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
  if(activeConversationId!==conversationId||!$('chatDialog').open||!session)return;
  if(error){if(!box.querySelector('.chat-bubble'))box.textContent='Błąd pobierania wiadomości: '+error.message;return}
- box.replaceChildren();
- if(!data?.length){box.textContent='Brak wiadomości.';return}
+ if(!data?.length){box.replaceChildren();delete box.dataset.lastMessageId;box.textContent='Brak wiadomości.';return}
  data.reverse(); // Show the newest 200 messages in chronological order.
  const lastMessageId=String(data[data.length-1]?.id||'');
- if(!firstLoad&&previousLastMessageId===lastMessageId&&box.querySelector('.chat-bubble'))return;
+ if(!firstLoad&&previousLastMessageId===lastMessageId&&box.dataset.conversationId===String(conversationId)&&box.querySelector('.chat-bubble'))return;
+ box.replaceChildren();
+ box.dataset.conversationId=String(conversationId);
  box.dataset.lastMessageId=lastMessageId;
  for(const msg of data){
   const row=document.createElement('div');row.className='chat-bubble'+(msg.sender_id===session?.user?.id?' mine':'');
@@ -1468,7 +1471,8 @@ $('replyForm').onsubmit=async e=>{
  e.preventDefault();const text=$('replyText').value.trim(),btn=$('replyForm').querySelector('button[type=submit]');
  if(!text||!activeConversationId||!session)return;if(btn.disabled)return;if(text.length>2000){$('replyStatus').textContent='Wiadomość może mieć maksymalnie 2000 znaków.';return}
  const sendingConversationId=activeConversationId,sendingUserId=session.user.id;
- btn.disabled=true;btn.setAttribute('aria-busy','true');$('replyStatus').textContent='';
+ $('replyStatus').textContent='Wysyłanie…';
+ btn.disabled=true;btn.setAttribute('aria-busy','true');
  try{
   const {error}=await sb.from('messages').insert({conversation_id:sendingConversationId,sender_id:sendingUserId,body:text});
   if(error)throw error;
