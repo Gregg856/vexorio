@@ -1088,7 +1088,7 @@ async function loadMine(){
  const request=++myListingsRequest;
  const box=$('myListings');
  if(!sb||!session){box.textContent='Zaloguj się, aby zarządzać wpisami.';return false}
- const previous=box.innerHTML;const stats=$('myListingsStats');const previousStats=stats?.innerHTML||'';
+ const stats=$('myListingsStats');
  box.setAttribute('aria-busy','true');
  let data,error;
  try{({data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at,status,view_count').eq('owner_id',session.user.id).order('created_at',{ascending:false}))}
@@ -1122,13 +1122,26 @@ async function loadMine(){
   const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
   del.onclick=async()=>{
    if(!confirm('Na pewno usunąć wpis „'+(x.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;
-   del.disabled=true;
-   const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
-   if(removeError||!removed?.length){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(removeError?.message||'Brak uprawnień');del.disabled=false;return}
-   $('accountMsg').textContent='Wpis został usunięty.';
-   await Promise.all([loadMine(),loadListings()]);
+   del.disabled=true;del.textContent='Usuwanie…';
+   try{
+    const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
+    if(removeError||!removed?.length)throw new Error(removeError?.message||'Brak uprawnień');
+    $('accountMsg').textContent='Wpis został usunięty.';
+    const results=await Promise.allSettled([loadMine(),loadListings()]);
+    if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Wpis usunięty, ale nie wszystkie dane zostały odświeżone. Użyj „Odśwież dane”.';
+   }catch(err){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(err?.message||'Błąd połączenia.');del.disabled=false;del.textContent='Usuń'}
   };
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?'↻ Wznów':'✓ Zakończ';toggle.setAttribute('aria-label',(x.status==='closed'?'Wznów':'Zakończ')+' wpis numer '+x.id);toggle.onclick=async()=>{const next=x.status==='closed'?'active':'closed';toggle.disabled=true;const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).select('id');if(statusError||!changed?.length){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(statusError?.message||'Brak uprawnień');toggle.disabled=false;return} $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';await Promise.all([loadMine(),loadListings()])};
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?'↻ Wznów':'✓ Zakończ';toggle.setAttribute('aria-label',(x.status==='closed'?'Wznów':'Zakończ')+' wpis numer '+x.id);
+  toggle.onclick=async()=>{
+   const next=x.status==='closed'?'active':'closed';toggle.disabled=true;const original=toggle.textContent;toggle.textContent='Zapisywanie…';
+   try{
+    const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).select('id');
+    if(statusError||!changed?.length)throw new Error(statusError?.message||'Brak uprawnień');
+    $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';
+    const results=await Promise.allSettled([loadMine(),loadListings()]);
+    if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Status zapisany, ale odświeżenie nie powiodło się. Użyj „Odśwież dane”.';
+   }catch(err){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(err?.message||'Błąd połączenia.');toggle.disabled=false;toggle.textContent=original}
+  };
   actions.append(edit,toggle,del);row.append(main,actions);box.append(row)
  }
  filterMyListings();
