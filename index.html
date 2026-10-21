@@ -310,6 +310,26 @@
  #detailDialog #detailContent>form button[type=submit]{width:100%;min-height:46px}
  #detailDialog #detailContent:not(:has(.photo-gallery)){grid-template-columns:1fr}
 }
+
+/* Desktop account workspace: clear navigation, manageable listings and inbox */
+@media(min-width:851px){
+ #accountDialog{width:min(980px,calc(100vw - 72px));max-height:calc(100dvh - 64px);padding:27px 30px;border-radius:22px}
+ #accountDialog .dialoghead{padding-bottom:14px;border-bottom:1px solid #28516a;margin-bottom:15px}
+ #accountDialog .dialoghead h2{font-size:27px}
+ #accountDialog .account-topbar{padding:12px 15px;background:#0a2739;border:1px solid #24495e;border-radius:13px;margin-bottom:17px}
+ #accountDialog .account-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:12px 0 22px}
+ #accountDialog .account-tile{min-height:105px;padding:15px;gap:7px;transition:border-color .15s,background .15s}
+ #accountDialog .account-tile:hover{border-color:#18c4d6;background:#10384e}
+ #accountDialog .account-tile strong{font-size:15px}
+ #accountDialog .account-section{margin-top:14px}
+ #accountDialog .my-listings-controls{grid-template-columns:minmax(0,2fr) minmax(180px,1fr);max-width:690px}
+ #accountDialog #myListings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #accountDialog #myListings .my-listing-card{min-width:0;min-height:145px;justify-content:space-between}
+ #accountDialog #myListings .listing-actions{flex-wrap:wrap;gap:7px}
+ #accountDialog #myConversations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #accountDialog #myConversations .inbox-item{min-width:0;min-height:68px}
+ #accountDialog #accountSettingsSection{max-width:720px}
+}
 </style></head><body>
 <header><div class="wrap nav"><a href="#top" class="brand"><span class="mark">V</span><div><div class="word">VEX<span>ORIO</span></div><div class="sub">LOCAL • GLOBAL</div></div></a><div class="actions"><select id="lang" aria-label="Język" style="width:auto"><option value="pl">🇵🇱 PL</option><option value="de">🇩🇪 DE</option><option value="en">🇬🇧 EN</option></select><button class="btn small" id="accountBtn">Zaloguj się</button><button class="btn primary" id="addBtn">＋ Dodaj ogłoszenie</button><button class="btn small header-job" type="button" id="headerJobBtn">＋ Dodaj zlecenie</button></div></div></header>
 <main id="top"><section class="hero wrap"><div class="hero-showcase"><div class="hero-copy"><div class="eyebrow" data-i="eyebrow">TWOJA OKOLICA • TWOJE MOŻLIWOŚCI</div><h1 data-i="headline">Kupuj. Sprzedawaj.<br><span>Znajduj.</span></h1><p data-i="intro">Ogłoszenia, praca i usługi w jednym nowoczesnym miejscu.</p></div><div class="hero-logo-panel" aria-label="VEXORIO — Local Global"><div class="hero-logo-symbol">V</div><div class="hero-logo-name">VEX<span>ORIO</span></div><div class="hero-logo-tagline">LOCAL · GLOBAL</div></div></div><div class="search"><input id="query" placeholder="Czego szukasz?" aria-label="Czego szukasz?"><button class="btn primary" id="searchBtn" data-i="search">⌕ Szukaj</button></div><div class="top-filters"><div class="filter-head"><button type="button" id="mobileFilterToggle" aria-expanded="false" aria-controls="listingFilterTools"><span id="filterHeading">Filtruj ogłoszenia</span><span class="filter-chevron" aria-hidden="true">⌄</span></button><button class="link" id="reset" data-i="reset">Wyczyść filtry →</button></div><div class="tools" id="listingFilterTools"><select id="filterServiceGroup" class="hide" aria-label="Rodzaj usługi"></select><select id="filterServiceSpecialty" class="hide" aria-label="Specjalizacja"></select><select id="country"><option value="all">🌍 Wszystkie kraje</option><option value="PL">🇵🇱 Polska</option><option value="DE">🇩🇪 Niemcy</option><option value="AT">🇦🇹 Austria</option><option value="BE">🇧🇪 Belgia</option><option value="CZ">🇨🇿 Czechy</option><option value="DK">🇩🇰 Dania</option><option value="FR">🇫🇷 Francja</option><option value="ES">🇪🇸 Hiszpania</option><option value="NL">🇳🇱 Holandia</option><option value="IE">🇮🇪 Irlandia</option><option value="IT">🇮🇹 Włochy</option><option value="NO">🇳🇴 Norwegia</option><option value="PT">🇵🇹 Portugalia</option><option value="SE">🇸🇪 Szwecja</option><option value="CH">🇨🇭 Szwajcaria</option><option value="GB">🇬🇧 Wielka Brytania</option><option value="US">🇺🇸 USA</option><option value="CA">🇨🇦 Kanada</option><option value="AU">🇦🇺 Australia</option><option value="UA">🇺🇦 Ukraina</option></select><input id="cityFilter" placeholder="Miasto / kod pocztowy" aria-label="Miasto"><input id="priceMin" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena od" aria-label="Cena minimalna"><input id="priceMax" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena do" aria-label="Cena maksymalna"><select id="sortListings" aria-label="Sortuj"><option value="new">Najnowsze</option><option value="cheap">Najtańsze</option><option value="expensive">Najdroższe</option><option value="fav">Ulubione</option></select></div></div><div class="features"><span data-i="free">Darmowe ogłoszenia</span><span data-i="countries">Ogłoszenia w Twojej okolicy</span><span data-i="mobile">Wygodnie na telefonie</span></div></section>
