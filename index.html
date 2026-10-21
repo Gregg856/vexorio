@@ -478,7 +478,7 @@ async function sendMessage(listingId,sellerId,message){
  byId('vexMobileSearch')?.addEventListener('click',()=>{scroll('top');setTimeout(()=>byId('query')?.focus({preventScroll:true}),250)});
  byId('vexMobileFav')?.addEventListener('click',()=>{const sort=byId('sortListings');if(sort){sort.value='fav';sort.dispatchEvent(new Event('change',{bubbles:true}))}scroll('listTitle')});
  byId('vexMobileAdd')?.addEventListener('click',()=>byId('addBtn')?.click());
- byId('vexMobileChat')?.addEventListener('click',()=>{byId('accountBtn')?.click();});
+ byId('vexMobileChat')?.addEventListener('click',()=>{byId('accountBtn')?.click();setTimeout(()=>{const inbox=byId('myConversations');if(inbox&&byId('accountDialog')?.open){inbox.scrollIntoView({behavior:'smooth',block:'center'})}},350)});
  byId('vexMobileAccount')?.addEventListener('click',()=>byId('accountBtn')?.click());
 })();
 </script></body></html>
