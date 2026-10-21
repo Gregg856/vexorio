@@ -312,8 +312,8 @@ $('dashExportCsv').onclick=()=>{
  }catch(e){$('dashStatus').textContent='Nie udało się pobrać pliku CSV. Spróbuj ponownie.';console.error('CSV export failed',e)}
 };
 $('dashBackToFilters').onclick=()=>{$('dashSearch').scrollIntoView({behavior:'smooth',block:'start'})};
-$('dashLoadMore').onclick=()=>loadAdminDashboard(true);
-$('dashRefresh').onclick=()=>loadAdminDashboard();
+$('dashLoadMore').onclick=()=>{clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard(true)};
+$('dashRefresh').onclick=runDashFilterNow;
 $('dashReset').onclick=()=>{$('dashSearch').value='';$('dashKind').value='all';$('dashCountry').value='all';$('dashCategory').value='all';refreshDashSubcategories();$('dashCity').value='';$('dashSort').value='newest';$('dashAge').value='all';loadAdminDashboard()};
 // Restore saved dashboard filters only after the administrator opens the panel.
 try{
@@ -344,9 +344,9 @@ $('dashSearch').addEventListener('input',scheduleDashFilter);
 $('dashCity').addEventListener('input',scheduleDashFilter);
 $('dashSearch').addEventListener('change',runDashFilterNow);
 $('dashKind').addEventListener('change',runDashFilterNow);
-$('dashCountry').addEventListener('change',runDashFilterNow);$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();loadAdminDashboard()});$('dashSubcategory').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',runDashFilterNow);
+$('dashCountry').addEventListener('change',runDashFilterNow);$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();runDashFilterNow()});$('dashSubcategory').addEventListener('change',runDashFilterNow);$('dashCity').addEventListener('change',runDashFilterNow);
 $('dashSort').addEventListener('change',runDashFilterNow);
-$('dashAge').addEventListener('change',()=>loadAdminDashboard());
+$('dashAge').addEventListener('change',runDashFilterNow);
 $('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});
 for(const [tile,existing] of [['dashReports','adminReportsBtn'],['dashUsers','adminUsersBtn'],['dashAppeals','appealsAdminBtn'],['dashPrivacy','privacyAdminBtn']]){$(tile).onclick=()=>{$('adminDashboardDialog').close();$(existing).click()}}
 async function updateAdminReportsAccess(){
