@@ -1415,6 +1415,7 @@ async function loadConversations(){
   if(incomingError){console.warn('Inbox unread lookup failed',incomingError);continue}
   for(const msg of incoming||[]){const id=String(msg.conversation_id);if(!previewByConversation.has(id))previewByConversation.set(id,msg);if(msg.sender_id!==uid&&!latestByConversation.has(id))latestByConversation.set(id,msg)}
  }
+ box.replaceChildren(); // Remove the loading label before rendering conversations.
  data.sort((a,b)=>{const lastA=previewByConversation.get(String(a.id))?.created_at||a.created_at||'';const lastB=previewByConversation.get(String(b.id))?.created_at||b.created_at||'';return lastA<lastB?1:lastA>lastB?-1:0});
  for(const c of data){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
