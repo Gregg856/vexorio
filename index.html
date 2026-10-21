@@ -52,8 +52,8 @@
 // Legal information is deliberately a draft: do not invent operator identity or postal address.
 
 /* PUBLICZNE ustawienia Supabase: wpisz tylko publishable/anon key. NIGDY service_role ani secret key. */
-const SUPABASE_URL='https://lfytoxcnutduahshbsko.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz';
+const SUPABASE_URL='https://owkjdlpawczrnwyszduj.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_ok5FaQ2s3HqMKZNQoBisRQ_we9Tiszs';
 const ready=SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_') && !!window.supabase && typeof window.supabase.createClient==='function';
 const sb=ready?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
 const $=id=>document.getElementById(id);const favorites=new Set((()=>{try{return JSON.parse(localStorage.getItem('vexorio-favorites')||'[]')}catch(e){return []}})());let contractorAccess=null,session=null,category='all',allListings=[],listingLoadError='',mode='login',language=['pl','de','en'].includes((navigator.language||'').slice(0,2))?(navigator.language||'').slice(0,2):'en';
