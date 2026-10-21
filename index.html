@@ -1087,7 +1087,7 @@ let myListingsRequest=0;
 async function loadMine(){
  const request=++myListingsRequest;
  const box=$('myListings');
- if(!sb||!session){box.textContent='Zaloguj się, aby zarządzać wpisami.';return false}
+ if(!sb||!session){box.removeAttribute('aria-busy');box.textContent='Zaloguj się, aby zarządzać wpisami.';$('myListingsStats')?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
  const stats=$('myListingsStats');
  box.setAttribute('aria-busy','true');
  let data,error;
