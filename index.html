@@ -206,7 +206,7 @@ async function loadAdminUsers(){
  if(!data?.length){status.textContent='Brak kont do wyświetlenia.';return}
  for(const u of data){
   const box=document.createElement('div');box.className='info';box.style.margin='0';
-  const h=document.createElement('h3');h.textContent=u.display_name||'Użytkownik';
+  const h=document.createElement('h3');h.textContent=u.display_name||('Użytkownik '+String(u.user_id).slice(0,8));
   const uid=document.createElement('p');uid.className='muted';uid.textContent='ID: '+u.user_id;
   const info=document.createElement('p');info.textContent='Ogłoszenia: '+u.listing_count+' · '+(u.is_blocked?'ZABLOKOWANY':'Aktywny');
   const reason=document.createElement('textarea');reason.maxLength=500;reason.minLength=10;reason.placeholder='Powód decyzji (10–500 znaków)';reason.value=u.is_blocked?(u.block_reason||''):'';
