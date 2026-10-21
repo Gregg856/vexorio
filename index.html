@@ -335,6 +335,8 @@ submit.disabled=true;const paths=[];const urls=[];
 try{for(const f of files){const ext=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/'+crypto.randomUUID()+'.'+ext;const {error:upErr}=await sb.storage.from('listing-images').upload(path,f,{contentType:f.type,upsert:false});if(upErr)throw upErr;paths.push(path);const {data}=sb.storage.from('listing-images').getPublicUrl(path);urls.push(data.publicUrl)}
 const publishingJob=$('newKind').value==='zlecenie';const record={owner_id:session.user.id,title:$('newTitle').value.trim(),category:$('newCategory').value,description:$('newDesc').value.trim(),price:$('newPrice').value===''?null:Number($('newPrice').value),kraj:$('newCountry').value,miasto:$('newCity').value.trim(),rodzaj:publishingJob?'zlecenie':'ogloszenie',contact_phone:$('newPhonePublic').checked?$('newPhone').value.trim():null,show_contact_phone:$('newPhonePublic').checked,subcategory:$('newCategory').value==='Usługi'?$('newServiceGroup').value:null,specialty:$('newCategory').value==='Usługi'?$('newServiceSpecialty').value:null,Images:urls};
 const {error}=await sb.from('listings').insert(record);if(error)throw error;
+// The listing is saved; never delete its uploaded photos if refreshing the UI fails.
+paths.length=0;
 const wasJob=publishingJob;$('addForm').reset();$('imagePreview').replaceChildren();$('addDialog').close();if(wasJob){listingView='zlecenie';category='all';renderCats();updateJobFilters()}await loadListings();alert(wasJob?'Zlecenie zostało opublikowane!':'Ogłoszenie zostało opublikowane!')
 }catch(err){$('addMsg').textContent='Nie udało się opublikować: '+err.message;if(paths.length){await sb.storage.from('listing-images').remove(paths)}}finally{submit.disabled=false}
 };
