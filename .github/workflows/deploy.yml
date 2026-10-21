@@ -70,9 +70,11 @@ jobs:
         env:
           DEPLOY_URL: ${{ steps.publish.outputs.deployment-url }}
         run: |
+          # Wrangler may deploy successfully without exposing deployment-url output.
+          # Verify the configured public Workers address instead of failing on empty output.
           if [ -z "$DEPLOY_URL" ]; then
-            echo 'Cloudflare did not return deployment URL; cannot verify production.'
-            exit 1
+            DEPLOY_URL="https://vexorio.grzegorzbub1985.workers.dev"
+            echo "Wrangler did not expose deployment URL; verifying configured Workers address."
           fi
           case "$DEPLOY_URL" in
             https://*.workers.dev|https://*.workers.dev/) ;;
