@@ -339,13 +339,13 @@ $('dashCopyLink').onclick=async()=>{
  catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
 };
 
-let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>{if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);if($('adminDashboardDialog').open)loadAdminDashboard()}
+let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);if(!$('adminDashboardDialog').open)return;dashTypingTimer=setTimeout(()=>{if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()}
 $('dashSearch').addEventListener('input',scheduleDashFilter);
 $('dashCity').addEventListener('input',scheduleDashFilter);
 $('dashSearch').addEventListener('change',runDashFilterNow);
-$('dashKind').addEventListener('change',()=>loadAdminDashboard());
-$('dashCountry').addEventListener('change',()=>loadAdminDashboard());$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();loadAdminDashboard()});$('dashSubcategory').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',runDashFilterNow);
-$('dashSort').addEventListener('change',()=>loadAdminDashboard());
+$('dashKind').addEventListener('change',runDashFilterNow);
+$('dashCountry').addEventListener('change',runDashFilterNow);$('dashCategory').addEventListener('change',()=>{refreshDashSubcategories();loadAdminDashboard()});$('dashSubcategory').addEventListener('change',()=>loadAdminDashboard());$('dashCity').addEventListener('change',runDashFilterNow);
+$('dashSort').addEventListener('change',runDashFilterNow);
 $('dashAge').addEventListener('change',()=>loadAdminDashboard());
 $('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});
 for(const [tile,existing] of [['dashReports','adminReportsBtn'],['dashUsers','adminUsersBtn'],['dashAppeals','appealsAdminBtn'],['dashPrivacy','privacyAdminBtn']]){$(tile).onclick=()=>{$('adminDashboardDialog').close();$(existing).click()}}
