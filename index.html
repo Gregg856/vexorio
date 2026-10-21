@@ -1288,7 +1288,7 @@ async function loadListings(){
  allListings=rows.filter(x=>x.status!=='closed').map(x=>({...x,city:x.miasto||'',country:x.kraj||'',currency:x.kraj==='PL'?'PLN':'EUR'}));
  render();const listingId=new URL(location.href).searchParams.get('listing');if(listingId&&!$('detailDialog').open){const match=allListings.find(x=>String(x.id)===listingId);if(match)openDetail(match)}return true;
 }
-(async()=>{await refreshUser();await loadContractorAccess();await loadListings();if(sb)sb.auth.onAuthStateChange((_event,s)=>{session=s;contractorAccess=null;loadContractorAccess();setLang(language);updateAdminReportsAccess();updateAppealAccess();checkUnreadMessages()})})();
+(async()=>{await refreshUser();await loadContractorAccess();await loadListings();if(sb)sb.auth.onAuthStateChange((_event,s)=>{const previousUser=session?.user?.id||null;const nextUser=s?.user?.id||null;session=s;if(previousUser!==nextUser){myListingsRequest++;const mine=$('myListings');if(mine){mine.removeAttribute('aria-busy');mine.replaceChildren();if(!nextUser)mine.textContent='Zaloguj się, aby zarządzać wpisami.'}$('myListingsStats')?.replaceChildren();$('myListingsPager')?.replaceChildren();$('myConversations')?.replaceChildren();activeConversationId=null;updateUnreadBadges(0)}contractorAccess=null;loadContractorAccess();setLang(language);updateAdminReportsAccess();updateAppealAccess();checkUnreadMessages()})})();
 
 let activeConversationId=null;
 // Unread indicators are device-local; no message content is stored in the browser.
