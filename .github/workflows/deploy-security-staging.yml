@@ -1,0 +1,32 @@
+name: Deploy VEXORIO security staging
+
+on:
+  push:
+    branches:
+      - development/price-filters
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+      - name: Prepare isolated staging worker
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+          cat > wrangler.toml <<'EOF'
+          name = "vexorio-security-staging"
+          compatibility_date = "2026-10-20"
+          workers_dev = true
+
+          [assets]
+          directory = "./public"
+          EOF
+      - name: Deploy staging to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
