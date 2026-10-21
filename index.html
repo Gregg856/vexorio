@@ -5,7 +5,7 @@
 .image-preview,.photo-gallery{display:flex;flex-wrap:wrap;gap:9px}.image-preview img{width:80px;height:80px;object-fit:cover;border-radius:10px}.photo-gallery img{width:100%;max-width:240px;max-height:220px;object-fit:cover;border-radius:12px}.listing-photo{width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:8px}.card:has(.listing-photo) .emoji{display:none}
 
 /* Mobile-first messaging layout */
-#accountDialog,#chatDialog{width:min(94vw,560px);padding:20px;max-height:calc(100dvh - 28px);display:flex;flex-direction:column}#chatDialog:not([open]){display:none!important}#chatDialog #chatMessages{flex:1 1 auto;min-height:110px;max-height:none;overscroll-behavior:contain}#chatDialog #replyForm{flex:0 0 auto}
+#accountDialog,#chatDialog{width:min(94vw,560px);padding:20px;max-height:calc(100dvh - 28px)}#chatDialog{display:flex;flex-direction:column}#chatDialog:not([open]){display:none!important}#chatDialog #chatMessages{flex:1 1 auto;min-height:110px;max-height:none;overscroll-behavior:contain}#chatDialog #replyForm{flex:0 0 auto}
 #accountDialog h3{font-size:18px;margin:22px 0 12px}#myListings{display:grid;gap:10px}#myListings>*{margin:0!important}#myConversations{display:grid;gap:9px}#myConversations .inbox-item{width:100%;text-align:left;margin:0;padding:14px;border-radius:13px;line-height:1.35}
 #chatDialog .dialoghead{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}#chatDialog .dialoghead h2{font-size:clamp(18px,4.7vw,23px);line-height:1.2;min-width:0;overflow-wrap:anywhere}#chatDialog .dialoghead .btn{padding:9px 10px;font-size:13px}#chatDialog .dialoghead .close{padding:2px 5px;line-height:1}
 #chatMessages{display:flex;flex-direction:column;gap:10px;min-height:110px;max-height:38dvh;overflow-y:auto;padding:12px 3px;margin-top:10px}#chatMessages .chat-bubble{max-width:85%;min-width:80px;padding:11px 13px;border-radius:16px;background:#17394d;border:1px solid #2d586b;align-self:flex-start;overflow-wrap:anywhere}#chatMessages .chat-bubble.mine{background:#075467;border-color:#078ba0;align-self:flex-end}#chatMessages .chat-sender{display:block;font-size:12px;font-weight:750;color:#a9d8e5;margin-bottom:5px}#chatMessages .chat-body{white-space:pre-wrap;line-height:1.45;font-size:15px}#replyForm{margin-top:10px;gap:9px}#replyForm textarea{min-height:44px;height:44px;max-height:144px;resize:none;overflow-y:auto;line-height:1.45;padding:10px 12px;box-sizing:border-box}#replyForm .btn{padding:12px}#replyStatus:empty{display:none}
@@ -1616,6 +1616,21 @@ async function sendMessage(listingId,sellerId,message){
 </script>
 <script>
 (function(){
+ const chat=document.getElementById('chatDialog');
+ if(chat&&window.visualViewport){
+  const fitChatToKeyboard=()=>{
+   if(!chat.open){chat.style.removeProperty('height');chat.style.removeProperty('max-height');chat.style.removeProperty('top');return}
+   const viewport=window.visualViewport;
+   const available=Math.max(240,Math.floor(viewport.height-24));
+   chat.style.height=available+'px';chat.style.maxHeight=available+'px';
+   chat.style.top=Math.round(viewport.offsetTop)+'px';
+  };
+  window.visualViewport.addEventListener('resize',fitChatToKeyboard);
+  window.visualViewport.addEventListener('scroll',fitChatToKeyboard);
+  chat.addEventListener('close',fitChatToKeyboard);
+  chat.addEventListener('focusin',fitChatToKeyboard);
+  chat.addEventListener('focusout',()=>requestAnimationFrame(fitChatToKeyboard));
+ }
  const field=document.getElementById('replyText'),count=document.getElementById('replyCharCount'),form=document.getElementById('replyForm');
  if(!field||!count||!form)return;
  const update=()=>{count.textContent=field.value.length+' / 2000';field.style.height='44px';field.style.height=Math.min(Math.max(field.scrollHeight,44),144)+'px';field.style.overflowY=field.scrollHeight>144?'auto':'hidden'};
