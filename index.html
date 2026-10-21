@@ -285,6 +285,16 @@ async function loadAdminDashboard(append=false){if(dashLoading)return;dashLoadin
 $('dashLoadMore').onclick=()=>loadAdminDashboard(true);
 $('dashRefresh').onclick=()=>loadAdminDashboard();
 $('dashReset').onclick=()=>{$('dashSearch').value='';$('dashKind').value='all';$('dashCountry').value='all';$('dashSort').value='newest';loadAdminDashboard()};
+// Restore saved dashboard filters only after the administrator opens the panel.
+try{
+ const saved=new URLSearchParams(location.search);
+ for(const [key,id,values] of [
+  ['admin_kind','dashKind',['all','ogloszenie','zlecenie']],
+  ['admin_country','dashCountry',['all','PL','DE','other']],
+  ['admin_sort','dashSort',['newest','oldest']]
+ ]){const value=saved.get(key);if(values.includes(value))$(id).value=value}
+ const term=saved.get('admin_search');if(term)$('dashSearch').value=term.slice(0,120);
+}catch(err){}
 $('dashCopyLink').onclick=async()=>{
  const params=new URLSearchParams();
  params.set('admin_kind',$('dashKind').value);
