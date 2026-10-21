@@ -505,9 +505,13 @@ async function loadConversations(){
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
  const latestByConversation=new Map();
- const results=await Promise.all(data.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
- if(session?.user?.id!==uid)return;
- data.forEach((c,i)=>{if(!results[i].error&&results[i].data?.[0])latestByConversation.set(String(c.id),results[i].data[0])});
+ // Keep the inbox responsive without firing up to 100 database requests at once.
+ for(let start=0;start<data.length;start+=10){
+  const batch=data.slice(start,start+10);
+  const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
+  if(session?.user?.id!==uid)return;
+  batch.forEach((c,i)=>{if(!results[i].error&&results[i].data?.[0])latestByConversation.set(String(c.id),results[i].data[0])});
+ }
  for(const c of data){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
   const listing=allListings.find(x=>String(x.id)===String(c.listing_id));
