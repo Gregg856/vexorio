@@ -62,6 +62,7 @@ jobs:
           command: deploy
 
       - name: Smoke test deployed preview over HTTPS
+        id: smoke_test
         if: success()
         env:
           PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
@@ -88,12 +89,14 @@ jobs:
           echo "::error::Preview URL did not respond successfully"
           exit 1
 
-      - name: Show preview URL in GitHub summary
-        if: success()
+      - name: Show preview URL and test status in GitHub summary
+        if: always()
         env:
           PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
         run: |
           echo "## VEXORIO — testowa strona" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deploy: ${{ steps.cloudflare_deploy.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "HTTP smoke test: ${{ steps.smoke_test.outcome }}" >> "$GITHUB_STEP_SUMMARY"
           if [ -n "$PREVIEW_URL" ]; then
             echo "Otwórz podgląd: $PREVIEW_URL" >> "$GITHUB_STEP_SUMMARY"
             echo "Preview URL: $PREVIEW_URL"
