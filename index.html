@@ -492,7 +492,7 @@ async function checkUnreadMessages(){
   let unread=0;
   for(let start=0;start<convos.length;start+=10){
    const batch=convos.slice(start,start+10);
-   const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
+   const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1)));
    if(session?.user?.id!==uid)return;
    batch.forEach((c,i)=>{
     const m=!results[i].error&&results[i].data?.[0],seen=getSeen(c.id);
@@ -520,7 +520,7 @@ async function loadConversations(){
  // Keep the inbox responsive without firing up to 100 database requests at once.
  for(let start=0;start<data.length;start+=10){
   const batch=data.slice(start,start+10);
-  const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
+  const results=await Promise.all(batch.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1)));
   if(requestId!==inboxRequestId||session?.user?.id!==uid)return;
   batch.forEach((c,i)=>{if(!results[i].error&&results[i].data?.[0])latestByConversation.set(String(c.id),results[i].data[0])});
  }
