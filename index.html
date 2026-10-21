@@ -1216,7 +1216,7 @@ function listingRiskSignals(text){
  const value=String(text||'').toLowerCase();
  const signals=[];
  const compact=value.replace(/[\s\u200b-\u200d\ufeff]+/g,'');
- if(/(?:https?:\/\/|https?:\/\/|www\.|(?:t\.me|wa\.me|bit\.ly|tinyurl\.com|cutt\.ly)\/|\b[a-z0-9-]+\.(?:com|net|org|eu|pl|de|info|site|dev)(?:\/|\b))/i.test(compact))signals.push('link');
+ if(/(?:https?:\/\/|www\.|(?:t\.me|wa\.me|bit\.ly|tinyurl\.com|cutt\.ly)\/|\b[a-z0-9-]+\.(?:com|net|org|eu|pl|de|info|site|dev)(?:\/|\b))/i.test(compact))signals.push('link');
  if(/(?:przedpłat|zaliczk|opłat.{0,25}(?:weryfik|rejestr|aktyw)|advance fee|vorauszahl|vorkasse)/i.test(value))signals.push('payment');
  if(/(?:kod.{0,15}(?:sms|blik|weryfik)|sms.{0,15}kod|verification code|bestätigungscode|hasł[oa]|password)/i.test(value))signals.push('credentials');
  return signals;
