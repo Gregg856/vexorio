@@ -1465,7 +1465,7 @@ $('replyForm').onsubmit=async e=>{
  try{
   const {error}=await sb.from('messages').insert({conversation_id:activeConversationId,sender_id:session.user.id,body:text});
   if(error)throw error;
-  $('replyText').value='';$('chatMessages').scrollTop=$('chatMessages').scrollHeight;await refreshConversation();$('chatMessages').scrollTop=$('chatMessages').scrollHeight;
+  $('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));$('chatMessages').scrollTop=$('chatMessages').scrollHeight;await refreshConversation();$('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  }catch(err){$('replyStatus').textContent='Nie udało się wysłać: '+friendlyLimitError(err)}
  finally{btn.disabled=false}
 };
