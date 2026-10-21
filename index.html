@@ -955,8 +955,8 @@ async function loadAdminMessageReports(){
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString('pl-PL');
   const details=document.createElement('p');details.textContent='Powód: '+item.details;
   const message=document.createElement('p');message.className='muted';message.textContent='Treść wiadomości: ładowanie…';
-  const {data:reported,error:messageError}=await sb.from('messages').select('body').eq('id',item.message_id).maybeSingle();
-  message.textContent=messageError?'Treść niedostępna (brak dostępu).':reported?.body?'Treść: '+reported.body:'Treść niedostępna lub usunięta.';
+  const {data:reported,error:messageError}=await sb.rpc('admin_reported_message_body',{p_message_id:item.message_id});
+  message.textContent=messageError?'Treść niedostępna (brak dostępu).':reported?'Treść: '+reported:'Treść niedostępna lub usunięta.';
   const select=document.createElement('select');
   [['new','Nowe'],['reviewing','W trakcie'],['resolved','Rozpatrzone'],['dismissed','Odrzucone']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.append(opt)});select.value=item.status;
   const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='Zapisz status';
