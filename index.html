@@ -297,7 +297,7 @@ $('dashExportCsv').onclick=()=>{
  const url=URL.createObjectURL(blob);
  const link=document.createElement('a');link.href=url;link.download='vexorio-ogloszenia-'+new Date().toISOString().slice(0,10)+'.csv';
  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
- $('dashStatus').textContent='Wyeksportowano '+entries.length+' załadowanych wpisów do CSV.';
+ $('dashStatus').textContent='Wyeksportowano '+entries.length+' załadowanych wpisów do CSV. Eksport obejmuje tylko aktualnie wczytane ogłoszenia; aby pobrać kolejne, użyj „Załaduj więcej”.';
 };
 $('dashBackToFilters').onclick=()=>{$('dashSearch').scrollIntoView({behavior:'smooth',block:'start'})};
 $('dashLoadMore').onclick=()=>loadAdminDashboard(true);
