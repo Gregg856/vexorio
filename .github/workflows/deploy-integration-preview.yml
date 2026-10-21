@@ -1,0 +1,123 @@
+name: Deploy VEXORIO Integration Preview
+
+on:
+  push:
+    branches:
+      - integration/site-updates-production-auth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: vexorio-integration-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+
+      - name: Verify JavaScript syntax and essential page controls
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html','utf8');
+          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
+            .map(match => match[1]).filter(Boolean);
+          for (const [index, script] of scripts.entries()) {
+            new vm.Script(script, {filename: 'inline-script-' + (index + 1) + '.js'});
+          }
+          const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+          const duplicates = ids.filter((id, i) => ids.indexOf(id) !== i);
+          if (duplicates.length) throw new Error('Duplicate element IDs: ' + duplicates.join(', '));
+          for (const id of ['query','searchBtn','sortListings','addBtn','accountBtn','myConversations','vexMobileSearch','vexMobileFav','vexMobileAdd','vexMobileChat','vexMobileAccount']) {
+            if (!ids.includes(id)) throw new Error('Missing essential control: ' + id);
+          }
+          console.log('PASS: ' + scripts.length + ' scripts, unique IDs and essential controls');
+          NODE
+
+      - name: Prepare isolated preview Worker
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+          cat > wrangler.toml <<'EOF'
+          name = "vexorio-integration-preview"
+          compatibility_date = "2026-10-20"
+          workers_dev = true
+
+          [assets]
+          directory = "./public"
+          EOF
+
+      - name: Deploy separate integration preview
+        id: cloudflare_deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Smoke test deployed preview over HTTPS
+        id: smoke_test
+        if: success()
+        env:
+          PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
+        run: |
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "::warning::Cloudflare did not expose a deployment URL; HTTP smoke test skipped."
+            exit 0
+          fi
+          case "$PREVIEW_URL" in
+            https://*.workers.dev|https://*.workers.dev/) ;;
+            *) echo "::error::Unexpected preview URL"; exit 1 ;;
+          esac
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --location --max-time 15 "$PREVIEW_URL" -o /tmp/vexorio-preview.html; then
+              if grep -q 'VEXORIO' /tmp/vexorio-preview.html && grep -q 'id="query"' /tmp/vexorio-preview.html; then
+                echo "PASS: HTTPS preview serves VEXORIO and search control"
+                exit 0
+              fi
+              echo "::error::Preview response does not contain expected VEXORIO markup"
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "::error::Preview URL did not respond successfully"
+          exit 1
+
+      - name: Show preview URL and test status in GitHub summary
+        if: always()
+        env:
+          PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
+        run: |
+          echo "## VEXORIO — testowa strona" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deploy: ${{ steps.cloudflare_deploy.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "HTTP smoke test: ${{ steps.smoke_test.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$PREVIEW_URL" ]; then
+            echo "Otwórz podgląd: $PREVIEW_URL" >> "$GITHUB_STEP_SUMMARY"
+            echo "Preview URL: $PREVIEW_URL"
+          else
+            echo "Adres nie został zwrócony przez Cloudflare. Sprawdź log kroku wdrożenia." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publish preview address to integration pull request
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_URL: ${{ steps.cloudflare_deploy.outputs.deployment-url }}
+        run: |
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "::warning::No preview URL to publish"
+            exit 0
+          fi
+          case "$PREVIEW_URL" in
+            https://*.workers.dev|https://*.workers.dev/) ;;
+            *) echo "::error::Unexpected preview URL"; exit 1 ;;
+          esac
+          gh issue comment 6 --repo "$GITHUB_REPOSITORY" --body "VEXORIO integration preview: $PREVIEW_URL (commit $GITHUB_SHA)"
