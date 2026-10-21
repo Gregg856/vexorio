@@ -320,11 +320,11 @@ try{
  const saved=new URLSearchParams(location.search);
  for(const [key,id,values] of [
   ['admin_kind','dashKind',['all','ogloszenie','zlecenie']],
-  ['admin_country','dashCountry',['all','PL','DE','other']],
+  ['admin_country','dashCountry',['all','other',...countryLabels.map(c=>c[0])]],
   ['admin_sort','dashSort',['newest','oldest']],
   ['admin_age','dashAge',['all','7','30','90']]
  ]){const value=saved.get(key);if(values.includes(value))$(id).value=value}
- const term=saved.get('admin_search');if(term)$('dashSearch').value=term.slice(0,120);const subcategory=saved.get('admin_subcategory');if(subcategory)$('dashSubcategory').dataset.restore=subcategory;const category=saved.get('admin_category');if(category&&Array.from($('dashCategory').options).some(o=>o.value===category)){$('dashCategory').value=category;}const city=saved.get('admin_city');if(city)$('dashCity').value=city.slice(0,100);
+ const term=saved.get('admin_search');if(term)$('dashSearch').value=term.replace(/[\u0000-\u001f]/g,'').slice(0,120);const subcategory=saved.get('admin_subcategory');if(subcategory)$('dashSubcategory').dataset.restore=subcategory;const category=saved.get('admin_category');if(category&&Array.from($('dashCategory').options).some(o=>o.value===category)){$('dashCategory').value=category;}const city=saved.get('admin_city');if(city)$('dashCity').value=city.replace(/[\u0000-\u001f]/g,'').slice(0,100);
 }catch(err){}
 $('dashCopyLink').onclick=async()=>{
  const params=new URLSearchParams();
@@ -335,8 +335,8 @@ $('dashCopyLink').onclick=async()=>{
  if($('dashSearch').value.trim())params.set('admin_search',$('dashSearch').value.trim());
  const url=location.origin+location.pathname+'?'+params.toString();
  const btn=$('dashCopyLink');
- try{await navigator.clipboard.writeText(url);btn.textContent='✓ Link skopiowany';setTimeout(()=>btn.textContent='🔗 Kopiuj link do filtrów',2000)}
- catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>btn.textContent='🔗 Kopiuj link do filtrów',2500)}
+ try{btn.disabled=true;await navigator.clipboard.writeText(url);btn.textContent='✓ Link skopiowany';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2000)}
+ catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
 };
 
 let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>{if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);if($('adminDashboardDialog').open)loadAdminDashboard()}
