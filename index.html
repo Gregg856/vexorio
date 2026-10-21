@@ -551,8 +551,8 @@ async function refreshConversation(){
  const previousScrollHeight=box.scrollHeight,previousScrollTop=box.scrollTop;
  const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
  if(activeConversationId!==conversationId||!$('chatDialog').open)return;
+ if(error){if(!box.querySelector('.chat-bubble'))box.textContent='Błąd pobierania wiadomości: '+error.message;return}
  box.replaceChildren();
- if(error){box.textContent='Błąd pobierania wiadomości: '+error.message;return}
  if(!data?.length){box.textContent='Brak wiadomości.';return}
  data.reverse(); // Show the newest 200 messages in chronological order.
  for(const msg of data){
