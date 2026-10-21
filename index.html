@@ -632,6 +632,8 @@
 
 /* Mobile-friendly listing management buttons */
 #accountDialog .my-listing-card{align-items:stretch}#accountDialog .my-listing-details{min-width:0;flex:1 1 180px}#accountDialog .listing-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}#accountDialog .listing-actions .btn{min-height:42px;flex:1 1 auto}#accountDialog .my-listing-delete{border-color:#9b4a52;color:#ffd9db;background:#43212a}#accountDialog .my-listing-delete:hover{border-color:#ff9b9b}@media(max-width:540px){#accountDialog .my-listing-card{display:flex;flex-direction:column;gap:12px}#accountDialog .listing-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#accountDialog .listing-actions .btn{width:100%;min-width:0;min-height:44px}}
+
+#accountDialog .my-listing-status{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:750;padding:5px 9px;border-radius:20px;background:#123f37;color:#a2f0c5;margin-top:5px}#accountDialog .my-listing-status.is-closed{background:#453723;color:#f8d6a0}@media(max-width:540px){#accountDialog .listing-actions{grid-template-columns:repeat(2,minmax(0,1fr))}#accountDialog .listing-actions .my-listing-delete{grid-column:span 2}}
 </style></head><body>
 <header><div class="wrap nav"><a href="#top" class="brand"><span class="mark">V</span><div><div class="word">VEX<span>ORIO</span></div><div class="sub">LOCAL • GLOBAL</div></div></a><div class="actions"><select id="lang" aria-label="Język" style="width:auto"><option value="pl">🇵🇱 PL</option><option value="de">🇩🇪 DE</option><option value="en">🇬🇧 EN</option></select><button class="btn small" id="accountBtn">Zaloguj się</button><button class="btn primary" id="addBtn">＋ Dodaj ogłoszenie</button><button class="btn small header-job" type="button" id="headerJobBtn">＋ Dodaj zlecenie</button></div></div></header>
 <main id="top"><section class="hero wrap"><div class="hero-showcase"><div class="hero-copy"><div class="eyebrow" data-i="eyebrow">TWOJA OKOLICA • TWOJE MOŻLIWOŚCI</div><h1 data-i="headline">Kupuj. Sprzedawaj.<br><span>Znajduj.</span></h1><p data-i="intro">Ogłoszenia, praca i usługi w jednym nowoczesnym miejscu.</p></div><div class="hero-logo-panel" aria-label="VEXORIO — Local Global"><div class="hero-logo-symbol">V</div><div class="hero-logo-name">VEX<span>ORIO</span></div><div class="hero-logo-tagline">LOCAL · GLOBAL</div></div></div><div class="search"><input id="query" placeholder="Czego szukasz?" aria-label="Czego szukasz?"><button class="btn primary" id="searchBtn" data-i="search">⌕ Szukaj</button></div><div class="top-filters"><div class="filter-head"><button type="button" id="mobileFilterToggle" aria-expanded="false" aria-controls="listingFilterTools"><span id="filterHeading">Filtruj ogłoszenia</span><span class="filter-chevron" aria-hidden="true">⌄</span></button><button class="link" id="reset" data-i="reset">Wyczyść filtry →</button></div><div class="tools" id="listingFilterTools"><select id="filterServiceGroup" class="hide" aria-label="Rodzaj usługi"></select><select id="filterServiceSpecialty" class="hide" aria-label="Specjalizacja"></select><select id="country"><option value="all">🌍 Wszystkie kraje</option><option value="PL">🇵🇱 Polska</option><option value="DE">🇩🇪 Niemcy</option><option value="AT">🇦🇹 Austria</option><option value="BE">🇧🇪 Belgia</option><option value="CZ">🇨🇿 Czechy</option><option value="DK">🇩🇰 Dania</option><option value="FR">🇫🇷 Francja</option><option value="ES">🇪🇸 Hiszpania</option><option value="NL">🇳🇱 Holandia</option><option value="IE">🇮🇪 Irlandia</option><option value="IT">🇮🇹 Włochy</option><option value="NO">🇳🇴 Norwegia</option><option value="PT">🇵🇹 Portugalia</option><option value="SE">🇸🇪 Szwecja</option><option value="CH">🇨🇭 Szwajcaria</option><option value="GB">🇬🇧 Wielka Brytania</option><option value="US">🇺🇸 USA</option><option value="CA">🇨🇦 Kanada</option><option value="AU">🇦🇺 Australia</option><option value="UA">🇺🇦 Ukraina</option></select><input id="cityFilter" placeholder="Miasto / kod pocztowy" aria-label="Miasto"><select id="radiusFilter" aria-label="Promień wyszukiwania" title="Promień od wybranego miasta"><option value="0">📍 Całe miasto / bez promienia</option><option value="10">Do 10 km</option><option value="25">Do 25 km</option><option value="50">Do 50 km</option><option value="100">Do 100 km</option></select><p id="radiusInfo" class="radius-info" role="status" aria-live="polite"></p><button type="button" id="clearListingFilters" class="btn small" aria-label="Wyczyść filtry ogłoszeń">✕ Wyczyść filtry</button><input id="priceMin" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena od" aria-label="Cena minimalna"><input id="priceMax" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena do" aria-label="Cena maksymalna"><select id="sortListings" aria-label="Sortuj"><option value="new">Najnowsze</option><option value="cheap">Najtańsze</option><option value="expensive">Najdroższe</option><option value="nearest">Najbliższe</option><option value="fav">Ulubione</option></select></div></div><div class="features"><span data-i="free">Darmowe ogłoszenia</span><span data-i="countries">Ogłoszenia w Twojej okolicy</span><span data-i="mobile">Wygodnie na telefonie</span></div></section>
@@ -1071,7 +1073,7 @@ $('myListingsSort').addEventListener('change',filterMyListings);
 async function loadMine(){
  const box=$('myListings');box.replaceChildren();
  if(!sb||!session){box.textContent='Zaloguj się, aby zarządzać wpisami.';return}
- const {data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at').eq('owner_id',session.user.id).order('created_at',{ascending:false});
+ const {data,error}=await sb.from('listings').select('id,title,miasto,kraj,price,rodzaj,created_at,status').eq('owner_id',session.user.id).order('created_at',{ascending:false});
  if(error){box.textContent='Nie udało się pobrać Twoich wpisów.';$('accountMsg').textContent=error.message;return}
  if(!data?.length){
   const empty=document.createElement('div');empty.className='my-listings-empty';
@@ -1091,6 +1093,7 @@ async function loadMine(){
   const money=x.price===null||x.price===undefined?'Cena do uzgodnienia':Number(x.price).toLocaleString('pl-PL')+' '+(x.kraj==='PL'?'zł':'€');
   const date=x.created_at?new Date(x.created_at):null;const dateLabel=date&&!Number.isNaN(date.getTime())?'Dodano: '+date.toLocaleDateString('pl-PL'):'';info.textContent=[x.miasto,x.kraj,money,dateLabel].filter(Boolean).join(' · ');
   main.append(kind,name,info);
+  const state=document.createElement('span');state.className='my-listing-status '+(x.status==='closed'?'is-closed':'is-active');state.textContent=x.status==='closed'?'● Zakończone':'● Aktywne';main.append(state);
   const actions=document.createElement('div');actions.className='listing-actions';actions.setAttribute('role','group');actions.setAttribute('aria-label','Zarządzaj wpisem numer '+x.id);
   const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.setAttribute('aria-label','Edytuj ogłoszenie numer '+x.id);edit.onclick=()=>editListing(x.id);
   const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
@@ -1102,7 +1105,8 @@ async function loadMine(){
    $('accountMsg').textContent='Wpis został usunięty.';
    await Promise.all([loadMine(),loadListings()]);
   };
-  actions.append(edit,del);row.append(main,actions);box.append(row)
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?'↻ Wznów':'✓ Zakończ';toggle.setAttribute('aria-label',(x.status==='closed'?'Wznów':'Zakończ')+' wpis numer '+x.id);toggle.onclick=async()=>{const next=x.status==='closed'?'active':'closed';toggle.disabled=true;const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).select('id');if(statusError||!changed?.length){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(statusError?.message||'Brak uprawnień');toggle.disabled=false;return} $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';await Promise.all([loadMine(),loadListings()])};
+  actions.append(edit,toggle,del);row.append(main,actions);box.append(row)
  }
  filterMyListings();
 }
@@ -1111,14 +1115,14 @@ $('logoutBtn').onclick=async()=>{if(!confirm('Czy na pewno chcesz się wylogowa�
  // Fetch in pages: the former 200-row limit silently hid older classifieds.
  const pageSize=200,maxPages=25,rows=[];let error=null,more=false;
  for(let page=0;page<maxPages;page++){
-  const result=await sb.from('listings').select('id,title,category,description,miasto,kraj,price,owner_id,created_at,rodzaj,subcategory,specialty,contact_phone,show_contact_phone,Images').order('created_at',{ascending:false}).order('id',{ascending:false}).range(page*pageSize,(page+1)*pageSize-1);
+  const result=await sb.from('listings').select('id,title,category,description,miasto,kraj,price,owner_id,created_at,rodzaj,subcategory,specialty,contact_phone,show_contact_phone,Images,status').order('created_at',{ascending:false}).order('id',{ascending:false}).range(page*pageSize,(page+1)*pageSize-1);
   if(result.error){error=result.error;break}
   rows.push(...(result.data||[]));
   if((result.data||[]).length<pageSize)break;
   if(page===maxPages-1)more=true;
  }
  if(error){allListings=[];listingLoadError='Błąd pobierania ogłoszeń: '+error.message;console.error('Błąd połączenia z bazą:',error.message)}
- else{listingLoadError=more?'Wyświetlamy pierwsze 5000 najnowszych ogłoszeń. Dalsze wyniki wymagają wyszukiwania po stronie serwera.':'';allListings=rows.map(x=>({...x,city:x.miasto||'',country:x.kraj||'',currency:x.kraj==='PL'?'PLN':'EUR'}))}
+ else{listingLoadError=more?'Wyświetlamy pierwsze 5000 najnowszych ogłoszeń. Dalsze wyniki wymagają wyszukiwania po stronie serwera.':'';allListings=rows.filter(x=>x.status!=='closed').map(x=>({...x,city:x.miasto||'',country:x.kraj||'',currency:x.kraj==='PL'?'PLN':'EUR'}))}
  render();
 }
 (async()=>{await refreshUser();await loadContractorAccess();await loadListings();if(sb)sb.auth.onAuthStateChange((_event,s)=>{session=s;contractorAccess=null;loadContractorAccess();setLang(language);updateAdminReportsAccess();updateAppealAccess();checkUnreadMessages()})})();
