@@ -1629,6 +1629,9 @@ async function sendMessage(listingId,sellerId,message){
   window.visualViewport.addEventListener('scroll',fitChatToKeyboard);
   chat.addEventListener('close',fitChatToKeyboard);
   chat.addEventListener('focusin',fitChatToKeyboard);
+  chat.addEventListener('click',e=>{if(e.target.closest('#replyText'))requestAnimationFrame(fitChatToKeyboard)});
+  const dialogObserver=new MutationObserver(()=>{if(chat.open)requestAnimationFrame(fitChatToKeyboard)});
+  dialogObserver.observe(chat,{attributes:true,attributeFilter:['open']});
   chat.addEventListener('focusout',()=>requestAnimationFrame(fitChatToKeyboard));
  }
  const field=document.getElementById('replyText'),count=document.getElementById('replyCharCount'),form=document.getElementById('replyForm');
