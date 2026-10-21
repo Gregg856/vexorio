@@ -327,7 +327,7 @@ $('dashCopyLink').onclick=async()=>{
  catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>btn.textContent='🔗 Kopiuj link do filtrów',2500)}
 };
 
-let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>loadAdminDashboard(),450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);loadAdminDashboard()}
+let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);dashTypingTimer=setTimeout(()=>{if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);if($('adminDashboardDialog').open)loadAdminDashboard()}
 $('dashSearch').addEventListener('input',scheduleDashFilter);
 $('dashCity').addEventListener('input',scheduleDashFilter);
 $('dashSearch').addEventListener('change',runDashFilterNow);
