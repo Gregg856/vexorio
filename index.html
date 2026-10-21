@@ -525,6 +525,8 @@ async function refreshConversation(){
  if(!activeConversationId||!sb)return;
  const conversationId=activeConversationId;
  const box=$('chatMessages');
+ const wasNearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<90;
+ const previousScrollHeight=box.scrollHeight,previousScrollTop=box.scrollTop;
  const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
  if(activeConversationId!==conversationId||!$('chatDialog').open)return;
  box.replaceChildren();
@@ -538,7 +540,7 @@ async function refreshConversation(){
   const stamp=document.createElement('time');stamp.className='chat-time';if(msg.created_at){const dt=new Date(msg.created_at);if(!Number.isNaN(dt.getTime())){stamp.dateTime=dt.toISOString();stamp.textContent=new Intl.DateTimeFormat('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(dt)}}
   row.append(sender,body,stamp);box.append(row);
  }
- box.scrollTop=box.scrollHeight;
+ if(wasNearBottom)box.scrollTop=box.scrollHeight;else box.scrollTop=previousScrollTop+(box.scrollHeight-previousScrollHeight);
  const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){setSeen(conversationId,latest.created_at)}
 }
 $('replyForm').onsubmit=async e=>{
