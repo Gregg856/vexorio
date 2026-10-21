@@ -1456,6 +1456,7 @@ async function refreshConversation(){
  if(wasNearBottom)box.scrollTop=box.scrollHeight;else box.scrollTop=previousScrollTop+(box.scrollHeight-previousScrollHeight);
  const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){const previouslySeen=getSeen(conversationId);if(!previouslySeen||latest.created_at>previouslySeen){setSeen(conversationId,latest.created_at);if(!unreadCheckInProgress)void checkUnreadMessages()}}
 }
+$('replyText').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&!e.repeat&&e.target.value.trim()){e.preventDefault();if(!$('replyForm').querySelector('button[type=submit]').disabled)$('replyForm').requestSubmit()}});
 $('replyForm').onsubmit=async e=>{
  e.preventDefault();const text=$('replyText').value.trim(),btn=$('replyForm').querySelector('button[type=submit]');
  if(!text||!activeConversationId||!session)return;if(text.length>2000){$('replyStatus').textContent='Wiadomość może mieć maksymalnie 2000 znaków.';return}
