@@ -1428,7 +1428,7 @@ async function loadConversations(){
 }
 async function openConversation(id,title){
  if(!sb||!session)return openAuth();
- activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value='';
+ activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
  $('chatMessages').textContent='Ładowanie…';
  if($('accountDialog').open)$('accountDialog').close();
  show('chatDialog');await refreshConversation();await checkUnreadMessages();
