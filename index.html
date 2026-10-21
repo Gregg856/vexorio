@@ -932,14 +932,18 @@ $('dashSort').addEventListener('change',runDashFilterNow);
 $('dashAge').addEventListener('change',runDashFilterNow);
 $('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});$('dashCity').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runDashFilterNow()}});
 for(const [tile,existing] of [['dashReports','adminReportsBtn'],['dashUsers','adminUsersBtn'],['dashAppeals','appealsAdminBtn'],['dashPrivacy','privacyAdminBtn']]){$(tile).onclick=()=>{$('adminDashboardDialog').close();$(existing).click()}}
+let adminBadgeRefreshInProgress=false;
 async function updateAdminReportBadge(){
+ if(adminBadgeRefreshInProgress)return;
  const badge=$('adminReportBadge');if(!badge)return;
  badge.style.display='inline-block';badge.textContent='🔔 0';
  if(!sb||!session?.user?.id||$('adminReportsBtn').classList.contains('hide'))return;
- const [ads,chats]=await Promise.all([
+ adminBadgeRefreshInProgress=true;
+ let ads,chats;
+ try{[ads,chats]=await Promise.all([
   sb.from('listing_reports').select('id',{count:'exact',head:true}).eq('status','new'),
   sb.from('message_reports').select('id',{count:'exact',head:true}).eq('status','new')
- ]);
+ ])}catch(e){return}finally{adminBadgeRefreshInProgress=false}
  if(ads.error||chats.error)return;
  const total=(ads.count||0)+(chats.count||0);
  const count=total>99?'99+':String(total);
@@ -948,6 +952,8 @@ async function updateAdminReportBadge(){
  if(dash)dash.textContent=count;
  if(account)account.textContent='🔔 '+count;
 }
+setInterval(()=>{if(!document.hidden&&session?.user?.id&&!$('adminReportsBtn').classList.contains('hide'))void updateAdminReportBadge()},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session?.user?.id&&!$('adminReportsBtn').classList.contains('hide'))void updateAdminReportBadge()});
 async function updateAdminReportsAccess(){
  const btn=$('adminReportsBtn');$('accountAdminLaunch').classList.add('hide');btn.classList.add('hide');$('adminUsersBtn').classList.add('hide');$('appealsAdminBtn').classList.add('hide');$('privacyAdminBtn').classList.add('hide');
  if(!sb||!session?.user?.id)return;
