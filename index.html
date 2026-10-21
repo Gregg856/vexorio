@@ -559,6 +559,30 @@
  .market-side .service-pill{box-sizing:border-box;display:block;width:100%;max-width:100%;white-space:normal;overflow-wrap:anywhere;hyphens:auto;line-height:1.5;border-radius:13px;padding:10px 9px;font-size:11px}
  .market-side .service-intro{max-width:100%;overflow-wrap:anywhere;line-height:1.5}
 }
+
+/* Desktop browsing: tighter side navigation and more usable listing area */
+@media(min-width:851px){
+ .market-layout{align-items:start;gap:20px}
+ .market-side{align-self:start}
+ .market-side .section{margin-top:12px;margin-bottom:12px}
+ .market-side .heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:11px}
+ .market-side .heading .link{font-size:12px;line-height:1.4;white-space:normal;text-align:right}
+ .market-side .category{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;min-height:79px;line-height:1.3;text-align:center}
+ .market-side .category b{line-height:1.1}
+ .market-side .service-grid{gap:8px}
+ .market-side .service-tile{min-height:91px;transition:background .15s,border-color .15s}
+ .market-side .service-tile:hover{background:#104057;border-color:#18c8d8}
+ .market-side .service-intro{margin:2px 0 13px}
+ .market-side .service-pill{margin-top:12px}
+ .market-main .section{margin-top:12px}
+ .market-main .heading{margin-bottom:14px}
+ .market-main .heading h2{font-size:clamp(23px,2.2vw,31px);line-height:1.25;margin:0}
+ .market-main .market-caption{font-size:13px;line-height:1.5}
+ .market-main .cards{gap:16px}
+ .market-main .card{overflow:hidden}
+ .market-main .card .fav{z-index:1}
+ .market-main .card .price{overflow-wrap:anywhere}
+}
 </style></head><body>
 <header><div class="wrap nav"><a href="#top" class="brand"><span class="mark">V</span><div><div class="word">VEX<span>ORIO</span></div><div class="sub">LOCAL • GLOBAL</div></div></a><div class="actions"><select id="lang" aria-label="Język" style="width:auto"><option value="pl">🇵🇱 PL</option><option value="de">🇩🇪 DE</option><option value="en">🇬🇧 EN</option></select><button class="btn small" id="accountBtn">Zaloguj się</button><button class="btn primary" id="addBtn">＋ Dodaj ogłoszenie</button><button class="btn small header-job" type="button" id="headerJobBtn">＋ Dodaj zlecenie</button></div></div></header>
 <main id="top"><section class="hero wrap"><div class="hero-showcase"><div class="hero-copy"><div class="eyebrow" data-i="eyebrow">TWOJA OKOLICA • TWOJE MOŻLIWOŚCI</div><h1 data-i="headline">Kupuj. Sprzedawaj.<br><span>Znajduj.</span></h1><p data-i="intro">Ogłoszenia, praca i usługi w jednym nowoczesnym miejscu.</p></div><div class="hero-logo-panel" aria-label="VEXORIO — Local Global"><div class="hero-logo-symbol">V</div><div class="hero-logo-name">VEX<span>ORIO</span></div><div class="hero-logo-tagline">LOCAL · GLOBAL</div></div></div><div class="search"><input id="query" placeholder="Czego szukasz?" aria-label="Czego szukasz?"><button class="btn primary" id="searchBtn" data-i="search">⌕ Szukaj</button></div><div class="top-filters"><div class="filter-head"><button type="button" id="mobileFilterToggle" aria-expanded="false" aria-controls="listingFilterTools"><span id="filterHeading">Filtruj ogłoszenia</span><span class="filter-chevron" aria-hidden="true">⌄</span></button><button class="link" id="reset" data-i="reset">Wyczyść filtry →</button></div><div class="tools" id="listingFilterTools"><select id="filterServiceGroup" class="hide" aria-label="Rodzaj usługi"></select><select id="filterServiceSpecialty" class="hide" aria-label="Specjalizacja"></select><select id="country"><option value="all">🌍 Wszystkie kraje</option><option value="PL">🇵🇱 Polska</option><option value="DE">🇩🇪 Niemcy</option><option value="AT">🇦🇹 Austria</option><option value="BE">🇧🇪 Belgia</option><option value="CZ">🇨🇿 Czechy</option><option value="DK">🇩🇰 Dania</option><option value="FR">🇫🇷 Francja</option><option value="ES">🇪🇸 Hiszpania</option><option value="NL">🇳🇱 Holandia</option><option value="IE">🇮🇪 Irlandia</option><option value="IT">🇮🇹 Włochy</option><option value="NO">🇳🇴 Norwegia</option><option value="PT">🇵🇹 Portugalia</option><option value="SE">🇸🇪 Szwecja</option><option value="CH">🇨🇭 Szwajcaria</option><option value="GB">🇬🇧 Wielka Brytania</option><option value="US">🇺🇸 USA</option><option value="CA">🇨🇦 Kanada</option><option value="AU">🇦🇺 Australia</option><option value="UA">🇺🇦 Ukraina</option></select><input id="cityFilter" placeholder="Miasto / kod pocztowy" aria-label="Miasto"><input id="priceMin" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena od" aria-label="Cena minimalna"><input id="priceMax" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Cena do" aria-label="Cena maksymalna"><select id="sortListings" aria-label="Sortuj"><option value="new">Najnowsze</option><option value="cheap">Najtańsze</option><option value="expensive">Najdroższe</option><option value="fav">Ulubione</option></select></div></div><div class="features"><span data-i="free">Darmowe ogłoszenia</span><span data-i="countries">Ogłoszenia w Twojej okolicy</span><span data-i="mobile">Wygodnie na telefonie</span></div></section>
