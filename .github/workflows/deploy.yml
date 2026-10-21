@@ -71,6 +71,8 @@ jobs:
           test -f public/index.html
           grep -q 'function listingRiskSignals' public/index.html
           grep -q 'riskSignals=listingRiskSignals' public/index.html
+          grep -q 'row.append(warning)' public/index.html
+          grep -q 'Wysłać mimo ostrzeżenia' public/index.html
           echo "PASS: ostrzezenia przed oszustwami sa w paczce publikacyjnej"
 
       - name: Sprawdz publiczna strone HTTPS
@@ -89,7 +91,7 @@ jobs:
           esac
           for attempt in 1 2 3 4 5; do
             if curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL?deploy_check=${GITHUB_SHA}" -o /tmp/vexorio-production.html; then
-              if grep -q 'VEXORIO' /tmp/vexorio-production.html && grep -q 'id="query"' /tmp/vexorio-production.html && grep -q 'function listingRiskSignals' /tmp/vexorio-production.html; then
+              if grep -q 'VEXORIO' /tmp/vexorio-production.html && grep -q 'id="query"' /tmp/vexorio-production.html && grep -q 'function listingRiskSignals' /tmp/vexorio-production.html && grep -q 'Wysłać mimo ostrzeżenia' /tmp/vexorio-production.html && grep -q 'row.append(warning)' /tmp/vexorio-production.html; then
                 echo "PASS: public VEXORIO is reachable at $DEPLOY_URL"
                 exit 0
               fi
