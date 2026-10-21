@@ -24,4 +24,22 @@ for(const id of ['myListings','myListingsStats','myListingsStatus','myListingsPa
  const matches=html.match(new RegExp('id="'+id+'"','g'))||[];
  assert.equal(matches.length,1,'Duplicate/missing id '+id);
 }
-console.log('VEXORIO smoke tests passed: '+scripts.length+' inline scripts, '+required.length+' feature checks, 7 unique IDs.');
+
+// Guard against regressions in core listing workflows.
+const flows=[
+ ['Owner-scoped delete',/\.delete\(\)\.eq\('id',x\.id\)\.eq\('owner_id',session\.user\.id\)/],
+ ['Owner-scoped status update',/\.update\(\{status:next\}\)\.eq\('id',x\.id\)\.eq\('owner_id',session\.user\.id\)/],
+ ['Public closed-listing filter',/rows\.filter\(x=>x\.status!=='closed'\)/],
+ ['Owned listing status selection',/created_at,status,view_count'\)\.eq\('owner_id'/],
+ ['Paginated owner listings',/Math\.ceil\(matches\.length\/size\)/],
+ ['Latest request wins',/request!==myListingsRequest/],
+ ['Loading error recovery',/box\.removeAttribute\('aria-busy'\)/],
+ ['Listing view deduplication',/viewedListingsThisSession\.has\(String\(x\.id\)\)/],
+ ['Refresh failure messaging',/Błąd odświeżania:/],
+ ['Status operation failure messaging',/Nie udało się zmienić statusu:/]
+];
+for(const [name,pattern] of flows)assert.match(html,pattern,'Workflow regression: '+name);
+const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
+assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
+console.log('VEXORIO smoke tests passed: '+scripts.length+' inline scripts, '+required.length+' feature checks, 7 core IDs, 10 workflow guards and all unique HTML IDs.');
