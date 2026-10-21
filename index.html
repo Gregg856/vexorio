@@ -498,16 +498,21 @@ async function checkUnreadMessages(){
 
 $('refreshInboxBtn').onclick=()=>loadConversations();
 async function loadConversations(){
+ const uid=session?.user?.id;
  const box=$('myConversations');box.replaceChildren();box.textContent='Ładowanie rozmów…';
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
+ const latestByConversation=new Map();
+ const results=await Promise.all(data.map(c=>sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1)));
+ if(session?.user?.id!==uid)return;
+ data.forEach((c,i)=>{if(!results[i].error&&results[i].data?.[0])latestByConversation.set(String(c.id),results[i].data[0])});
  for(const c of data){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
   const listing=allListings.find(x=>String(x.id)===String(c.listing_id));
   btn.textContent=(listing?.title||'Ogłoszenie #'+c.listing_id)+' — '+(c.buyer_id===session.user.id?'Kupuję':'Sprzedaję');
-  if($('accountBtn').dataset.unread){const {data:last}=await sb.from('messages').select('created_at,sender_id').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(1);const latest=last?.[0],seen=getSeen(c.id);if(latest&&latest.sender_id!==session.user.id&&(!seen||latest.created_at>seen))btn.classList.add('unread-conversation')}
+  const latest=latestByConversation.get(String(c.id)),seen=getSeen(c.id);if(latest&&latest.sender_id!==session.user.id&&(!seen||latest.created_at>seen))btn.classList.add('unread-conversation')
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);
  }
