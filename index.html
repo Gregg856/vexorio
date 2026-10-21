@@ -1234,7 +1234,7 @@ $('editImages').addEventListener('change',()=>{editingNewPhotos=Array.from($('ed
 $('editCancelBtn').onclick=()=>{$('editDialog').close();editingListingId=null;openAccount()};
 
 async function editListing(id){if(!sb||!session)return;const {data,error}=await sb.from('listings').select('id,title,description,category,price,kraj,miasto,Images').eq('id',id).eq('owner_id',session.user.id).single();if(error||!data){$('accountMsg').textContent='Nie można otworzyć ogłoszenia: '+(error?.message||'Brak dostępu');return}editingListingId=id;editingPhotos=photoUrls(data);editingNewPhotos=[];editingNewPhotoCover=false;$('editImages').value='';renderEditPhotos();const cat=$('editCategory');cat.replaceChildren(...Array.from($('newCategory').options).map(o=>o.cloneNode(true)));const country=$('editCountry');country.replaceChildren(...Array.from($('newCountry').options).map(o=>o.cloneNode(true)));$('editTitle').value=data.title||'';cat.value=data.category||'';$('editDesc').value=data.description||'';$('editPrice').value=data.price??'';country.value=data.kraj||'PL';$('editCity').value=data.miasto||'';$('editMsg').textContent='';$('accountDialog').close();show('editDialog')}
-$('editForm').onsubmit=async e=>{e.preventDefault();if(!sb||!session||!editingListingId)return;const btn=$('editForm').querySelector('[type=submit]');const title=$('editTitle').value.trim(),description=$('editDesc').value.trim(),miasto=$('editCity').value.trim();if(!title||!description||!miasto){$('editMsg').textContent='Uzupełnij wymagane pola.';return}const files=[...editingNewPhotos];const allowed=['image/jpeg','image/png','image/webp'];if(editingPhotos.length+files.length>5){$('editMsg').textContent='Maksymalnie 5 zdjęć łącznie.';return}if(files.some(f=>!allowed.includes(f.type)||f.size>5*1024*1024)){$('editMsg').textContent='Dozwolone JPG, PNG, WebP do 5 MB.';return}btn.disabled=true;const uploaded=[];try{const urls=[...editingPhotos];const newUrls=[];for(const file of files){const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/'+crypto.randomUUID()+'.'+ext;const {error:uploadError}=await sb.storage.from('listing-images').upload(path,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;uploaded.push(path);const {data:publicUrl}=sb.storage.from('listing-images').getPublicUrl(path);newUrls.push(publicUrl.publicUrl)}if(editingNewPhotoCover&&newUrls.length)urls.unshift(...newUrls);else urls.push(...newUrls);const changes={title,description,category:$('editCategory').value,price:$('editPrice').value===''?null:Number($('editPrice').value),kraj:$('editCountry').value,miasto,Images:urls};const {data,error}=await sb.from('listings').update(changes).eq('id',editingListingId).eq('owner_id',session.user.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Brak uprawnień do zmiany tego ogłoszenia.');$('editDialog').close();editingListingId=null;await loadListings();await openAccount()}catch(err){if(uploaded.length)await sb.storage.from('listing-images').remove(uploaded);$('editMsg').textContent='Nie udało się zapisać: '+err.message}finally{btn.disabled=false}};
+$('editForm').onsubmit=async e=>{e.preventDefault();if(!sb||!session||!editingListingId)return;const btn=$('editForm').querySelector('[type=submit]');const title=$('editTitle').value.trim(),description=$('editDesc').value.trim(),miasto=$('editCity').value.trim();if(!title||!description||!miasto){$('editMsg').textContent='Uzupełnij wymagane pola.';return}const files=[...editingNewPhotos];const allowed=['image/jpeg','image/png','image/webp'];if(editingPhotos.length+files.length>5){$('editMsg').textContent='Maksymalnie 5 zdjęć łącznie.';return}if(files.some(f=>!allowed.includes(f.type)||f.size>5*1024*1024)){$('editMsg').textContent='Dozwolone JPG, PNG, WebP do 5 MB.';return}btn.disabled=true;const uploaded=[];try{const urls=[...editingPhotos];const newUrls=[];for(const file of files){const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/'+crypto.randomUUID()+'.'+ext;const {error:uploadError}=await sb.storage.from('listing-images').upload(path,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;uploaded.push(path);const {data:publicUrl}=sb.storage.from('listing-images').getPublicUrl(path);newUrls.push(publicUrl.publicUrl)}if(editingNewPhotoCover&&newUrls.length)urls.unshift(...newUrls);else urls.push(...newUrls);const changes={title,description,category:$('editCategory').value,price:$('editPrice').value===''?null:Number($('editPrice').value),kraj:$('editCountry').value,miasto,Images:urls};const {data,error}=await sb.from('listings').update(changes).eq('id',editingListingId).eq('owner_id',session.user.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Brak uprawnień do zmiany tego ogłoszenia.');$('editDialog').close();editingListingId=null;await loadListings();await openAccount()}catch(err){if(uploaded.length)await sb.storage.from('listing-images').remove(uploaded);$('editMsg').textContent='Nie udało się zapisać: '+err.message}finally{btn.disabled=false;btn.removeAttribute('aria-busy')}};
 let myListingsPage=1;
 function filterMyListings(resetPage=false){
  if(resetPage)myListingsPage=1;
@@ -1394,7 +1394,7 @@ async function loadConversations(){
  const box=$('myConversations');box.replaceChildren();box.textContent='Ładowanie rozmów…';
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
- if(requestId!==inboxRequestId||session?.user?.id!==uid)return;
+ if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
  if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
  const latestByConversation=new Map();
@@ -1402,14 +1402,14 @@ async function loadConversations(){
  for(let start=0;start<data.length;start+=25){
   const ids=data.slice(start,start+25).map(c=>c.id);
   const {data:incoming,error:incomingError}=await sb.from('messages').select('conversation_id,created_at,sender_id').in('conversation_id',ids).neq('sender_id',uid).order('created_at',{ascending:false}).limit(1000);
-  if(requestId!==inboxRequestId||session?.user?.id!==uid)return;
+  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
   if(incomingError){console.warn('Inbox unread lookup failed',incomingError);continue}
   for(const msg of incoming||[]){const id=String(msg.conversation_id);if(!latestByConversation.has(id))latestByConversation.set(id,msg)}
  }
  for(const c of data){
   const btn=document.createElement('button');btn.type='button';btn.className='btn inbox-item';
   const listing=allListings.find(x=>String(x.id)===String(c.listing_id));
-  btn.textContent=(listing?.title||'Ogłoszenie #'+c.listing_id)+' — '+(c.buyer_id===session.user.id?'Kupuję':'Sprzedaję');
+  btn.textContent=(listing?.title||'Ogłoszenie #'+c.listing_id)+' — '+(c.buyer_id===session.user.id?'Kupuję':'Sprzedaję');btn.setAttribute('aria-label',btn.textContent);
   const latest=latestByConversation.get(String(c.id)),seen=getSeen(c.id);if(latest&&latest.sender_id!==session.user.id&&(!seen||latest.created_at>seen))btn.classList.add('unread-conversation')
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);
@@ -1417,7 +1417,7 @@ async function loadConversations(){
 }
 async function openConversation(id,title){
  if(!sb||!session)return openAuth();
- activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';
+ activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value='';
  $('chatMessages').textContent='Ładowanie…';
  if($('accountDialog').open)$('accountDialog').close();
  show('chatDialog');await refreshConversation();await checkUnreadMessages();
@@ -1449,11 +1449,11 @@ async function refreshConversation(){
 $('replyForm').onsubmit=async e=>{
  e.preventDefault();const text=$('replyText').value.trim(),btn=$('replyForm').querySelector('button[type=submit]');
  if(!text||!activeConversationId||!session)return;if(text.length>2000){$('replyStatus').textContent='Wiadomość może mieć maksymalnie 2000 znaków.';return}
- btn.disabled=true;$('replyStatus').textContent='';
+ btn.disabled=true;btn.setAttribute('aria-busy','true');$('replyStatus').textContent='';
  try{
   const {error}=await sb.from('messages').insert({conversation_id:activeConversationId,sender_id:session.user.id,body:text});
   if(error)throw error;
-  $('replyText').value='';await refreshConversation();
+  $('replyText').value='';$('chatMessages').scrollTop=$('chatMessages').scrollHeight;await refreshConversation();$('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  }catch(err){$('replyStatus').textContent='Nie udało się wysłać: '+friendlyLimitError(err)}
  finally{btn.disabled=false}
 };
