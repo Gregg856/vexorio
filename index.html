@@ -144,7 +144,7 @@ function updateLegalLabels(){updateReportLabels();updatePrivacyLabels();$('phone
 
 
 $('accountAdminLaunch').onclick=async()=>{if(!sb||!session)return;const {data,error}=await sb.rpc('is_vexorio_admin');if(error||data!==true){$('accountMsg').textContent='Brak uprawnień administratora.';return}$('accountDialog').close();show('adminDashboardDialog');await loadAdminDashboard()};
-async function loadAdminDashboard(){const status=$('dashStatus'),box=$('dashListings');box.replaceChildren();status.textContent='Ładowanie…';if(!sb||!session){status.textContent='Zaloguj się.';return}const {data:allowed,error:authError}=await sb.rpc('is_vexorio_admin');if(authError||allowed!==true){status.textContent='Brak uprawnień administratora.';$('adminDashboardDialog').close();return}const query=$('dashSearch').value.trim();let request=sb.from('listings').select('id,title,description,price,rodzaj,miasto,kraj,created_at').order('created_at',{ascending:false}).limit(30);if(query){if(/^#?\d+$/.test(query))request=request.eq('id',Number(query.replace('#','')));else request=request.ilike('title','%'+query.replace(/[%_,]/g,'')+'%')}const {data,error}=await request;if(error){status.textContent='Błąd pobierania: '+error.message;return}status.textContent=(query?'Wyniki wyszukiwania: ':'Ostatnie wpisy: ')+(data?.length||0)+' (maksymalnie 30)';for(const x of data||[]){const item=document.createElement('div');item.className='admin-dashboard-entry';const name=document.createElement('strong');name.textContent=(x.rodzaj==='zlecenie'?'Zlecenie':'Ogłoszenie')+' #'+x.id+' — '+x.title;const meta=document.createElement('small');meta.textContent=[x.miasto,x.kraj].filter(Boolean).join(' · ');const detail=document.createElement('details');const toggle=document.createElement('summary');toggle.textContent='Szczegóły ogłoszenia';const description=document.createElement('p');description.textContent=x.description||'Brak opisu';const price=document.createElement('small');price.textContent='Cena: '+(x.price??'nie podano');const reports=document.createElement('button');reports.type='button';reports.className='btn';reports.textContent='🛡️ Zobacz zgłoszenia';reports.onclick=()=>{$('adminDashboardDialog').close();$('adminReportsBtn').click()};detail.append(toggle,description,price,reports);item.append(name,meta,detail);box.append(item)}}
+async function loadAdminDashboard(){const status=$('dashStatus'),box=$('dashListings');box.replaceChildren();status.textContent='Ładowanie…';if(!sb||!session){status.textContent='Zaloguj się.';return}const {data:allowed,error:authError}=await sb.rpc('is_vexorio_admin');if(authError||allowed!==true){status.textContent='Brak uprawnień administratora.';$('adminDashboardDialog').close();return}const query=$('dashSearch').value.trim();let request=sb.from('listings').select('id,title,description,price,rodzaj,miasto,kraj,created_at').order('created_at',{ascending:false}).limit(30);if(query){if(/^#?\d+$/.test(query))request=request.eq('id',Number(query.replace('#','')));else request=request.ilike('title','%'+query.replace(/[%_,]/g,'')+'%')}const {data,error}=await request;if(error){status.textContent='Błąd pobierania: '+error.message;return}status.textContent=(query?'Wyniki wyszukiwania: ':'Ostatnie wpisy: ')+(data?.length||0)+' (maksymalnie 30)';for(const x of data||[]){const item=document.createElement('div');item.className='admin-dashboard-entry';const name=document.createElement('strong');name.textContent=(x.rodzaj==='zlecenie'?'Zlecenie':'Ogłoszenie')+' #'+x.id+' — '+x.title;const meta=document.createElement('small');meta.textContent=[x.miasto,x.kraj].filter(Boolean).join(' · ');const detail=document.createElement('details');const toggle=document.createElement('summary');toggle.textContent='Szczegóły ogłoszenia';const description=document.createElement('p');description.textContent=x.description||'Brak opisu';const price=document.createElement('small');price.textContent='Cena: '+(x.price??'nie podano');const reports=document.createElement('button');reports.type='button';reports.className='btn';reports.textContent='🛡️ Zobacz zgłoszenia';reports.onclick=()=>{adminReportListingFilter=x.id;$('adminDashboardDialog').close();$('adminReportsDialog').showModal();loadAdminReports()};detail.append(toggle,description,price,reports);item.append(name,meta,detail);box.append(item)}}
 $('dashRefresh').onclick=loadAdminDashboard;
 $('dashSearch').addEventListener('change',loadAdminDashboard);
 $('dashSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadAdminDashboard()}});
@@ -155,14 +155,15 @@ async function updateAdminReportsAccess(){
  const {data,error}=await sb.rpc('is_vexorio_admin');
  if(!error&&data===true){$('accountAdminLaunch').classList.remove('hide');btn.classList.remove('hide');$('adminUsersBtn').classList.remove('hide');$('appealsAdminBtn').classList.remove('hide');$('privacyAdminBtn').classList.remove('hide')}
 }
+let adminReportListingFilter=null;
 async function loadAdminReports(){
  const status=$('adminReportsMessage'),list=$('adminReportsList');status.textContent='';list.replaceChildren();
  if(!session){status.textContent='Zaloguj się.';return}
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
  if(accessError||allowed!==true){status.textContent='Brak uprawnień administratora.';return}
- const {data,error}=await sb.from('listing_reports').select('id,listing_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);
+ let reportQuery=sb.from('listing_reports').select('id,listing_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);if(adminReportListingFilter!==null)reportQuery=reportQuery.eq('listing_id',adminReportListingFilter);const {data,error}=await reportQuery;
  if(error){status.textContent='Błąd: '+error.message;return}
- if(!data?.length){status.textContent='Brak zgłoszeń.';return}
+ if(!data?.length){status.textContent=adminReportListingFilter===null?'Brak zgłoszeń.':'Brak zgłoszeń dla ogłoszenia #'+adminReportListingFilter+'.';return}
  for(const item of data){
   const box=document.createElement('div');box.className='info';box.style.margin='0';
   const heading=document.createElement('h3');heading.textContent='Zgłoszenie #'+item.id+' · Ogłoszenie #'+(item.listing_id??'usunięte');
@@ -197,7 +198,7 @@ async function loadAdminReports(){
   box.append(heading,meta,detail,select,save,feedback,moderation);list.append(box);
  }
 }
-$('adminReportsBtn').onclick=()=>{$('adminReportsDialog').showModal();loadAdminReports()};
+$('adminReportsBtn').onclick=()=>{adminReportListingFilter=null;$('adminReportsDialog').showModal();loadAdminReports()};
 $('adminReportsRefresh').onclick=loadAdminReports;
 
 async function loadAdminUsers(){
