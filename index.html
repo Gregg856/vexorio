@@ -1338,6 +1338,14 @@
 #listingFilterTools .vex-filter-search-btn{flex:1 1 100%;grid-column:1/-1;width:100%;min-height:52px;border:0;border-radius:12px;background:#05c5d8;color:#04202e;font-size:17px;font-weight:800;cursor:pointer}
 #listingFilterTools .vex-filter-search-btn:focus-visible{outline:3px solid white;outline-offset:2px}
 
+/* Free vertical room for city suggestions while Android keyboard is open. */
+@media(max-width:850px){
+ body:has(#cityFilter:focus) .mobile-bottom-nav,
+ body:has(#cityFilter:focus) #mobileBottomNav,
+ body:has(#cityFilter:focus) .bottom-nav{display:none!important}
+ #listingFilterTools .vex-city-suggestions:not([hidden]){max-height:156px!important}
+ #listingFilterTools .vex-city-option{min-height:40px!important;padding:9px 12px!important}
+}
 /* Mobile-friendly vertical city autocomplete. */
 .vex-city-picker{position:relative;min-width:0;width:100%}.vex-city-picker #cityFilter{width:100%;min-width:0}.vex-city-suggestions:not([hidden]){display:flex;flex-direction:column;position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:80;max-height:250px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #376079;border-radius:12px;background:#082238;box-shadow:0 14px 30px #0008}.vex-city-option{display:block;text-align:left;width:100%;padding:12px 14px;min-height:46px;border:0;border-bottom:1px solid #25465c;border-radius:0;background:transparent;color:#f5fbff;font-size:15px}.vex-city-option:last-child{border-bottom:0}.vex-city-option:focus-visible,.vex-city-option:hover{background:#16435a}
 </style></head><body>
@@ -1768,7 +1776,7 @@ function updateCitySuggestions(){
 }
 $('applyListingFilters').addEventListener('click',()=>{closeCitySuggestions();$('cityFilter').blur();render();const target=$('cards');if(target)target.scrollIntoView({behavior:'smooth',block:'start'})});
 $('cityFilter').addEventListener('input',updateCitySuggestions);
-$('cityFilter').addEventListener('focus',()=>{if(suppressCityFocusSuggestions){suppressCityFocusSuggestions=false;return}updateCitySuggestions()});
+$('cityFilter').addEventListener('focus',()=>{if(suppressCityFocusSuggestions){suppressCityFocusSuggestions=false;return}updateCitySuggestions();setTimeout(()=>{if(document.activeElement===$('cityFilter'))$('cityFilter').scrollIntoView({block:'start',behavior:'smooth'})},300)});
 $('cityFilter').addEventListener('keydown',e=>{const list=$('vexorioCitySuggestions');if(e.key==='Escape'){closeCitySuggestions();return}if(e.key==='ArrowDown'&&!list.hidden){const first=list.querySelector('.vex-city-option');if(first){e.preventDefault();first.focus()}}});
 $('vexorioCitySuggestions').addEventListener('keydown',e=>{const options=[...$('vexorioCitySuggestions').querySelectorAll('.vex-city-option')],index=options.indexOf(document.activeElement);if(e.key==='Escape'){e.preventDefault();closeCitySuggestions();suppressCityFocusSuggestions=true;$('cityFilter').focus()}else if(e.key==='ArrowDown'&&index>=0){e.preventDefault();options[Math.min(index+1,options.length-1)].focus()}else if(e.key==='ArrowUp'&&index>=0){e.preventDefault();if(index===0)$('cityFilter').focus();else options[index-1].focus()}});
 $('country').addEventListener('change',updateCitySuggestions);
