@@ -1809,7 +1809,7 @@ function updateCitySuggestions(){
  for(const item of allListings){
   if(!item.city||(country!=='all'&&String(item.country||'').toUpperCase()!==country))continue;
   const name=String(item.city).trim(),key=searchText(name);
-  if(!key||cities.has(key)||!key.includes(needle))continue;
+  if(!key||cities.has(key)||!key.startsWith(needle))continue;
   cities.set(key,name);if(cities.size>=40)break;
  }
  // Vienna is known locally as Wien; ensure its exact name is selectable in Austria.
