@@ -1351,6 +1351,14 @@
 }
 /* Mobile-friendly vertical city autocomplete. */
 .vex-city-picker{position:relative;min-width:0;width:100%}.vex-city-picker #cityFilter{width:100%;min-width:0}.vex-city-suggestions:not([hidden]){display:flex;flex-direction:column;position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:80;max-height:250px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #376079;border-radius:12px;background:#082238;box-shadow:0 14px 30px #0008}.vex-city-option{display:block;text-align:left;width:100%;padding:12px 14px;min-height:46px;border:0;border-bottom:1px solid #25465c;border-radius:0;background:transparent;color:#f5fbff;font-size:15px}.vex-city-option:last-child{border-bottom:0}.vex-city-option:focus-visible,.vex-city-option:hover{background:#16435a}
+/* One compact primary search action on phones; secondary actions stay accessible in account/search tools. */
+@media(max-width:600px){
+ .search #searchBtn{display:none!important}
+ .search #saveSearchBtn,.search #savedSearchesBtn,.search #shareSearchBtn{display:none!important}
+ .search{margin-bottom:0!important;padding-bottom:0!important}
+ .top-filters{margin-top:8px!important}
+ .top-filters .filter-head{padding:0!important;margin-bottom:0!important}
+}
 /* Mobile search essentials remain visible without opening advanced filters. */
 @media(max-width:600px){
  .top-filters .tools#listingFilterTools{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-top:12px!important}
