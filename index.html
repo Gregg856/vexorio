@@ -1491,6 +1491,24 @@ async function loadConversations(){
   box.append(btn);
  }
 }
+let openingPushConversation=false;
+async function checkPushConversation(){
+ if(openingPushConversation)return;
+ const id=new URL(location.href).searchParams.get('conversation');
+ if(!id)return;
+ openingPushConversation=true;
+ try{if(!session)await refreshUser();await openPushConversation()}finally{openingPushConversation=false}
+}
+navigator.serviceWorker?.addEventListener('message',event=>{
+ if(event.data?.type==='VEXORIO_OPEN_CONVERSATION'&&typeof event.data.url==='string'){
+  const target=new URL(event.data.url,location.origin);
+  if(target.origin!==location.origin)return;
+  history.replaceState(null,'',target.pathname+target.search+target.hash);
+  void checkPushConversation();
+ }
+});
+window.addEventListener('pageshow',()=>{void checkPushConversation()});
+window.addEventListener('focus',()=>{void checkPushConversation()});
 async function openPushConversation(){
  const id=new URL(location.href).searchParams.get('conversation');
  if(!id||!/^[0-9a-f-]{36}$/i.test(id)||!sb||!session)return;
