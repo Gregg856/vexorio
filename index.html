@@ -1546,7 +1546,7 @@ async function loadConversations(){
  const filterBar=document.getElementById('vexInboxFilters');
  if(filterBar&&!document.getElementById('vexInboxRefresh')){
   const refresh=document.createElement('button');refresh.id='vexInboxRefresh';refresh.type='button';refresh.className='btn small';refresh.textContent='↻ Odśwież';refresh.setAttribute('aria-label','Odśwież listę rozmów');refresh.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
-  refresh.onclick=()=>{refresh.disabled=true;loadConversations().finally(()=>{refresh.disabled=false})};
+  refresh.onclick=async()=>{refresh.disabled=true;refresh.textContent='↻ Odświeżanie…';try{await loadConversations()}catch(error){console.error('Nie udało się odświeżyć rozmów:',error);alert('Nie udało się odświeżyć rozmów. Spróbuj ponownie.')}finally{refresh.disabled=false;refresh.textContent='↻ Odśwież'}};
   filterBar.append(refresh);
  }
  const unreadButton=document.querySelector('#vexInboxFilters button[data-filter="unread"]');
