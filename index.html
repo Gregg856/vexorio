@@ -1334,7 +1334,7 @@
 /* Keep city suggestions visible above the Android keyboard, inside filter flow. */
 #listingFilterTools .vex-city-picker{flex:1 1 100%;width:100%;min-width:0;grid-column:1/-1}
 #listingFilterTools .vex-city-picker #cityFilter{box-sizing:border-box;width:100%;max-width:100%}
-#listingFilterTools .vex-city-suggestions:not([hidden]){position:static;top:auto;left:auto;right:auto;margin-top:6px;max-height:210px;overflow-y:auto}
+#listingFilterTools .vex-city-suggestions:not([hidden]){position:static;top:auto;left:auto;right:auto;margin-top:6px;max-height:188px;overflow-y:auto}
 #listingFilterTools .vex-filter-search-btn{flex:1 1 100%;grid-column:1/-1;width:100%;min-height:52px;border:0;border-radius:12px;background:#05c5d8;color:#04202e;font-size:17px;font-weight:800;cursor:pointer}
 #listingFilterTools .vex-filter-search-btn:focus-visible{outline:3px solid white;outline-offset:2px}
 
@@ -1744,7 +1744,7 @@ function updateCitySuggestions(){
  }
  const paint=()=>{
   list.replaceChildren();
-  for(const name of [...cities.values()].sort((a,b)=>Number(searchText(b).startsWith(needle))-Number(searchText(a).startsWith(needle))||a.localeCompare(b,language)).slice(0,12)){
+  for(const name of [...cities.values()].sort((a,b)=>Number(searchText(b)===needle)-Number(searchText(a)===needle)||Number(searchText(b).startsWith(needle))-Number(searchText(a).startsWith(needle))||a.localeCompare(b,language)).slice(0,4)){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');btn.textContent='📍 '+name;
    btn.addEventListener('click',()=>{clearTimeout(citySuggestTimer);citySuggestRequest++;$('cityFilter').value=name;closeCitySuggestions();$('cityFilter').blur();updateSearchSuggestions();updateSaveSearchButton();render()});
    list.append(btn);
@@ -1761,6 +1761,7 @@ function updateCitySuggestions(){
    const matches=(data.results||[]).filter(p=>p.country_code===country&&p.name&&searchText(p.name).includes(needle));
    const counts=new Map();for(const p of matches){const key=searchText(p.name);counts.set(key,(counts.get(key)||0)+1)}
    for(const p of matches){const key=searchText(p.name);if(counts.get(key)===1&&!cities.has(key))cities.set(key,p.name)}
+   if(!cities.has(needle)&&matches.some(p=>searchText(p.name)===needle))cities.set(needle,matches.find(p=>searchText(p.name)===needle).name);
    paint();
   }catch(e){console.warn('City suggestions unavailable',e)}
  },450);
