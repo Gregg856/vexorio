@@ -1722,7 +1722,7 @@ function geoKey(city,country){return searchText(city)+'|'+String(country||'').to
 
 // In-page city picker avoids mobile keyboard's native horizontal datalist bar.
 let citySuggestTimer=null,citySuggestRequest=0;
-function closeCitySuggestions(){const list=$('vexorioCitySuggestions');if(list)list.hidden=true;$('cityFilter').setAttribute('aria-expanded','false')}
+function closeCitySuggestions(){clearTimeout(citySuggestTimer);citySuggestRequest++;const list=$('vexorioCitySuggestions');if(list)list.hidden=true;$('cityFilter').setAttribute('aria-expanded','false')}
 function updateCitySuggestions(){
  const list=$('vexorioCitySuggestions');if(!list)return;
  const country=$('country').value,typed=$('cityFilter').value.trim(),needle=searchText(typed);
