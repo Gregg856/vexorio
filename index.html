@@ -836,6 +836,24 @@
 .seller-profile-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
 .seller-profile-tabs .btn{flex:1 1 auto;white-space:nowrap}
 .seller-profile-results{display:flex;flex-direction:column;gap:8px}
+/* Compact mobile listing detail: content and contact visible without excessive scrolling. */
+@media(max-width:600px){
+ #detailDialog{padding:6px 12px 24px!important}
+ #detailDialog .dialoghead{top:-6px!important;padding:6px 0!important;margin-bottom:9px!important;min-height:42px}
+ #detailDialog #detailTitle{font-size:17px!important}
+ #detailDialog .dialoghead .close{min-width:36px;min-height:36px;font-size:24px}
+ #detailDialog #detailContent{gap:8px!important}
+ #detailDialog .photo-gallery{gap:5px!important}
+ #detailDialog .photo-gallery img:first-child{aspect-ratio:16/8!important;max-height:185px!important;object-fit:contain!important}
+ #detailDialog .photo-gallery img:not(:first-child){aspect-ratio:1!important;max-height:90px!important}
+ #detailDialog .detail-main-heading{font-size:21px!important;line-height:1.2!important;margin:2px 0!important}
+ #detailDialog .detail-price{font-size:23px!important;line-height:1.15!important;margin:2px 0!important}
+ #detailDialog .detail-meta{gap:5px 12px!important;font-size:12px!important}
+ #detailDialog .detail-section-heading{font-size:16px!important;margin:6px 0 0!important}
+ #detailDialog .detail-description{font-size:14px!important;line-height:1.4!important;margin:0!important}
+ #detailDialog .detail-seller{padding:12px!important;margin-top:4px!important}
+ #detailDialog .detail-share{margin:7px 0 12px!important}
+}
 /* Public seller profile: no private email or phone exposure. */
 #sellerProfileDialog{width:min(94vw,560px);max-height:90dvh;padding:20px}
 .seller-profile-header{display:flex;align-items:center;gap:16px;padding:16px 0}
