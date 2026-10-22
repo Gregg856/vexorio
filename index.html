@@ -1525,7 +1525,7 @@ async function loadConversations(){
  ensureInboxFilters();
  const requestId=++inboxRequestId;
  const uid=session?.user?.id;
- const box=$('myConversations');if(!box.children.length)box.textContent='Ładowanie rozmów…';
+ const box=$('myConversations');if(!box.children.length)box.textContent='Ładowanie rozmów…';box.setAttribute('aria-busy','true');try{
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
@@ -1576,6 +1576,7 @@ async function loadConversations(){
   box.append(btn);visibleCount++;
  }
  if(!visibleCount)box.textContent='Nie znaleziono rozmów pasujących do wyszukiwania.';
+}finally{if(requestId===inboxRequestId)box.removeAttribute('aria-busy')}
 }
 let openingPushInbox=false;
 async function openPushInbox(){
