@@ -1512,12 +1512,14 @@ function ensureInboxFilters(){
  if(!box||document.getElementById('vexInboxFilters'))return;
  const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label','Filtruj rozmowy');wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;padding:3px 0 11px;scrollbar-width:thin';
  const options=[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']];
+ const savedFilter=sessionStorage.getItem('vexInboxFilter:'+String(session?.user?.id||'guest'));
+ const initialFilter=options.some(([key])=>key===savedFilter)?savedFilter:'all';
  for(const [value,label] of options){
   const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent=label;btn.dataset.filter=value;btn.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
-  btn.setAttribute('aria-pressed',String(value==='all'));
+  btn.setAttribute('aria-pressed',String(value===initialFilter));
   const updateFilterStyle=b=>{const active=b.getAttribute('aria-pressed')==='true';b.style.background=active?'#1686a7':'';b.style.color=active?'#fff':'';b.style.borderColor=active?'#1686a7':'';b.style.fontWeight=active?'700':'400'};
   updateFilterStyle(btn);
-  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button[data-filter]')){b.setAttribute('aria-pressed',String(b===btn));updateFilterStyle(b)}loadConversations()};
+  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button[data-filter]')){b.setAttribute('aria-pressed',String(b===btn));updateFilterStyle(b)}sessionStorage.setItem('vexInboxFilter:'+String(session?.user?.id||'guest'),value);loadConversations()};
   wrap.append(btn);
  }
  box.parentNode.insertBefore(wrap,box);
