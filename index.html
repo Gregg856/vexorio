@@ -1610,9 +1610,10 @@ navigator.serviceWorker?.addEventListener('message',event=>{
 });
 window.addEventListener('pageshow',()=>{void openPushInbox()});
 window.addEventListener('focus',()=>{void openPushInbox()});
+const chatDraftKey=(userId,conversationId)=>'vex-chat-draft:'+userId+':'+conversationId;
 async function openConversation(id,title){
  if(!sb||!session)return openAuth();
- activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
+ activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value=sessionStorage.getItem(chatDraftKey(session.user.id,id))||'';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
  $('chatMessages').textContent='Ładowanie…';
  delete $('chatMessages').dataset.lastMessageId;
  delete $('chatMessages').dataset.conversationId;
@@ -1662,6 +1663,7 @@ async function refreshConversation(){
  const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){const previouslySeen=getSeen(conversationId);if(!previouslySeen||latest.created_at>previouslySeen){setSeen(conversationId,latest.created_at);if(!unreadCheckInProgress)void checkUnreadMessages()}}
 }
 
+$('replyText').addEventListener('input',()=>{if(!session?.user?.id||!activeConversationId)return;const key=chatDraftKey(session.user.id,activeConversationId);if($('replyText').value)sessionStorage.setItem(key,$('replyText').value);else sessionStorage.removeItem(key)});
 $('replyText').addEventListener('keydown',event=>{
  if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){
   event.preventDefault();
@@ -1680,6 +1682,7 @@ $('replyForm').onsubmit=async e=>{
  try{
   const {error}=await sb.from('messages').insert({conversation_id:sendingConversationId,sender_id:sendingUserId,body:text});
   if(error)throw error;
+  sessionStorage.removeItem(chatDraftKey(sendingUserId,sendingConversationId));
   if(activeConversationId!==sendingConversationId||session?.user?.id!==sendingUserId)return;
   $('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));$('chatMessages').scrollTop=$('chatMessages').scrollHeight;await refreshConversation();$('chatMessages').scrollTop=$('chatMessages').scrollHeight;$('replyStatus').textContent='Wysłano ✓';
  }catch(err){if(activeConversationId===sendingConversationId&&session?.user?.id===sendingUserId)$('replyStatus').textContent='Nie udało się wysłać: '+friendlyLimitError(err)}
