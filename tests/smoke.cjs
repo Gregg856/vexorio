@@ -39,6 +39,17 @@ const flows=[
  ['Status operation failure messaging',/Nie udało się zmienić statusu:/]
 ];
 for(const [name,pattern] of flows)assert.match(html,pattern,'Workflow regression: '+name);
+// Protect mobile city suggestions and radius-filter fixes from accidental regressions.
+const searchGuards=[
+ ['City dialog input',/id="vexCityDialogInput"[^>]*enterkeyhint="search"/],
+ ['City suggestion dropdown',/id="vexorioCitySuggestions"/],
+ ['City prefix matching',/searchText\(p\.name\)\.startsWith\(needle\)/],
+ ['City request race guard',/request!==citySuggestRequest/],
+ ['Radius pending scope',/originReady&&radiusCandidatePending/],
+ ['Radius empty-state scope',/radiusActive&&radiusCandidateCount>0&&!radiusLoading/],
+ ['Radius alternatives',/\[10,25,50,100,200,500\]\.filter\(km=>km>radiusKm\)\.slice\(0,3\)/]
+];
+for(const [name,pattern] of searchGuards)assert.match(html,pattern,'Search regression: '+name);
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
