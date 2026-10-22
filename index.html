@@ -1530,7 +1530,7 @@ async function loadConversations(){
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
  if(error){box.replaceChildren();const notice=document.createElement('p');notice.textContent='Nie udało się pobrać rozmów. Sprawdź połączenie i spróbuj ponownie.';notice.setAttribute('role','alert');const retry=document.createElement('button');retry.type='button';retry.className='btn small';retry.textContent='↻ Spróbuj ponownie';retry.onclick=()=>{retry.disabled=true;void loadConversations().finally(()=>{retry.disabled=false})};box.append(notice,retry);console.error('Inbox loading failed:',error);return}
- if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
+ if(!data?.length){box.textContent='Nie masz jeszcze żadnych rozmów. Gdy napiszesz do sprzedającego lub ktoś skontaktuje się w sprawie Twojego ogłoszenia, rozmowa pojawi się tutaj.';return}
  const latestByConversation=new Map();const previewByConversation=new Map();
  // Fetch recent messages in batches to show a preview of the latest message.
  for(let start=0;start<data.length;start+=25){
@@ -1575,7 +1575,7 @@ async function loadConversations(){
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);visibleCount++;
  }
- if(!visibleCount)box.textContent='Nie znaleziono rozmów pasujących do wyszukiwania.';
+ if(!visibleCount){const activeFilter=document.querySelector('#vexInboxFilters button[aria-pressed="true"]')?.dataset.filter||'all';box.textContent=searchValue?'Brak rozmów pasujących do wpisanej frazy. Zmień wyszukiwanie lub wyczyść pole.':activeFilter==='unread'?'Nie masz nieprzeczytanych rozmów.':activeFilter==='buy'?'Nie masz rozmów dotyczących kupowania.':activeFilter==='sell'?'Nie masz rozmów dotyczących sprzedawania.':'Brak rozmów do wyświetlenia.';}
 }finally{if(requestId===inboxRequestId)box.removeAttribute('aria-busy')}
 }
 let openingPushInbox=false;
