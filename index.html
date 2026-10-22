@@ -1515,7 +1515,9 @@ function ensureInboxFilters(){
  for(const [value,label] of options){
   const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent=label;btn.dataset.filter=value;btn.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
   btn.setAttribute('aria-pressed',String(value==='all'));
-  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b===btn));loadConversations()};
+  const updateFilterStyle=b=>{const active=b.getAttribute('aria-pressed')==='true';b.style.background=active?'#1686a7':'';b.style.color=active?'#fff':'';b.style.borderColor=active?'#1686a7':'';b.style.fontWeight=active?'700':'400'};
+  updateFilterStyle(btn);
+  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button[data-filter]')){b.setAttribute('aria-pressed',String(b===btn));updateFilterStyle(b)}loadConversations()};
   wrap.append(btn);
  }
  box.parentNode.insertBefore(wrap,box);
