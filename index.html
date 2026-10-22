@@ -1351,6 +1351,13 @@
 }
 /* Mobile-friendly vertical city autocomplete. */
 .vex-city-picker{position:relative;min-width:0;width:100%}.vex-city-picker #cityFilter{width:100%;min-width:0}.vex-city-suggestions:not([hidden]){display:flex;flex-direction:column;position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:80;max-height:250px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #376079;border-radius:12px;background:#082238;box-shadow:0 14px 30px #0008}.vex-city-option{display:block;text-align:left;width:100%;padding:12px 14px;min-height:46px;border:0;border-bottom:1px solid #25465c;border-radius:0;background:transparent;color:#f5fbff;font-size:15px}.vex-city-option:last-child{border-bottom:0}.vex-city-option:focus-visible,.vex-city-option:hover{background:#16435a}
+/* Mobile search essentials remain visible without opening advanced filters. */
+@media(max-width:600px){
+ .top-filters .tools#listingFilterTools{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-top:12px!important}
+ #listingFilterTools #country,#listingFilterTools .vex-city-picker,#listingFilterTools #radiusFilter,#listingFilterTools #applyListingFilters{grid-column:1/-1!important;width:100%!important}
+ #listingFilterTools #filterServiceGroup,#listingFilterTools #filterServiceSpecialty,#listingFilterTools #priceMin,#listingFilterTools #priceMax,#listingFilterTools .filter-check-pair,#listingFilterTools #sortListings,#listingFilterTools #radiusInfo{display:none!important}
+ .top-filters .filter-head{margin-bottom:0}
+}
 /* City picker is anchored to top of the visible screen, not behind the keyboard. */
 .vex-city-picker #cityFilter{cursor:pointer}
 .vex-city-dialog[hidden]{display:none!important}
