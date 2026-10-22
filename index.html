@@ -1622,7 +1622,8 @@ async function openConversation(id,title){
  if($('accountDialog').open)$('accountDialog').close();
  show('chatDialog');$('replyText').focus({preventScroll:true});await refreshConversation();await checkUnreadMessages();
 }
-$('backToAccountBtn').onclick=()=>{if($('chatDialog').open)$('chatDialog').close();openAccount()};
+$('backToAccountBtn').textContent='← Wiadomości';$('backToAccountBtn').setAttribute('aria-label','Wróć do listy wiadomości');
+$('backToAccountBtn').onclick=()=>{if($('chatDialog').open)$('chatDialog').close();openAccount();requestAnimationFrame(()=>{const heading=document.querySelector('#accountDialog .inbox-heading');if(heading)heading.scrollIntoView({block:'start',behavior:'instant'});const search=document.getElementById('vexInboxSearch');if(search)search.focus({preventScroll:true})})};
 $('refreshChatBtn').onclick=()=>refreshConversation();
 $('chatJumpBottom').onclick=()=>{const box=$('chatMessages');box.scrollTop=box.scrollHeight;$('chatJumpBottom').hidden=true};
 $('chatMessages').addEventListener('scroll',()=>{const box=$('chatMessages');$('chatJumpBottom').hidden=box.scrollHeight-box.scrollTop-box.clientHeight<90},{passive:true});
