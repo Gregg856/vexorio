@@ -1857,17 +1857,20 @@ async function sendMessage(listingId,sellerId,message){
 (function(){
  const chat=document.getElementById('chatDialog');
  if(chat&&window.visualViewport){
+  let previousViewportHeight=0;
   const fitChatToKeyboard=()=>{
    if(!chat.open){chat.style.removeProperty('height');chat.style.removeProperty('max-height');chat.style.removeProperty('top');chat.style.removeProperty('margin');chat.style.removeProperty('--vex-chat-top');chat.style.removeProperty('--vex-chat-height');return}
    const viewport=window.visualViewport;
    const available=Math.max(200,Math.floor(viewport.height-8));
+   const keyboardJustOpened=previousViewportHeight>0&&available<previousViewportHeight-100;
+   previousViewportHeight=available;
    chat.style.height=available+'px';chat.style.maxHeight=available+'px';
    chat.style.top=Math.round(viewport.offsetTop+4)+'px';
    chat.style.margin='0 auto';
    chat.style.setProperty('--vex-chat-top',Math.round(viewport.offsetTop+4)+'px');
    chat.style.setProperty('--vex-chat-height',available+'px');
    const composer=chat.querySelector('#replyForm');
-   if(composer&&document.activeElement?.id==='replyText')requestAnimationFrame(()=>{composer.scrollIntoView({block:'nearest',behavior:'instant'});const messages=chat.querySelector('#chatMessages');if(messages){messages.scrollTop=messages.scrollHeight;const jump=chat.querySelector('#chatJumpBottom');if(jump)jump.hidden=true}});
+   if(composer&&document.activeElement?.id==='replyText'&&keyboardJustOpened)requestAnimationFrame(()=>{const messages=chat.querySelector('#chatMessages');if(messages){messages.scrollTop=messages.scrollHeight;const jump=chat.querySelector('#chatJumpBottom');if(jump)jump.hidden=true}});
   };
   window.visualViewport.addEventListener('resize',fitChatToKeyboard);
   window.visualViewport.addEventListener('scroll',fitChatToKeyboard);
