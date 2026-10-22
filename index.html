@@ -1717,18 +1717,34 @@ function updateRadiusLabels(){const a=radiusMessages[language]||radiusMessages.p
 const geoCache=new Map();const geoPending=new Set();let geoQueue=Promise.resolve();let geoVersion=0;
 function geoKey(city,country){return searchText(city)+'|'+String(country||'').toUpperCase()}
 
-// City suggestions come only from published listing locations; no extra location service or personal data.
+// City suggestions: existing listings first, European geocoding results after typing.
+let citySuggestTimer=null,citySuggestRequest=0;
 function updateCitySuggestions(){
  const list=$('vexorioCitySuggestions');if(!list)return;
- const selected=$('country').value,needle=searchText($('cityFilter').value);
+ const country=$('country').value,typed=$('cityFilter').value.trim(),needle=searchText(typed);
  const cities=new Map();
  for(const item of allListings){
-  if(!item.city||(selected!=='all'&&item.country!==selected))continue;
+  if(!item.city||(country!=='all'&&item.country!==country))continue;
   const name=String(item.city).trim(),key=searchText(name);
-  if(!key||cities.has(key)||needle&&!key.includes(needle))continue;
-  cities.set(key,name);if(cities.size>=60)break;
+  if(!key||cities.has(key)||(needle&&!key.includes(needle)))continue;
+  cities.set(key,name);if(cities.size>=40)break;
  }
- list.replaceChildren(...[...cities.values()].sort((a,b)=>a.localeCompare(b,language)).map(name=>{const opt=document.createElement('option');opt.value=name;return opt}));
+ const paint=()=>list.replaceChildren(...[...cities.values()].sort((a,b)=>a.localeCompare(b,language)).slice(0,60).map(name=>{const opt=document.createElement('option');opt.value=name;return opt}));
+ paint();clearTimeout(citySuggestTimer);const request=++citySuggestRequest;
+ if(country==='all'||needle.length<3||/^[0-9 -]+$/.test(typed))return;
+ citySuggestTimer=setTimeout(async()=>{
+  try{
+   const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(typed)+'&count=30&language=en&format=json&countryCode='+encodeURIComponent(country);
+   const response=await fetch(url);if(!response.ok)return;
+   const data=await response.json();
+   if(request!==citySuggestRequest||$('country').value!==country||$('cityFilter').value.trim()!==typed)return;
+   const matches=(data.results||[]).filter(p=>p.country_code===country&&p.name&&searchText(p.name).includes(needle));
+   const counts=new Map();
+   for(const p of matches){const key=searchText(p.name);counts.set(key,(counts.get(key)||0)+1)}
+   for(const p of matches){const key=searchText(p.name);if(counts.get(key)!==1||cities.has(key))continue;cities.set(key,p.name)}
+   paint();
+  }catch(e){console.warn('City suggestions unavailable',e)}
+ },450);
 }
 $('cityFilter').addEventListener('input',updateCitySuggestions);
 $('cityFilter').addEventListener('focus',updateCitySuggestions);
