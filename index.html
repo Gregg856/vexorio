@@ -1867,12 +1867,13 @@ async function sendMessage(listingId,sellerId,message){
    chat.style.setProperty('--vex-chat-top',Math.round(viewport.offsetTop+4)+'px');
    chat.style.setProperty('--vex-chat-height',available+'px');
    const composer=chat.querySelector('#replyForm');
-   if(composer&&document.activeElement?.id==='replyText')requestAnimationFrame(()=>composer.scrollIntoView({block:'nearest',behavior:'instant'}));
+   if(composer&&document.activeElement?.id==='replyText')requestAnimationFrame(()=>{composer.scrollIntoView({block:'nearest',behavior:'instant'});const messages=chat.querySelector('#chatMessages');if(messages){messages.scrollTop=messages.scrollHeight;const jump=chat.querySelector('#chatJumpBottom');if(jump)jump.hidden=true}});
   };
   window.visualViewport.addEventListener('resize',fitChatToKeyboard);
   window.visualViewport.addEventListener('scroll',fitChatToKeyboard);
   chat.addEventListener('close',fitChatToKeyboard);
   chat.addEventListener('focusin',fitChatToKeyboard);
+  chat.querySelector('#replyText')?.addEventListener('focus',()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const messages=chat.querySelector('#chatMessages');if(messages)messages.scrollTop=messages.scrollHeight;const jump=chat.querySelector('#chatJumpBottom');if(jump)jump.hidden=true})));
   chat.addEventListener('click',e=>{if(e.target.closest('#replyText'))requestAnimationFrame(fitChatToKeyboard)});
   const dialogObserver=new MutationObserver(()=>{if(chat.open)requestAnimationFrame(fitChatToKeyboard)});
   dialogObserver.observe(chat,{attributes:true,attributeFilter:['open']});
