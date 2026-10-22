@@ -1480,7 +1480,7 @@ async function loadMine(){
  if(request!==myListingsRequest)return false;
  if(!session||session.user.id!==ownerId){box.removeAttribute('aria-busy');box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
  box.removeAttribute('aria-busy');
- if(error){$('accountMsg').textContent='Nie udało się pobrać wpisów: '+(error.message||'Błąd połączenia.');return false}
+ if(error){box.replaceChildren();const warning=document.createElement('p');warning.className='msg error';warning.setAttribute('role','alert');warning.textContent=({pl:'Nie udało się wczytać Twoich ogłoszeń. Sprawdź połączenie i spróbuj ponownie.',de:'Deine Anzeigen konnten nicht geladen werden. Prüfe die Verbindung und versuche es erneut.',en:'Your listings could not be loaded. Check your connection and try again.'}[language]);const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent=({pl:'↻ Spróbuj ponownie',de:'↻ Erneut versuchen',en:'↻ Try again'}[language]);retry.onclick=()=>loadMine();box.append(warning,retry);$('accountMsg').textContent='Nie udało się pobrać wpisów: '+(error.message||'Błąd połączenia.');return false}
  box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();
  if(!data?.length){
   const empty=document.createElement('div');empty.className='my-listings-empty';
