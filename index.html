@@ -2388,7 +2388,14 @@ async function sendMessage(listingId,sellerId,message){
 })();
 </script>
 <script>
-/* Independent login fallback: works even if an unrelated application initializer fails. */
-(function(){const login=document.getElementById('accountBtn'),dialog=document.getElementById('authDialog');if(!login||!dialog)return;function openLogin(e){if(dialog.open)return;try{dialog.showModal()}catch(err){dialog.setAttribute('open','');dialog.style.display='block'}document.getElementById('email')?.focus()}login.addEventListener('click',openLogin);document.querySelectorAll('[data-close="authDialog"]').forEach(b=>b.addEventListener('click',()=>{if(dialog.open)dialog.close();else{dialog.removeAttribute('open');dialog.style.display=''}}));})();
+/* Login fallback: only activate if the main app did not bind its handler. */
+(function(){
+ const login=document.getElementById('accountBtn'),dialog=document.getElementById('authDialog');
+ if(!login||!dialog)return;
+ login.addEventListener('click',function(){
+  if(typeof login.onclick==='function'||dialog.open)return;
+  try{dialog.showModal()}catch(err){console.warn('Login dialog unavailable',err)}
+ });
+})();
 </script>
 <script>/* Admin dashboard filter handlers are registered in the main application script. */</script></body></html>
