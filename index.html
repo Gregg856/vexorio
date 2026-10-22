@@ -833,6 +833,9 @@
  #chatDialog:focus-within #chatJumpBottom{display:none!important}
  #chatDialog:focus-within #chatMessages{scroll-behavior:auto!important}
 }
+.seller-profile-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.seller-profile-tabs .btn{flex:1 1 auto;white-space:nowrap}
+.seller-profile-results{display:flex;flex-direction:column;gap:8px}
 /* Public seller profile: no private email or phone exposure. */
 #sellerProfileDialog{width:min(94vw,560px);max-height:90dvh;padding:20px}
 .seller-profile-header{display:flex;align-items:center;gap:16px;padding:16px 0}
@@ -1374,21 +1377,36 @@ async function openSellerProfile(ownerId){
  const listings=allListings.filter(item=>item.owner_id===ownerId&&item.status!=='closed');
  const dialog=$('sellerProfileDialog'),content=$('sellerProfileContent');
  content.replaceChildren();
- $('sellerProfileTitle').textContent=({pl:'Profil sprzedającego',de:'Verkäuferprofil',en:'Seller profile'}[language]);
+ $('sellerProfileTitle').textContent=({pl:'Profil użytkownika',de:'Mitgliedsprofil',en:'Member profile'}[language]);
  const header=document.createElement('div');header.className='seller-profile-header';
  const avatar=document.createElement('div');avatar.className='seller-profile-avatar';avatar.textContent='V';avatar.setAttribute('aria-hidden','true');
  const info=document.createElement('div');
  const name=document.createElement('h3');name.textContent=({pl:'Użytkownik VEXORIO',de:'VEXORIO-Mitglied',en:'VEXORIO member'}[language]);
- const count=document.createElement('p');count.className='muted';count.textContent=listings.length+' '+({pl:'aktywnych ogłoszeń',de:'aktive Anzeigen',en:'active listings'}[language]);
+ const count=document.createElement('p');count.className='muted';
+ const n=listings.length;
+ count.textContent=language==='pl'?n+' '+(n===1?'aktywna oferta':n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?'aktywne oferty':'aktywnych ofert'):n+' '+(language==='de'?(n===1?'aktives Angebot':'aktive Angebote'):(n===1?'active listing':'active listings'));
  info.append(name,count);header.append(avatar,info);content.append(header);
- const heading=document.createElement('h3');heading.textContent=({pl:'Ogłoszenia użytkownika',de:'Anzeigen dieses Mitglieds',en:'Seller listings'}[language]);content.append(heading);
- if(!listings.length){const empty=document.createElement('p');empty.className='muted';empty.textContent=({pl:'Brak aktywnych ogłoszeń.',de:'Keine aktiven Anzeigen.',en:'No active listings.'}[language]);content.append(empty)}
- for(const item of listings){
-  const btn=document.createElement('button');btn.type='button';btn.className='btn seller-profile-listing';
-  const title=document.createElement('strong');title.textContent=item.title;
-  const details=document.createElement('span');details.className='muted';details.textContent=[item.city,item.country,price(item.price,item.currency)].filter(Boolean).join(' · ');
-  btn.append(title,details);btn.onclick=()=>{dialog.close();openDetail(item)};content.append(btn)
+ const sections=[
+  {key:'ogloszenia',label:{pl:'Ogłoszenia',de:'Anzeigen',en:'Listings'}[language],items:listings.filter(x=>x.rodzaj!=='zlecenie'&&x.category!=='uslugi'&&x.category!=='Usługi'&&x.category!=='services')},
+  {key:'uslugi',label:{pl:'Usługi',de:'Dienstleistungen',en:'Services'}[language],items:listings.filter(x=>x.rodzaj!=='zlecenie'&&(x.category==='uslugi'||x.category==='Usługi'||x.category==='services'))},
+  {key:'zlecenia',label:{pl:'Zlecenia',de:'Aufträge',en:'Requests'}[language],items:listings.filter(x=>x.rodzaj==='zlecenie')}
+ ];
+ const tabs=document.createElement('div');tabs.className='seller-profile-tabs';tabs.setAttribute('role','tablist');
+ const results=document.createElement('div');results.className='seller-profile-results';
+ function showSection(section){
+  tabs.querySelectorAll('button').forEach(b=>{const selected=b.dataset.section===section.key;b.setAttribute('aria-selected',String(selected));b.classList.toggle('primary',selected)});
+  results.replaceChildren();
+  if(!section.items.length){const empty=document.createElement('p');empty.className='muted';empty.textContent=({pl:'Brak aktywnych ofert w tej kategorii.',de:'Keine aktiven Angebote in dieser Kategorie.',en:'No active listings in this category.'}[language]);results.append(empty);return}
+  section.items.forEach(item=>{
+   const btn=document.createElement('button');btn.type='button';btn.className='btn seller-profile-listing';
+   const title=document.createElement('strong');title.textContent=item.title;
+   const details=document.createElement('span');details.className='muted';details.textContent=[item.city,item.country,price(item.price,item.currency)].filter(Boolean).join(' · ');
+   btn.append(title,details);btn.onclick=()=>{dialog.close();openDetail(item)};results.append(btn)
+  })
  }
+ sections.forEach(section=>{const tab=document.createElement('button');tab.type='button';tab.className='btn small';tab.dataset.section=section.key;tab.setAttribute('role','tab');tab.textContent=section.label+' ('+section.items.length+')';tab.onclick=()=>showSection(section);tabs.append(tab)});
+ content.append(tabs,results);
+ showSection(sections.find(x=>x.items.length)||sections[0]);
  if($('detailDialog').open)$('detailDialog').close();
  dialog.showModal();
 }
