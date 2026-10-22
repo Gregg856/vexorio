@@ -1722,6 +1722,8 @@ let citySuggestTimer=null,citySuggestRequest=0;
 function updateCitySuggestions(){
  const list=$('vexorioCitySuggestions');if(!list)return;
  const country=$('country').value,typed=$('cityFilter').value.trim(),needle=searchText(typed);
+ clearTimeout(citySuggestTimer);const request=++citySuggestRequest;
+ if(!needle){list.replaceChildren();return}
  const cities=new Map();
  for(const item of allListings){
   if(!item.city||(country!=='all'&&item.country!==country))continue;
@@ -1730,7 +1732,7 @@ function updateCitySuggestions(){
   cities.set(key,name);if(cities.size>=40)break;
  }
  const paint=()=>list.replaceChildren(...[...cities.values()].sort((a,b)=>{const aStarts=searchText(a).startsWith(needle),bStarts=searchText(b).startsWith(needle);return Number(bStarts)-Number(aStarts)||a.localeCompare(b,language)}).slice(0,60).map(name=>{const opt=document.createElement('option');opt.value=name;return opt}));
- paint();clearTimeout(citySuggestTimer);const request=++citySuggestRequest;
+ paint();
  if(country==='all'||needle.length<3||needle.length>80||/^[0-9 -]+$/.test(typed))return;
  citySuggestTimer=setTimeout(async()=>{
   try{
