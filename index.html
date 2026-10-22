@@ -1504,8 +1504,22 @@ function ensureInboxSearch(){
  input.addEventListener('input',()=>{clearTimeout(window.vexInboxSearchTimer);window.vexInboxSearchTimer=setTimeout(()=>loadConversations(),250)});
  box.parentNode.insertBefore(input,box);
 }
+function ensureInboxFilters(){
+ const box=$('myConversations');
+ if(!box||document.getElementById('vexInboxFilters'))return;
+ const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label','Filtruj rozmowy');wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;padding:3px 0 11px;scrollbar-width:thin';
+ const options=[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']];
+ for(const [value,label] of options){
+  const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent=label;btn.dataset.filter=value;btn.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
+  btn.setAttribute('aria-pressed',String(value==='all'));
+  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b===btn));loadConversations()};
+  wrap.append(btn);
+ }
+ box.parentNode.insertBefore(wrap,box);
+}
 async function loadConversations(){
  ensureInboxSearch();
+ ensureInboxFilters();
  const requestId=++inboxRequestId;
  const uid=session?.user?.id;
  const box=$('myConversations');if(!box.children.length)box.textContent='Ładowanie rozmów…';
@@ -1533,7 +1547,11 @@ async function loadConversations(){
   btn.textContent=(listing?.title||'Ogłoszenie #'+c.listing_id)+' — '+(c.buyer_id===session.user.id?'Kupuję':'Sprzedaję');const preview=previewByConversation.get(String(c.id));if(preview){const line=document.createElement('small');line.className='vex-inbox-preview';line.textContent=(preview.sender_id===uid?'Ty: ':'')+(preview.body||'').replace(/\s+/g,' ').slice(0,110);btn.append(line);if(preview.created_at){const time=document.createElement('time');time.className='vex-inbox-time';const date=new Date(preview.created_at);if(!Number.isNaN(date.getTime())){time.dateTime=date.toISOString();time.textContent=new Intl.DateTimeFormat(language==='de'?'de-DE':language==='en'?'en-GB':'pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(date);btn.append(time)}}}btn.setAttribute('aria-label',btn.textContent);
   const latest=latestByConversation.get(String(c.id)),seen=getSeen(c.id);if(latest&&latest.sender_id!==session.user.id&&(!seen||latest.created_at>seen)){btn.classList.add('unread-conversation');const dot=document.createElement('span');dot.className='vex-unread-dot';dot.setAttribute('aria-hidden','true');btn.append(dot);btn.setAttribute('aria-label','Nieprzeczytana rozmowa: '+btn.textContent)}
   const searchable=((listing?.title||'')+' '+(preview?.body||'')+' '+(c.buyer_id===uid?'Kupuję':'Sprzedaję')).toLocaleLowerCase();
+  const filter=document.querySelector('#vexInboxFilters button[aria-pressed="true"]')?.dataset.filter||'all';
   if(searchValue&&!searchable.includes(searchValue))continue;
+  if(filter==='unread'&&!btn.classList.contains('unread-conversation'))continue;
+  if(filter==='buy'&&c.buyer_id!==uid)continue;
+  if(filter==='sell'&&c.seller_id!==uid)continue;
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);visibleCount++;
  }
