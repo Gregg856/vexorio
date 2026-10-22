@@ -16,7 +16,7 @@
 
 /* Conversation navigation and message timestamps */
 #chatDialog .dialoghead{grid-template-columns:auto minmax(0,1fr) auto auto;gap:6px}#chatDialog .dialoghead #backToAccountBtn{white-space:nowrap}#chatDialog .chat-time{display:block;margin-top:6px;text-align:right;font-size:11px;color:#c1d5df;opacity:.85}#chatDialog .chat-bubble.mine .chat-time{color:#d1eaf0}@media(max-width:540px){#chatDialog .dialoghead{grid-template-columns:auto minmax(0,1fr) auto;gap:6px}#chatDialog .dialoghead #chatTitle{grid-column:1 / -1;grid-row:2;margin:4px 0 0}#chatDialog .dialoghead #backToAccountBtn{grid-column:1;grid-row:1}#chatDialog .dialoghead #refreshChatBtn{grid-column:2;grid-row:1;justify-self:end}#chatDialog .dialoghead .close{grid-column:3;grid-row:1}}
-#accountBtn[data-unread]::after{content:attr(data-unread);display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 4px;margin-left:7px;border-radius:12px;background:#ffb020;color:#16212c;font-size:12px;font-weight:800}#accountDialog .unread-conversation{border:2px solid #ffb020!important;font-weight:800}#accountDialog .unread-conversation::after{content:' • Nowa';color:#ffcf6d;font-size:12px}
+#accountBtn[data-unread]::after{content:attr(data-unread);display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 4px;margin-left:7px;border-radius:12px;background:#e52545;color:#fff;font-size:12px;font-weight:800}#accountDialog .unread-conversation{border:2px solid #ffb020!important;font-weight:800}#accountDialog .unread-conversation::after{content:' • Nowa';color:#ffcf6d;font-size:12px}
 #accountDialog .listing-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}#accountDialog .account-listing strong{flex:1}#editDialog{width:min(94vw,560px);max-height:calc(100dvh - 28px);overflow-y:auto;border-radius:18px;padding:20px}#editDialog .form{display:grid;gap:12px}@media(max-width:540px){#editDialog{width:calc(100vw - 24px);padding:16px}#accountDialog .listing-actions .btn{padding:8px 9px}}
 #editDialog .edit-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}#editDialog .edit-photo{display:grid;gap:6px;padding:8px;border:1px solid #29495c;border-radius:12px}#editDialog .edit-photo img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}#editDialog .edit-photo .btn{font-size:11px;padding:8px 4px}#editDialog #editPhotoHint{font-size:12px}
 #priceMin,#priceMax{min-width:0;width:100%}@media(max-width:600px){.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tools #cityFilter{grid-column:1/-1}.tools #sortListings{grid-column:1/-1}}
@@ -196,7 +196,7 @@
 .inbox-preview{font-size:12px;color:#a9c2d1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @media(max-width:440px){.account-tile{min-height:102px;padding:13px}}
 
-#vexMobileChat{position:relative}#vexMobileChat[data-unread]::after{content:attr(data-unread);position:absolute;top:2px;right:calc(50% - 29px);min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:12px;background:#ffb020;color:#152332;border:2px solid #071e2e;font-size:11px;font-weight:800;line-height:15px;text-align:center;pointer-events:none}
+#vexMobileChat{position:relative}#vexMobileChat[data-unread]::after{content:attr(data-unread);position:absolute;top:2px;right:calc(50% - 29px);min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:12px;background:#e52545;color:#fff;border:2px solid #071e2e;font-size:11px;font-weight:800;line-height:15px;text-align:center;pointer-events:none}
 
  #vexMobileChat.vex-new-message{animation:vex-chat-notice .65s ease-out 2}@keyframes vex-chat-notice{0%,100%{transform:scale(1)}45%{transform:scale(1.15)}}@media(prefers-reduced-motion:reduce){#vexMobileChat.vex-new-message{animation:none}} /* Owned listing management */
 #accountDialog .my-listing-card{display:flex;align-items:flex-start;flex-direction:column;gap:12px;padding:15px}
@@ -1591,7 +1591,7 @@ async function refreshVisibleChat(){
   try{await refreshConversation()}finally{chatRefreshInProgress=false}
  }else if($('accountDialog').open&&!$('accountMessagesSection').hidden&&!inboxRefreshInProgress){inboxRefreshInProgress=true;try{await loadConversations()}finally{inboxRefreshInProgress=false}}
 }
-setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void refreshVisibleChat()}},10000);
+setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void refreshVisibleChat()}},5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
 async function sendMessage(listingId,sellerId,message){
  if(!sb)throw new Error('Brak połączenia z bazą.');
