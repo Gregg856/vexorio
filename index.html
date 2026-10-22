@@ -1067,6 +1067,20 @@
 .seller-profile-header p{margin:0}
 .seller-profile-listing{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;width:100%;margin:5px 0}
 @media(max-width:600px){#sellerProfileDialog{width:calc(100vw - 16px);padding:16px}}
+/* Public seller page: responsive offer rows with uniform thumbnails. */
+#sellerProfileDialog .seller-profile-header{gap:12px;padding:12px 0 16px}
+#sellerProfileDialog .seller-profile-avatar{width:56px;height:56px;font-size:25px}
+#sellerProfileDialog .seller-profile-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 14px}
+#sellerProfileDialog .seller-profile-tabs .btn{flex:1 1 auto;font-size:12px;min-height:38px;padding:8px}
+#sellerProfileDialog .seller-profile-results{display:grid;gap:10px}
+#sellerProfileDialog .seller-profile-listing{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:12px;padding:9px!important;margin:0!important;border-radius:13px;text-align:left}
+#sellerProfileDialog .seller-profile-listing-photo{display:grid;place-items:center;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:9px;background:#092133;color:#7394a6;font-size:28px}
+#sellerProfileDialog .seller-profile-listing-photo img{width:100%;height:100%;object-fit:contain}
+#sellerProfileDialog .seller-profile-listing-body{display:flex;flex-direction:column;min-width:0;gap:5px}
+#sellerProfileDialog .seller-profile-listing-body strong{font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+#sellerProfileDialog .seller-profile-listing-price{color:#00d9ed;font-size:17px;font-weight:800}
+#sellerProfileDialog .seller-profile-listing-body .muted{font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:600px){#sellerProfileDialog .seller-profile-listing{grid-template-columns:92px minmax(0,1fr);gap:10px}#sellerProfileDialog .seller-profile-header h3{font-size:19px}}
 /* Keep the Android keyboard from hiding the chat composer. */
 @media(max-width:600px){
  #chatDialog[open]{position:fixed!important;inset:auto auto auto 0!important;left:0!important;right:0!important;top:var(--vex-chat-top,0px)!important;width:100vw!important;max-width:100vw!important;height:var(--vex-chat-height,100dvh)!important;max-height:var(--vex-chat-height,100dvh)!important;margin:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
@@ -1624,9 +1638,12 @@ async function openSellerProfile(ownerId){
   if(!section.items.length){const empty=document.createElement('p');empty.className='muted';empty.textContent=({pl:'Brak aktywnych ofert w tej kategorii.',de:'Keine aktiven Angebote in dieser Kategorie.',en:'No active listings in this category.'}[language]);results.append(empty);return}
   section.items.forEach(item=>{
    const btn=document.createElement('button');btn.type='button';btn.className='btn seller-profile-listing';
+   const pictures=photoUrls(item);const thumb=document.createElement('div');thumb.className='seller-profile-listing-photo';if(pictures.length){const img=document.createElement('img');img.src=pictures[0];img.alt='';img.loading='lazy';thumb.append(img)}else{thumb.textContent='▧';thumb.setAttribute('aria-hidden','true')}
+   const body=document.createElement('span');body.className='seller-profile-listing-body';
    const title=document.createElement('strong');title.textContent=item.title;
-   const details=document.createElement('span');details.className='muted';details.textContent=[item.city,item.country,price(item.price,item.currency)].filter(Boolean).join(' · ');
-   btn.append(title,details);btn.onclick=()=>{dialog.close();openDetail(item)};results.append(btn)
+   const cost=document.createElement('span');cost.className='seller-profile-listing-price';cost.textContent=price(item.price,item.currency);
+   const details=document.createElement('span');details.className='muted';details.textContent='📍 '+[item.city,item.country].filter(Boolean).join(' · ');
+   body.append(title,cost,details);btn.append(thumb,body);btn.onclick=()=>{dialog.close();openDetail(item)};results.append(btn)
   })
  }
  sections.forEach(section=>{const tab=document.createElement('button');tab.type='button';tab.className='btn small';tab.dataset.section=section.key;tab.setAttribute('role','tab');tab.textContent=section.label+' ('+section.items.length+')';tab.onclick=()=>showSection(section);tabs.append(tab)});
