@@ -1852,11 +1852,14 @@ async function sendMessage(listingId,sellerId,message){
  const chat=document.getElementById('chatDialog');
  if(chat&&window.visualViewport){
   const fitChatToKeyboard=()=>{
-   if(!chat.open){chat.style.removeProperty('height');chat.style.removeProperty('max-height');chat.style.removeProperty('top');return}
+   if(!chat.open){chat.style.removeProperty('height');chat.style.removeProperty('max-height');chat.style.removeProperty('top');chat.style.removeProperty('margin');return}
    const viewport=window.visualViewport;
-   const available=Math.max(240,Math.floor(viewport.height-24));
+   const available=Math.max(200,Math.floor(viewport.height-8));
    chat.style.height=available+'px';chat.style.maxHeight=available+'px';
-   chat.style.top=Math.round(viewport.offsetTop)+'px';
+   chat.style.top=Math.round(viewport.offsetTop+4)+'px';
+   chat.style.margin='0 auto';
+   const composer=chat.querySelector('#replyForm');
+   if(composer&&document.activeElement?.id==='replyText')requestAnimationFrame(()=>composer.scrollIntoView({block:'nearest',behavior:'instant'}));
   };
   window.visualViewport.addEventListener('resize',fitChatToKeyboard);
   window.visualViewport.addEventListener('scroll',fitChatToKeyboard);
