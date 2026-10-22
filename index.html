@@ -924,6 +924,29 @@
  #detailDialog #detailContent>.photo-gallery{border-bottom:0!important}
  #detailDialog #detailContent>.photo-gallery:has(+.detail-main-heading){border-bottom:0!important}
 }
+/* Consistent 4:3 gallery stage on phones, without cropping uploaded photos. */
+@media(max-width:600px){
+ #detailDialog #detailContent>.photo-gallery{
+  width:100%!important;max-width:100%!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  background:#091b2c!important;border-radius:14px 14px 0 0!important;
+  overflow:hidden!important;box-sizing:border-box!important;
+ }
+ #detailDialog #detailContent>.photo-gallery img:first-child{
+  grid-column:1/-1!important;display:block!important;
+  width:100%!important;height:auto!important;aspect-ratio:4/3!important;
+  max-height:none!important;object-fit:contain!important;
+  object-position:center!important;background:#091b2c!important;
+  border:0!important;border-radius:0!important;margin:0!important;
+ }
+ #detailDialog #detailContent>.photo-gallery img:not(:first-child){
+  aspect-ratio:4/3!important;object-fit:contain!important;
+  background:#091b2c!important;
+ }
+ #detailDialog #detailContent>.photo-gallery+.detail-main-heading{
+  border-radius:0!important;padding-top:12px!important;
+ }
+}
 /* Public seller profile: no private email or phone exposure. */
 #sellerProfileDialog{width:min(94vw,560px);max-height:90dvh;padding:20px}
 .seller-profile-header{display:flex;align-items:center;gap:16px;padding:16px 0}
