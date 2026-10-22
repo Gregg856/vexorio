@@ -1739,7 +1739,7 @@ function updateCitySuggestions(){
   list.replaceChildren();
   for(const name of [...cities.values()].sort((a,b)=>Number(searchText(b).startsWith(needle))-Number(searchText(a).startsWith(needle))||a.localeCompare(b,language)).slice(0,12)){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');btn.textContent='📍 '+name;
-   btn.addEventListener('click',()=>{$('cityFilter').value=name;clearTimeout(citySuggestTimer);citySuggestRequest++;closeCitySuggestions();$('cityFilter').dispatchEvent(new Event('input',{bubbles:true}));closeCitySuggestions();$('cityFilter').blur();render()});
+   btn.addEventListener('click',()=>{clearTimeout(citySuggestTimer);citySuggestRequest++;$('cityFilter').value=name;closeCitySuggestions();$('cityFilter').blur();updateSearchSuggestions();updateSaveSearchButton();render()});
    list.append(btn);
   }
   list.hidden=!list.childElementCount;$('cityFilter').setAttribute('aria-expanded',String(!list.hidden));
