@@ -1832,7 +1832,7 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle))cities.set(needle,type
    const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(typed)+'&count=30&language=en&format=json&countryCode='+encodeURIComponent(country);
    const response=await fetch(url);if(!response.ok)return;const data=await response.json();
    if(request!==citySuggestRequest||$('vexCityDialog').hidden||$('country').value!==country||input.value.trim()!==typed)return;
-   const matches=(data.results||[]).filter(p=>p.country_code===country&&p.name&&searchText(p.name).includes(needle));
+   const matches=(data.results||[]).filter(p=>p.country_code===country&&p.name&&searchText(p.name).includes(needle)).sort((a,b)=>Number(searchText(b.name).startsWith(needle))-Number(searchText(a.name).startsWith(needle)));
    for(const p of matches){const key=searchText(p.name);if(!cities.has(key))cities.set(key,p.name)}
    paint();
   }catch(e){console.warn('City suggestions unavailable',e)}
