@@ -906,6 +906,24 @@
   margin-top:0!important;
  }
 }
+/* Mobile detail: group gallery and information as a single continuous card.
+   The gallery is followed by optional service category, then heading. */
+@media(max-width:600px){
+ #detailDialog #detailContent>.photo-gallery{margin:0!important;border:0!important;border-radius:14px 14px 0 0!important;overflow:hidden!important}
+ #detailDialog #detailContent>.photo-gallery img:first-child{border-radius:0!important}
+ #detailDialog #detailContent>.photo-gallery~.detail-main-heading{border-radius:0!important}
+ #detailDialog #detailContent>.photo-gallery~.detail-main-heading,
+ #detailDialog #detailContent>.photo-gallery~p.muted,
+ #detailDialog #detailContent>.photo-gallery~.detail-price,
+ #detailDialog #detailContent>.photo-gallery~.detail-meta,
+ #detailDialog #detailContent>.photo-gallery~.detail-section-heading,
+ #detailDialog #detailContent>.photo-gallery~.detail-description{margin:0!important}
+ #detailDialog #detailContent>.photo-gallery+.detail-main-heading{padding-top:12px!important}
+ #detailDialog #detailContent>.photo-gallery+p.muted{padding:5px 14px!important}
+ #detailDialog #detailContent>.photo-gallery~.detail-description{border-radius:0 0 14px 14px!important;margin-bottom:12px!important}
+ #detailDialog #detailContent>.photo-gallery{border-bottom:0!important}
+ #detailDialog #detailContent>.photo-gallery:has(+.detail-main-heading){border-bottom:0!important}
+}
 /* Public seller profile: no private email or phone exposure. */
 #sellerProfileDialog{width:min(94vw,560px);max-height:90dvh;padding:20px}
 .seller-profile-header{display:flex;align-items:center;gap:16px;padding:16px 0}
