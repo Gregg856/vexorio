@@ -1731,7 +1731,7 @@ function updateCitySuggestions(){
  }
  const paint=()=>list.replaceChildren(...[...cities.values()].sort((a,b)=>{const aStarts=searchText(a).startsWith(needle),bStarts=searchText(b).startsWith(needle);return Number(bStarts)-Number(aStarts)||a.localeCompare(b,language)}).slice(0,60).map(name=>{const opt=document.createElement('option');opt.value=name;return opt}));
  paint();clearTimeout(citySuggestTimer);const request=++citySuggestRequest;
- if(country==='all'||needle.length<3||/^[0-9 -]+$/.test(typed))return;
+ if(country==='all'||needle.length<3||needle.length>80||/^[0-9 -]+$/.test(typed))return;
  citySuggestTimer=setTimeout(async()=>{
   try{
    const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(typed)+'&count=30&language=en&format=json&countryCode='+encodeURIComponent(country);
