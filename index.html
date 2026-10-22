@@ -1539,6 +1539,9 @@ async function loadConversations(){
  }
  box.replaceChildren(); // Remove the loading label before rendering conversations.
  const searchValue=(document.getElementById('vexInboxSearch')?.value||'').trim().toLocaleLowerCase();
+ const unreadTotal=data.reduce((count,c)=>{const m=latestByConversation.get(String(c.id));const seen=getSeen(c.id);return count+(m&&(!seen||m.created_at>seen)?1:0)},0);
+ const unreadButton=document.querySelector('#vexInboxFilters button[data-filter="unread"]');
+ if(unreadButton){unreadButton.textContent='Nieprzeczytane'+(unreadTotal?' ('+unreadTotal+')':'');unreadButton.setAttribute('aria-label',unreadTotal+' nieprzeczytanych rozmów')}
  let visibleCount=0;
  data.sort((a,b)=>{const lastA=previewByConversation.get(String(a.id))?.created_at||a.created_at||'';const lastB=previewByConversation.get(String(b.id))?.created_at||b.created_at||'';return lastA<lastB?1:lastA>lastB?-1:0});
  for(const c of data){
