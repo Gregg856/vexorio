@@ -1665,9 +1665,10 @@ async function sendMessage(listingId,sellerId,message){
    const client=typeof sb!=='undefined'?sb:null;
    if(!client)throw Error('Brak połączenia z kontem.');
    const {data:{session}}=await client.auth.getSession();if(!session)throw Error('Zaloguj się ponownie.');
+   if(Notification.permission==='granted')await syncPushSubscription();
    const response=await fetch(SUPABASE_URL+'/functions/v1/vexorio-push-test',{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action:'test-self'})});
    const result=await response.json();if(!response.ok)throw Error(result.error||'Błąd wysyłania');
-   pushStatus.textContent=result.sent?'Wysłano test na '+result.sent+' urządzeń.':'Nie znaleziono aktywnego urządzenia push.';
+   pushStatus.textContent=result.sent?'Wysłano test na '+result.sent+' urządzeń.':result.failed?'Nie udało się dostarczyć push ('+result.failed+').':'Brak urządzenia przypisanego do konta.';
   }catch(e){if(e instanceof TypeError){try{const probe=await fetch(SUPABASE_URL+'/functions/v1/vexorio-push-test?diagnostic=1',{method:'GET',cache:'no-store'});pushStatus.textContent='Test push (diag. 3): POST nie działa, GET HTTP '+probe.status+'. Zrób zrzut ekranu.';}catch(probeError){pushStatus.textContent='Test push (diag. 3): POST i GET niedostępne ('+(probeError.message||'błąd sieci')+'). Zrób zrzut ekranu.';}}else{pushStatus.textContent='Test push (diag. 3): '+(e.message||'błąd');}}
   finally{testPushButton.disabled=false}
  });
