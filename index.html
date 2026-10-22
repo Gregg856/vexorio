@@ -1738,7 +1738,13 @@ async function sendMessage(listingId,sellerId,message){
   const key=vapidKey();if(!key){pushStatus.textContent='Powiadomienia push: oczekują na konfigurację serwera.';return}
   const client=typeof sb!=='undefined'?sb:null;
   if(!client){pushStatus.textContent='Brak połączenia z bazą powiadomień.';return}
-  const {data:{user},error:authError}=await client.auth.getUser();if(!user){pushStatus.textContent=authError?'Nie udało się potwierdzić sesji. Odśwież stronę.':'Zaloguj się, aby włączyć push.';return}
+  const {data:{session:activeSession},error:sessionError}=await client.auth.getSession();
+  const user=activeSession?.user;
+  if(!user){
+   if(session?.user?.id){pushStatus.textContent='Sesja konta jest odnawiana. Powiadomienia pozostają włączone.';return}
+   pushStatus.textContent=sessionError?'Nie udało się odczytać sesji. Spróbuj ponownie później.':'Zaloguj się, aby włączyć push.';
+   return;
+  }
   const registration=await navigator.serviceWorker.register('/push-sw.js',{scope:'/'});
   let subscription=await registration.pushManager.getSubscription();
   if(subscription){
