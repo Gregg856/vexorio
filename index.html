@@ -1543,6 +1543,12 @@ async function loadConversations(){
  box.replaceChildren(); // Remove the loading label before rendering conversations.
  const searchValue=(document.getElementById('vexInboxSearch')?.value||'').trim().toLocaleLowerCase();
  const unreadTotal=data.reduce((count,c)=>{const m=latestByConversation.get(String(c.id));const seen=getSeen(c.id);return count+(m&&(!seen||m.created_at>seen)?1:0)},0);
+ const filterBar=document.getElementById('vexInboxFilters');
+ if(filterBar&&!document.getElementById('vexInboxRefresh')){
+  const refresh=document.createElement('button');refresh.id='vexInboxRefresh';refresh.type='button';refresh.className='btn small';refresh.textContent='↻ Odśwież';refresh.setAttribute('aria-label','Odśwież listę rozmów');refresh.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
+  refresh.onclick=()=>{refresh.disabled=true;loadConversations().finally(()=>{refresh.disabled=false})};
+  filterBar.append(refresh);
+ }
  const unreadButton=document.querySelector('#vexInboxFilters button[data-filter="unread"]');
  if(unreadButton){unreadButton.textContent='Nieprzeczytane'+(unreadTotal?' ('+unreadTotal+')':'');unreadButton.setAttribute('aria-label',unreadTotal+' nieprzeczytanych rozmów')}
  let visibleCount=0;
