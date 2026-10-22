@@ -1624,7 +1624,7 @@ async function openConversation(id,title){
 }
 $('backToAccountBtn').textContent='← Wiadomości';$('backToAccountBtn').setAttribute('aria-label','Wróć do listy wiadomości');
 $('backToAccountBtn').onclick=()=>{if($('chatDialog').open)$('chatDialog').close();openAccount();requestAnimationFrame(()=>{const heading=document.querySelector('#accountDialog .inbox-heading');if(heading)heading.scrollIntoView({block:'start',behavior:'instant'});const search=document.getElementById('vexInboxSearch');if(search)search.focus({preventScroll:true})})};
-$('refreshChatBtn').onclick=()=>refreshConversation();
+$('refreshChatBtn').onclick=async()=>{const button=$('refreshChatBtn');if(button.disabled)return;button.disabled=true;button.setAttribute('aria-busy','true');button.textContent='↻ Odświeżanie…';try{await refreshConversation()}catch(error){console.error('Nie udało się odświeżyć czatu:',error);$('replyStatus').textContent='Nie udało się odświeżyć wiadomości. Spróbuj ponownie.'}finally{button.disabled=false;button.removeAttribute('aria-busy');button.textContent='↻ Odśwież'}};
 $('chatJumpBottom').onclick=()=>{const box=$('chatMessages');box.scrollTop=box.scrollHeight;$('chatJumpBottom').hidden=true};
 $('chatMessages').addEventListener('scroll',()=>{const box=$('chatMessages');$('chatJumpBottom').hidden=box.scrollHeight-box.scrollTop-box.clientHeight<90},{passive:true});
 async function refreshConversation(){
