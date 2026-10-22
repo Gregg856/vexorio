@@ -1501,8 +1501,11 @@ function ensureInboxSearch(){
  const box=$('myConversations');
  if(!box||document.getElementById('vexInboxSearch'))return;
  const input=document.createElement('input');input.id='vexInboxSearch';input.type='search';input.placeholder='🔎 Szukaj rozmowy lub ogłoszenia…';input.setAttribute('aria-label','Szukaj rozmów');input.autocomplete='off';input.style.cssText='width:100%;margin:8px 0 12px;min-height:46px;border-radius:12px;padding:10px 14px';
- input.addEventListener('input',()=>{clearTimeout(window.vexInboxSearchTimer);window.vexInboxSearchTimer=setTimeout(()=>loadConversations(),250)});
- box.parentNode.insertBefore(input,box);
+ const searchWrap=document.createElement('div');searchWrap.style.cssText='display:flex;align-items:center;gap:8px;width:100%';input.style.flex='1';input.style.minWidth='0';
+ const clear=document.createElement('button');clear.type='button';clear.className='btn small';clear.textContent='✕';clear.title='Wyczyść wyszukiwanie';clear.setAttribute('aria-label','Wyczyść wyszukiwanie rozmów');clear.style.cssText='flex-shrink:0;min-width:42px;min-height:42px;border-radius:12px';clear.hidden=true;
+ input.addEventListener('input',()=>{clear.hidden=!input.value;clearTimeout(window.vexInboxSearchTimer);window.vexInboxSearchTimer=setTimeout(()=>loadConversations(),250)});
+ clear.onclick=()=>{input.value='';clear.hidden=true;clearTimeout(window.vexInboxSearchTimer);input.focus();void loadConversations()};
+ searchWrap.append(input,clear);box.parentNode.insertBefore(searchWrap,box);
 }
 function ensureInboxFilters(){
  const box=$('myConversations');
