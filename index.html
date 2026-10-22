@@ -1714,10 +1714,10 @@ async function sendMessage(listingId,sellerId,message){
   }
   try{localStorage.setItem(key,enabled?'on':'off')}catch(e){}
   if(enabled&&'serviceWorker' in navigator&&window.isSecureContext){try{await navigator.serviceWorker.register('/push-sw.js',{scope:'/'});}catch(e){console.warn('VEXORIO push worker registration unavailable',e)}}
-  if(enabled&&Notification.permission==='granted')try{await syncPushSubscription()}catch(e){pushStatus.textContent='Nie udało się włączyć push na tym urządzeniu.';console.warn('Push subscription failed',e)}
+  if(enabled&&Notification.permission==='granted')try{await syncPushSubscription()}catch(e){pushStatus.textContent='Błąd włączenia push: '+(e?.message||e?.name||'nieznany błąd');console.warn('Push subscription failed',e)}
   draw();
  });
- if(enabled&&supported&&Notification.permission==='granted'&&'serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('/push-sw.js',{scope:'/'}).then(()=>syncPushSubscription()).catch(e=>{pushStatus.textContent='Nie udało się odnowić powiadomień push.';console.warn('VEXORIO push sync failed',e)})}
+ if(enabled&&supported&&Notification.permission==='granted'&&'serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('/push-sw.js',{scope:'/'}).then(()=>syncPushSubscription()).catch(e=>{pushStatus.textContent='Błąd odnowienia push: '+(e?.message||e?.name||'nieznany błąd');console.warn('VEXORIO push sync failed',e)})}
  draw();
 })();
 </script>
