@@ -1529,7 +1529,7 @@ async function loadConversations(){
  if(!sb||!session){box.textContent='Zaloguj się, aby zobaczyć wiadomości.';return}
  const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+session.user.id+',seller_id.eq.'+session.user.id).order('created_at',{ascending:false}).limit(100);
  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
- if(error){box.textContent='Nie udało się pobrać rozmów: '+error.message;return}
+ if(error){box.replaceChildren();const notice=document.createElement('p');notice.textContent='Nie udało się pobrać rozmów. Sprawdź połączenie i spróbuj ponownie.';notice.setAttribute('role','alert');const retry=document.createElement('button');retry.type='button';retry.className='btn small';retry.textContent='↻ Spróbuj ponownie';retry.onclick=()=>{retry.disabled=true;void loadConversations().finally(()=>{retry.disabled=false})};box.append(notice,retry);console.error('Inbox loading failed:',error);return}
  if(!data?.length){box.textContent='Nie masz jeszcze rozmów.';return}
  const latestByConversation=new Map();const previewByConversation=new Map();
  // Fetch recent messages in batches to show a preview of the latest message.
