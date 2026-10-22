@@ -965,6 +965,56 @@
  #detailDialog{padding-bottom:20px!important}
  #detailDialog #detailContent{padding-bottom:16px!important}
 }
+/* Final mobile listing layout: consistent gallery, compact information and contact. */
+@media(max-width:600px){
+ #detailDialog{background:#091724!important;padding:0 0 12px!important}
+ #detailDialog .dialoghead{min-height:50px!important;padding:7px 14px!important;margin:0 0 10px!important;background:#091724!important}
+ #detailDialog #detailContent{padding:0 12px 18px!important;gap:0!important}
+ #detailDialog #detailContent>.photo-gallery{
+  order:0!important;display:flex!important;flex-wrap:nowrap!important;
+  width:100%!important;max-width:100%!important;margin:0!important;
+  padding:0!important;gap:0!important;overflow-x:auto!important;
+  scroll-snap-type:x mandatory!important;background:#0a2031!important;
+  border:0!important;border-radius:14px 14px 0 0!important;
+ }
+ #detailDialog #detailContent>.photo-gallery img,
+ #detailDialog #detailContent>.photo-gallery img:first-child,
+ #detailDialog #detailContent>.photo-gallery img:not(:first-child){
+  flex:0 0 100%!important;grid-column:auto!important;
+  display:block!important;width:100%!important;min-width:100%!important;
+  height:auto!important;max-height:240px!important;aspect-ratio:4/3!important;
+  object-fit:contain!important;object-position:center!important;
+  background:#0a2031!important;border:0!important;border-radius:0!important;
+  margin:0!important;scroll-snap-align:center!important;
+ }
+ #detailDialog #detailContent>.detail-main-heading{order:1!important}
+ #detailDialog #detailContent>p.muted{order:2!important}
+ #detailDialog #detailContent>.detail-price{order:3!important}
+ #detailDialog #detailContent>.detail-meta{order:4!important}
+ #detailDialog #detailContent>.detail-section-heading{order:5!important}
+ #detailDialog #detailContent>.detail-description{order:6!important}
+ #detailDialog #detailContent>.detail-main-heading,
+ #detailDialog #detailContent>p.muted,
+ #detailDialog #detailContent>.detail-price,
+ #detailDialog #detailContent>.detail-meta,
+ #detailDialog #detailContent>.detail-section-heading,
+ #detailDialog #detailContent>.detail-description{
+  width:100%!important;box-sizing:border-box!important;background:#102738!important;
+  border-radius:0!important;border:0!important;margin:0!important;
+ }
+ #detailDialog #detailContent>.detail-main-heading{padding:12px 14px 2px!important;font-size:20px!important}
+ #detailDialog #detailContent>p.muted{padding:3px 14px!important;font-size:13px!important}
+ #detailDialog #detailContent>.detail-price{padding:5px 14px!important;font-size:24px!important}
+ #detailDialog #detailContent>.detail-meta{padding:6px 14px 10px!important;min-height:0!important}
+ #detailDialog #detailContent>.detail-section-heading{padding:10px 14px 3px!important;border-top:1px solid #28465a!important;font-size:15px!important}
+ #detailDialog #detailContent>.detail-description{padding:4px 14px 14px!important;border-radius:0 0 14px 14px!important;margin-bottom:12px!important}
+ #detailDialog #detailContent>.detail-seller{order:7!important;margin:0 0 12px!important}
+ #detailDialog #detailContent>.phone-contact{order:8!important}
+ #detailDialog #detailContent>form{order:9!important}
+ #detailDialog #detailContent>.detail-share{order:10!important}
+ #detailDialog #detailContent>.related-listings{order:11!important}
+ #detailDialog #detailContent{padding-bottom:16px!important}
+}
 /* Public seller profile: no private email or phone exposure. */
 #sellerProfileDialog{width:min(94vw,560px);max-height:90dvh;padding:20px}
 .seller-profile-header{display:flex;align-items:center;gap:16px;padding:16px 0}
