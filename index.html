@@ -828,6 +828,11 @@
  #chatDialog #replyForm{margin-top:4px}
 }
 
+/* During typing, leave space for the newest message instead of a large jump button. */
+@media(max-width:600px){
+ #chatDialog:focus-within #chatJumpBottom{display:none!important}
+ #chatDialog:focus-within #chatMessages{scroll-behavior:auto!important}
+}
 /* Keep the Android keyboard from hiding the chat composer. */
 @media(max-width:600px){
  #chatDialog[open]{position:fixed!important;inset:auto auto auto 0!important;left:0!important;right:0!important;top:var(--vex-chat-top,0px)!important;width:100vw!important;max-width:100vw!important;height:var(--vex-chat-height,100dvh)!important;max-height:var(--vex-chat-height,100dvh)!important;margin:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
@@ -1870,7 +1875,7 @@ async function sendMessage(listingId,sellerId,message){
    chat.style.setProperty('--vex-chat-top',Math.round(viewport.offsetTop+4)+'px');
    chat.style.setProperty('--vex-chat-height',available+'px');
    const composer=chat.querySelector('#replyForm');
-   if(composer&&document.activeElement?.id==='replyText'&&keyboardJustOpened)requestAnimationFrame(()=>{const messages=chat.querySelector('#chatMessages');if(messages){messages.scrollTop=messages.scrollHeight;const jump=chat.querySelector('#chatJumpBottom');if(jump)jump.hidden=true}});
+   if(composer&&document.activeElement?.id==='replyText'&&keyboardJustOpened)requestAnimationFrame(()=>requestAnimationFrame(()=>{const messages=chat.querySelector('#chatMessages');if(messages){messages.scrollTop=messages.scrollHeight;const jump=chat.querySelector('#chatJumpBottom');if(jump)jump.hidden=true}}));
   };
   window.visualViewport.addEventListener('resize',fitChatToKeyboard);
   window.visualViewport.addEventListener('scroll',fitChatToKeyboard);
