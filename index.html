@@ -1506,26 +1506,28 @@ async function loadMine(){
   const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.setAttribute('aria-label','Edytuj ogłoszenie numer '+x.id);edit.onclick=()=>editListing(x.id);
   const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
   del.onclick=async()=>{
+   if(del.disabled)return;
    if(!confirm('Na pewno usunąć wpis „'+(x.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;
-   del.disabled=true;del.textContent='Usuwanie…';
+   del.disabled=true;del.setAttribute('aria-busy','true');del.textContent='Usuwanie…';
    try{
     const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
     if(removeError||!removed?.length)throw new Error(removeError?.message||'Brak uprawnień');
     $('accountMsg').textContent='Wpis został usunięty.';
     const results=await Promise.allSettled([loadMine(),loadListings()]);
     if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Wpis usunięty, ale nie wszystkie dane zostały odświeżone. Użyj „Odśwież dane”.';
-   }catch(err){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(err?.message||'Błąd połączenia.');del.disabled=false;del.textContent='Usuń'}
+   }catch(err){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(err?.message||'Błąd połączenia.');del.disabled=false;del.textContent='Usuń'}finally{del.removeAttribute('aria-busy')}
   };
   const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?'↻ Wznów':'✓ Zakończ';toggle.setAttribute('aria-label',(x.status==='closed'?'Wznów':'Zakończ')+' wpis numer '+x.id);
   toggle.onclick=async()=>{
-   const next=x.status==='closed'?'active':'closed';toggle.disabled=true;const original=toggle.textContent;toggle.textContent='Zapisywanie…';
+   if(toggle.disabled)return;
+   const next=x.status==='closed'?'active':'closed';toggle.disabled=true;toggle.setAttribute('aria-busy','true');const original=toggle.textContent;toggle.textContent='Zapisywanie…';
    try{
     const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).select('id');
     if(statusError||!changed?.length)throw new Error(statusError?.message||'Brak uprawnień');
     $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';
     const results=await Promise.allSettled([loadMine(),loadListings()]);
     if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Status zapisany, ale odświeżenie nie powiodło się. Użyj „Odśwież dane”.';
-   }catch(err){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(err?.message||'Błąd połączenia.');toggle.disabled=false;toggle.textContent=original}
+   }catch(err){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(err?.message||'Błąd połączenia.');toggle.disabled=false;toggle.textContent=original}finally{toggle.removeAttribute('aria-busy')}
   };
   actions.append(edit,toggle,del);row.append(main,actions);box.append(row)
  }
