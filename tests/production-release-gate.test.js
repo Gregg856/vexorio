@@ -61,7 +61,7 @@ const visibilityChecks=[
  ['admin deletion delegated to protected RPC',/sb\.rpc\('admin_delete_listing',\{p_listing_id:id\}\)/],
  ['admin rights rechecked before deleting',/stillAdmin,error:verifyError[\s\S]{0,120}is_vexorio_admin/],
  ['report category constrained to allowed reasons',/\['fraud','illegal','spam','privacy','other'\]\.includes\(category\)/],
- ['report ownership verified against authenticated user',/reportedListing\.owner_id===reportAuth\.user\.id/],
+ ['report ownership verified against authenticated user',/reportedListing\?\.owner_id===reportAuth\.user\.id/],
 ];
 for(const [name,pattern] of visibilityChecks)assert.match(html,pattern,'Missing listing moderation protection: '+name);
 console.log('PASS: five listing visibility and reporting guards');
