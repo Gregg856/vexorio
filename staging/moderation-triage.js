@@ -3,11 +3,11 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.VexorioModerationTriage=api;})(typeof globalThis!=='undefined'?globalThis:null,function(){
 'use strict';
 const rules=[
- {id:'sexual-services',weight:65,terms:[/\\b(?:usługi seksualne|sex za pieniądze|seks za pieniądze|escort service|sexual services|sexarbeit)\\b/i]},
- {id:'explicit-content',weight:55,terms:[/\\b(?:pornografia|pornographic|pornografie|materiały porno)\\b/i]},
- {id:'credential-request',weight:50,terms:[/\\b(?:podaj hasło|wyślij hasło|send your password|passwort senden)\\b/i]},
- {id:'advance-payment',weight:30,terms:[/\\b(?:zaliczka przed oględzinami|opłata z góry przed obejrzeniem|pay before viewing)\\b/i]},
- {id:'off-platform-contact',weight:15,terms:[/\\b(?:pisz tylko na telegram|contact only on telegram|nur telegram)\\b/i]}
+ {id:'sexual-services',weight:65,terms:[/\b(?:usługi seksualne|sex za pieniądze|seks za pieniądze|escort service|sexual services|sexarbeit)\b/i]},
+ {id:'explicit-content',weight:55,terms:[/\b(?:pornografia|pornographic|pornografie|materiały porno)\b/i]},
+ {id:'credential-request',weight:50,terms:[/\b(?:podaj hasło|wyślij hasło|send your password|passwort senden)\b/i]},
+ {id:'advance-payment',weight:30,terms:[/\b(?:zaliczka przed oględzinami|opłata z góry przed obejrzeniem|pay before viewing)\b/i]},
+ {id:'off-platform-contact',weight:15,terms:[/\b(?:pisz tylko na telegram|contact only on telegram|nur telegram)\b/i]}
 ];
 function evaluate(input){
  const title=String(input&&input.title||'').slice(0,300);
