@@ -1658,21 +1658,39 @@ let adminBadgeRefreshInProgress=false;
 async function updateAdminReportBadge(){
  if(adminBadgeRefreshInProgress)return;
  const badge=$('adminReportBadge');if(!badge)return;
- badge.style.display='inline-block';badge.textContent='🔔 0';
  if(!sb||!session?.user?.id||$('adminReportsBtn').classList.contains('hide'))return;
  adminBadgeRefreshInProgress=true;
- let ads,chats;
- try{[ads,chats]=await Promise.all([
-  sb.from('listing_reports').select('id',{count:'exact',head:true}).eq('status','new'),
-  sb.from('message_reports').select('id',{count:'exact',head:true}).eq('status','new')
- ])}catch(e){return}finally{adminBadgeRefreshInProgress=false}
- if(ads.error||chats.error)return;
- const total=(ads.count||0)+(chats.count||0);
- const count=total>99?'99+':String(total);
- badge.textContent='🔔 '+count;
- const dash=$('dashReportBadge'),account=$('accountReportBadge');
- if(dash)dash.textContent=count;
- if(account)account.textContent='🔔 '+count;
+ try{
+  const [ads,chats,pendingResult]=await Promise.all([
+   sb.from('listing_reports').select('id',{count:'exact',head:true}).eq('status','new'),
+   sb.from('message_reports').select('id',{count:'exact',head:true}).eq('status','new'),
+   sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50})
+  ]);
+  const reportsOk=!ads.error&&!chats.error;
+  const pendingOk=!pendingResult.error&&Array.isArray(pendingResult.data);
+  const reportCount=reportsOk?(ads.count||0)+(chats.count||0):null;
+  const pendingCount=pendingOk?pendingResult.data.length:null;
+  const countLabel=n=>n>99?'99+':String(n);
+  const dash=$('dashReportBadge'),account=$('accountReportBadge'),photos=$('dashPendingBadge');
+  if(reportCount!==null){
+   const label=countLabel(reportCount);
+   if(dash)dash.textContent=label;
+   if(account)account.textContent='🔔 '+label;
+  }
+  if(pendingCount!==null&&photos)photos.textContent='('+pendingCount+(pendingCount===50?'+':'')+')';
+  if(reportCount!==null&&pendingCount!==null){
+   badge.style.display='inline-block';
+   badge.textContent='🔔 '+countLabel(reportCount+pendingCount);
+   badge.setAttribute('aria-label','Zgłoszenia: '+reportCount+', zdjęcia do zatwierdzenia: '+pendingCount);
+  }else{
+   badge.style.display='inline-block';
+   badge.textContent='🔔 …';
+   badge.setAttribute('aria-label','Nie udało się pobrać wszystkich powiadomień administratora');
+  }
+ }catch(e){
+  badge.style.display='inline-block';badge.textContent='🔔 …';
+  console.warn('Nie udało się odświeżyć powiadomień administratora',e);
+ }finally{adminBadgeRefreshInProgress=false}
 }
 setInterval(()=>{if(!document.hidden&&session?.user?.id&&!$('adminReportsBtn').classList.contains('hide'))void updateAdminReportBadge()},30000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session?.user?.id&&!$('adminReportsBtn').classList.contains('hide'))void updateAdminReportBadge()});
@@ -1772,7 +1790,7 @@ async function loadAdminPendingListings(){
      }
      if(reviewError)throw reviewError;
      if(changed!==true)throw new Error('Ogłoszenie zostało już rozpatrzone lub nie istnieje.');
-     await loadAdminPendingListings();await loadAdminOverview();await loadListings();
+     await loadAdminPendingListings();await loadAdminOverview();await loadListings();await updateAdminReportBadge();
     }catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać.');for(const b of actions.querySelectorAll('button'))b.disabled=false}
    };
    actions.append(btn);
