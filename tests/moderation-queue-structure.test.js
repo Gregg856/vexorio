@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const queue=fs.readFileSync(path.join(__dirname,'../staging/moderation-queue.js'),'utf8');
+const triage=fs.readFileSync(path.join(__dirname,'../staging/moderation-triage.js'),'utf8');
+assert.ok(queue.includes('window.VexorioModerationTriage'));
+assert.ok(queue.includes('items.sort((a,b)'));
+assert.ok(queue.includes('b._risk?.score'));
+assert.ok(queue.includes('Sygnały: '));
+assert.ok(queue.includes('is_vexorio_admin'));
+assert.ok(queue.includes('owkjdlpawczrnwyszduj'));
+assert.ok(!queue.includes('window.sb.rpc'));
+assert.ok(triage.includes('requiresHumanReview'));
+console.log('PASS: staging risk-prioritized moderation queue structure');
