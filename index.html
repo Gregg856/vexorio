@@ -1716,10 +1716,11 @@ async function loadAdminReports(){
  const queueOrder={new:0,reviewing:1,resolved:2,dismissed:3};filteredData.sort((a,b)=>(queueOrder[a.status]??4)-(queueOrder[b.status]??4)||new Date(b.created_at)-new Date(a.created_at));
  status.textContent=selectedListing===null?'Wszystkie zgłoszenia':'Zgłoszenia wyłącznie dla ogłoszenia #'+selectedListing;
  const reportCounts={new:0,reviewing:0,resolved:0,dismissed:0};for(const report of filteredData){if(Object.hasOwn(reportCounts,report.status))reportCounts[report.status]++}
+ const filterRow=document.createElement('div');filterRow.className='form';const filterLabel=document.createElement('label');filterLabel.textContent='Filtruj zgłoszenia';const statusFilter=document.createElement('select');[['all','Wszystkie'],['new','Nowe'],['reviewing','W trakcie'],['resolved','Rozpatrzone'],['dismissed','Odrzucone']].forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;statusFilter.append(option)});filterLabel.append(statusFilter);filterRow.append(filterLabel);list.append(filterRow);statusFilter.onchange=()=>{for(const card of list.querySelectorAll('[data-report-status]'))card.hidden=statusFilter.value!=='all'&&card.dataset.reportStatus!==statusFilter.value};
  const reportSummary=document.createElement('p');reportSummary.className='muted';reportSummary.textContent='Nowe: '+reportCounts.new+' · W trakcie: '+reportCounts.reviewing+' · Rozpatrzone: '+reportCounts.resolved+' · Odrzucone: '+reportCounts.dismissed;list.append(reportSummary);
  if(!filteredData.length){status.textContent=selectedListing===null?'Brak zgłoszeń.':'Brak zgłoszeń dla ogłoszenia #'+selectedListing+'.';return}
  for(const item of filteredData){
-  const box=document.createElement('div');box.className='info';box.style.margin='0';
+  const box=document.createElement('div');box.className='info';box.style.margin='0';box.dataset.reportStatus=item.status;
   const heading=document.createElement('h3');heading.textContent='Zgłoszenie #'+item.id+' · Ogłoszenie #'+(item.listing_id??'usunięte');
   const stateLabel=document.createElement('p');stateLabel.className='muted';const statusNames={new:'NOWE',reviewing:'W TRAKCIE',resolved:'ROZPATRZONE',dismissed:'ODRZUCONE'};stateLabel.textContent='Status: '+(statusNames[item.status]||item.status);
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString();
@@ -1741,7 +1742,7 @@ async function loadAdminReports(){
     removeStatus.textContent='Ogłoszenie usunięte.';remove.classList.add('hide');
     await loadListings();
    };
-   moderation.append(remove,removeStatus);
+   const view=document.createElement('a');view.className='btn';view.href='/?listing='+encodeURIComponent(String(item.listing_id));view.target='_blank';view.rel='noopener noreferrer';view.textContent='Zobacz ogłoszenie #'+item.listing_id;moderation.append(view,remove,removeStatus);
   }
 
   const select=document.createElement('select');
@@ -1749,7 +1750,7 @@ async function loadAdminReports(){
   select.value=item.status;
   const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='Zapisz status';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
-  save.onclick=async()=>{const nextStatus=select.value;if(nextStatus===item.status){feedback.textContent='Status bez zmian.';return}save.disabled=true;select.disabled=true;feedback.textContent='Zapisywanie…';try{const {data:updated,error:writeError}=await sb.from('listing_reports').update({status:nextStatus}).eq('id',item.id).eq('status',item.status).select('id,status').maybeSingle();if(writeError)throw writeError;if(!updated){feedback.textContent='Status zmienił się w innym oknie. Odśwież zgłoszenia.';return}if(Object.hasOwn(reportCounts,item.status))reportCounts[item.status]--;item.status=updated.status;stateLabel.textContent='Status: '+(statusNames[item.status]||item.status);if(Object.hasOwn(reportCounts,item.status))reportCounts[item.status]++;reportSummary.textContent='Nowe: '+reportCounts.new+' · W trakcie: '+reportCounts.reviewing+' · Rozpatrzone: '+reportCounts.resolved+' · Odrzucone: '+reportCounts.dismissed;feedback.textContent='Status zapisany.';await updateAdminReportBadge()}catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać statusu.')}finally{save.disabled=false;select.disabled=false}};
+  save.onclick=async()=>{const nextStatus=select.value;if(nextStatus===item.status){feedback.textContent='Status bez zmian.';return}save.disabled=true;select.disabled=true;feedback.textContent='Zapisywanie…';try{const {data:updated,error:writeError}=await sb.from('listing_reports').update({status:nextStatus}).eq('id',item.id).eq('status',item.status).select('id,status').maybeSingle();if(writeError)throw writeError;if(!updated){feedback.textContent='Status zmienił się w innym oknie. Odśwież zgłoszenia.';return}if(Object.hasOwn(reportCounts,item.status))reportCounts[item.status]--;item.status=updated.status;box.dataset.reportStatus=item.status;box.hidden=statusFilter.value!=='all'&&box.dataset.reportStatus!==statusFilter.value;stateLabel.textContent='Status: '+(statusNames[item.status]||item.status);if(Object.hasOwn(reportCounts,item.status))reportCounts[item.status]++;reportSummary.textContent='Nowe: '+reportCounts.new+' · W trakcie: '+reportCounts.reviewing+' · Rozpatrzone: '+reportCounts.resolved+' · Odrzucone: '+reportCounts.dismissed;feedback.textContent='Status zapisany.';await updateAdminReportBadge()}catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać statusu.')}finally{save.disabled=false;select.disabled=false}};
   box.append(heading,stateLabel,meta,detail,select,save,feedback,moderation);list.append(box);
  }
 }
