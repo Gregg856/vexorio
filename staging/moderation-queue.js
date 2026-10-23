@@ -12,14 +12,14 @@ dialog.insertBefore(section,$('dashOverview'));
 const status=$('pendingStatus'),list=$('pendingList');
 const triage=window.VexorioModerationTriage;
 // This is an advisory ordering only; server-side moderation remains authoritative.
-const photoKeys=['image_urls','images','photos','photo_urls','image_url','photo_url'];
-function hasPhoto(item){return photoKeys.some(key=>Array.isArray(item[key])?item[key].length>0:typeof item[key]==='string'&&item[key].trim().length>0)||item.hasImages===true||Number(item.imageCount)>0}
+const photoKeys=['listing_images','Images','image_urls','images','photos','photo_urls','image_url','photo_url'];
+function hasPhoto(item){return photoKeys.some(key=>Array.isArray(item[key])?item[key].length>0:item[key]&&typeof item[key]==='object'?Object.keys(item[key]).length>0:typeof item[key]==='string'&&item[key].trim().length>0)||item.hasImages===true||Number(item.imageCount)>0}
 const levels={'review-high':'Wysoki priorytet',review:'Do sprawdzenia',low:'Niski priorytet'};
 async function load(){
  list.replaceChildren();status.textContent='Sprawdzanie uprawnień…';
  const {data:allowed,error:authError}=await client.rpc('is_vexorio_admin');
  if(authError||allowed!==true){status.textContent='Brak uprawnień do moderacji.';return}
- const {data,error}=await client.rpc('vexorio_admin_pending_listings',{p_limit:50});
+ const {data,error}=await client.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});
  if(error){status.textContent='Nie można pobrać kolejki: '+error.message;return}
  const items=(data||[]).map(item=>({...item,_risk:triage&&typeof triage.evaluate==='function'?triage.evaluate({...item,hasImages:hasPhoto(item)}):null}));
  items.sort((a,b)=>(b._risk?.score||0)-(a._risk?.score||0)||String(a.created_at||'').localeCompare(String(b.created_at||'')));
