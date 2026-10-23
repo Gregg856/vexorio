@@ -54,7 +54,7 @@ const searchGuards=[
  ['Temporary geocoding errors retryable',/geoRetryAfter\.set\(key,Date\.now\(\)\+30000\)/],
  ['Failed lookup not permanently cached',/catch\(e\)\{geoRetryAfter\.set\(key,/],
  ['Country change clears city and radius',/\$\('country'\)\.addEventListener\('change',[\s\S]{0,350}\$\('radiusFilter'\)\.value='0'/],
- ['City selection refreshes listings',/function selectCity\(name\)[\s\S]{0,180}render\(\)/],
+ ['City selection refreshes listings',/function selectCity\(name(?:,label)?\)[\s\S]{0,450}render\(\)/],
  ['Radius uses postal fallback',/function listingGeoLocation\(item\)/],
  ['Radius loading respects listing errors',/if\(!listingLoadError&&!invalidPriceRange&&radiusLoading\)/],
  ['Missing radius location respects listing errors',/else if\(!listingLoadError&&!invalidPriceRange&&radiusNotFound\)/],
