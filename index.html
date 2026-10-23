@@ -1806,13 +1806,25 @@ function updateCitySuggestions(){
  const country=$('country').value,typed=input.value.trim(),needle=searchText(typed);
  clearTimeout(citySuggestTimer);const request=++citySuggestRequest;
  if(!needle){list.replaceChildren();list.hidden=true;return}
- // Postal codes can be selected directly; do not send numeric input to city-name autocomplete.
+ // Resolve postal codes to a city label while retaining the original postal code for radius filtering.
  if(/^[0-9][0-9 -]*$/.test(typed)){
   list.replaceChildren();
-  const digits=typed.replace(/\s+/g,'').trim();
-  if(country!=='all'&&digits.length>=4&&digits.length<=10){
+  const postal=typed.replace(/\s+/g,'').trim();
+  const valid=country==='DE'?/^\d{5}$/.test(postal):country==='PL'?/^\d{2}-?\d{3}$/.test(postal):/^\d{4,10}$/.test(postal);
+  if(country!=='all'&&valid){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');
-   btn.textContent='📍 '+digits;btn.addEventListener('click',()=>selectCity(digits));list.append(btn);
+   btn.textContent='📍 '+postal+' — sprawdzam miasto…';
+   btn.addEventListener('click',()=>selectCity(postal));list.append(btn);
+   const countryNames={DE:'Niemcy',PL:'Polska',AT:'Austria'};
+   const zip=country==='PL'&&/^\d{5}$/.test(postal)?postal.slice(0,2)+'-'+postal.slice(2):postal;
+   fetch('https://api.zippopotam.us/'+encodeURIComponent(country.toLowerCase())+'/'+encodeURIComponent(zip))
+    .then(response=>response.ok?response.json():null)
+    .then(data=>{
+     if(request!==citySuggestRequest||$('vexCityDialog').hidden||input.value.trim()!==typed||$('country').value!==country)return;
+     const city=data?.places?.[0]?.['place name'];
+     btn.textContent=city?'📍 '+postal+' — '+city+', '+(countryNames[country]||country):'📍 '+postal+' — nie znaleziono miasta';
+     btn.disabled=!city;
+    }).catch(()=>{if(request===citySuggestRequest)btn.textContent='📍 '+postal+' — sprawdź połączenie';btn.disabled=true});
   }
   list.hidden=!list.childElementCount;
   return;
