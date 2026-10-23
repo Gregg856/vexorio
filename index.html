@@ -1694,15 +1694,15 @@ async function loadAdminMessageReports(){
   const heading=document.createElement('h4');heading.textContent='Wiadomość · zgłoszenie #'+item.id;
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString('pl-PL');
   const details=document.createElement('p');details.textContent='Powód: '+item.details;
-  const message=document.createElement('p');message.className='muted';message.textContent='Treść wiadomości: ładowanie…';
-  const {data:reported,error:messageError}=await sb.rpc('admin_reported_message_body',{p_message_id:item.message_id});
-  message.textContent=messageError?'Treść niedostępna (brak dostępu).':reported?'Treść: '+reported:'Treść niedostępna lub usunięta.';
+  const message=document.createElement('p');message.className='muted';message.textContent='Treść wiadomości ukryta do czasu sprawdzenia zgłoszenia.';
+  const reveal=document.createElement('button');reveal.type='button';reveal.className='btn';reveal.textContent='Pokaż zgłoszoną wiadomość';
+  reveal.onclick=async()=>{if(reveal.disabled)return;reveal.disabled=true;message.textContent='Sprawdzanie uprawnień…';try{const {data:allowedNow,error:authError}=await sb.rpc('is_vexorio_admin');if(authError||allowedNow!==true)throw new Error('Brak uprawnień administratora.');const {data:reported,error:messageError}=await sb.rpc('admin_reported_message_body',{p_message_id:item.message_id});if(messageError)throw messageError;message.textContent=reported?'Treść: '+reported:'Treść niedostępna lub usunięta.';reveal.textContent='Ukryj treść';reveal.disabled=false;reveal.onclick=()=>{message.textContent='Treść wiadomości ukryta.';reveal.textContent='Pokaż zgłoszoną wiadomość';reveal.onclick=async()=>{await loadAdminMessageReports()}}}catch(err){message.textContent='Nie udało się pobrać treści: '+(err?.message||'Błąd dostępu');reveal.disabled=false}};
   const select=document.createElement('select');
   [['new','Nowe'],['reviewing','W trakcie'],['resolved','Rozpatrzone'],['dismissed','Odrzucone']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.append(opt)});select.value=item.status;
   const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='Zapisz status';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
   save.onclick=async()=>{if(save.disabled)return;const nextStatus=select.value;if(nextStatus===item.status){feedback.textContent='Status bez zmian.';return}save.disabled=true;select.disabled=true;feedback.textContent='Zapisywanie…';try{const {data:allowedNow,error:authError}=await sb.rpc('is_vexorio_admin');if(authError||allowedNow!==true)throw new Error('Brak uprawnień administratora.');const {data:updated,error:writeError}=await sb.from('message_reports').update({status:nextStatus}).eq('id',item.id).eq('status',item.status).select('id,status').maybeSingle();if(writeError)throw writeError;if(!updated){feedback.textContent='Status zmienił się w innym oknie. Odśwież zgłoszenia.';return}item.status=updated.status;feedback.textContent='Status zapisany.';counter.textContent='Nowe: '+items.filter(x=>x.status==='new').length+' · Wyświetlono: '+items.length;}catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać.')}finally{save.disabled=false;select.disabled=false}};
-  card.append(heading,meta,details,message,select,save,feedback);list.append(card);
+  card.append(heading,meta,details,reveal,message,select,save,feedback);list.append(card);
  }
 }
 let adminReportListingFilter=null;
