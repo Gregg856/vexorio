@@ -1813,7 +1813,7 @@ function updateCitySuggestions(){
   cities.set(key,name);if(cities.size>=40)break;
  }
  // Vienna is known locally as Wien; ensure its exact name is selectable in Austria.
- if(country==='AT'&&needle==='wien')cities.set('wien','Wien');
+ if(country==='AT'&&needle==='wien'&&!cities.has('wien'))cities.set('wien','Wien');
 // Let users select the exact entered city even when a geocoding service returns only similarly named places.
 if(country!=='all'&&needle.length>=2&&!cities.has(needle))cities.set(needle,typed);
  const paint=()=>{
