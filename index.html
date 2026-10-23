@@ -1720,6 +1720,7 @@ async function loadAdminPendingListings(){
   const heading=document.createElement('h3');heading.textContent=item.title||('Ogłoszenie #'+item.listing_id);
   const meta=document.createElement('p');meta.className='muted';meta.textContent='ID: '+item.listing_id+' · '+new Date(item.created_at).toLocaleString();
   const desc=document.createElement('p');desc.textContent=item.description||'Brak opisu';
+  const photos=document.createElement('div');photos.className='photo-gallery';for(const url of (Array.isArray(item.listing_images)?item.listing_images:[]).slice(0,8)){if(typeof url!=='string')continue;let parsed;try{parsed=new URL(url)}catch{continue}if(parsed.protocol!=='https:'||!parsed.pathname.includes('/storage/v1/object/public/listing-images/'))continue;const photo=document.createElement('img');photo.src=parsed.href;photo.alt='Zdjęcie oczekującego ogłoszenia';photo.loading='lazy';photos.append(photo)}
   const actions=document.createElement('div');actions.style.display='flex';actions.style.gap='8px';actions.style.flexWrap='wrap';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
   for(const [decision,label] of [['approved','Zatwierdź'],['rejected','Odrzuć']]){
@@ -1738,7 +1739,7 @@ async function loadAdminPendingListings(){
    };
    actions.append(btn);
   }
-  card.append(heading,meta,desc,actions,feedback);list.append(card);
+  card.append(heading,meta,desc,photos,actions,feedback);list.append(card);
  }
 }
 let adminReportListingFilter=null;
