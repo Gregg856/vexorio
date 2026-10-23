@@ -26,7 +26,7 @@ async function load(){
   const card=document.createElement('article');card.className='notice';
   const title=document.createElement('strong');title.textContent=item.title||'Bez tytułu';
   const desc=document.createElement('p');desc.textContent=item.description||'';
-  const risk=document.createElement('p');risk.className='muted';risk.textContent=item._risk?('Priorytet: '+levels[item._risk.level]+' · '+item._risk.score+'/100'+(item._risk.reasons.length?' · Sygnały: '+item._risk.reasons.join(', '):'')):'Ocena ryzyka niedostępna';
+  const risk=document.createElement('p');risk.className='muted';risk.textContent=item._risk?('Priorytet: '+levels[item._risk.level]+' · '+item._risk.score+'/100'+(item._risk.reasons.length?' · Sygnały: '+item._risk.reasons.join(', '):'')+(item._risk.photoReviewRequired?' · Zdjęcia: wymagają osobnej kontroli':'') ):'Ocena ryzyka niedostępna';
   const buttons=document.createElement('div');buttons.className='tools';
   for(const [decision,label] of [['approved','Zatwierdź'],['rejected','Odrzuć']]){
    const button=document.createElement('button');button.type='button';button.className='btn small';button.textContent=label;
