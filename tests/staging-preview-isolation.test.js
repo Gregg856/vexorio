@@ -18,11 +18,11 @@ const checks=[
   ['legacy query removed',!preview.includes("Images,status,view_count').order('created_at'")],
   ['listing posting control',preview.includes('newPhonePublic')],
   ['photo upload support',/type=["']file["']/.test(preview)],
-  ['login dialog',preview.includes('authModal')],
+  ['login dialog',preview.includes('authDialog')],
   ['search control',preview.includes('applyListingFilters')],
   ['city picker',preview.includes('vexCityDialogInput')],
   ['staging language translation',preview.includes('Gespeicherte Suchen anzeigen')],
 ];
 for(const [name,ok] of checks)assert.ok(ok,'STAGING preview check failed: '+name);
-assert.ok(!preview.includes('service_role'),'Service role token must never appear in browser HTML');
+assert.ok(!/sb_secret_[A-Za-z0-9_-]+/.test(preview),'Secret API key must never appear in browser HTML');
 console.log('PASS: '+checks.length+' staging preview isolation and UI checks');
