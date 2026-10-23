@@ -23,9 +23,11 @@ for(const [before,after] of previewUiFixes){if(!output.includes(before))throw Er
 // Keep a clear, readable hint for users choosing a radius without a city.
 // Localize city dialog labels and make the search action accessible on small screens.
 const languageUi = "const cityClose=document.getElementById('vexCityDialogClose');if(cityClose)cityClose.setAttribute('aria-label',v==='de'?'Stadtauswahl schließen':v==='en'?'Close city picker':'Zamknij wybór miasta');const citySearch=document.getElementById('vexCityDialogInput');if(citySearch){citySearch.placeholder=v==='de'?'Stadt oder Postleitzahl':v==='en'?'City or postal code':'Wpisz miasto lub kod pocztowy';citySearch.setAttribute('aria-label',citySearch.placeholder)}";
+// Localize the read-only city field, accessibility labels and browser title.
+const extraUi="const cityField=document.getElementById('cityFilter');if(cityField){cityField.placeholder=v==='de'?'Stadt / Postleitzahl':v==='en'?'City / postal code':'Miasto / kod pocztowy';cityField.setAttribute('aria-label',v==='de'?'Stadt auswählen':v==='en'?'Choose city':'Wybierz miasto')}const labels={pl:['Zapisz wyszukiwanie','Pokaż zapisane wyszukiwania','Udostępnij wyszukiwanie'],de:['Suche speichern','Gespeicherte Suchen anzeigen','Suche teilen'],en:['Save search','Show saved searches','Share search']}[v];['saveSearchBtn','savedSearchesBtn','shareSearchBtn'].forEach((id,i)=>{const el=document.getElementById(id);if(el){el.setAttribute('aria-label',labels[i]);el.title=labels[i]}});document.title=v==='de'?'VEXORIO — Kleinanzeigen ohne Grenzen':v==='en'?'VEXORIO — Listings without borders':'VEXORIO — Ogłoszenia bez granic';";
 const langMarker="const searchButton=document.getElementById('applyListingFilters');";
 if(!output.includes(langMarker))throw Error('Missing language UI marker');
-output=output.replace(langMarker,languageUi+langMarker);
+output=output.replace(langMarker,extraUi+languageUi+langMarker);
 output=output.replace('</style>', '#radiusInfo:not(:empty){display:block;padding:9px 12px;border:1px solid #35677b;border-radius:10px;line-height:1.4;margin-top:5px} </style>');
 if(output.includes('https://lfytoxcnutduahshbsko.supabase.co')||!output.includes(stagingUrl))throw new Error('Production backend reference found in staging preview');
 fs.writeFileSync(path.join(__dirname,'staging-preview.html'),output);
