@@ -2362,6 +2362,7 @@ async function loadMine(){
    try{
     const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
     if(removeError||!removed?.length)throw new Error(removeError?.message||'Brak uprawnień');
+    favorites.delete(String(x.id));try{localStorage.setItem('vexorio-favorites',JSON.stringify([...favorites]))}catch(e){}
     $('accountMsg').textContent='Wpis został usunięty.';
     const results=await Promise.allSettled([loadMine(),loadListings()]);
     if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Wpis usunięty, ale nie wszystkie dane zostały odświeżone. Użyj „Odśwież dane”.';
