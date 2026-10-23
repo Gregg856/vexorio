@@ -11,7 +11,7 @@ const required=[
  ['Listing database insert', "sb.from('listings').insert(record)"],
  ['Image file validation', "files.some(f=>!allowed.includes(f.type)||f.size>5*1024*1024)"],
  ['Message insert', "sb.from('messages').insert({conversation_id:sendingConversationId,sender_id:sendingUserId,body:text})"],
- ['Message sender session', "const sendingUserId=session.user.id"],
+ ['Message sender session', "sendingUserId=session.user.id"],
  ['Listing fraud signals', "function listingRiskSignals(text)"],
  ['Report entry', "id=\""],
 ];
