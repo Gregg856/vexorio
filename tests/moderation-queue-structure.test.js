@@ -12,3 +12,7 @@ assert.ok(queue.includes('owkjdlpawczrnwyszduj'));
 assert.ok(!queue.includes('window.sb.rpc'));
 assert.ok(triage.includes('requiresHumanReview'));
 console.log('PASS: staging risk-prioritized moderation queue structure');
+
+assert.ok(queue.includes('result===false'),'Server refusal must be handled');
+assert.ok(queue.includes('catch(err){e=err}'),'Network failure must be handled');
+console.log('PASS: moderation decision failure handling');
