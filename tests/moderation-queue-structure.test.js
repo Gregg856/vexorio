@@ -16,3 +16,8 @@ console.log('PASS: staging risk-prioritized moderation queue structure');
 assert.ok(queue.includes('result===false'),'Server refusal must be handled');
 assert.ok(queue.includes('catch(err){e=err}'),'Network failure must be handled');
 console.log('PASS: moderation decision failure handling');
+
+assert.ok(queue.includes('function hasPhoto(item)'));
+assert.ok(queue.includes('photoConfirmed&&!photoConfirmed.checked'));
+assert.ok(queue.includes('ze zdjęciami: '));
+console.log('PASS: photo review gating and count checks');
