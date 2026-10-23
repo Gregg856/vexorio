@@ -1815,9 +1815,9 @@ function updateCitySuggestions(){
  // Vienna is known locally as Wien; ensure its exact name is selectable in Austria.
  if(country==='AT'&&needle==='wien'&&!cities.has('wien'))cities.set('wien','Wien');
  // Include Warsaw when the geocoder suggests smaller places for an unfinished name.
- if(country==='PL'&&needle.length>=3&&'warszawa'.startsWith(needle)&&!cities.has('warszawa'))cities.set('warszawa','Warszawa');
+ if(country==='PL'&&needle.length>=3&&('warszawa'.startsWith(needle)||'warsaw'.startsWith(needle))&&!cities.has('warszawa'))cities.set('warszawa','Warszawa');
 // Let users select the exact entered city even when a geocoding service returns only similarly named places.
-if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&needle.length>=3&&'warszawa'.startsWith(needle)))cities.set(needle,typed);
+if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&needle.length>=3&&('warszawa'.startsWith(needle)||'warsaw'.startsWith(needle))))cities.set(needle,typed);
  const paint=()=>{
   if($('vexCityDialog').hidden)return;
   list.replaceChildren();
@@ -1834,9 +1834,9 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&nee
    const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(typed)+'&count=30&language=en&format=json&countryCode='+encodeURIComponent(country);
    const response=await fetch(url);if(!response.ok)return;const data=await response.json();
    if(request!==citySuggestRequest||$('vexCityDialog').hidden||$('country').value!==country||input.value.trim()!==typed)return;
-   const matches=(data.results||[]).filter(p=>p.country_code===country&&typeof p.name==='string'&&searchText(p.name).startsWith(needle)).sort((a,b)=>Number(searchText(b.name)===needle)-Number(searchText(a.name)===needle)||a.name.localeCompare(b.name,language));
+   const matches=(data.results||[]).filter(p=>p.country_code===country&&typeof p.name==='string'&&searchText(p.name).startsWith(needle)&&!/(airport|lotnisko|flughafen|aéroport)/i.test(p.name)).sort((a,b)=>Number(searchText(b.name)===needle)-Number(searchText(a.name)===needle)||a.name.localeCompare(b.name,language));
    if(matches.length&&!matches.some(p=>searchText(p.name)===needle)&&cities.get(needle)===typed)cities.delete(needle);
-   for(const p of matches){const key=searchText(p.name);if(!cities.has(key))cities.set(key,p.name)}
+   for(const p of matches){const name=country==='PL'&&searchText(p.name)==='warsaw'?'Warszawa':p.name;const key=searchText(name);if(!cities.has(key))cities.set(key,name)}
    paint();
   }catch(e){console.warn('City suggestions unavailable',e)}
  },450);
