@@ -1799,7 +1799,7 @@ function geoKey(city,country){return searchText(city)+'|'+String(country||'').to
 let citySuggestTimer=null,citySuggestRequest=0;
 function closeCitySuggestions(){clearTimeout(citySuggestTimer);citySuggestRequest++;$('vexorioCitySuggestions').hidden=true}
 function closeCityDialog(){closeCitySuggestions();$('vexCityDialog').hidden=true;$('vexCityDialogInput').blur()}
-function selectCity(name){$('cityFilter').value=String(name||'').trim();closeCityDialog();updateSearchSuggestions();updateSaveSearchButton();render()}
+function selectCity(name){$('cityFilter').value=String(name||'').trim();closeCityDialog();updateSearchSuggestions();updateSaveSearchButton();render();$('cityFilter').focus({preventScroll:true})}
 function updateCitySuggestions(){
  const list=$('vexorioCitySuggestions'),input=$('vexCityDialogInput');
  const country=$('country').value,typed=input.value.trim(),needle=searchText(typed);
