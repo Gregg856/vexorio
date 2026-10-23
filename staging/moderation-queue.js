@@ -10,17 +10,22 @@ const section=document.createElement('section');section.id='stagingModerationQue
 section.innerHTML='<h3>🛡️ Ogłoszenia oczekujące na moderację (STAGING)</h3><button type="button" class="btn small" id="pendingRefresh">↻ Odśwież kolejkę</button><p id="pendingStatus" role="status"></p><div id="pendingList"></div>';
 dialog.insertBefore(section,$('dashOverview'));
 const status=$('pendingStatus'),list=$('pendingList');
+const triage=window.VexorioModerationTriage;
+const levels={'review-high':'Wysoki priorytet',review:'Do sprawdzenia',low:'Niski priorytet'};
 async function load(){
  list.replaceChildren();status.textContent='Sprawdzanie uprawnień…';
  const {data:allowed,error:authError}=await client.rpc('is_vexorio_admin');
  if(authError||allowed!==true){status.textContent='Brak uprawnień do moderacji.';return}
  const {data,error}=await client.rpc('vexorio_admin_pending_listings',{p_limit:50});
  if(error){status.textContent='Nie można pobrać kolejki: '+error.message;return}
- status.textContent='Oczekujące ogłoszenia: '+(data||[]).length;
- for(const item of data||[]){
+ const items=(data||[]).map(item=>({...item,_risk:triage&&typeof triage.evaluate==='function'?triage.evaluate(item):null}));
+ items.sort((a,b)=>(b._risk?.score||0)-(a._risk?.score||0)||String(a.created_at||'').localeCompare(String(b.created_at||'')));
+ status.textContent='Oczekujące ogłoszenia: '+items.length+(triage?' · według ryzyka':' · bez oceny ryzyka');
+ for(const item of items){
   const card=document.createElement('article');card.className='notice';
   const title=document.createElement('strong');title.textContent=item.title||'Bez tytułu';
   const desc=document.createElement('p');desc.textContent=item.description||'';
+  const risk=document.createElement('p');risk.className='muted';risk.textContent=item._risk?('Priorytet: '+levels[item._risk.level]+' · '+item._risk.score+'/100'+(item._risk.reasons.length?' · Sygnały: '+item._risk.reasons.join(', '):'')):'Ocena ryzyka niedostępna';
   const buttons=document.createElement('div');buttons.className='tools';
   for(const [decision,label] of [['approved','Zatwierdź'],['rejected','Odrzuć']]){
    const button=document.createElement('button');button.type='button';button.className='btn small';button.textContent=label;
@@ -32,7 +37,7 @@ async function load(){
     await load();
    };buttons.append(button);
   }
-  card.append(title,desc,buttons);list.append(card);
+  card.append(title,risk,desc,buttons);list.append(card);
  }
 }
 $('pendingRefresh').onclick=load;
