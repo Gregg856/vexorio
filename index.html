@@ -1803,7 +1803,7 @@ function closeCityDialog(){closeCitySuggestions();$('vexCityDialogInput').blur()
 function selectCity(name,label){
  const field=$('cityFilter');field.value=String(name||'').trim();
  let hint=document.getElementById('vexSelectedPostalCity');
- if(!hint){hint=document.createElement('div');hint.id='vexSelectedPostalCity';hint.style.cssText='color:#67e8f9;font-size:14px;margin:6px 4px 0;line-height:1.4';field.insertAdjacentElement('afterend',hint)}
+ if(!hint){hint=document.createElement('div');hint.id='vexSelectedPostalCity';hint.style.cssText='display:block;position:relative;color:#67e8f9;font-size:14px;margin:8px 4px 12px;line-height:1.5;min-height:21px;clear:both';field.insertAdjacentElement('afterend',hint)}
  hint.textContent=label&&label!==name?'📍 '+label:'';hint.hidden=!hint.textContent;
  closeCityDialog();updateSearchSuggestions();updateSaveSearchButton();render()
 }
