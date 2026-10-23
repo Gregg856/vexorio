@@ -49,7 +49,11 @@ const searchGuards=[
  ['Radius empty-state scope',/radiusActive&&radiusCandidateCount>0&&!radiusLoading/],
  ['Radius alternatives',/\[10,25,50,100,200,500\]\.filter\(km=>km>radiusKm\)\.slice\(0,3\)/],
  ['Warsaw radius geocoding alias',/searchText\(city\)==='warszawa'\?'Warsaw':city/],
- ['Airport suggestions excluded',/!\/\(airport\|lotnisko\|flughafen\|aéroport\)\/i\.test\(p\.name\)/]
+ ['Airport suggestions excluded',/!\/\(airport\|lotnisko\|flughafen\|aéroport\)\/i\.test\(p\.name\)/],
+ ['Ambiguous city names rejected',/found=distinct\.size===1\?matches\[0\]:null/],
+ ['Temporary geocoding errors retryable',/geoRetryAfter\.set\(key,Date\.now\(\)\+30000\)/],
+ ['Failed lookup not permanently cached',/catch\(e\)\{geoRetryAfter\.set\(key,/]
+
 ];
 for(const [name,pattern] of searchGuards)assert.match(html,pattern,'Search regression: '+name);
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
