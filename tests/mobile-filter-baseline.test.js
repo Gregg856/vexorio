@@ -28,3 +28,8 @@ assert.ok(html.includes("language==='de'?'Alle Unterkategorien'"),'German defaul
 assert.ok(html.includes('label:quickSubcategoryLabel(category,name)'),'Translated labels used in desktop selector');
 assert.ok(html.includes('opt.value=item.value;opt.textContent=item.label'),'Underlying filter values are preserved');
 console.log('PASS: desktop subcategory translations and filter values');
+
+// Listing creation uses localized labels but stable stored category values.
+assert.ok(html.includes('option.value=item;option.textContent=quickSubcategoryLabel(category,item);sel.append(option)'), 'Creation form subcategory translations');
+assert.ok(html.includes("const sub=isService?$('newServiceGroup').selectedOptions[0]?.textContent:$('newGeneralSubcategory').selectedOptions[0]?.textContent"),'Localized category breadcrumb');
+console.log('PASS: multilingual listing creation subcategories');
