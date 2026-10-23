@@ -2372,8 +2372,8 @@ async function loadMine(){
    if(toggle.disabled)return;
    const next=x.status==='closed'?'active':'closed';toggle.disabled=true;toggle.setAttribute('aria-busy','true');const original=toggle.textContent;toggle.textContent='Zapisywanie…';
    try{
-    const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).select('id');
-    if(statusError||!changed?.length)throw new Error(statusError?.message||'Brak uprawnień');
+    const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).eq('status',x.status).select('id');
+    if(statusError||!changed?.length)throw new Error(statusError?.message||'Status ogłoszenia zmienił się w międzyczasie. Odśwież listę i spróbuj ponownie.');
     $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';
     const results=await Promise.allSettled([loadMine(),loadListings()]);
     if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Status zapisany, ale odświeżenie nie powiodło się. Użyj „Odśwież dane”.';
