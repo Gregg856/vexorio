@@ -65,6 +65,7 @@ jobs:
           node tests/location-radius-fixtures.test.js
           node tests/public-profile-regression.test.js
           node tests/mobile-filter-baseline.test.js
+          node tests/prelaunch-critical-paths.test.js
 
       - name: Publikuj w Cloudflare
         id: publish
