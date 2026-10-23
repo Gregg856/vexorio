@@ -25,3 +25,8 @@ const adminRpcNames=['admin_delete_listing','admin_moderation_audit','admin_mode
 for(const name of adminRpcNames){assert.ok(html.includes("sb.rpc('"+name+"'"),'Admin RPC missing: '+name)}
 assert.ok(html.includes("sb.rpc('is_vexorio_admin')"),'Admin role check missing');
 console.log('PASS: admin client wiring; database authorization requires separate verification');
+
+// Avoid silently dropping the client authorization check when changing moderation UI.
+assert.ok(html.includes("if(accessError||allowed!==true)"),'Moderation authorization gate missing');
+assert.ok(html.includes("if(authError||allowed!==true)"),'Admin dashboard authorization gate missing');
+console.log('PASS: admin UI authorization checks retained');
