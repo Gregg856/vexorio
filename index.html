@@ -2251,24 +2251,27 @@ function listingRiskSignals(text){
 async function validListingImageSignature(file){if(!file||file.size<12)return false;const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());if(file.type==='image/jpeg')return bytes[0]===255&&bytes[1]===216&&bytes[2]===255;if(file.type==='image/png')return bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&bytes[4]===13&&bytes[5]===10&&bytes[6]===26&&bytes[7]===10;if(file.type==='image/webp')return String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP';return false}
 $('addForm').onsubmit=async e=>{e.preventDefault();if(!sb||!session)return $('addMsg').textContent='Zaloguj się, aby opublikować wpis.';
 const submit=$('addForm').querySelector('button[type=submit]');if(submit.disabled)return;
-const {data:verifiedAuth,error:verifiedAuthError}=await sb.auth.getUser();
+let verifiedAuth,verifiedAuthError;try{({data:verifiedAuth,error:verifiedAuthError}=await sb.auth.getUser())}catch(authFailure){return $('addMsg').textContent='Nie udało się zweryfikować sesji. Spróbuj ponownie.';}
 if(verifiedAuthError||!verifiedAuth?.user||verifiedAuth.user.id!==session.user.id)return $('addMsg').textContent='Sesja wygasła. Zaloguj się ponownie przed publikacją.';
 const title=$('newTitle').value.trim(),description=listingDescriptionWithExtras(),priceInput=$('newPrice').value;
 if(title.length<3||title.length>120||!description.trim()||description.length>10000)return $('addMsg').textContent='Sprawdź tytuł (3–120 znaków) i opis (1–10000 znaków).';
 if(priceInput!==''&&(!Number.isFinite(Number(priceInput))||Number(priceInput)<0))return $('addMsg').textContent='Podaj prawidłową cenę.';
 const files=Array.from($('newImages').files);const allowed=['image/jpeg','image/png','image/webp'];
 if(files.length>5)return $('addMsg').textContent='Możesz dodać maksymalnie 5 zdjęć.';
-if(files.some(f=>!allowed.includes(f.type)||f.size>5*1024*1024))return $('addMsg').textContent='Zdjęcia muszą być JPG, PNG lub WebP, maksymalnie 5 MB każde.';
+if(files.some(f=>!allowed.includes(f.type)||f.size===0||f.size>5*1024*1024))return $('addMsg').textContent='Zdjęcia muszą być JPG, PNG lub WebP, maksymalnie 5 MB każde.';
+if(files.reduce((total,file)=>total+file.size,0)>20*1024*1024)return $('addMsg').textContent='Łączny rozmiar zdjęć nie może przekraczać 20 MB.';
 for(const file of files){if(!await validListingImageSignature(file))return $('addMsg').textContent='Nieprawidłowy lub uszkodzony plik zdjęcia: '+file.name+'. Wybierz prawdziwy JPG, PNG albo WebP.';}
 const riskSignals=listingRiskSignals($('newTitle').value+' '+$('newDesc').value);
 if(riskSignals.length){
  const notice=language==='de'?'Die Anzeige enthält möglicherweise einen externen Link oder eine Aufforderung zur Zahlung bzw. Weitergabe von Zugangsdaten. Bitte prüfe den Text. Trotzdem veröffentlichen?':language==='en'?'This listing may contain an external link or a request for payment or login details. Please review it. Publish anyway?':'W ogłoszeniu wykryto możliwy link zewnętrzny albo prośbę o płatność lub dane logowania. Sprawdź treść. Opublikować mimo ostrzeżenia?';
  if(!confirm(notice))return $('addMsg').textContent=language==='de'?'Veröffentlichung abgebrochen.':language==='en'?'Publishing cancelled.':'Publikowanie anulowane. Popraw treść ogłoszenia.';
 }
+if(!$('newCountry').value.trim()||!$('newCity').value.trim())return $('addMsg').textContent='Wybierz kraj i wpisz miasto ogłoszenia.';
 if($('newPhonePublic').checked&&!$('newPhone').value.trim())return $('addMsg').textContent=language==='de'?'Bitte Telefonnummer eingeben.':language==='en'?'Enter a phone number first.':'Najpierw wpisz numer telefonu.';
 if($('newPhone').value.trim()&&!/^[+0-9 ()-]{6,24}$/.test($('newPhone').value.trim()))return $('addMsg').textContent='Nieprawidłowy format numeru telefonu.';
 $('addMsg').textContent='';submit.disabled=true;submit.setAttribute('aria-busy','true');const submitOriginalText=submit.textContent;submit.textContent=({pl:'Publikowanie…',de:'Wird veröffentlicht…',en:'Publishing…'}[language]);const paths=[];const urls=[];
 try{for(const f of files){const ext=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/'+crypto.randomUUID()+'.'+ext;const {error:upErr}=await sb.storage.from('listing-images').upload(path,f,{contentType:f.type,upsert:false});if(upErr)throw upErr;paths.push(path);const {data}=sb.storage.from('listing-images').getPublicUrl(path);urls.push(data.publicUrl)}
+const {data:authBeforeSave,error:authBeforeSaveError}=await sb.auth.getUser();if(authBeforeSaveError||authBeforeSave?.user?.id!==session.user.id)throw new Error('Sesja wygasła podczas przesyłania zdjęć. Zaloguj się ponownie.');
 const publishingJob=$('newKind').value==='zlecenie';const record={owner_id:session.user.id,title:$('newTitle').value.trim(),category:$('newCategory').value,description:listingDescriptionWithExtras(),price:$('newPrice').value===''?null:Number($('newPrice').value),kraj:$('newCountry').value,miasto:$('newCity').value.trim(),rodzaj:publishingJob?'zlecenie':'ogloszenie',contact_phone:$('newPhonePublic').checked?$('newPhone').value.trim():null,show_contact_phone:$('newPhonePublic').checked,subcategory:$('newCategory').value==='Usługi'?$('newServiceGroup').value:($('newGeneralSubcategory').value||null),specialty:$('newCategory').value==='Usługi'?$('newServiceSpecialty').value:null,Images:urls};
 const {data:createdListing,error}=await sb.from('listings').insert(record).select('id').single();if(error)throw error;
 // The listing is saved; never delete its uploaded photos if refreshing the UI fails.
