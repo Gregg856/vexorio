@@ -1377,6 +1377,13 @@
  .top-filters .tools#listingFilterTools{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important;align-items:stretch!important;gap:10px!important}
  #listingFilterTools>#quickCategoryFilter{grid-column:1!important;grid-row:1!important}
  #listingFilterTools>#country{grid-column:2!important;grid-row:1!important}
+ #listingFilterTools>#quickSubcategoryFilter:not([hidden]){display:block!important;grid-column:1!important;grid-row:2!important;min-width:0!important}
+ #listingFilterTools:has(>#quickSubcategoryFilter:not([hidden]))>#priceMin{grid-row:3!important}
+ #listingFilterTools:has(>#quickSubcategoryFilter:not([hidden]))>#priceMax{grid-row:3!important}
+ #listingFilterTools:has(>#quickSubcategoryFilter:not([hidden]))>.filter-check-pair{grid-row:3!important}
+ #listingFilterTools:has(>#quickSubcategoryFilter:not([hidden]))>#sortListings{grid-row:3!important}
+ #listingFilterTools:has(>#quickSubcategoryFilter:not([hidden]))>#applyListingFilters{grid-row:4!important}
+
  #listingFilterTools>.vex-city-picker{grid-column:3!important;grid-row:1!important;min-width:0!important}
  #listingFilterTools>#radiusFilter{grid-column:4!important;grid-row:1!important}
  #listingFilterTools>#priceMin{grid-column:1!important;grid-row:2!important}
@@ -1443,7 +1450,7 @@
  #listingFilterTools #applyListingFilters{min-height:48px!important}
  .top-filters .tools#listingFilterTools{gap:8px!important}
 }
-@media(min-width:601px){#listingFilterTools #quickSubcategoryFilter{display:none!important}}
+@media(min-width:601px) and (max-width:900px){#listingFilterTools #quickSubcategoryFilter{display:none!important}}
 /* Compact category picker in the primary mobile search panel. */
 @media(max-width:600px){
  #listingFilterTools #quickCategoryFilter{display:block!important;grid-column:1/-1!important;width:100%!important;min-width:0!important;min-height:46px!important;font-size:16px!important}
