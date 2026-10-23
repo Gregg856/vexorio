@@ -55,7 +55,11 @@ const searchGuards=[
  ['Failed lookup not permanently cached',/catch\(e\)\{geoRetryAfter\.set\(key,/],
  ['Country change clears city and radius',/\$\('country'\)\.addEventListener\('change',[\s\S]{0,350}\$\('radiusFilter'\)\.value='0'/],
  ['City selection refreshes listings',/function selectCity\(name\)[\s\S]{0,180}render\(\)/],
- ['Radius uses postal fallback',/function listingGeoLocation\(item\)/]
+ ['Radius uses postal fallback',/function listingGeoLocation\(item\)/],
+ ['Radius loading respects listing errors',/if\(!listingLoadError&&!invalidPriceRange&&radiusLoading\)/],
+ ['Missing radius location respects listing errors',/else if\(!listingLoadError&&!invalidPriceRange&&radiusNotFound\)/],
+ ['Radius empty state excludes loading',/radiusCandidateCount>0&&!radiusLoading&&!radiusNotFound/],
+ ['City fallback remains loading',/geoPending\.has\(geoKey\(item\.city,item\.country\)\)/]
 
 ];
 for(const [name,pattern] of searchGuards)assert.match(html,pattern,'Search regression: '+name);
