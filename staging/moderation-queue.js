@@ -11,6 +11,7 @@ section.innerHTML='<h3>🛡️ Ogłoszenia oczekujące na moderację (STAGING)</
 dialog.insertBefore(section,$('dashOverview'));
 const status=$('pendingStatus'),list=$('pendingList');
 const triage=window.VexorioModerationTriage;
+// This is an advisory ordering only; server-side moderation remains authoritative.
 const levels={'review-high':'Wysoki priorytet',review:'Do sprawdzenia',low:'Niski priorytet'};
 async function load(){
  list.replaceChildren();status.textContent='Sprawdzanie uprawnień…';
@@ -41,6 +42,7 @@ async function load(){
  }
 }
 $('pendingRefresh').onclick=load;
+if(dialog.open)load();
 const observer=new MutationObserver(()=>{if(dialog.open)load()});
 observer.observe(dialog,{attributes:true,attributeFilter:['open']});
 })();
