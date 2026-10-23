@@ -43,3 +43,14 @@ const authenticatedChecks=[
 for(const [name,pattern] of authenticatedChecks)assert.match(html,pattern,'Missing authenticated guard: '+name);
 console.log('PASS: five authenticated ownership and messaging guards');
 console.log('PASS: production backend isolation, core UI and safety features');
+
+// Moderation regression gate: prevent accidental removal of admin safety controls.
+const moderationChecks=[
+ ['report administration verifies access',/async function loadAdminReports\(\)[\s\S]{0,450}is_vexorio_admin/],
+ ['user administration verifies access',/async function loadAdminUsers\(\)[\s\S]{0,450}is_vexorio_admin/],
+ ['reported message body requires explicit reveal',/reveal\.textContent='Pokaż zgłoszoną wiadomość'/],
+ ['message report decisions use optimistic concurrency',/from\('message_reports'\)\.update\(\{status:nextStatus\}\)\.eq\('id',item\.id\)\.eq\('status',item\.status\)/],
+ ['destructive listing moderation requires typed confirmation',/typed!==String\(id\)/],
+];
+for(const [name,pattern] of moderationChecks)assert.match(html,pattern,'Missing moderation protection: '+name);
+console.log('PASS: five moderation regression guards');
