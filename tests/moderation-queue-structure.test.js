@@ -21,3 +21,8 @@ assert.ok(queue.includes('function hasPhoto(item)'));
 assert.ok(queue.includes('photoConfirmed&&!photoConfirmed.checked'));
 assert.ok(queue.includes('ze zdjęciami: '));
 console.log('PASS: photo review gating and count checks');
+
+assert.ok(queue.includes("vexorio_admin_pending_listings_v2"),'Queue must use image-aware server RPC');
+assert.ok(queue.includes("'listing_images'"),'Image payload must be checked');
+assert.ok(queue.includes('Object.keys(item[key]).length>0'),'JSON image objects must count');
+console.log('PASS: server image metadata is required for moderation decisions');
