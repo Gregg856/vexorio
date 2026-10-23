@@ -31,9 +31,17 @@ async function load(){
   const desc=document.createElement('p');desc.textContent=item.description||'';
   const risk=document.createElement('p');risk.className='muted';risk.textContent=item._risk?('Priorytet: '+levels[item._risk.level]+' · '+item._risk.score+'/100'+(item._risk.reasons.length?' · Sygnały: '+item._risk.reasons.join(', '):'')+(item._risk.photoReviewRequired?' · Zdjęcia: wymagają osobnej kontroli':'') ):'Ocena ryzyka niedostępna';
   const buttons=document.createElement('div');buttons.className='tools';
+  let photoConfirmed=null;
+  if(hasPhoto(item)){
+   const photoLabel=document.createElement('label');
+   photoConfirmed=document.createElement('input');photoConfirmed.type='checkbox';photoConfirmed.setAttribute('aria-label','Potwierdzam ręczną kontrolę zdjęć');
+   photoLabel.append(photoConfirmed,document.createTextNode(' Potwierdzam, że zdjęcia zostały sprawdzone (ręcznie lub przez skaner)'));
+   card.append(photoLabel);
+  }
   for(const [decision,label] of [['approved','Zatwierdź'],['rejected','Odrzuć']]){
    const button=document.createElement('button');button.type='button';button.className='btn small';button.textContent=label;
    button.onclick=async()=>{
+    if(decision==='approved'&&photoConfirmed&&!photoConfirmed.checked){status.textContent='Przed zatwierdzeniem potwierdź kontrolę zdjęć.';return}
     if(!confirm(label+' ogłoszenie #'+item.listing_id+'?'))return;
     buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
     let result,e;
