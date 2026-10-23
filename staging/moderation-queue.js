@@ -33,7 +33,8 @@ async function load(){
    button.onclick=async()=>{
     if(!confirm(label+' ogłoszenie #'+item.listing_id+'?'))return;
     buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
-    const {data:result,error:e}=await client.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision});
+    let result,e;
+    try{({data:result,error:e}=await client.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision}))}catch(err){e=err}
     if(e||result===false){status.textContent='Nie zapisano decyzji: '+(e?.message||'Serwer odrzucił decyzję');buttons.querySelectorAll('button').forEach(b=>b.disabled=false);return}
     status.textContent='Zapisano decyzję. Odświeżanie…';
     await load();
