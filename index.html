@@ -1794,7 +1794,7 @@ const radiusMessages={pl:{none:'Bez ograniczenia odległości',need:'Wpisz miast
 function updateRadiusLabels(){const a=radiusMessages[language]||radiusMessages.pl;const el=$('radiusFilter');if(!el)return;el.options[0].textContent='📍 '+a.none;[200,500].forEach(km=>{const opt=el.querySelector('option[value="'+km+'"]');if(opt)opt.textContent=(language==='de'?'Bis ':language==='en'?'Up to ':'Do ')+km+' km'});[10,25,50,100].forEach((km,i)=>{const opt=el.querySelector('option[value="'+km+'"]');if(opt)opt.textContent=a.options[i]});el.setAttribute('aria-label',language==='de'?'Suchradius':language==='en'?'Search radius':'Promień wyszukiwania');el.title=el.getAttribute('aria-label')}
 const geoCache=new Map();const geoPending=new Set();const geoRetryAfter=new Map();let geoQueue=Promise.resolve();let geoVersion=0;
 function geoKey(city,country){return searchText(city)+'|'+String(country||'').toUpperCase()}
-function listingGeoLocation(item){const postal=String(item.postal_code||'').trim(),city=String(item.city||'').trim(),country=item.country;if(postal&&geoCache.get(geoKey(postal,country)))return postal;if(postal&&!geoCache.has(geoKey(postal,country)))return postal;return city||postal}
+function listingGeoLocation(item){const postal=String(item.postal_code||'').trim(),city=String(item.city||'').trim(),country=item.country;if(postal&&geoCache.get(geoKey(postal,country)))return postal;if(postal&&!geoCache.has(geoKey(postal,country))&&Date.now()>=(geoRetryAfter.get(geoKey(postal,country))||0))return postal;return city||postal}
 
 // Mobile city selection uses a top-positioned dialog above the keyboard.
 let citySuggestTimer=null,citySuggestRequest=0;
