@@ -1,0 +1,58 @@
+name: Deploy VEXORIO STAGING
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/moderation-triage-20261023
+    paths:
+      - 'staging/build-preview.cjs'
+      - '.github/workflows/deploy-staging.yml'
+      - 'index.html'
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build isolated staging assets
+        run: |
+          node staging/build-preview.cjs
+          mkdir -p public-staging
+          cp staging/staging-preview.html public-staging/index.html
+          cp push-sw.js public-staging/push-sw.js
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const s=fs.readFileSync('public-staging/index.html','utf8');
+          if(!s.includes('https://owkjdlpawczrnwyszduj.supabase.co') || s.includes('https://lfytoxcnutduahshbsko.supabase.co')) throw Error('Unsafe backend configuration');
+          console.log('PASS: staging backend isolation');
+          NODE
+          cat > wrangler.toml <<'EOF'
+          name = "vexorio-staging"
+          compatibility_date = "2026-10-20"
+          workers_dev = true
+          [assets]
+          directory = "./public-staging"
+          EOF
+      - name: Deploy staging worker only
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+      - name: Check staging URL
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --max-time 20 "https://vexorio-staging.grzegorzbub1985.workers.dev/?check=${GITHUB_SHA}" -o /tmp/vexorio-staging.html; then
+              if grep -q 'https://owkjdlpawczrnwyszduj.supabase.co' /tmp/vexorio-staging.html && ! grep -q 'https://lfytoxcnutduahshbsko.supabase.co' /tmp/vexorio-staging.html; then
+                echo 'PASS: isolated staging URL is live'
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Staging URL unavailable or wrong backend'
+          exit 1

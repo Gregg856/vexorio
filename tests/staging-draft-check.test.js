@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'../staging/admin-moderation.html'),'utf8');
+const code=fs.readFileSync(path.join(__dirname,'../staging/draft-check.js'),'utf8');
+for(const id of ['draftTitle','draftDescription','draftPhotos','draftCheck','draftResult'])assert.ok(html.includes('id="'+id+'"'));
+for(const name of ['photo-preflight.js','moderation-triage.js','draft-check.js'])assert.ok(html.includes('src="./'+name+'"'));
+assert.ok(code.includes('VexorioPhotoPreflight.check'));
+assert.ok(code.includes('VexorioModerationTriage.evaluate'));
+assert.ok(!code.includes(".from('listings').insert"));
+assert.ok(!code.includes(".storage.from("));
+console.log('PASS: staging-only simulation wiring, no publishing or storage writes');

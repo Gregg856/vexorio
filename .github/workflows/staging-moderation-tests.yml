@@ -1,0 +1,37 @@
+name: Staging moderation tests
+on:
+  push:
+    branches:
+      - feature/moderation-triage-20261023
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          for file in staging/*.js tests/*.test.js; do node --check "$file"; done
+      - name: Run staging moderation tests
+        run: |
+          node tests/moderation-triage.test.js
+          node tests/moderation-queue-structure.test.js
+          node tests/photo-preflight.test.js
+          node tests/staging-draft-check.test.js
+          node tests/staging-preview-isolation.test.js
+          node tests/smoke.cjs
+      - name: Generate isolated staging preview
+        run: |
+          node staging/build-preview.cjs
+          node -e "const fs=require('fs');const s=fs.readFileSync('staging/staging-preview.html','utf8');if(!s.includes('https://owkjdlpawczrnwyszduj.supabase.co')||s.includes('https://lfytoxcnutduahshbsko.supabase.co'))process.exit(1)"
+      - name: Upload staging preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vexorio-staging-preview
+          path: staging/staging-preview.html
+          retention-days: 7
