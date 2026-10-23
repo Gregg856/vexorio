@@ -78,3 +78,11 @@ assert.match(html,/if\(!await validListingImageSignature\(f\)\)/,'New listing ph
 assert.match(html,/f\.size<=0\|\|f\.size>5\*1024\*1024/,'New listing must reject empty and oversized images');
 assert.match(html,/files\.some\(f=>!allowed\.includes\(f\.type\)\|\|f\.size<=0/,'Edited listing must reject empty images');
 console.log('PASS: image upload signature and zero-length guards');
+
+// Private moderation image lifecycle must remain wired end-to-end.
+assert.match(html,/storage\.from\('listing-images-review'\)\.upload\(path,f,/,'New photos must upload privately');
+assert.match(html,/storage\.from\('listing-images-review'\)\.upload\(path,file,/,'Edited photos must upload privately');
+assert.match(html,/vexorio_admin_publish_reviewed_listing/,'Approval must publish private photos atomically');
+assert.match(html,/storage\.from\('listing-images-review'\)\.download\(path\)/,'Admin must read private photos before publication');
+assert.match(html,/storage\.from\('listing-images-review'\)\.createSignedUrl/,'Private photo previews must be signed');
+console.log('PASS: private listing photo lifecycle regression checks');
