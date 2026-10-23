@@ -1756,7 +1756,7 @@ async function loadAdminPendingListings(){
        if(!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path))throw new Error('Nieprawidłowa ścieżka zdjęcia.');
        const {data:blob,error:downloadError}=await sb.storage.from('listing-images-review').download(path);
        if(downloadError||!blob)throw downloadError||new Error('Nie udało się pobrać zdjęcia.');
-       const {error:uploadError}=await sb.storage.from('listing-images').upload(path,blob,{contentType:blob.type||'image/jpeg',upsert:false});
+       const {error:uploadError}=await sb.storage.from('listing-images').upload(path,blob,{contentType:path.endsWith('.png')?'image/png':path.endsWith('.webp')?'image/webp':'image/jpeg',upsert:false});
        if(uploadError&& !/already exists|duplicate/i.test(uploadError.message||''))throw uploadError;
        const {data:publicImage}=sb.storage.from('listing-images').getPublicUrl(path);
        published.push(publicImage.publicUrl);
