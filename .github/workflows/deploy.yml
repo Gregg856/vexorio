@@ -63,6 +63,7 @@ jobs:
         run: |
           node tests/search-location-regression.test.js
           node tests/location-radius-fixtures.test.js
+          node tests/public-profile-regression.test.js
 
       - name: Publikuj w Cloudflare
         id: publish
