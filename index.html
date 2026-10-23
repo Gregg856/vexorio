@@ -1714,6 +1714,8 @@ async function loadAdminReports(){
  const selectedListing=adminReportListingFilter;
  const filteredData=selectedListing===null?(data||[]):(data||[]).filter(item=>Number(item.listing_id)===Number(selectedListing));
  status.textContent=selectedListing===null?'Wszystkie zgłoszenia':'Zgłoszenia wyłącznie dla ogłoszenia #'+selectedListing;
+ const reportCounts={new:0,reviewing:0,resolved:0,dismissed:0};for(const report of filteredData){if(Object.hasOwn(reportCounts,report.status))reportCounts[report.status]++}
+ const reportSummary=document.createElement('p');reportSummary.className='muted';reportSummary.textContent='Nowe: '+reportCounts.new+' · W trakcie: '+reportCounts.reviewing+' · Rozpatrzone: '+reportCounts.resolved+' · Odrzucone: '+reportCounts.dismissed;list.append(reportSummary);
  if(!filteredData.length){status.textContent=selectedListing===null?'Brak zgłoszeń.':'Brak zgłoszeń dla ogłoszenia #'+selectedListing+'.';return}
  for(const item of filteredData){
   const box=document.createElement('div');box.className='info';box.style.margin='0';
@@ -1745,7 +1747,7 @@ async function loadAdminReports(){
   select.value=item.status;
   const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='Zapisz status';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
-  save.onclick=async()=>{const nextStatus=select.value;if(nextStatus===item.status){feedback.textContent='Status bez zmian.';return}save.disabled=true;select.disabled=true;feedback.textContent='Zapisywanie…';try{const {data:updated,error:writeError}=await sb.from('listing_reports').update({status:nextStatus}).eq('id',item.id).eq('status',item.status).select('id,status').maybeSingle();if(writeError)throw writeError;if(!updated){feedback.textContent='Status zmienił się w innym oknie. Odśwież zgłoszenia.';return}item.status=updated.status;feedback.textContent='Status zapisany.';await updateAdminReportBadge()}catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać statusu.')}finally{save.disabled=false;select.disabled=false}};
+  save.onclick=async()=>{const nextStatus=select.value;if(nextStatus===item.status){feedback.textContent='Status bez zmian.';return}save.disabled=true;select.disabled=true;feedback.textContent='Zapisywanie…';try{const {data:updated,error:writeError}=await sb.from('listing_reports').update({status:nextStatus}).eq('id',item.id).eq('status',item.status).select('id,status').maybeSingle();if(writeError)throw writeError;if(!updated){feedback.textContent='Status zmienił się w innym oknie. Odśwież zgłoszenia.';return}if(Object.hasOwn(reportCounts,item.status))reportCounts[item.status]--;item.status=updated.status;if(Object.hasOwn(reportCounts,item.status))reportCounts[item.status]++;reportSummary.textContent='Nowe: '+reportCounts.new+' · W trakcie: '+reportCounts.reviewing+' · Rozpatrzone: '+reportCounts.resolved+' · Odrzucone: '+reportCounts.dismissed;feedback.textContent='Status zapisany.';await updateAdminReportBadge()}catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać statusu.')}finally{save.disabled=false;select.disabled=false}};
   box.append(heading,meta,detail,select,save,feedback,moderation);list.append(box);
  }
 }
