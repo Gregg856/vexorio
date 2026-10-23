@@ -31,7 +31,7 @@ assert.ok(html.includes("if(accessError||allowed!==true)"),'Moderation authoriza
 assert.ok(html.includes("if(authError||allowed!==true)"),'Admin dashboard authorization gate missing');
 console.log('PASS: admin UI authorization checks retained');
 
-// Closing an admin subsection must return to the dashboard, not the public home view.
-assert.ok(html.includes("['adminReportsDialog','adminUsersDialog','appealsAdminDialog','privacyAdminDialog'].includes(id)"),'Admin subsection close handler missing');
+// Closing an admin subsection with X or Escape must return to the dashboard.
+assert.ok(html.includes("child.addEventListener('close'"),'Admin dialog close event missing');
 assert.ok(html.includes("adminReportListingFilter=null;show('adminDashboardDialog');loadAdminDashboard()"),'Admin subsection return-to-dashboard missing');
 console.log('PASS: admin subsection close returns to dashboard');
