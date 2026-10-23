@@ -17,10 +17,15 @@ output=output.replace(productionSelect,stagingSelect);
 // Preview-only UI improvements; keep production HTML unchanged.
 const previewUiFixes = [
   ["function setLang(v){language=v;", "function setLang(v){language=v;const searchButton=document.getElementById('applyListingFilters');if(searchButton)searchButton.textContent=v==='de'?'🔎 Anzeigen suchen':v==='en'?'🔎 Search listings':'🔎 Szukaj ogłoszeń';"],
-  ['<div id="vexCityDialog" class="vex-city-dialog"', '<div id="vexCityDialog" class="vex-city-dialog"'],
+  ['id="vexCityDialogClose" aria-label="Zamknij wybór miasta"', 'id="vexCityDialogClose" aria-label="Zamknij wybór miasta"'],
 ];
 for(const [before,after] of previewUiFixes){if(!output.includes(before))throw Error('Missing preview UI marker');output=output.replace(before,after)}
 // Keep a clear, readable hint for users choosing a radius without a city.
+// Localize city dialog labels and make the search action accessible on small screens.
+const languageUi = "const cityClose=document.getElementById('vexCityDialogClose');if(cityClose)cityClose.setAttribute('aria-label',v==='de'?'Stadtauswahl schließen':v==='en'?'Close city picker':'Zamknij wybór miasta');const citySearch=document.getElementById('vexCityDialogInput');if(citySearch){citySearch.placeholder=v==='de'?'Stadt oder Postleitzahl':v==='en'?'City or postal code':'Wpisz miasto lub kod pocztowy';citySearch.setAttribute('aria-label',citySearch.placeholder)}";
+const langMarker="const searchButton=document.getElementById('applyListingFilters');";
+if(!output.includes(langMarker))throw Error('Missing language UI marker');
+output=output.replace(langMarker,languageUi+langMarker);
 output=output.replace('</style>', '#radiusInfo:not(:empty){display:block;padding:9px 12px;border:1px solid #35677b;border-radius:10px;line-height:1.4;margin-top:5px} </style>');
 if(output.includes('https://lfytoxcnutduahshbsko.supabase.co')||!output.includes(stagingUrl))throw new Error('Production backend reference found in staging preview');
 fs.writeFileSync(path.join(__dirname,'staging-preview.html'),output);
