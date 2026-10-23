@@ -1806,6 +1806,17 @@ function updateCitySuggestions(){
  const country=$('country').value,typed=input.value.trim(),needle=searchText(typed);
  clearTimeout(citySuggestTimer);const request=++citySuggestRequest;
  if(!needle){list.replaceChildren();list.hidden=true;return}
+ // Postal codes can be selected directly; do not send numeric input to city-name autocomplete.
+ if(/^[0-9][0-9 -]*$/.test(typed)){
+  list.replaceChildren();
+  const digits=typed.replace(/\s+/g,'').trim();
+  if(country!=='all'&&digits.length>=4&&digits.length<=10){
+   const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');
+   btn.textContent='📍 '+digits;btn.addEventListener('click',()=>selectCity(digits));list.append(btn);
+  }
+  list.hidden=!list.childElementCount;
+  return;
+ }
  const cities=new Map();
  for(const item of allListings){
   if(!item.city||(country!=='all'&&String(item.country||'').toUpperCase()!==country))continue;
