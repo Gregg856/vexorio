@@ -73,3 +73,8 @@ assert.match(html,/await sb\.rpc\('is_vexorio_admin'\)/,'Admin authorization mis
 assert.match(html,/Array\.isArray\(item\.listing_images\)/,'Pending photo list missing');
 assert.match(html,/photo\.loading='lazy'/,'Pending photo lazy loading missing');
 console.log('PASS: five pending listing photo moderation guards');
+
+assert.match(html,/if\(!await validListingImageSignature\(f\)\)/,'New listing photo signatures must be verified');
+assert.match(html,/f\.size<=0\|\|f\.size>5\*1024\*1024/,'New listing must reject empty and oversized images');
+assert.match(html,/files\.some\(f=>!allowed\.includes\(f\.type\)\|\|f\.size<=0/,'Edited listing must reject empty images');
+console.log('PASS: image upload signature and zero-length guards');
