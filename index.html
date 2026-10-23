@@ -1719,6 +1719,7 @@ async function loadAdminPendingListings(){
  const {data,error}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});
  if(error){status.textContent='Nie udało się pobrać kolejki: '+error.message;return}
  status.textContent=data?.length?'Oczekujące: '+data.length:'Brak ogłoszeń oczekujących.';
+ const badge=$('dashPendingBadge');if(badge)badge.textContent='('+(data?.length||0)+(data?.length===50?'+':'')+')';
  for(const item of data||[]){
   const card=document.createElement('div');card.className='info';card.style.margin='0';
   const heading=document.createElement('h3');heading.textContent=item.title||('Ogłoszenie #'+item.listing_id);
@@ -1771,7 +1772,7 @@ async function loadAdminPendingListings(){
      }
      if(reviewError)throw reviewError;
      if(changed!==true)throw new Error('Ogłoszenie zostało już rozpatrzone lub nie istnieje.');
-     await loadAdminPendingListings();await loadListings();
+     await loadAdminPendingListings();await loadAdminOverview();await loadListings();
     }catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać.');for(const b of actions.querySelectorAll('button'))b.disabled=false}
    };
    actions.append(btn);
