@@ -19,3 +19,9 @@ for(const [label,fragment] of required.slice(0,-1)){assert.ok(html.includes(frag
 assert.ok(html.includes("id=\"quickCategoryFilter\"")&&html.includes("id=\"quickSubcategoryFilter\""),'Search filters retained');
 assert.ok(html.includes("document.querySelector('header .brand')?.addEventListener('click'"),'Logo reset retained');
 console.log('PASS: prelaunch structural checks (not live account or security penetration tests)');
+
+// Keep administrative controls wired to the explicit admin authorization check.
+const adminRpcNames=['admin_delete_listing','admin_moderation_audit','admin_moderation_users','admin_reported_message_body','admin_set_user_block'];
+for(const name of adminRpcNames){assert.ok(html.includes("sb.rpc('"+name+"'"),'Admin RPC missing: '+name)}
+assert.ok(html.includes("sb.rpc('is_vexorio_admin')"),'Admin role check missing');
+console.log('PASS: admin client wiring; database authorization requires separate verification');
