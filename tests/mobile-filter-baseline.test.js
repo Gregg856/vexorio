@@ -16,3 +16,15 @@ const checks=[
 ];
 for(const [label,pass] of checks){assert.ok(pass,label);console.log('PASS: '+label)}
 console.log('PASS: approved mobile filter static baseline (not a browser test)');
+
+// Regression: desktop category/subcategory selector must retain translated labels.
+const translations=html.match(/const quickSubcategoryTranslations=\{([\s\S]*?)\n\};/);
+assert.ok(translations,'Desktop subcategory translation dictionary exists');
+for(const [category,german] of [['Praca','Festanstellung'],['Elektronika','Computer'],['Firma i przemysł','Maschinen']]){
+ assert.ok(translations[1].includes("'"+category+"':"),'Translation category: '+category);
+ assert.ok(translations[1].includes("'"+german+"'"),'German subcategory: '+german);
+}
+assert.ok(html.includes("language==='de'?'Alle Unterkategorien'"),'German default subcategory label');
+assert.ok(html.includes('label:quickSubcategoryLabel(category,name)'),'Translated labels used in desktop selector');
+assert.ok(html.includes('opt.value=item.value;opt.textContent=item.label'),'Underlying filter values are preserved');
+console.log('PASS: desktop subcategory translations and filter values');
