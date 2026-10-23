@@ -15,7 +15,7 @@ function evaluate(input){
  const content=(title+' '+description).normalize('NFKC');
  const reasons=rules.filter(rule=>rule.terms.some(pattern=>pattern.test(content))).map(rule=>({id:rule.id,weight:rule.weight}));
  const score=Math.min(100,reasons.reduce((sum,reason)=>sum+reason.weight,0));
- return {score,level:score>=60?'review-high':score>=25?'review':'low',reasons:reasons.map(({id})=>id),requiresHumanReview:score>=25,photoReviewRequired:!!(input&&input.hasImages),version:1};
+ return {score,level:score>=60?'review-high':score>=25?'review':'low',reasons:reasons.map(({id})=>id),requiresHumanReview:score>=25,photoReviewRequired:!!(input&&(input.hasImages||input.imageCount>0)),version:1};
 }
 return Object.freeze({evaluate});
 });
