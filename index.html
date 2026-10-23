@@ -2639,11 +2639,12 @@ $('replyForm').onsubmit=async e=>{
  if(!text||!activeConversationId||!session)return;if(btn.disabled)return;if(text.length>2000){$('replyStatus').textContent='Wiadomość może mieć maksymalnie 2000 znaków.';return}
  if(listingRiskSignals(text).length){const notice=language==='de'?'Die Nachricht enthält möglicherweise einen Link oder eine Anfrage nach Zahlung oder Zugangsdaten. Trotzdem senden?':language==='en'?'This message may include a link or a request for payment or account details. Send anyway?':'Wiadomość może zawierać link lub prośbę o płatność albo dane logowania. Wysłać mimo ostrzeżenia?';if(!confirm(notice))return}
  const sendingConversationId=activeConversationId,sendingUserId=session.user.id;
- const {data:verifiedSender,error:senderAuthError}=await sb.auth.getUser();
- if(senderAuthError||!verifiedSender?.user||verifiedSender.user.id!==sendingUserId){$('replyStatus').textContent='Sesja wygasła. Zaloguj się ponownie, aby wysłać wiadomość.';return}
- if(activeConversationId!==sendingConversationId)return;
- $('replyStatus').textContent='Wysyłanie…';
  btn.disabled=true;btn.setAttribute('aria-busy','true');
+ let verifiedSender,senderAuthError;
+ try{({data:{user:verifiedSender},error:senderAuthError}=await sb.auth.getUser())}catch(error){senderAuthError=error}
+ if(senderAuthError||!verifiedSender||verifiedSender.id!==sendingUserId){btn.disabled=false;btn.removeAttribute('aria-busy');$('replyStatus').textContent='Sesja wygasła. Zaloguj się ponownie, aby wysłać wiadomość.';return}
+ if(activeConversationId!==sendingConversationId){btn.disabled=false;btn.removeAttribute('aria-busy');return}
+ $('replyStatus').textContent='Wysyłanie…';
  try{
   const {error}=await sb.from('messages').insert({conversation_id:sendingConversationId,sender_id:sendingUserId,body:text});
   if(error)throw error;
