@@ -65,3 +65,11 @@ const visibilityChecks=[
 ];
 for(const [name,pattern] of visibilityChecks)assert.match(html,pattern,'Missing listing moderation protection: '+name);
 console.log('PASS: five listing visibility and reporting guards');
+
+// Pending photo previews remain inside the administrator-only moderation dialog.
+assert.match(html,/id="adminPendingList"/,'Pending queue missing');
+assert.match(html,/async function loadAdminPendingListings\(\)/,'Pending queue loader missing');
+assert.match(html,/await sb\.rpc\('is_vexorio_admin'\)/,'Admin authorization missing');
+assert.match(html,/Array\.isArray\(item\.listing_images\)/,'Pending photo list missing');
+assert.match(html,/photo\.loading='lazy'/,'Pending photo lazy loading missing');
+console.log('PASS: five pending listing photo moderation guards');
