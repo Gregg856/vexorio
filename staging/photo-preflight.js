@@ -15,7 +15,7 @@ async function check(files,client,readFile){
   try{
    const {data,error}=await client.functions.invoke('staging-image-moderation',{body:{image}});
    if(error||!data||typeof data.flagged!=='boolean'){results.push({status:'review',reason:'scanner_unavailable'});continue}
-   results.push({status:data.flagged?'review':'screened',reason:data.flagged?'flagged':'no_signal'});
+   results.push({status:(data.flagged||data.reviewRequired)?'review':'screened',reason:data.flagged?'flagged':data.reviewRequired?'manual_review_required':'no_signal'});
   }catch{results.push({status:'review',reason:'scanner_unavailable'})}
  }
  return {results,requiresReview:results.some(r=>r.status==='review'),allScreened:results.every(r=>r.status==='screened')};
