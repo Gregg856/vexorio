@@ -1742,9 +1742,9 @@ async function loadAdminReports(){
     const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true){removeStatus.textContent='Brak uprawnień administratora.';remove.disabled=false;return}
     const {data,error}=await sb.rpc('admin_delete_listing',{p_listing_id:id});
     if(error){removeStatus.textContent='Błąd: '+error.message;remove.disabled=false;return}
-    if(data!==true){removeStatus.textContent='Nie znaleziono ogłoszenia.';remove.disabled=false;return}
-    removeStatus.textContent='Ogłoszenie usunięte.';remove.classList.add('hide');
-    await loadListings();
+    if(data!==true){removeStatus.textContent='Nie znaleziono ogłoszenia lub zostało już usunięte.';remove.disabled=false;return}
+    removeStatus.textContent='Ogłoszenie usunięte. Odświeżam zgłoszenia…';remove.classList.add('hide');
+    try{await loadListings();await loadAdminReports();await updateAdminReportBadge()}catch(refreshError){status.textContent='Ogłoszenie usunięte, ale odświeżenie panelu nie powiodło się. Użyj przycisku Odśwież.'}
    };
    const view=document.createElement('a');view.className='btn';view.href='/?listing='+encodeURIComponent(String(item.listing_id));view.target='_blank';view.rel='noopener noreferrer';view.textContent='Zobacz ogłoszenie #'+item.listing_id;moderation.append(view,remove,removeStatus);
   }
