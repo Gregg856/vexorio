@@ -9,7 +9,7 @@ const required=[
  ['Session refresh', "sb.auth.getSession()"],
  ['Authenticated listing submission', "if(!sb||!session)return $('addMsg')"],
  ['Listing database insert', "sb.from('listings').insert(record)"],
- ['Image file validation', "files.some(f=>!allowed.includes(f.type)||f.size>5*1024*1024)"],
+ ['Image file validation', "files.some(f=>!allowed.includes(f.type)||f.size<=0||f.size>5*1024*1024)"],
  ['Message insert', "sb.from('messages').insert({conversation_id:sendingConversationId,sender_id:sendingUserId,body:text})"],
  ['Message sender session', "sendingUserId=session.user.id"],
  ['Listing fraud signals', "function listingRiskSignals(text)"],
