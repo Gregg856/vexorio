@@ -1,0 +1,25 @@
+name: Staging moderation tests
+on:
+  push:
+    branches:
+      - feature/moderation-triage-20261023
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          for file in staging/*.js tests/*.test.js; do node --check "$file"; done
+      - name: Run staging moderation tests
+        run: |
+          node tests/moderation-triage.test.js
+          node tests/moderation-queue-structure.test.js
+          node tests/photo-preflight.test.js
+          node tests/staging-draft-check.test.js
