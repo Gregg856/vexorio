@@ -23,6 +23,7 @@ jobs:
           node tests/moderation-queue-structure.test.js
           node tests/photo-preflight.test.js
           node tests/staging-draft-check.test.js
+          node tests/staging-preview-isolation.test.js
           node tests/smoke.cjs
       - name: Generate isolated staging preview
         run: |
