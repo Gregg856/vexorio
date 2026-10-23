@@ -1813,6 +1813,11 @@ function updateCitySuggestions(){
   if(!key||cities.has(key)||!key.startsWith(needle))continue;
   cities.set(key,name);
  }
+ // Surface major cities early for partial searches without hiding smaller places.
+ const priorityCities={DE:['Berlin','Hamburg','München','Köln','Frankfurt am Main','Düsseldorf','Stuttgart','Dortmund','Essen','Leipzig','Bremen','Dresden','Hannover','Nürnberg','Erftstadt'],PL:['Warszawa','Kraków','Łódź','Wrocław','Poznań','Gdańsk','Szczecin','Bydgoszcz','Lublin','Katowice'],AT:['Wien','Graz','Linz','Salzburg']};
+ const preferred=priorityCities[country]||[];
+ for(const name of preferred){const key=searchText(name);if(key.startsWith(needle)&&!cities.has(key))cities.set(key,name)}
+ const cityRank=name=>{const n=searchText(name),i=preferred.findIndex(p=>searchText(p)===n);return i<0?999:i};
  // Vienna is known locally as Wien; ensure its exact name is selectable in Austria.
  if(country==='AT'&&needle==='wien'&&!cities.has('wien'))cities.set('wien','Wien');
  // Include Warsaw when the geocoder suggests smaller places for an unfinished name.
@@ -1822,7 +1827,7 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&nee
  const paint=()=>{
   if($('vexCityDialog').hidden)return;
   list.replaceChildren();
-  for(const name of [...cities.values()].sort((a,b)=>Number(searchText(b)===needle)-Number(searchText(a)===needle)||Number(searchText(b).startsWith(needle))-Number(searchText(a).startsWith(needle))||a.localeCompare(b,language)).slice(0,5)){
+  for(const name of [...cities.values()].sort((a,b)=>Number(searchText(b)===needle)-Number(searchText(a)===needle)||Number(searchText(b).startsWith(needle))-Number(searchText(a).startsWith(needle))||cityRank(a)-cityRank(b)||a.localeCompare(b,language)).slice(0,5)){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');btn.textContent=(searchText(name)===needle?'✓ ':'📍 ')+name;
    btn.addEventListener('click',()=>selectCity(name));list.append(btn);
   }
