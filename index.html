@@ -1734,11 +1734,12 @@ async function loadAdminReports(){
    const removeStatus=document.createElement('p');removeStatus.className='msg';
    remove.onclick=async()=>{
     const id=Number(item.listing_id);
-    if(!Number.isSafeInteger(id))return;
+    if(!Number.isSafeInteger(id)||id<=0||remove.disabled)return;
     if(!confirm('Czy na pewno trwale usunąć ogłoszenie #'+id+'? Ta operacja jest nieodwracalna.'))return;
     const typed=prompt('Aby potwierdzić, wpisz numer ogłoszenia: '+id);
     if(typed!==String(id)){removeStatus.textContent='Anulowano usuwanie.';return}
     remove.disabled=true;
+    const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true){removeStatus.textContent='Brak uprawnień administratora.';remove.disabled=false;return}
     const {data,error}=await sb.rpc('admin_delete_listing',{p_listing_id:id});
     if(error){removeStatus.textContent='Błąd: '+error.message;remove.disabled=false;return}
     if(data!==true){removeStatus.textContent='Nie znaleziono ogłoszenia.';remove.disabled=false;return}
@@ -1762,7 +1763,9 @@ $('adminReportsRefresh').onclick=async()=>{await loadAdminReports();await update
 
 async function loadAdminUsers(){
  const list=$('adminUsersList'),status=$('adminUsersStatus');list.replaceChildren();status.textContent='';
- if(!session?.user){status.textContent='Zaloguj się.';return}
+ if(!sb||!session?.user){status.textContent='Zaloguj się.';return}
+ const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(accessError||allowed!==true){status.textContent='Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('admin_moderation_users');
  if(error){status.textContent='Błąd: '+error.message;return}
  if(!data?.length){status.textContent='Brak kont do wyświetlenia.';return}
@@ -1775,13 +1778,15 @@ async function loadAdminUsers(){
   const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=u.is_blocked?'Odblokuj konto':'Zablokuj konto';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
   btn.onclick=async()=>{
+   if(btn.disabled)return;
    const text=reason.value.trim();
    if(text.length<10||text.length>500){feedback.textContent='Podaj powód (10–500 znaków).';return}
    if(!confirm((u.is_blocked?'Odblokować':'Zablokować')+' użytkownika '+u.user_id+'?'))return;
    btn.disabled=true;
+   try{const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true)throw new Error('Brak uprawnień administratora.');
    const {error:writeError}=await sb.rpc('admin_set_user_block',{p_user:u.user_id,p_block:!u.is_blocked,p_reason:text});
-   if(writeError){feedback.textContent='Błąd: '+writeError.message;btn.disabled=false;return}
-   await loadAdminUsers();
+   if(writeError)throw writeError;
+   await loadAdminUsers();}catch(err){feedback.textContent='Błąd: '+(err?.message||'Nie udało się zapisać decyzji.');btn.disabled=false;}
   };
   box.append(h,uid,info,reason,btn,feedback);list.append(box);
  }
