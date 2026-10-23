@@ -7,6 +7,7 @@ async function check(files,client,readFile){
  if(!client||!/^https:\/\/owkjdlpawczrnwyszduj\.supabase\.co\/?$/.test(client.supabaseUrl||''))throw Error('staging_only');
  if(!Array.isArray(files)||files.length>5)throw Error('too_many_images');
  if(files.some(f=>!ALLOWED.includes(f.type)||f.size>2_000_000))throw Error('invalid_image');
+ if(files.length===0)throw Error('no_images');
  const results=[];
  for(const file of files){
   let image;
