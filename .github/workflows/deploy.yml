@@ -59,6 +59,11 @@ jobs:
           }
           NODE
 
+      - name: Testy regresji wyszukiwarki i odleglosci
+        run: |
+          node tests/search-location-regression.test.js
+          node tests/location-radius-fixtures.test.js
+
       - name: Publikuj w Cloudflare
         id: publish
         uses: cloudflare/wrangler-action@v3
