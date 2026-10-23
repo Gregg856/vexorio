@@ -1798,7 +1798,7 @@ function geoKey(city,country){return searchText(city)+'|'+String(country||'').to
 // Mobile city selection uses a top-positioned dialog above the keyboard.
 let citySuggestTimer=null,citySuggestRequest=0;
 function closeCitySuggestions(){clearTimeout(citySuggestTimer);citySuggestRequest++;$('vexorioCitySuggestions').hidden=true}
-function closeCityDialog(){closeCitySuggestions();$('vexCityDialog').hidden=true;$('vexCityDialogInput').blur()}
+function closeCityDialog(){closeCitySuggestions();$('vexCityDialogInput').blur();$('vexCityDialog').hidden=true}
 function selectCity(name){$('cityFilter').value=String(name||'').trim();closeCityDialog();updateSearchSuggestions();updateSaveSearchButton();render()}
 function updateCitySuggestions(){
  const list=$('vexorioCitySuggestions'),input=$('vexCityDialogInput');
