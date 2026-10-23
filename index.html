@@ -1575,7 +1575,7 @@ function updateLegalLabels(){updateReportLabels();updatePrivacyLabels();$('phone
 
 
 
-$('accountAdminLaunch').onclick=async()=>{if(!sb||!session)return;const {data,error}=await sb.rpc('is_vexorio_admin');if(error||data!==true){$('accountMsg').textContent='Brak uprawnień administratora.';return}$('accountDialog').close();show('adminDashboardDialog');await loadAdminDashboard()};
+$('accountAdminLaunch').onclick=async()=>{if(!sb||!session)return;const {data,error}=await sb.rpc('is_vexorio_admin');if(error||data!==true){$('accountMsg').textContent='Brak uprawnień administratora.';return}$('accountDialog').close();show('adminDashboardDialog');await Promise.all([loadAdminDashboard(),updateAdminReportBadge()])};
 $('dashPending').onclick=()=>{$('adminDashboardDialog').close();show('adminPendingDialog');loadAdminPendingListings()};
 $('adminPendingRefresh').onclick=()=>loadAdminPendingListings();
 document.querySelectorAll('[data-admin-back]').forEach(btn=>btn.onclick=()=>{const dialog=$(btn.dataset.adminBack);dialog.close();adminReportListingFilter=null;$('adminDashboardDialog').showModal();loadAdminDashboard()});
@@ -1675,20 +1675,23 @@ async function updateAdminReportBadge(){
   if(reportCount!==null){
    const label=countLabel(reportCount);
    if(dash)dash.textContent=label;
-   if(account)account.textContent='🔔 '+label;
+   /* Account badge represents all pending admin actions, not only reports. */
   }
   if(pendingCount!==null&&photos)photos.textContent='('+pendingCount+(pendingCount===50?'+':'')+')';
   if(reportCount!==null&&pendingCount!==null){
+   if(account){account.textContent='🔔 '+countLabel(reportCount+pendingCount);account.setAttribute('aria-label','Zgłoszenia: '+reportCount+', zdjęcia do zatwierdzenia: '+pendingCount)}
    badge.style.display='inline-block';
    badge.textContent='🔔 '+countLabel(reportCount+pendingCount);
    badge.setAttribute('aria-label','Zgłoszenia: '+reportCount+', zdjęcia do zatwierdzenia: '+pendingCount);
   }else{
    badge.style.display='inline-block';
    badge.textContent='🔔 …';
+   if(account)account.textContent='🔔 …';
    badge.setAttribute('aria-label','Nie udało się pobrać wszystkich powiadomień administratora');
   }
  }catch(e){
   badge.style.display='inline-block';badge.textContent='🔔 …';
+  const account=$('accountReportBadge');if(account)account.textContent='🔔 …';
   console.warn('Nie udało się odświeżyć powiadomień administratora',e);
  }finally{adminBadgeRefreshInProgress=false}
 }
