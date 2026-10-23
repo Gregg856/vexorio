@@ -10,3 +10,7 @@ assert.equal(photos.requiresHumanReview,false);
 const suspicious=evaluate({description:'Podaj hasło do konta'});assert.equal(suspicious.requiresHumanReview,true);
 assert.deepEqual(evaluate({}),evaluate({}));
 console.log('PASS: moderation triage deterministic advisory checks');
+
+assert.equal(evaluate({title:'Escort service'}).level,'review-high');
+assert.equal(evaluate({title:'Zwykły rower',imageCount:2}).photoReviewRequired,true);
+console.log('PASS: word-boundary and photo count regression checks');
