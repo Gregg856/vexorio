@@ -4,6 +4,8 @@ const client=(response)=>({supabaseUrl:'https://owkjdlpawczrnwyszduj.supabase.co
 (async()=>{
  assert.equal((await check([file],client({data:{flagged:false}}),read)).allScreened,true);
  assert.equal((await check([file],client({data:{flagged:true}}),read)).requiresReview,true);
+ assert.equal((await check([file],client({data:{flagged:false,reviewRequired:true}}),read)).requiresReview,true);
+ assert.equal((await check([file],client({data:{flagged:false,reviewRequired:false}}),read)).requiresReview,false);
  assert.equal((await check([file],client({error:{message:'unavailable'}}),read)).requiresReview,true);
  assert.equal((await check([file],client({data:{}}),read)).requiresReview,true);
  await assert.rejects(()=>check([file],{supabaseUrl:'https://lfytoxcnutduahshbsko.supabase.co'},read),/staging_only/);
