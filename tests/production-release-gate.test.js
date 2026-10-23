@@ -31,4 +31,15 @@ const guards=[
 ];
 for(const [name,pattern] of guards)assert.match(submission,pattern,'Missing protection: '+name);
 console.log('PASS: five listing submission regression guards');
+
+// Authenticated-feature regression checks: protect ownership and private messages.
+const authenticatedChecks=[
+ ['listing edit owner constraint',/\.from\('listings'\)\.update\(changes\)\.eq\('id',editingListingId\)\.eq\('owner_id',session\.user\.id\)/],
+ ['listing delete owner constraint',/\.from\('listings'\)\.delete\(\)\.eq\('id',x\.id\)\.eq\('owner_id',session\.user\.id\)/],
+ ['chat fresh user verification',/async function sendMessage\(listingId,sellerId,message\)[\s\S]{0,200}sb\.auth\.getUser\(\)/],
+ ['chat prevents self-messaging',/if\(user\.id===sellerId\)throw/],
+ ['inbox limits conversations to participant',/\.or\('buyer_id\.eq\.'\+session\.user\.id\+',seller_id\.eq\.'\+session\.user\.id\)/],
+];
+for(const [name,pattern] of authenticatedChecks)assert.match(html,pattern,'Missing authenticated guard: '+name);
+console.log('PASS: five authenticated ownership and messaging guards');
 console.log('PASS: production backend isolation, core UI and safety features');
