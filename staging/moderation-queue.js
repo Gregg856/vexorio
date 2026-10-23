@@ -5,6 +5,7 @@ const dialog=$('adminDashboardDialog');
 if(!dialog)return;
 const client=window.vexorioStagingSupabase;
 if(!client||typeof client.rpc!=='function')return;
+if(!/^https:\/\/owkjdlpawczrnwyszduj\.supabase\.co\/?$/.test(client.supabaseUrl||''))return;
 const section=document.createElement('section');section.id='stagingModerationQueue';
 section.innerHTML='<h3>🛡️ Ogłoszenia oczekujące na moderację (STAGING)</h3><button type="button" class="btn small" id="pendingRefresh">↻ Odśwież kolejkę</button><p id="pendingStatus" role="status"></p><div id="pendingList"></div>';
 dialog.insertBefore(section,$('dashOverview'));
