@@ -1841,7 +1841,7 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle))cities.set(needle,type
 }
 $('cityFilter').addEventListener('click',()=>{$('vexCityDialogInput').value=$('cityFilter').value;$('vexCityDialog').hidden=false;updateCitySuggestions();$('vexCityDialogInput').focus()});
 $('vexCityDialogInput').addEventListener('input',updateCitySuggestions);
-$('vexCityDialogInput').addEventListener('keydown',e=>{if(e.key==='Escape')closeCityDialog();if(e.key==='Enter'){e.preventDefault();selectCity(e.target.value.trim())}});
+$('vexCityDialogInput').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeCityDialog();$('cityFilter').focus({preventScroll:true})}if(e.key==='Enter'){e.preventDefault();selectCity(e.target.value.trim())}});
 $('vexCityDialogClose').addEventListener('click',closeCityDialog);
 $('vexCityDialogUse').addEventListener('click',()=>selectCity($('vexCityDialogInput').value.trim()));
 $('country').addEventListener('change',()=>{if($('cityFilter').value.trim()){$('cityFilter').value='';$('vexCityDialogInput').value=''}if($('radiusFilter').value!=='0')$('radiusFilter').value='0';$('radiusInfo').textContent='';updateSaveSearchButton();if(!$('vexCityDialog').hidden)updateCitySuggestions();render()});
