@@ -52,7 +52,10 @@ const searchGuards=[
  ['Airport suggestions excluded',/!\/\(airport\|lotnisko\|flughafen\|aéroport\)\/i\.test\(p\.name\)/],
  ['Ambiguous city names rejected',/found=distinct\.size===1\?matches\[0\]:null/],
  ['Temporary geocoding errors retryable',/geoRetryAfter\.set\(key,Date\.now\(\)\+30000\)/],
- ['Failed lookup not permanently cached',/catch\(e\)\{geoRetryAfter\.set\(key,/]
+ ['Failed lookup not permanently cached',/catch\(e\)\{geoRetryAfter\.set\(key,/],
+ ['Country change clears city and radius',/\$\('country'\)\.addEventListener\('change',[\s\S]{0,350}\$\('radiusFilter'\)\.value='0'/],
+ ['City selection refreshes listings',/function selectCity\(name\)[\s\S]{0,180}render\(\)/],
+ ['Radius uses postal fallback',/function listingGeoLocation\(item\)/]
 
 ];
 for(const [name,pattern] of searchGuards)assert.match(html,pattern,'Search regression: '+name);
