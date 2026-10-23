@@ -30,3 +30,8 @@ console.log('PASS: admin client wiring; database authorization requires separate
 assert.ok(html.includes("if(accessError||allowed!==true)"),'Moderation authorization gate missing');
 assert.ok(html.includes("if(authError||allowed!==true)"),'Admin dashboard authorization gate missing');
 console.log('PASS: admin UI authorization checks retained');
+
+// Closing an admin subsection with X or Escape must return to the dashboard.
+assert.ok(html.includes("child.addEventListener('close'"),'Admin dialog close event missing');
+assert.ok(html.includes("adminReportListingFilter=null;show('adminDashboardDialog');loadAdminDashboard()"),'Admin subsection return-to-dashboard missing');
+console.log('PASS: admin subsection close returns to dashboard');
