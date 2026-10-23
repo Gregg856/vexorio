@@ -1814,6 +1814,8 @@ function updateCitySuggestions(){
  }
  // Vienna is known locally as Wien; ensure its exact name is selectable in Austria.
  if(country==='AT'&&needle==='wien'&&!cities.has('wien'))cities.set('wien','Wien');
+ // Include Warsaw when the geocoder suggests smaller places for an unfinished name.
+ if(country==='PL'&&needle.length>=3&&'warszawa'.startsWith(needle)&&!cities.has('warszawa'))cities.set('warszawa','Warszawa');
 // Let users select the exact entered city even when a geocoding service returns only similarly named places.
 if(country!=='all'&&needle.length>=2&&!cities.has(needle))cities.set(needle,typed);
  const paint=()=>{
