@@ -1747,7 +1747,24 @@ async function loadAdminPendingListings(){
     try{
      const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');
      if(verifyError||stillAdmin!==true)throw new Error('Brak uprawnień administratora.');
-     const {data:changed,error:reviewError}=await sb.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision});
+     let changed,reviewError;
+     if(decision==='approved'&&(item.listing_images||[]).some(u=>typeof u==='string'&&u.startsWith('listing-images-review/'))){
+      const published=[];
+      for(const url of item.listing_images){
+       if(typeof url!=='string'||!url.startsWith('listing-images-review/')){published.push(url);continue}
+       const path=url.slice('listing-images-review/'.length);
+       if(!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path))throw new Error('Nieprawidłowa ścieżka zdjęcia.');
+       const {data:blob,error:downloadError}=await sb.storage.from('listing-images-review').download(path);
+       if(downloadError||!blob)throw downloadError||new Error('Nie udało się pobrać zdjęcia.');
+       const {error:uploadError}=await sb.storage.from('listing-images').upload(path,blob,{contentType:blob.type||'image/jpeg',upsert:false});
+       if(uploadError&& !/already exists|duplicate/i.test(uploadError.message||''))throw uploadError;
+       const {data:publicImage}=sb.storage.from('listing-images').getPublicUrl(path);
+       published.push(publicImage.publicUrl);
+      }
+      ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_publish_reviewed_listing',{p_listing_id:item.listing_id,p_images:published}));
+     }else{
+      ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision}));
+     }
      if(reviewError)throw reviewError;
      if(changed!==true)throw new Error('Ogłoszenie zostało już rozpatrzone lub nie istnieje.');
      await loadAdminPendingListings();await loadListings();
