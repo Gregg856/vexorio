@@ -24,3 +24,13 @@ jobs:
           node tests/photo-preflight.test.js
           node tests/staging-draft-check.test.js
           node tests/smoke.cjs
+      - name: Generate isolated staging preview
+        run: |
+          node staging/build-preview.cjs
+          node -e "const fs=require('fs');const s=fs.readFileSync('staging/staging-preview.html','utf8');if(!s.includes('https://owkjdlpawczrnwyszduj.supabase.co')||s.includes('https://lfytoxcnutduahshbsko.supabase.co'))process.exit(1)"
+      - name: Upload staging preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vexorio-staging-preview
+          path: staging/staging-preview.html
+          retention-days: 7
