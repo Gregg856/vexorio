@@ -13,7 +13,7 @@ const status=$('pendingStatus'),list=$('pendingList');
 const triage=window.VexorioModerationTriage;
 // This is an advisory ordering only; server-side moderation remains authoritative.
 const photoKeys=['listing_images','Images','image_urls','images','photos','photo_urls','image_url','photo_url'];
-function hasPhoto(item){return photoKeys.some(key=>Array.isArray(item[key])?item[key].length>0:item[key]&&typeof item[key]==='object'?Object.keys(item[key]).length>0:typeof item[key]==='string'&&item[key].trim().length>0:item[key]&&typeof item[key]==='object'&&Object.keys(item[key]).length>0)||item.hasImages===true||Number(item.imageCount)>0}
+function hasPhoto(item){return photoKeys.some(key=>Array.isArray(item[key])?item[key].length>0:item[key]&&typeof item[key]==='object'?Object.keys(item[key]).length>0:(typeof item[key]==='string'&&item[key].trim().length>0)||(item[key]&&typeof item[key]==='object'&&Object.keys(item[key]).length>0))||item.hasImages===true||Number(item.imageCount)>0}
 const levels={'review-high':'Wysoki priorytet',review:'Do sprawdzenia',low:'Niski priorytet'};
 async function load(){
  list.replaceChildren();status.textContent='Sprawdzanie uprawnień…';
