@@ -101,3 +101,12 @@ for(const fragment of [
  "}[language]",
 ])assert.ok(html.includes(fragment),'Missing localized registration guidance: '+fragment);
 console.log('PASS: localized registration confirmation guidance');
+
+// Publishing without an account must explain the next step in the selected language.
+for(const fragment of [
+ "if(!sb||!session)return $('addMsg').textContent=(",
+ "pl:'Zaloguj się, aby opublikować wpis.'",
+ "de:'Melde dich an, um eine Anzeige zu veröffentlichen.'",
+ "en:'Sign in to publish a listing.'",
+])assert.ok(html.includes(fragment),'Missing localized publisher sign-in guidance: '+fragment);
+console.log('PASS: localized sign-in guidance before publishing');
