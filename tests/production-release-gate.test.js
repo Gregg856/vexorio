@@ -48,7 +48,7 @@ console.log('PASS: production backend isolation, core UI and safety features');
 const moderationChecks=[
  ['report administration verifies access',/async function loadAdminReports\(\)[\s\S]{0,450}is_vexorio_admin/],
  ['user administration verifies access',/async function loadAdminUsers\(\)[\s\S]{0,450}is_vexorio_admin/],
- ['reported message body requires explicit reveal',/reveal\.textContent='Pokaż zgłoszoną wiadomość'/],
+ ['reported message body requires explicit reveal',/reveal\.textContent=(?:language==='uk'\?'[^']+':)?'Pokaż zgłoszoną wiadomość'/],
  ['message report decisions use optimistic concurrency',/from\('message_reports'\)\.update\(\{status:nextStatus\}\)\.eq\('id',item\.id\)\.eq\('status',item\.status\)/],
  ['destructive listing moderation requires typed confirmation',/typed!==String\(id\)/],
 ];
