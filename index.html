@@ -4,7 +4,7 @@
 .card[role="button"]{cursor:pointer}.card[role="button"]:focus-visible{outline:2px solid var(--cyan)}.detail-price{font-size:25px;font-weight:800;color:var(--cyan)}.detail-description{white-space:pre-wrap;overflow-wrap:anywhere}.service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.service-tile{display:flex;align-items:center;gap:14px;text-align:left;padding:19px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(130deg,#0d3048,#071a2b);color:var(--txt);font-weight:750;min-height:83px;transition:border-color .15s,transform .15s}.service-tile:hover,.service-tile:focus-visible{border-color:var(--cyan);transform:translateY(-2px)}.service-icon{font-size:29px;flex-shrink:0}.service-intro{color:var(--muted);margin-top:-4px;margin-bottom:22px}.service-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #28556a;color:#a6dce5;border-radius:100px;padding:8px 12px;font-size:13px;margin-top:15px}.section-service{padding-top:45px;padding-bottom:40px}.service-tile span:last-child{line-height:1.35}@media(max-width:700px){.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.service-tile{padding:13px;gap:9px;min-height:78px}.service-icon{font-size:24px}}@media(max-width:360px){.service-grid{grid-template-columns:1fr}}
 
 /* Compact mobile service shortcuts; keep all categories available on demand. */
-.service-pill{cursor:pointer;font:inherit;text-align:left}
+.service-pill{cursor:pointer;font:inherit;text-align:left;background:#071e30!important;color:#a6dce5!important;border:1px solid #28556a!important;appearance:none;-webkit-appearance:none}
 .service-pill:hover,.service-pill:focus-visible{border-color:var(--cyan);color:var(--txt)}
 .services-more{display:none}
 @media(max-width:700px){
@@ -2040,9 +2040,9 @@ let serviceQueryTerms=null;const serviceTypes=[['🧹','sprzątanie','Reinigung'
 const serviceText={pl:['Usługi blisko Ciebie','Znajdź pomoc w domu, ogrodzie lub przy przeprowadzce. Wybierz usługę, aby zobaczyć pasujące ogłoszenia.','📍 Szukaj według miasta i kraju — niezależnie od języka'],de:['Dienstleistungen in deiner Nähe','Finde Hilfe für Haus, Garten und Umzug. Wähle eine Dienstleistung, um passende Anzeigen zu sehen.','📍 Suche nach Stadt und Land — unabhängig von der Sprache'],en:['Services near you','Find help for your home, garden or move. Choose a service to browse matching listings.','📍 Search by city and country — regardless of language']};
 function renderServices(){let a=serviceText[language];$('servicesHeading').textContent=a[0];$('servicesIntro').textContent=a[1];$('servicesNote').textContent=a[2];$('serviceGrid').replaceChildren();serviceTypes.forEach(st=>{let btn=document.createElement('button');btn.type='button';btn.className='service-tile';let icon=document.createElement('span');icon.className='service-icon';icon.textContent=st[0];let label=document.createElement('span');label.textContent=st[language==='pl'?1:language==='de'?2:3];btn.append(icon,label);btn.onclick=()=>{category='Usługi';$('query').value=label.textContent;serviceQueryTerms=st.slice(1).map(v=>v.toLocaleLowerCase());renderCats();render();document.getElementById('listTitle').scrollIntoView({behavior:'smooth',block:'start'})};$('serviceGrid').append(btn)})}
 $('servicesNote')?.addEventListener('click',()=>{
- const search=$('query');const target=search?.closest('section')||search;
- target?.scrollIntoView({behavior:'smooth',block:'start'});
- if(search){try{search.focus({preventScroll:true})}catch(e){search.focus()}}
+ const country=$('country');const city=$('cityFilter');
+ (country||city)?.scrollIntoView({behavior:'smooth',block:'center'});
+ if(country){try{country.focus({preventScroll:true})}catch(e){country.focus()}}
 });
 const servicesMoreBtn=$('servicesMoreBtn');
 servicesMoreBtn?.addEventListener('click',()=>{
