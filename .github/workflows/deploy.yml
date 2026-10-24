@@ -133,6 +133,21 @@ jobs:
               if ! curl --fail --silent --show-error --location --max-time 15 -D /tmp/vexorio-headers.txt -o /dev/null "$DEPLOY_URL/"; then
                 echo 'Unable to read live security headers'; sleep 5; continue
               fi
+              if ! grep -Eiq '^strict-transport-security: *max-age=31536000' /tmp/vexorio-headers.txt; then
+                echo 'HSTS is missing from public homepage'; sleep 5; continue
+              fi
+              if ! grep -Eiq '^x-download-options: *noopen' /tmp/vexorio-headers.txt; then
+                echo 'Download hardening header is missing'; sleep 5; continue
+              fi
+              if ! grep -Eiq '^strict-transport-security: *max-age=31536000' /tmp/vexorio-robots-headers.txt; then
+                echo 'HSTS is missing from robots.txt'; sleep 5; continue
+              fi
+              if ! grep -Eiq '^x-content-type-options: *nosniff' /tmp/vexorio-push-headers.txt; then
+                echo 'Push worker security headers are missing'; sleep 5; continue
+              fi
+              if ! grep -Eiq '^x-download-options: *noopen' /tmp/vexorio-push-headers.txt; then
+                echo 'Push worker download hardening header is missing'; sleep 5; continue
+              fi
               if ! grep -Eiq '^x-content-type-options: *nosniff' /tmp/vexorio-headers.txt || ! grep -Eiq '^x-frame-options: *DENY' /tmp/vexorio-headers.txt || ! grep -Eiq '^referrer-policy: *strict-origin-when-cross-origin' /tmp/vexorio-headers.txt || ! grep -Eiq '^permissions-policy: *camera=\(\), *microphone=\(\), *geolocation=\(\)' /tmp/vexorio-headers.txt || ! grep -Eiq '^x-permitted-cross-domain-policies: *none' /tmp/vexorio-headers.txt; then
                 echo 'Live site is missing required browser security headers (check Cloudflare Workers static asset headers)'; cat /tmp/vexorio-headers.txt; sleep 5; continue
               fi
