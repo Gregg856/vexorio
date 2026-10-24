@@ -59,6 +59,8 @@ const {evaluateThresholds}=require('../guard/threshold-evaluation.cjs');
 const sweep=evaluateThresholds(training,testing);
 assert.equal(sweep.length,5);
 assert.ok(sweep.every(x=>x.samples===20&&x.reviewCount>=x.flaggedSuspicious));
+assert.ok(sweep.every(x=>x.missedSuspiciousRate>=0&&x.missedSuspiciousRate<=1));
+assert.ok(sweep.every(x=>x.safeReviewRate>=0&&x.safeReviewRate<=1));
 assert.ok(sweep.every((x,i)=>i===0||x.reviewCount>=sweep[i-1].reviewCount));
 assert.ok(sweep.every((x,i)=>i===0||x.missedSuspicious<=sweep[i-1].missedSuspicious));
 assert.throws(()=>evaluateThresholds(training,[training[0],testing[1]]),/Near-duplicate/);
