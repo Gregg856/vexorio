@@ -131,3 +131,9 @@ console.log('PASS: invalid reports provide multilingual feedback');
 // Google OAuth must reject rapid duplicate clicks and recover after network errors.
 for(const fragment of ["const googleButton=$('googleBtn');if(googleButton.disabled)return", "googleButton.disabled=true", "googleButton.setAttribute('aria-busy','true')", "catch(err){authMessage(localizedAuthError(err),true)}finally{googleButton.disabled=false"]){assert.ok(html.includes(fragment),'Missing Google OAuth concurrency guard: '+fragment)}
 console.log('PASS: Google OAuth duplicate click and exception guards');
+
+// Switching login/register tabs during a pending network response must not change the operation being completed.
+assert.ok(html.includes("const submittingMode=mode;let email="),'Auth submit mode snapshot missing');
+assert.ok(html.includes("submittingMode==='login'?await sb.auth.signInWithPassword"),'Login must use snapshotted mode');
+assert.ok(html.includes("if(submittingMode==='register'&&!data.session)"),'Registration confirmation must use snapshotted mode');
+console.log('PASS: authentication submit mode remains stable across async response');
