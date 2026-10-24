@@ -2094,18 +2094,18 @@ function updateCitySuggestions(){
   const valid=country==='DE'?/^\d{5}$/.test(postal):country==='PL'?/^\d{2}-?\d{3}$/.test(postal):/^\d{4,10}$/.test(postal);
   if(country!=='all'&&valid){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');
-   btn.textContent='📍 '+postal+' — sprawdzam miasto…';
+   btn.textContent='📍 '+postal+' — '+(language==='de'?'Stadt wird gesucht…':language==='en'?'Looking up city…':'sprawdzam miasto…');
    btn.addEventListener('click',()=>selectCity(postal,btn.dataset.cityLabel||postal));list.append(btn);
-   const countryNames={DE:'Niemcy',PL:'Polska',AT:'Austria'};
+   const countryNames=language==='de'?{DE:'Deutschland',PL:'Polen',AT:'Österreich'}:language==='en'?{DE:'Germany',PL:'Poland',AT:'Austria'}:{DE:'Niemcy',PL:'Polska',AT:'Austria'};
    const zip=country==='PL'&&/^\d{5}$/.test(postal)?postal.slice(0,2)+'-'+postal.slice(2):postal;
    fetch('https://api.zippopotam.us/'+encodeURIComponent(country.toLowerCase())+'/'+encodeURIComponent(zip))
     .then(response=>response.ok?response.json():null)
     .then(data=>{
      if(request!==citySuggestRequest||$('vexCityDialog').hidden||input.value.trim()!==typed||$('country').value!==country)return;
      const city=data?.places?.[0]?.['place name'];
-     btn.textContent=city?'📍 '+postal+' — '+city+', '+(countryNames[country]||country):'📍 '+postal+' — nie znaleziono miasta';if(city)btn.dataset.cityLabel=postal+' — '+city+', '+(countryNames[country]||country);
+     btn.textContent=city?'📍 '+postal+' — '+city+', '+(countryNames[country]||country) :'📍 '+postal+' — '+(language==='de'?'Stadt nicht gefunden':language==='en'?'City not found':'nie znaleziono miasta');if(city)btn.dataset.cityLabel=postal+' — '+city+', '+(countryNames[country]||country);
      btn.disabled=!city;
-    }).catch(()=>{if(request===citySuggestRequest)btn.textContent='📍 '+postal+' — sprawdź połączenie';btn.disabled=true});
+    }).catch(()=>{if(request===citySuggestRequest)btn.textContent='📍 '+postal+' — '+(language==='de'?'Verbindung prüfen':language==='en'?'Check connection':'sprawdź połączenie');btn.disabled=true});
   }
   list.hidden=!list.childElementCount;
   return;
