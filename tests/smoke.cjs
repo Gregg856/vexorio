@@ -127,6 +127,8 @@ assert.ok(html.includes("sb.rpc('admin_set_user_block'"),'Block/unblock must use
 assert.ok(html.includes(".eq('user_id',viewerId).order('created_at'"),'Appeal history must query captured account');
 assert.ok(html.includes('auth?.user?.id!==viewerId||session?.user?.id!==viewerId'),'Appeal submit must recheck identity');
 assert.ok(html.includes("if(btn.disabled)return;\n if(!sb||!session?.user?.id)"),'Appeal submit must prevent duplicate sends');
+assert.ok(html.includes("sb.rpc('is_vexorio_blocked',{p_user:appealAccessViewerId})"),'Appeal access must use captured account');
+assert.ok(html.includes('if(session?.user?.id!==appealAccessViewerId)return;'),'Appeal access must reject stale session');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
