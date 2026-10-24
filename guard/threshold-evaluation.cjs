@@ -26,6 +26,10 @@ function evaluateThresholds(training,testing,{thresholds=[0,0.1,0.25,0.5,0.75],m
    if(p.actual==='suspicious'&&!review)result.missedSuspicious++;
   }
   result.reviewRate=result.reviewCount/result.samples;
+  result.suspiciousTotal=suspiciousTotal;
+  result.safeTotal=safeTotal;
+  result.suspiciousSentToReview=suspiciousTotal-result.missedSuspicious;
+  result.suspiciousReviewRate=result.suspiciousSentToReview/suspiciousTotal;
   result.missedSuspiciousRate=result.missedSuspicious/suspiciousTotal;
   result.safeReviewRate=result.safeSentToReview/safeTotal;
   return result;
