@@ -15,6 +15,12 @@ function inspectImageBytes(bytes,mime){
   if(bytes.length>=30&&String.fromCharCode(...bytes.slice(12,16))==='VP8X'){
    width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
    height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  }else if(bytes.length>=30&&String.fromCharCode(...bytes.slice(12,16))==='VP8 '&&bytes[23]===157&&bytes[24]===1&&bytes[25]===42){
+   width=(bytes[26]|(bytes[27]<<8))&16383;
+   height=(bytes[28]|(bytes[29]<<8))&16383;
+  }else if(bytes.length>=25&&String.fromCharCode(...bytes.slice(12,16))==='VP8L'&&bytes[20]===47){
+   width=1+(((bytes[22]&63)<<8)|bytes[21]);
+   height=1+(((bytes[24]&15)<<10)|(bytes[23]<<2)|((bytes[22]&192)>>6));
   }
  }else if(bytes.length>=4&&bytes[0]===255&&bytes[1]===216){
   detected='image/jpeg';
