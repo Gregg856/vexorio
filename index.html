@@ -1493,11 +1493,11 @@
 /* City picker is anchored to top of the visible screen, not behind the keyboard. */
 .vex-city-picker #cityFilter{cursor:pointer}
 .vex-city-dialog[hidden]{display:none!important}
-.vex-city-dialog{position:fixed!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;left:8px!important;right:8px!important;bottom:auto!important;z-index:99999!important;box-sizing:border-box;padding:14px;border:1px solid #397087;border-radius:16px;background:#061c2e;box-shadow:0 12px 50px #000d;max-height:min(390px,55dvh);overscroll-behavior:contain;overflow-y:auto}
+.vex-city-dialog{position:fixed!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;left:8px!important;right:8px!important;bottom:auto!important;z-index:99999!important;box-sizing:border-box;padding:14px;border:1px solid #397087;border-radius:16px;background:#061c2e;box-shadow:0 12px 50px #000d;max-height:min(390px,65dvh);overscroll-behavior:contain;overflow-y:auto}
 .vex-city-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:#fff}
 .vex-city-dialog-head button{min-width:42px;min-height:42px;border:1px solid #386177;border-radius:9px;background:#123348;color:white;font-size:22px}
 #vexCityDialogInput{box-sizing:border-box;width:100%;min-height:52px;padding:12px;border:1px solid #457489;border-radius:10px;background:#061525;color:white;font-size:16px}
-.vex-city-dialog .vex-city-suggestions:not([hidden]){display:flex!important;flex-direction:column!important;position:static!important;max-height:128px!important;overscroll-behavior:contain;overflow-y:auto;margin-top:8px}
+.vex-city-dialog .vex-city-suggestions:not([hidden]){display:flex!important;flex-direction:column!important;position:static!important;max-height:min(128px,25dvh)!important;overscroll-behavior:contain;overflow-y:auto;margin-top:8px}
 .vex-city-dialog .vex-city-option{min-height:39px!important;padding:8px 12px!important}
 .vex-city-dialog-use{width:100%;margin-top:10px;min-height:45px;border:0;border-radius:10px;background:#00c5d8;color:#04212b;font-weight:800}
 @media(max-width:850px){body:has(.vex-city-dialog:not([hidden])) .vex-mobile-nav{display:none!important}}
