@@ -2867,6 +2867,17 @@ async function loadConversations(){
   if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
   if(incomingError){console.warn('Inbox unread lookup failed',incomingError);const warning=document.getElementById('vexInboxLoadWarning')||document.createElement('p');warning.id='vexInboxLoadWarning';warning.setAttribute('role','status');warning.textContent=language==='de'?'Nachrichtenvorschau vorübergehend nicht verfügbar. Bitte aktualisieren.':language==='en'?'Message previews are temporarily unavailable. Please refresh.':language==='uk'?'Попередній перегляд повідомлень тимчасово недоступний. Оновіть розмови.':'Podgląd wiadomości jest chwilowo niedostępny. Odśwież rozmowy.';box.before(warning);continue}
   for(const msg of incoming||[]){const id=String(msg.conversation_id);if(!previewByConversation.has(id))previewByConversation.set(id,msg);if(!latestByConversation.has(id))latestByConversation.set(id,msg)}
+  // A busy conversation can consume the batch limit. Fetch the latest message
+  // for each omitted conversation separately so its preview and unread state survive.
+  if((incoming||[]).length===1000){
+   const missingIds=ids.filter(id=>!previewByConversation.has(String(id)));
+   for(const missingId of missingIds){
+    const {data:single,error:singleError}=await sb.from('messages').select('conversation_id,created_at,sender_id,body').eq('conversation_id',missingId).order('created_at',{ascending:false}).limit(1);
+    if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
+    if(singleError){console.warn('Inbox preview fallback failed',singleError);continue}
+    if(single?.[0]){const id=String(missingId);previewByConversation.set(id,single[0]);latestByConversation.set(id,single[0])}
+   }
+  }
  }
  const inboxScrollTop=$('accountDialog').scrollTop;
  const focusedInboxId=box.contains(document.activeElement)?document.activeElement?.dataset?.conversationId:null;
