@@ -191,3 +191,8 @@ assert.ok(html.includes('editAuth?.user?.id!==editOwnerId||session?.user?.id!==e
 // New listings must persist the postal code used by search and distance filters.
 assert.ok(html.includes('id="newPostal"'),'Listing creation form must expose a postal-code field');
 assert.ok(html.includes("postal_code:$('newPostal').value.trim()||null"),'Listing creation must save postal_code');
+
+// Existing listings must load and save their postal code during editing.
+assert.ok(html.includes('id="editPostal"'),'Listing edit form must expose postal code');
+assert.ok(html.includes("$('editPostal').value=data.postal_code||''"),'Listing editor must load postal code');
+assert.ok(html.includes("postal_code:$('editPostal').value.trim()||null"),'Listing editor must persist postal code');
