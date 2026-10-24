@@ -19,6 +19,7 @@ jobs:
           cp push-sw.js public/push-sw.js
           cp robots.txt public/robots.txt
           cp _headers public/_headers
+          cp worker.js worker.js
           cat > wrangler.toml <<'EOF'
           name = "vexorio"
           compatibility_date = "2026-10-20"
@@ -26,6 +27,9 @@ jobs:
 
           [assets]
           directory = "./public"
+          binding = "ASSETS"
+          
+          main = "./worker.js"
           EOF
 
       - name: Sprawdz skladnie JavaScript
