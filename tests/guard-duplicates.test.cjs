@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const {signature,compare,findCandidates}=require('../guard/duplicates.cjs');
 const a={title:'Sprzedam rower miejski',description:'Rower w bardzo dobrym stanie odbiór osobisty Warszawa'};
-const b={title:'ROWER miejski sprzedam',description:'Warszawa odbiór osobisty stan bardzo dobrym w rower'};
+const b={title:'ROWER miejski sprzedam',description:'Warszawa odbiór osobisty stanie bardzo dobrym w rower'};
 const c={title:'Praca ogrodnika',description:'Koszenie trawnika w weekendy'};
 assert.equal(signature(a).hash,signature(b).hash);
 assert.equal(compare(a,b).possibleDuplicate,true);
