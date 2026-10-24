@@ -4,14 +4,14 @@
   "short_name": "Strażak",
   "description": "Osobna aplikacja VEXORIO Guard do sprawdzania tekstów ogłoszeń",
   "lang": "pl",
-  "start_url": "/guard-lab.html",
-  "scope": "/",
+  "start_url": "/guard-lab.html?app=guard",
+  "scope": "/guard-",
   "display": "standalone",
   "background_color": "#08131f",
   "theme_color": "#08131f",
   "icons": [
     {
-      "src": "/vexorio-app-icon.svg",
+      "src": "/guard-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
