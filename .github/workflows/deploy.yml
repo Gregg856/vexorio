@@ -16,6 +16,8 @@ jobs:
         run: |
           mkdir -p public
           cp index.html public/index.html
+          # Embed the exact GitHub revision in the deployed HTML for release verification.
+          sed -i "s#</head>#<meta name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"></head>#" public/index.html
           cp push-sw.js public/push-sw.js
           cp robots.txt public/robots.txt
           cp _headers public/_headers
@@ -120,6 +122,9 @@ jobs:
               fi
               if ! curl --fail --silent --show-error --location --max-time 15 -D /tmp/vexorio-push-headers.txt -o /tmp/vexorio-push.js "$DEPLOY_URL/push-sw.js" || ! grep -Eiq '^content-type: *(application|text)/javascript' /tmp/vexorio-push-headers.txt; then
                 echo 'Push service worker missing or wrong JavaScript content type'; sleep 5; continue
+              fi
+              if ! grep -Fq "name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"" /tmp/vexorio-production.html; then
+                echo 'Cloudflare is serving an older revision than the current GitHub commit'; sleep 5; continue
               fi
               if ! grep -q 'VEXORIO' /tmp/vexorio-production.html; then
                 echo 'Public homepage branding is missing'; sleep 5; continue
