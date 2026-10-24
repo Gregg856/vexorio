@@ -2564,7 +2564,7 @@ async function checkUnreadMessages(){
  unreadCheckInProgress=true;
  const uid=session.user.id;
  try{
-  const {data:convos,error}=await sb.from('conversations').select('id').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).limit(100);
+  const {data:convos,error}=await sb.from('conversations').select('id').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).order('created_at',{ascending:false}).limit(100);
   if(error){console.warn('Unread conversations lookup failed',error);return}
   if(!convos?.length){if(session?.user?.id===uid)updateUnreadBadges(0);return}
   let unread=0;
