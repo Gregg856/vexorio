@@ -24,7 +24,7 @@ export default {
       let baseUrl;
       try { baseUrl = new URL(env.SUPABASE_URL); }
       catch { return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}}); }
-      if (baseUrl.protocol !== 'https:' || !baseUrl.hostname.endsWith('.supabase.co') || baseUrl.username || baseUrl.password || baseUrl.port || baseUrl.pathname !== '/' || baseUrl.search || baseUrl.hash) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
+      if (baseUrl.protocol !== 'https:' || !/^[a-z0-9-]+[.]supabase[.]co$/.test(baseUrl.hostname) || baseUrl.username || baseUrl.password || baseUrl.port || baseUrl.pathname !== '/' || baseUrl.search || baseUrl.hash) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
       const endpoint = new URL('/rest/v1/rpc/vexorio_record_listing_view_server', baseUrl);
       let upstream;
       try { upstream = await fetch(endpoint, {
