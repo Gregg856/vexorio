@@ -12,6 +12,9 @@ const examples=[
  {label:'suspicious',text:'wyślij hasło kod sms'}
 ];
 (async()=>{
+ assert.throws(()=>createLocalGuard(examples,{minimumConfidence:NaN}),/Invalid confidence threshold/);
+ assert.throws(()=>createLocalGuard(examples,{minimumConfidence:Infinity}),/Invalid confidence threshold/);
+ assert.throws(()=>createLocalGuard(examples,{minimumConfidence:-Infinity}),/Invalid confidence threshold/);
  const guard=createLocalGuard(examples,{minimumConfidence:0.5});
  const flagged=await guard.evaluate({title:'Oferta',description:'wyślij hasło kod sms'});
  assert.equal(flagged.model.status,'advisory');
