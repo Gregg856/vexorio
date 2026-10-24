@@ -63,6 +63,8 @@ assert.equal(sweep.length,5);
 assert.ok(sweep.every(x=>x.samples===20&&x.reviewCount>=x.flaggedSuspicious));
 assert.ok(sweep.every(x=>x.missedSuspiciousRate>=0&&x.missedSuspiciousRate<=1));
 assert.ok(sweep.every(x=>x.suspiciousTotal+x.safeTotal===x.samples));
+assert.ok(sweep.every(x=>x.reviewCount+x.notReviewedCount===x.samples));
+assert.ok(sweep.every(x=>x.safeNotReviewed+x.safeSentToReview===x.safeTotal));
 assert.ok(sweep.every(x=>x.suspiciousSentToReview+x.missedSuspicious===x.suspiciousTotal));
 assert.ok(sweep.every(x=>Math.abs(x.suspiciousReviewRate+x.missedSuspiciousRate-1)<1e-10));
 assert.ok(sweep.every(x=>x.safeReviewRate>=0&&x.safeReviewRate<=1));
