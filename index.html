@@ -2655,9 +2655,9 @@ let inboxRequestId=0;
 function ensureInboxSearch(){
  const box=$('myConversations');
  if(!box||document.getElementById('vexInboxSearch'))return;
- const input=document.createElement('input');input.id='vexInboxSearch';input.type='search';input.placeholder='🔎 Szukaj rozmowy lub ogłoszenia…';input.setAttribute('aria-label','Szukaj rozmów');input.autocomplete='off';input.style.cssText='width:100%;margin:8px 0 12px;min-height:46px;border-radius:12px;padding:10px 14px';
+ const input=document.createElement('input');input.id='vexInboxSearch';input.type='search';input.placeholder=language==='uk'?'🔎 Пошук розмови або оголошення…':'🔎 Szukaj rozmowy lub ogłoszenia…';input.setAttribute('aria-label',language==='uk'?'Пошук розмов':'Szukaj rozmów');input.autocomplete='off';input.style.cssText='width:100%;margin:8px 0 12px;min-height:46px;border-radius:12px;padding:10px 14px';
  const searchWrap=document.createElement('div');searchWrap.style.cssText='display:flex;align-items:center;gap:8px;width:100%';input.style.flex='1';input.style.minWidth='0';
- const clear=document.createElement('button');clear.type='button';clear.className='btn small';clear.textContent='✕';clear.title='Wyczyść wyszukiwanie';clear.setAttribute('aria-label','Wyczyść wyszukiwanie rozmów');clear.style.cssText='flex-shrink:0;min-width:42px;min-height:42px;border-radius:12px';clear.hidden=true;
+ const clear=document.createElement('button');clear.type='button';clear.className='btn small';clear.textContent='✕';clear.title=language==='uk'?'Очистити пошук':'Wyczyść wyszukiwanie';clear.setAttribute('aria-label',language==='uk'?'Очистити пошук розмов':'Wyczyść wyszukiwanie rozmów');clear.style.cssText='flex-shrink:0;min-width:42px;min-height:42px;border-radius:12px';clear.hidden=true;
  input.addEventListener('input',()=>{clear.hidden=!input.value;clearTimeout(window.vexInboxSearchTimer);window.vexInboxSearchTimer=setTimeout(()=>loadConversations(),250)});
  clear.onclick=()=>{input.value='';clear.hidden=true;clearTimeout(window.vexInboxSearchTimer);input.focus();void loadConversations()};
  searchWrap.append(input,clear);box.parentNode.insertBefore(searchWrap,box);
@@ -2665,8 +2665,8 @@ function ensureInboxSearch(){
 function ensureInboxFilters(){
  const box=$('myConversations');
  if(!box||document.getElementById('vexInboxFilters'))return;
- const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label','Filtruj rozmowy');wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
- const options=[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']];
+ const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',language==='uk'?'Фільтр розмов':'Filtruj rozmowy');wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
+ const options=language==='uk'?[['all','Усі'],['unread','Непрочитані'],['buy','Купую'],['sell','Продаю']]:[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']];
  const savedFilter=sessionStorage.getItem('vexInboxFilter:'+String(session?.user?.id||'guest'));
  const initialFilter=options.some(([key])=>key===savedFilter)?savedFilter:'all';
  for(const [value,label] of options){
@@ -2679,8 +2679,8 @@ function ensureInboxFilters(){
  }
  box.parentNode.insertBefore(wrap,box);
  const sort=document.createElement('button');sort.type='button';sort.id='vexInboxUnreadFirst';sort.className='btn small';sort.textContent='⬆ Nowe na górze';sort.setAttribute('aria-pressed',sessionStorage.getItem('vexInboxUnreadFirst:'+String(session?.user?.id||'guest'))==='true'?'true':'false');sort.style.cssText='margin:0 0 10px;border-radius:12px;padding:9px 12px';
- sort.textContent=sort.getAttribute('aria-pressed')==='true'?'✓ Nowe na górze':'⬆ Nowe na górze';
- sort.onclick=()=>{const enabled=sort.getAttribute('aria-pressed')!=='true';sort.setAttribute('aria-pressed',String(enabled));sort.textContent=enabled?'✓ Nowe na górze':'⬆ Nowe na górze';sessionStorage.setItem('vexInboxUnreadFirst:'+String(session?.user?.id||'guest'),String(enabled));loadConversations()};
+ sort.textContent=(sort.getAttribute('aria-pressed')==='true'?'✓ ':'⬆ ')+(language==='uk'?'Нові зверху':'Nowe na górze');
+ sort.onclick=()=>{const enabled=sort.getAttribute('aria-pressed')!=='true';sort.setAttribute('aria-pressed',String(enabled));sort.textContent=(enabled?'✓ ':'⬆ ')+(language==='uk'?'Нові зверху':'Nowe na górze');sessionStorage.setItem('vexInboxUnreadFirst:'+String(session?.user?.id||'guest'),String(enabled));loadConversations()};
  box.parentNode.insertBefore(sort,box);
 }
 async function loadConversations(){
