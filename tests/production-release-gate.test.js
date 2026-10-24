@@ -111,3 +111,8 @@ const workerGuards=[
 for(const [name,needle] of workerGuards)assert.ok(worker.includes(needle),'Missing Worker hardening: '+name);
 assert.ok(worker.includes("headers.set('Cache-Control', 'no-store')"),'Missing error no-store header');
 console.log('PASS: five Worker security and SEO guards');
+
+// A second submit while session or image validation is pending must be ignored.
+assert.ok(html.includes("if(submit.disabled||submit.dataset.verifying==='1')return;submit.dataset.verifying='1';try{"),'Missing early listing submission lock');
+assert.ok(html.includes("}finally{delete submit.dataset.verifying}"),'Missing listing submission lock release');
+console.log('PASS: duplicate listing submissions blocked during async validation');
