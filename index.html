@@ -2121,12 +2121,12 @@ function updateCitySuggestions(){
   list.hidden=!list.childElementCount;
   return;
  }
- const cities=new Map();
+ const cities=new Map();const cityCountries=new Map();
  for(const item of allListings){
   if(!item.city||(country!=='all'&&String(item.country||'').toUpperCase()!==country))continue;
   const name=String(item.city).trim(),key=searchText(name);
   if(!key||cities.has(key)||!key.startsWith(needle))continue;
-  cities.set(key,name);
+  cities.set(key,name);if(item.country)cityCountries.set(key,String(item.country).toUpperCase());
  }
  // Surface major cities early for partial searches without hiding smaller places.
  const priorityCities={DE:['Berlin','Hamburg','München','Köln','Frankfurt am Main','Düsseldorf','Stuttgart','Dortmund','Essen','Leipzig','Bremen','Dresden','Hannover','Nürnberg','Erftstadt'],PL:['Warszawa','Kraków','Łódź','Wrocław','Poznań','Gdańsk','Szczecin','Bydgoszcz','Lublin','Katowice'],AT:['Wien','Graz','Linz','Salzburg']};
@@ -2143,8 +2143,8 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&nee
   if($('vexCityDialog').hidden)return;
   list.replaceChildren();
   for(const name of [...cities.values()].sort((a,b)=>Number(searchText(b)===needle)-Number(searchText(a)===needle)||Number(searchText(b).startsWith(needle))-Number(searchText(a).startsWith(needle))||cityRank(a)-cityRank(b)||a.localeCompare(b,language)).slice(0,5)){
-   const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');btn.textContent=(searchText(name)===needle?'✓ ':'📍 ')+name;
-   btn.addEventListener('click',()=>selectCity(name));list.append(btn);
+   const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');const code=cityCountries.get(searchText(name));btn.textContent=(searchText(name)===needle?'✓ ':'📍 ')+name+(country==='all'&&code?' · '+code:'');
+   btn.addEventListener('click',()=>{if(country==='all'&&code)$('country').value=code;selectCity(name)});list.append(btn);
   }
   list.hidden=!list.childElementCount;
  };
@@ -2157,7 +2157,7 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&nee
    if(request!==citySuggestRequest||$('vexCityDialog').hidden||$('country').value!==country||input.value.trim()!==typed)return;
    const allowedCountries=new Set([...$('country').options].map(option=>option.value).filter(value=>value!=='all'));const matches=(data.results||[]).filter(p=>(country==='all'?allowedCountries.has(p.country_code):p.country_code===country)&&typeof p.name==='string'&&searchText(p.name).startsWith(needle)&&!/(airport|lotnisko|flughafen|aéroport)/i.test(p.name)).sort((a,b)=>Number(searchText(b.name)===needle)-Number(searchText(a.name)===needle)||a.name.localeCompare(b.name,language));
    if(matches.length&&!matches.some(p=>searchText(p.name)===needle)&&cities.get(needle)===typed)cities.delete(needle);
-   for(const p of matches){const name=country==='PL'&&searchText(p.name)==='warsaw'?'Warszawa':p.name;const key=searchText(name);if(!cities.has(key))cities.set(key,name)}
+   for(const p of matches){const name=country==='PL'&&searchText(p.name)==='warsaw'?'Warszawa':p.name;const key=searchText(name);if(!cities.has(key)){cities.set(key,name);cityCountries.set(key,p.country_code)}}
    paint();
   }catch(e){console.warn('City suggestions unavailable',e)}
  },450);
