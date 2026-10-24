@@ -2002,11 +2002,14 @@ async function loadAdminPendingListings(){
 let adminReportListingFilter=null;
 async function loadAdminReports(){
  const status=$('adminReportsMessage'),list=$('adminReportsList');status.textContent='';list.replaceChildren();
- if(!session){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ if(!session?.user?.id||!sb){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const reportViewerId=session.user.id;
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==reportViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  await loadAdminMessageReports();
  let reportQuery=sb.from('listing_reports').select('id,listing_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);if(adminReportListingFilter!==null)reportQuery=reportQuery.eq('listing_id',adminReportListingFilter);const {data,error}=await reportQuery;
+ if(session?.user?.id!==reportViewerId)return;
  if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
  const selectedListing=adminReportListingFilter;
  const filteredData=selectedListing===null?(data||[]):(data||[]).filter(item=>Number(item.listing_id)===Number(selectedListing));
