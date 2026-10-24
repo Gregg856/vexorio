@@ -121,6 +121,9 @@ assert.ok((html.match(/if\(session\?\.user\?\.id!==pendingViewerId\)return;/g)||
 assert.ok(html.includes("auth?.user?.id!==appealsViewerId"),'Appeal save must revalidate authenticated user');
 assert.ok(html.includes("const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');if(session?.user?.id!==appealsViewerId)return;"),'Appeal save must recheck admin rights');
 assert.ok(html.includes("!['new','reviewing','accepted','rejected'].includes(sel.value)"),'Appeal save must validate status');
+assert.ok(html.includes('const adminUsersViewerId=session.user.id'),'Admin users view must capture session identity');
+assert.ok(html.includes('auth?.user?.id!==adminUsersViewerId'),'Block/unblock must recheck authenticated identity');
+assert.ok(html.includes("sb.rpc('admin_set_user_block'"),'Block/unblock must use admin RPC');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
