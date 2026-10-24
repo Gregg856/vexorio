@@ -26,6 +26,9 @@ function evaluateThresholds(training,testing,{thresholds=[0,0.1,0.25,0.5,0.75],m
    if(p.actual==='suspicious'&&!review)result.missedSuspicious++;
   }
   result.reviewRate=result.reviewCount/result.samples;
+  result.notReviewedCount=result.samples-result.reviewCount;
+  result.safeNotReviewed=safeTotal-result.safeSentToReview;
+  if(result.reviewCount+result.notReviewedCount!==result.samples)throw Error('Inconsistent threshold counts');
   result.suspiciousTotal=suspiciousTotal;
   result.safeTotal=safeTotal;
   result.suspiciousSentToReview=suspiciousTotal-result.missedSuspicious;
