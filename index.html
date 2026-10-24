@@ -2983,7 +2983,7 @@ async function refreshConversation(){
  const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){const previouslySeen=getSeen(conversationId);if(!previouslySeen||latest.created_at>previouslySeen){setSeen(conversationId,latest.created_at);if(!unreadCheckInProgress)void checkUnreadMessages()}}
 }
 
-$('replyText').addEventListener('input',()=>{if(!session?.user?.id||!activeConversationId)return;const key=chatDraftKey(session.user.id,activeConversationId);if($('replyText').value)sessionStorage.setItem(key,$('replyText').value);else sessionStorage.removeItem(key)});
+$('replyText').addEventListener('input',()=>{if(!session?.user?.id||!activeConversationId)return;const key=chatDraftKey(session.user.id,activeConversationId);try{if($('replyText').value)sessionStorage.setItem(key,$('replyText').value);else sessionStorage.removeItem(key)}catch(error){console.warn('Chat draft storage unavailable',error)}});
 $('replyText').addEventListener('keydown',event=>{
  if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){
   event.preventDefault();
@@ -3006,7 +3006,7 @@ $('replyForm').onsubmit=async e=>{
  try{
   const {error}=await sb.from('messages').insert({conversation_id:sendingConversationId,sender_id:sendingUserId,body:text});
   if(error)throw error;
-  sessionStorage.removeItem(chatDraftKey(sendingUserId,sendingConversationId));
+  try{sessionStorage.removeItem(chatDraftKey(sendingUserId,sendingConversationId))}catch(error){console.warn('Chat draft cleanup unavailable',error)}
   if(activeConversationId!==sendingConversationId||session?.user?.id!==sendingUserId)return;
   $('replyText').value='';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));$('chatMessages').scrollTop=$('chatMessages').scrollHeight;await refreshConversation();$('chatMessages').scrollTop=$('chatMessages').scrollHeight;$('replyStatus').textContent=language==='uk'?'Надіслано ✓':'Wysłano ✓';
  }catch(err){if(activeConversationId===sendingConversationId&&session?.user?.id===sendingUserId)$('replyStatus').textContent=(language==='uk'?'Не вдалося надіслати: ':'Nie udało się wysłać: ')+friendlyLimitError(err)}
