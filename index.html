@@ -2864,7 +2864,7 @@ async function loadConversations(){
  const focusedInboxId=box.contains(document.activeElement)?document.activeElement?.dataset?.conversationId:null;
  box.replaceChildren(); // Remove the loading label before rendering conversations.
  const searchValue=(document.getElementById('vexInboxSearch')?.value||'').trim().toLocaleLowerCase();
- const unreadTotal=data.reduce((count,c)=>{const m=latestByConversation.get(String(c.id));const seen=getSeen(c.id);return count+(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)?1:0)},0);
+ const unreadTotal=data.reduce((count,c)=>{const m=latestByConversation.get(String(c.id));const seen=getSeen(c.id);return count+(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null)?1:0)},0);
  const filterBar=document.getElementById('vexInboxFilters');
  if(filterBar&&!document.getElementById('vexInboxRefresh')){
   const refresh=document.createElement('button');refresh.id='vexInboxRefresh';refresh.type='button';refresh.className='btn small';refresh.textContent=language==='uk'?'↻ Оновити':'↻ Odśwież';refresh.setAttribute('aria-label',language==='uk'?'Оновити список розмов':'Odśwież listę rozmów');refresh.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
@@ -2876,7 +2876,7 @@ async function loadConversations(){
  let visibleCount=0;
  data.sort((a,b)=>{
   if(document.getElementById('vexInboxUnreadFirst')?.getAttribute('aria-pressed')==='true'){
-   const unread=c=>{const m=latestByConversation.get(String(c.id)),seen=getSeen(c.id);return !!(m&&m.sender_id!==uid&&(!seen||m.created_at>seen))};
+   const unread=c=>{const m=latestByConversation.get(String(c.id)),seen=getSeen(c.id);return !!(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null))};
    const difference=Number(unread(b))-Number(unread(a));if(difference)return difference;
   }
   const lastA=previewByConversation.get(String(a.id))?.created_at||a.created_at||'';
