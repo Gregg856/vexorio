@@ -3245,7 +3245,15 @@ async function sendMessage(listingId,sellerId,message){
   if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:decodeKey(key)});
   const json=subscription.toJSON();
   if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw Error('Brak danych subskrypcji');
-  const {error}=await client.from('push_subscriptions').upsert({user_id:user.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth,updated_at:new Date().toISOString()},{onConflict:'endpoint'});
+  const saveSubscription=async sub=>{const payload=sub.toJSON();if(!payload.endpoint||!payload.keys?.p256dh||!payload.keys?.auth)throw Error('Brak danych subskrypcji');return client.from('push_subscriptions').upsert({user_id:user.id,endpoint:payload.endpoint,p256dh:payload.keys.p256dh,auth_key:payload.keys.auth,updated_at:new Date().toISOString()},{onConflict:'endpoint'})};
+  let {error}=await saveSubscription(subscription);
+  // A shared browser may still hold an endpoint owned by the previous account.
+  // RLS correctly forbids transferring that row; rotate the browser endpoint instead.
+  if(error&&(error.code==='42501'||/row-level security policy/i.test(error.message||''))){
+   await subscription.unsubscribe();
+   subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:decodeKey(key)});
+   ({error}=await saveSubscription(subscription));
+  }
   if(error)throw error;
   pushStatus.textContent='Powiadomienia push aktywne na tym urządzeniu.';
  }
