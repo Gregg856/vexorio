@@ -2379,7 +2379,7 @@ function updateCitySuggestions(){
   }
   if(country!=='all'&&valid){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');
-   btn.textContent='📍 '+postal+' — '+(language==='uk'?'Шукаємо місто…':language==='de'?'Stadt wird gesucht…':language==='en'?'Looking up city…':'sprawdzam miasto…');
+   btn.disabled=true;btn.textContent='📍 '+postal+' — '+(language==='uk'?'Шукаємо місто…':language==='de'?'Stadt wird gesucht…':language==='en'?'Looking up city…':'sprawdzam miasto…');
    btn.addEventListener('click',()=>selectCity(postal,btn.dataset.cityLabel||postal));list.append(btn);
    const countryNames=language==='de'?{DE:'Deutschland',PL:'Polen',AT:'Österreich'}:language==='en'?{DE:'Germany',PL:'Poland',AT:'Austria'}:language==='uk'?{DE:'Німеччина',PL:'Польща',AT:'Австрія'}:{DE:'Niemcy',PL:'Polska',AT:'Austria'};
    const zip=country==='PL'&&/^\d{5}$/.test(postal)?postal.slice(0,2)+'-'+postal.slice(2):postal;
