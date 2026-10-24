@@ -128,3 +128,7 @@ console.log('PASS: listing owner bound to freshly verified user');
 // Reject a user switch between the initial session check and final listing insert.
 assert.ok(html.includes("authBeforeSave?.user?.id!==verifiedAuth.user.id||session?.user?.id!==verifiedAuth.user.id"),'Listing upload must reject changed accounts');
 console.log('PASS: account switching during photo upload is rejected');
+
+// Conversation listing IDs must use canonical decimal digits, not coercible floats or scientific notation.
+assert.ok(html.includes("!/^\\d+$/.test(String(listingId).trim())"),'Chat listing ID must reject non-decimal input');
+console.log('PASS: chat rejects malformed listing IDs');
