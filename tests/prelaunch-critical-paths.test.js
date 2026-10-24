@@ -110,3 +110,11 @@ for(const fragment of [
  "en:'Sign in to publish a listing.'",
 ])assert.ok(html.includes(fragment),'Missing localized publisher sign-in guidance: '+fragment);
 console.log('PASS: localized sign-in guidance before publishing');
+
+// Title and description validation must be understandable to new users in each launch language.
+for(const fragment of [
+ "pl:'Sprawdź tytuł (3–120 znaków) i opis (1–10000 znaków).'",
+ "de:'Prüfe den Titel (3–120 Zeichen) und die Beschreibung (1–10000 Zeichen).'",
+ "en:'Check the title (3–120 characters) and description (1–10000 characters).'",
+])assert.ok(html.includes(fragment),'Missing localized listing validation: '+fragment);
+console.log('PASS: multilingual listing title and description validation');
