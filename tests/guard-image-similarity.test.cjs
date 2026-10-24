@@ -18,4 +18,7 @@ assert.equal(report.overlaps[0].trainingIndex,0);
 assert.equal(report.overlaps[0].testingIndex,0);
 assert.equal(checkSimilarImages([{pixels:a}],[{pixels:different}]).clean,true);
 assert.throws(()=>checkSimilarImages([],[],{threshold:NaN}),/Invalid similarity threshold/);
+const flat=(value)=>({width:8,height:8,channels:3,data:new Uint8Array(8*8*3).fill(value)});
+assert.equal(similarity(flat(0),flat(255)),0);
+assert.equal(checkSimilarImages([{pixels:flat(0)}],[{pixels:flat(255)}]).clean,true);
 console.log('PASS: Guard luminance similarity identifies matching layout and rejects inverted pattern');
