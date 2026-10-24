@@ -2112,18 +2112,31 @@ async function updateAppealAccess(){
 $('appealBtn').onclick=async()=>{$('appealDialog').showModal();await loadOwnAppeals()};
 async function loadOwnAppeals(){
  const box=$('appealHistory');box.replaceChildren();
- const {data,error}=await sb.from('moderation_appeals').select('reason,status,admin_response,created_at').eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(10);
+ if(!sb||!session?.user?.id)return;
+ const viewerId=session.user.id;
+ const {data,error}=await sb.from('moderation_appeals').select('reason,status,admin_response,created_at').eq('user_id',viewerId).order('created_at',{ascending:false}).limit(10);
+ if(session?.user?.id!==viewerId)return;
  if(error){$('appealMessage').textContent=error.message;return}
  for(const a of data||[]){const p=document.createElement('p');p.className='notice';p.textContent=new Date(a.created_at).toLocaleDateString(language==='uk'?'uk-UA':undefined)+' · '+(language==='uk'?({new:'Нова',reviewing:'На розгляді',accepted:'Схвалена',rejected:'Відхилена'}[a.status]||a.status):a.status)+' · '+a.reason+(a.admin_response?(language==='uk'?' · Відповідь: ':' · Odpowiedź: ')+a.admin_response:'');box.append(p)}
 }
 $('appealForm').onsubmit=async e=>{
- e.preventDefault();if(!session?.user)return;
- const reason=$('appealReason').value.trim();if(reason.length<20||reason.length>2000)return;
- const btn=$('appealSubmit');btn.disabled=true;
- const {error}=await sb.from('moderation_appeals').insert({user_id:session.user.id,reason});
- $('appealMessage').textContent=error?(language==='uk'?'Помилка: ':'Błąd: ')+error.message:(language==='uk'?'Апеляцію надіслано.':'Odwołanie zostało wysłane.');
- if(!error){$('appealForm').reset();await loadOwnAppeals()}
- btn.disabled=false;
+ e.preventDefault();
+ const btn=$('appealSubmit');
+ if(btn.disabled)return;
+ if(!sb||!session?.user?.id){$('appealMessage').textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const viewerId=session.user.id;
+ const reason=$('appealReason').value.trim();
+ if(reason.length<20||reason.length>2000){$('appealMessage').textContent=language==='uk'?'Опишіть причину (20–2000 символів).':'Opisz powód (20–2000 znaków).';return}
+ btn.disabled=true;
+ try{
+  const {data:auth,error:authError}=await sb.auth.getUser();
+  if(authError||auth?.user?.id!==viewerId||session?.user?.id!==viewerId){$('appealMessage').textContent=language==='uk'?'Сесія змінилася. Увійдіть знову.':'Sesja uległa zmianie. Zaloguj się ponownie.';return}
+  const {error}=await sb.from('moderation_appeals').insert({user_id:viewerId,reason});
+  if(session?.user?.id!==viewerId)return;
+  $('appealMessage').textContent=error?(language==='uk'?'Помилка: ':'Błąd: ')+error.message:(language==='uk'?'Апеляцію надіслано.':'Odwołanie zostało wysłane.');
+  if(!error){$('appealForm').reset();await loadOwnAppeals()}
+ }catch(err){if(session?.user?.id===viewerId)$('appealMessage').textContent=(language==='uk'?'Помилка: ':'Błąd: ')+(err?.message||'')}
+ finally{btn.disabled=false}
 };
 async function loadAdminAppeals(){
  const list=$('appealsAdminList'),audit=$('moderationAuditList'),status=$('appealsAdminStatus');
