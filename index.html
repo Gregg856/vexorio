@@ -2125,7 +2125,7 @@ function updateCitySuggestions(){
  for(const item of allListings){
   if(!item.city||(country!=='all'&&String(item.country||'').toUpperCase()!==country))continue;
   const name=String(item.city).trim(),key=searchText(name)+(country==='all'?'|'+String(item.country||'').toUpperCase():'');
-  if(!key||cities.has(key)||!key.startsWith(needle))continue;
+  if(!searchText(name)||cities.has(key)||!searchText(name).startsWith(needle))continue;
   cities.set(key,name);if(item.country)cityCountries.set(key,String(item.country).toUpperCase());
  }
  // Surface major cities early for partial searches without hiding smaller places.
