@@ -86,3 +86,16 @@ assert.match(html,/vexorio_admin_publish_reviewed_listing/,'Approval must publis
 assert.match(html,/storage\.from\('listing-images-review'\)\.download\(path\)/,'Admin must read private photos before publication');
 assert.match(html,/storage\.from\('listing-images-review'\)\.createSignedUrl/,'Private photo previews must be signed');
 console.log('PASS: private listing photo lifecycle regression checks');
+
+// Static security headers must be deployed with the site and retain five safeguards.
+const headers=fs.readFileSync('_headers','utf8');
+for(const fragment of [
+ 'X-Content-Type-Options: nosniff',
+ 'Referrer-Policy: strict-origin-when-cross-origin',
+ 'X-Frame-Options: DENY',
+ 'Permissions-Policy: camera=(), microphone=(), geolocation=()',
+ 'X-Permitted-Cross-Domain-Policies: none',
+])assert.ok(headers.includes(fragment),'Missing browser security header: '+fragment);
+assert.ok(workflow.includes('cp _headers public/_headers'),'Cloudflare deploy must ship static security headers');
+assert.ok(workflow.includes('test -s public/_headers'),'Deployment must check security header file');
+console.log('PASS: five browser protections included in deploy assets');
