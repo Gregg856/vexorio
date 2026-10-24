@@ -2829,8 +2829,9 @@ function ensureInboxFilters(){
  const box=$('myConversations');
  if(!box||document.getElementById('vexInboxFilters'))return;
  const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',language==='uk'?'Фільтр розмов':'Filtruj rozmowy');wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
- const options=language==='uk'?[['all','Усі'],['unread','Непрочитані'],['buy','Купую'],['sell','Продаю']]:[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']];
- const savedFilter=sessionStorage.getItem('vexInboxFilter:'+String(session?.user?.id||'guest'));
+ const inboxFilterTranslations={pl:[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']],de:[['all','Alle'],['unread','Ungelesen'],['buy','Ich kaufe'],['sell','Ich verkaufe']],en:[['all','All'],['unread','Unread'],['buy','Buying'],['sell','Selling']],uk:[['all','Усі'],['unread','Непрочитані'],['buy','Купую'],['sell','Продаю']]};
+ const options=inboxFilterTranslations[language]||inboxFilterTranslations.pl;
+ let savedFilter=null;try{savedFilter=sessionStorage.getItem('vexInboxFilter:'+String(session?.user?.id||'guest'))}catch(error){console.warn('Inbox filter storage unavailable',error)}
  const initialFilter=options.some(([key])=>key===savedFilter)?savedFilter:'all';
  for(const [value,label] of options){
   const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent=label;btn.dataset.filter=value;btn.style.cssText='white-space:nowrap;flex-shrink:0;scroll-snap-align:start;border-radius:20px;padding:10px 14px;min-height:44px';
