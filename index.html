@@ -2711,12 +2711,12 @@ async function loadConversations(){
  const unreadTotal=data.reduce((count,c)=>{const m=latestByConversation.get(String(c.id));const seen=getSeen(c.id);return count+(m&&(!seen||m.created_at>seen)?1:0)},0);
  const filterBar=document.getElementById('vexInboxFilters');
  if(filterBar&&!document.getElementById('vexInboxRefresh')){
-  const refresh=document.createElement('button');refresh.id='vexInboxRefresh';refresh.type='button';refresh.className='btn small';refresh.textContent='↻ Odśwież';refresh.setAttribute('aria-label','Odśwież listę rozmów');refresh.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
-  refresh.onclick=async()=>{refresh.disabled=true;refresh.textContent='↻ Odświeżanie…';try{await loadConversations()}catch(error){console.error('Nie udało się odświeżyć rozmów:',error);alert('Nie udało się odświeżyć rozmów. Spróbuj ponownie.')}finally{refresh.disabled=false;refresh.textContent='↻ Odśwież'}};
+  const refresh=document.createElement('button');refresh.id='vexInboxRefresh';refresh.type='button';refresh.className='btn small';refresh.textContent=language==='uk'?'↻ Оновити':'↻ Odśwież';refresh.setAttribute('aria-label',language==='uk'?'Оновити список розмов':'Odśwież listę rozmów');refresh.style.cssText='white-space:nowrap;flex-shrink:0;border-radius:20px;padding:9px 12px';
+  refresh.onclick=async()=>{refresh.disabled=true;refresh.textContent=language==='uk'?'↻ Оновлення…':'↻ Odświeżanie…';try{await loadConversations()}catch(error){console.error('Nie udało się odświeżyć rozmów:',error);alert(language==='uk'?'Не вдалося оновити розмови. Спробуйте ще раз.':'Nie udało się odświeżyć rozmów. Spróbuj ponownie.')}finally{refresh.disabled=false;refresh.textContent=language==='uk'?'↻ Оновити':'↻ Odśwież'}};
   filterBar.append(refresh);
  }
  const unreadButton=document.querySelector('#vexInboxFilters button[data-filter="unread"]');
- if(unreadButton){unreadButton.textContent='Nieprzeczytane'+(unreadTotal?' ('+unreadTotal+')':'');unreadButton.setAttribute('aria-label',unreadTotal+' nieprzeczytanych rozmów')}
+ if(unreadButton){unreadButton.textContent=(language==='uk'?'Непрочитані':'Nieprzeczytane')+(unreadTotal?' ('+unreadTotal+')':'');unreadButton.setAttribute('aria-label',language==='uk'?'Непрочитаних розмов: '+unreadTotal:unreadTotal+' nieprzeczytanych rozmów')}
  let visibleCount=0;
  data.sort((a,b)=>{
   if(document.getElementById('vexInboxUnreadFirst')?.getAttribute('aria-pressed')==='true'){
