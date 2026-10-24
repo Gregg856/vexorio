@@ -3005,7 +3005,7 @@ async function refreshConversation(){
  }
  if(wasNearBottom)box.scrollTop=box.scrollHeight;else box.scrollTop=previousScrollTop+(box.scrollHeight-previousScrollHeight);
  if(jump)jump.hidden=wasNearBottom||box.scrollHeight-box.scrollTop-box.clientHeight<90;
- const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){const previouslySeen=getSeen(conversationId);if(!previouslySeen||latest.created_at>previouslySeen){setSeen(conversationId,latest.created_at);if(!unreadCheckInProgress)void checkUnreadMessages()}}
+ const latest=data[data.length-1];if(latest?.created_at&&$('chatDialog').open){const previouslySeen=getSeen(conversationId);if(!previouslySeen||latest.created_at>previouslySeen){setSeen(conversationId,latest.created_at);if(!unreadCheckInProgress)void checkUnreadMessages();if($('accountDialog').open&&!$('accountMessagesSection').hidden)void loadConversations().catch(error=>console.warn('Inbox refresh after read failed',error))}}
 }
 
 $('replyText').addEventListener('input',()=>{if(!session?.user?.id||!activeConversationId)return;const key=chatDraftKey(session.user.id,activeConversationId);try{if($('replyText').value)sessionStorage.setItem(key,$('replyText').value);else sessionStorage.removeItem(key)}catch(error){console.warn('Chat draft storage unavailable',error)}});
