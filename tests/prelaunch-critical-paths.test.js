@@ -6,6 +6,7 @@ const moderationGuards=[
  ['Unread badge update', "function updateUnreadBadges(count)"],
  ['Admin notifications separate reports and pending photos', "reportCount+pendingCount"],
  ['Admin panel checks server-side role RPC', "sb.rpc('is_vexorio_admin')"],
+ ['Admin notification result ignores changed account', "session?.user?.id!==badgeUserId"],
  ['Reported messages require admin role', "async function loadAdminMessageReports()"],
 ];
 for(const [label,fragment] of moderationGuards){assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
