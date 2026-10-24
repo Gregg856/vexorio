@@ -29,6 +29,7 @@ jobs:
           [assets]
           directory = "./public"
           binding = "ASSETS"
+          run_worker_first = true
           EOF
 
       - name: Sprawdz skladnie JavaScript
