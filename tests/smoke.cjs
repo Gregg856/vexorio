@@ -178,3 +178,5 @@ assert.ok(html.includes("$('vexCityDialogInput').value=''}$('cityFilter').datase
 assert.ok(html.includes('.limit(inboxConversationLimit+1)'),'Inbox must detect more conversations beyond page limit');
 assert.ok(html.includes('inboxConversationLimit+=100;void loadConversations()'),'Inbox must offer progressive conversation loading');
 assert.ok(html.includes('if(uid!==inboxLimitUserId){inboxConversationLimit=100;inboxLimitUserId=uid}'),'Inbox pagination must reset on account change');
+
+assert.ok(html.includes('if(!visibleCount&&!hasMoreConversations){const activeFilter='),'Inbox must retain load-more button when search has no match in loaded conversations');
