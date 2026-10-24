@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {evaluateGuardReport}=require('../guard/report.cjs');
+const safe=evaluateGuardReport({title:'Rower',description:'Sprawny rower, odbiór osobisty'});
+assert.equal(safe.decision,'none');
+assert.equal(safe.automaticAction,false);
+assert.equal(safe.reviewPriority,'none');
+const risky=evaluateGuardReport({title:'Oferta',description:'Wyślij mi kod SMS'});
+assert.equal(risky.reviewPriority,'high');
+assert.equal(risky.requiresHumanReview,true);
+assert.ok(risky.explanations.some(x=>x.id==='credential_phishing'));
+assert.ok(risky.signals.includes('credential_phishing'));
+assert.equal(risky.decision,'none');
+const invalid=evaluateGuardReport(null);
+assert.equal(invalid.requiresHumanReview,true);
+assert.equal(invalid.automaticAction,false);
+assert.ok(Array.isArray(invalid.explanations));
+console.log('PASS: unified Guard advisory report, explainability, safe failure and no automatic action');
