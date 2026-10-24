@@ -99,6 +99,8 @@ assert.match(html,/\$\('sortListings'\)\.value='new';return render\(\)/,'Nearest
 assert.ok(html.includes("String(x.postal_code||'').replace(/[\\s-]/g,'')===locationFilterValue().replace(/[\\s-]/g,'')"),'Postal code matching must ignore spaces and hyphens');
 // Ukrainian postal-code suggestion messages must not fall back to Polish.
 for(const label of ['Спочатку виберіть країну','Шукаємо місто','Місто не знайдено','Перевірте з’єднання','Німеччина'])assert.ok(html.includes(label),'Missing Ukrainian postal suggestion: '+label);
+// Polish postal geocoding must normalize five digits to NN-NNN.
+assert.ok(html.includes("country==='PL'&&/^\\d{5}$/.test(rawZip)?rawZip.slice(0,2)+'-'+rawZip.slice(2):rawZip"),'Polish postal geocoding normalization missing');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
