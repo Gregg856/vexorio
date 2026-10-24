@@ -36,7 +36,9 @@ const examples=[
  assert.equal(unfamiliar.requiresHumanReview,true);
  assert.equal(unfamiliar.decision,'none');
  assert.ok(!unfamiliar.flags.includes('model_suspected_fraud'));
- const partial=await guard.evaluate({title:'quasar',description:'xenolith nebula rower'});
+ // Require high vocabulary coverage explicitly for this partially known sample.
+ const strictCoverageGuard=createLocalGuard(examples,{minimumConfidence:0.5,minimumCoverage:0.75});
+ const partial=await strictCoverageGuard.evaluate({title:'quasar',description:'xenolith nebula rower'});
  assert.ok(partial.flags.includes('model_insufficient_model_knowledge'));
  assert.equal(partial.requiresHumanReview,true);
  assert.equal(partial.decision,'none');
