@@ -154,3 +154,6 @@ assert.ok(html.includes("if(session?.user?.id!==actingUserId)throw new Error(lan
 assert.ok(html.includes("if(session?.user?.id!==actingUserId)return;if(writeError)throw writeError;if(!updated){feedback.textContent="),'Message report status response must be discarded after account switch');
 
 assert.ok(html.includes("const {error:writeError}=await sb.rpc('admin_set_user_block',{p_user:u.user_id,p_block:!u.is_blocked,p_reason:text});\n   if(session?.user?.id!==adminUsersViewerId)return;"),'User blocking response must be ignored after admin account switch');
+
+assert.ok(html.includes(".eq('id',a.id).eq('status',a.status).select('id').maybeSingle()"),'Appeal decisions must use optimistic concurrency');
+assert.ok(html.includes('if(!e&&!updatedAppeal){msg.textContent='),'Concurrent appeal changes must not be reported as successful');
