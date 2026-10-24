@@ -28,6 +28,7 @@ assert.equal(Object.values(result.counts).reduce((a,b)=>a+b,0),8);
 assert.ok(result.accuracy>=0&&result.accuracy<=1);
 assert.ok(result.falsePositiveRate>=0&&result.falsePositiveRate<=1);
 assert.throws(()=>evaluateDataset(training,[training[0],testing[0]]),/overlaps/);
+assert.throws(()=>evaluateDataset(training,[{label:'safe',text:'Osobisty odbiór rower miejski sprzedam'},testing[1]]),/Near-duplicate/);
 console.log('Guard SYNTHETIC HOLDOUT metrics:',JSON.stringify({...result,examples:undefined}));
 const {compareModels}=require('../guard/compare.cjs');
 const comparison=compareModels(training,testing);
