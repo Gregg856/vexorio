@@ -2021,7 +2021,7 @@ async function loadAdminReports(){
   const detail=document.createElement('p');detail.textContent=item.details;
   const moderation=document.createElement('div');moderation.className='form';
   if(item.listing_id){
-   const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.style.borderColor='#b95d5d';remove.textContent=(language==='uk'?'Видалити оголошення #':'Usuń ogłoszenie #')++item.listing_id;
+   const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.style.borderColor='#b95d5d';remove.textContent=(language==='uk'?'Видалити оголошення #':'Usuń ogłoszenie #')+item.listing_id;
    const removeStatus=document.createElement('p');removeStatus.className='msg';
    remove.onclick=async()=>{
     const id=Number(item.listing_id);
@@ -2037,7 +2037,7 @@ async function loadAdminReports(){
     removeStatus.textContent=language==='uk'?'Оголошення видалено. Оновлення скарг…':'Ogłoszenie usunięte. Odświeżam zgłoszenia…';remove.classList.add('hide');
     try{const listingsRefreshed=await loadListings();await loadAdminReports();await updateAdminReportBadge();if(listingsRefreshed!==true){status.textContent=language==='uk'?'Оголошення видалено, але список не оновився. Натисніть «Оновити».':'Ogłoszenie usunięte, ale lista ogłoszeń nie została odświeżona. Użyj przycisku Odśwież.'}}catch(refreshError){status.textContent=language==='uk'?'Оголошення видалено, але панель не оновилася. Натисніть «Оновити».':'Ogłoszenie usunięte, ale odświeżenie panelu nie powiodło się. Użyj przycisku Odśwież.'}
    };
-   const view=document.createElement('a');view.className='btn';view.href='/?listing='+encodeURIComponent(String(item.listing_id));view.target='_blank';view.rel='noopener noreferrer';view.textContent=(language==='uk'?'Переглянути оголошення #':'Zobacz ogłoszenie #')++item.listing_id;moderation.append(view,remove,removeStatus);
+   const view=document.createElement('a');view.className='btn';view.href='/?listing='+encodeURIComponent(String(item.listing_id));view.target='_blank';view.rel='noopener noreferrer';view.textContent=(language==='uk'?'Переглянути оголошення #':'Zobacz ogłoszenie #')+item.listing_id;moderation.append(view,remove,removeStatus);
   }
 
   const select=document.createElement('select');
