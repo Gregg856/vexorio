@@ -109,6 +109,12 @@ jobs:
               if ! curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL/robots.txt" | grep -Fq 'User-agent: *'; then
                 echo 'robots.txt is missing on the deployed website'; sleep 5; continue
               fi
+              if ! curl --fail --silent --show-error --location --max-time 15 -D /tmp/vexorio-headers.txt -o /dev/null "$DEPLOY_URL/"; then
+                echo 'Unable to read live security headers'; sleep 5; continue
+              fi
+              if ! grep -Eiq '^x-content-type-options: *nosniff' /tmp/vexorio-headers.txt || ! grep -Eiq '^x-frame-options: *DENY' /tmp/vexorio-headers.txt || ! grep -Eiq '^referrer-policy: *strict-origin-when-cross-origin' /tmp/vexorio-headers.txt || ! grep -Eiq '^permissions-policy: *camera=\(\), *microphone=\(\), *geolocation=\(\)' /tmp/vexorio-headers.txt || ! grep -Eiq '^x-permitted-cross-domain-policies: *none' /tmp/vexorio-headers.txt; then
+                echo 'Live site is missing required browser security headers'; sleep 5; continue
+              fi
               if grep -q 'VEXORIO' /tmp/vexorio-production.html && grep -q 'id="query"' /tmp/vexorio-production.html && grep -q 'function listingRiskSignals' /tmp/vexorio-production.html && grep -q 'Wysłać mimo ostrzeżenia' /tmp/vexorio-production.html && grep -q 'row.append(warning)' /tmp/vexorio-production.html && grep -Fq "filtered.length===1?' listing'" /tmp/vexorio-production.html && grep -Fq 'const code=cityCountries.get(key)' /tmp/vexorio-production.html && grep -Fq 'object-fit:cover!important;object-position:center 25%!important' /tmp/vexorio-production.html && grep -Fq "for(const id of ['accountBtn','vexMobileChat'])" /tmp/vexorio-production.html && grep -Fq "'vexHeaderInboxCount'" /tmp/vexorio-production.html; then
                 echo "PASS: public VEXORIO is reachable at $DEPLOY_URL"
                 exit 0
