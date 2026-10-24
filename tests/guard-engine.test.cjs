@@ -14,4 +14,10 @@ assert.equal(screenListing({title:'T',description:'https://a.test https://b.test
 assert.equal(screenListing({title:'Продам велосипед',description:'Хороший стан, самовивіз.'}).status,'no_text_signals');
 assert.equal(screenListing({title:'Fahrrad',description:'Gut erhalten, Abholung möglich.'}).status,'no_text_signals');
 assert.equal(screenListing({title:'Bike',description:'Used bike, local pickup.'}).status,'no_text_signals');
+const riskyInvestment=screenListing({title:'Super inwestycja',description:'Gwarantowany zysk! Wpłać natychmiast, aby otrzymać pieniądze.'});
+assert.equal(riskyInvestment.score,55);
+assert.equal(riskyInvestment.status,'caution');
+assert.ok(riskyInvestment.signals.includes('guaranteed_profit'));
+assert.ok(riskyInvestment.signals.includes('pressure_tactic'));
+assert.equal(screenListing({title:'Rower miejski',description:'Sprzedam sprawny rower za 100 zł, odbiór osobisty.'}).score,0);
 console.log('PASS: VEXORIO Guard advisory rules, multilingual baseline and fail-safe input');
