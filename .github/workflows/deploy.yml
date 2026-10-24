@@ -98,6 +98,7 @@ jobs:
           node tests/guard-local-model.test.cjs
           node tests/guard-local-integration.test.cjs
           node tests/guard-metrics.test.cjs
+          node tests/guard-dataset-check.test.cjs
           node tests/guard-lab.test.cjs
           node --check worker.js
 
