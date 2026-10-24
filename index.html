@@ -2878,7 +2878,7 @@ async function checkUnreadMessages(){
 
 $('vexHeaderInbox').onclick=async()=>{if(!session)return openAuth();if(!$('accountDialog').open)await openAccount();showAccountSection('Messages');$('accountDialog').scrollTop=0;await loadConversations()};
 $('refreshInboxBtn').onclick=()=>loadConversations();
-let inboxRequestId=0;
+let inboxRequestId=0;let inboxConversationLimit=100;let inboxLimitUserId=null;
 function ensureInboxSearch(){
  const box=$('myConversations');
  if(!box||document.getElementById('vexInboxSearch'))return;
@@ -2916,11 +2916,13 @@ async function loadConversations(){
  ensureInboxFilters();
  const requestId=++inboxRequestId;
  const uid=session?.user?.id;
+ if(uid!==inboxLimitUserId){inboxConversationLimit=100;inboxLimitUserId=uid}
  const box=$('myConversations');if(!box.children.length)box.textContent=({pl:'Ładowanie rozmów…',de:'Unterhaltungen werden geladen…',en:'Loading conversations…',uk:'Завантаження розмов…'})[language]||'Ładowanie rozmów…';box.setAttribute('aria-busy','true');try{
  if(!sb||!uid){box.textContent=({pl:'Zaloguj się, aby zobaczyć wiadomości.',de:'Melde dich an, um deine Nachrichten zu sehen.',en:'Sign in to view your messages.',uk:'Увійдіть, щоб переглянути повідомлення.'})[language]||'Zaloguj się, aby zobaczyć wiadomości.';return}
- const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).order('created_at',{ascending:false}).limit(100);
+ const {data,error}=await sb.from('conversations').select('id,listing_id,buyer_id,seller_id,created_at').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).order('created_at',{ascending:false}).limit(inboxConversationLimit+1);
  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
  if(error){box.replaceChildren();const notice=document.createElement('p');notice.textContent=({pl:'Nie udało się pobrać rozmów. Sprawdź połączenie i spróbuj ponownie.',de:'Unterhaltungen konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.',en:'Could not load conversations. Check your connection and try again.',uk:'Не вдалося завантажити розмови. Перевірте з’єднання та спробуйте ще раз.'})[language]||'Nie udało się pobrać rozmów.';notice.setAttribute('role','alert');const retry=document.createElement('button');retry.type='button';retry.className='btn small';retry.textContent=({pl:'↻ Spróbuj ponownie',de:'↻ Erneut versuchen',en:'↻ Try again',uk:'↻ Спробувати ще раз'})[language]||'↻ Spróbuj ponownie';retry.onclick=()=>{retry.disabled=true;void loadConversations().finally(()=>{retry.disabled=false})};box.append(notice,retry);console.error('Inbox loading failed:',error);return}
+ const hasMoreConversations=(data||[]).length>inboxConversationLimit;if(hasMoreConversations)data.length=inboxConversationLimit;
  if(!data?.length){box.textContent=({pl:'Nie masz jeszcze żadnych rozmów. Gdy napiszesz do sprzedającego lub ktoś skontaktuje się w sprawie Twojego ogłoszenia, rozmowa pojawi się tutaj.',de:'Du hast noch keine Unterhaltungen. Sobald du einem Verkäufer schreibst oder jemand auf deine Anzeige antwortet, erscheint die Unterhaltung hier.',en:'You have no conversations yet. When you message a seller or someone contacts you about your listing, the conversation will appear here.',uk:'У вас ще немає розмов. Коли ви напишете продавцю або хтось звернеться щодо вашого оголошення, розмова з’явиться тут.'})[language]||'Nie masz jeszcze żadnych rozmów.';return}
  document.getElementById('vexInboxLoadWarning')?.remove();
  const latestByConversation=new Map();const previewByConversation=new Map();
@@ -2981,6 +2983,7 @@ async function loadConversations(){
   btn.onclick=()=>openConversation(c.id,listing?.title||(language==='uk'?'Розмова':'Rozmowa'));
   box.append(btn);visibleCount++;
  }
+ if(hasMoreConversations){const more=document.createElement('button');more.type='button';more.className='btn small';more.textContent=language==='de'?'Weitere Unterhaltungen laden':language==='en'?'Load more conversations':language==='uk'?'Завантажити більше розмов':'Załaduj więcej rozmów';more.onclick=()=>{inboxConversationLimit+=100;void loadConversations()};box.append(more)}
  $('accountDialog').scrollTop=inboxScrollTop;
  if(focusedInboxId){const replacement=[...box.querySelectorAll('button[data-conversation-id]')].find(button=>button.dataset.conversationId===focusedInboxId);replacement?.focus({preventScroll:true})}
  if(!visibleCount){const activeFilter=document.querySelector('#vexInboxFilters button[aria-pressed="true"]')?.dataset.filter||'all';box.textContent=language==='uk'?(searchValue?'Немає розмов за вашим запитом. Змініть або очистьте пошук.':activeFilter==='unread'?'У вас немає непрочитаних розмов.':activeFilter==='buy'?'У вас немає розмов про покупки.':activeFilter==='sell'?'У вас немає розмов про продажі.':'Немає розмов для відображення.'):(searchValue?'Brak rozmów pasujących do wpisanej frazy. Zmień wyszukiwanie lub wyczyść pole.':activeFilter==='unread'?'Nie masz nieprzeczytanych rozmów.':activeFilter==='buy'?'Nie masz rozmów dotyczących kupowania.':activeFilter==='sell'?'Nie masz rozmów dotyczących sprzedawania.':'Brak rozmów do wyświetlenia.');}
