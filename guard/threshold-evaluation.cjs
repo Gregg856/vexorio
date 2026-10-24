@@ -16,7 +16,7 @@ function evaluateThresholds(training,testing,{thresholds=[0,0.1,0.25,0.5,0.75],m
  return thresholds.map(minimumCoverage=>{
   const result={minimumCoverage,samples:testing.length,reviewCount:0,unknownCount:0,flaggedSuspicious:0,missedSuspicious:0,safeSentToReview:0};
   for(const p of predictions){
-   const unknown=p.label==='unknown'||p.coverage<minimumCoverage;
+   const unknown=p.label==='unknown'||p.coverage<minimumCoverage||p.confidence<minimumConfidence;
    const flagged=!unknown&&p.label==='suspicious'&&p.confidence>=minimumConfidence;
    const review=unknown||flagged;
    if(unknown)result.unknownCount++;
