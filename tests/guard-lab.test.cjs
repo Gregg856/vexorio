@@ -14,7 +14,8 @@ const {screenListing}=require('../guard/engine.cjs');
 const fixtures=[
  {title:'Sprzedam rower',description:'Rower sprawny, odbiór osobisty.',score:0},
  {title:'Sprzedam telefon',description:'Wyślij mi swoje hasło i zapłać przez Western Union.',score:95},
- {title:'Super inwestycja',description:'Gwarantowany zysk! Wpłać natychmiast, aby otrzymać pieniądze.',score:55}
+ {title:'Super inwestycja',description:'Gwarantowany zysk! Wpłać natychmiast, aby otrzymać pieniądze.',score:55},
+ {title:'Powtarzany spam',description:'promocja promocja promocja promocja promocja promocja promocja promocja',score:15}
 ];
 for(const fixture of fixtures){
  const nodes={t:{value:fixture.title},d:{value:fixture.description},out:{textContent:''},f:{addEventListener:(name,callback)=>{if(name==='submit')nodes.submit=callback}}};
