@@ -3044,6 +3044,8 @@ async function sendMessage(listingId,sellerId,message){
    conversationId=retry.id;
   }else conversationId=data.id;
  }
+ const {data:sendAuth,error:sendAuthError}=await sb.auth.getUser();
+ if(sendAuthError||sendAuth?.user?.id!==user.id)throw new Error('Sesja zmieniła się przed wysłaniem wiadomości. Zaloguj się ponownie.');
  const {error:messageError}=await sb.from('messages').insert({conversation_id:conversationId,sender_id:user.id,body:message.trim()});
  if(messageError)throw messageError;
 }
