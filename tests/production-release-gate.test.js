@@ -167,3 +167,10 @@ const adminAccessEnd=html.indexOf('async function loadAdminMessageReports(){',ad
 const adminAccess=html.slice(adminAccessStart,adminAccessEnd);
 assert.ok(adminAccess.includes('const requestedUserId=session?.user?.id;')&&adminAccess.includes('if(session?.user?.id!==requestedUserId)return;'),'Admin access checks must discard responses after account switch');
 console.log('PASS: stale admin role response cannot reveal admin navigation');
+
+const messageModerationStart=html.indexOf('async function loadAdminMessageReports(){');
+const messageModerationEnd=html.indexOf('async function loadAdminPendingListings(){',messageModerationStart);
+const messageModeration=html.slice(messageModerationStart,messageModerationEnd);
+assert.ok(messageModeration.includes('const actingUserId=session?.user?.id;if(!actingUserId)return;'),'Message report moderation must capture acting account');
+assert.ok(messageModeration.includes('allowedNow!==true||session?.user?.id!==actingUserId'),'Message report status update must reject account switches after role check');
+console.log('PASS: message report status updates reject stale accounts');
