@@ -117,6 +117,10 @@ assert.ok((html.match(/if\(session\?\.user\?\.id!==reportViewerId\)return;/g)||[
 for(const viewer of ['messageReportViewerId','adminUsersViewerId']){assert.ok(html.includes('const '+viewer+'=session.user.id'),'Missing admin session capture '+viewer);assert.ok((html.match(new RegExp('if\\(session\\?\\.user\\?\\.id!=='+viewer+'\\)return;','g'))||[]).length>=2,'Missing async session guards '+viewer)}
 assert.ok(html.includes('const pendingViewerId=session.user.id'),'Pending moderation queue must capture current admin');
 assert.ok((html.match(/if\(session\?\.user\?\.id!==pendingViewerId\)return;/g)||[]).length>=2,'Pending moderation queue must guard asynchronous reads');
+// Appeal decisions require fresh identity and admin authorization at save time.
+assert.ok(html.includes("auth?.user?.id!==appealsViewerId"),'Appeal save must revalidate authenticated user');
+assert.ok(html.includes("const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');if(session?.user?.id!==appealsViewerId)return;"),'Appeal save must recheck admin rights');
+assert.ok(html.includes("!['new','reviewing','accepted','rejected'].includes(sel.value)"),'Appeal save must validate status');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
