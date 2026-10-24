@@ -28,3 +28,12 @@
 - [ ] Cena, lokalizacja, „Zobacz szczegóły”, „Zgłoś”, „Zgłoś zdjęcie” widoczne.
 - [ ] Dla długich tytułów i ogłoszeń bez zdjęcia brak uciętych elementów.
 - [ ] Kontrola telefonu i desktopu; odświeżenie cache; dopiero wtedy PASS.
+
+
+## Dodatkowa kontrola funkcji RPC — 24.10.2026
+- `record_listing_view`: funkcja publiczna SECURITY DEFINER podnosi licznik dla aktywnego, zaakceptowanego ogłoszenia. Frontend ogranicza wywołanie do jednego razu na ogłoszenie w sesji, ale **to nie jest zabezpieczenie serwerowe**; możliwe wielokrotne wywołania RPC. Do zaplanowania limitowania po stronie serwera bez zmiany wyglądu kart.
+- `has_contractor_premium`: odczytuje status premium wskazanego UUID; funkcja nie służy obecnie aktywnemu premium (premium wyłączone). Nie zmieniać bez sprawdzenia zależności.
+- `vexorio_reveal_contact_phone`: odrzuca gości i zablokowanych, ujawnia numer tylko dla własnego ogłoszenia lub aktywnego zaakceptowanego ogłoszenia z `show_contact_phone=true`.
+- `vexorio_admin_pending_listings_v2`, `vexorio_admin_review_listing`, `vexorio_admin_publish_reviewed_listing`: wymagają administratora, sprawdzają status oczekujący i walidują parametry; nie wykonywano zapisów.
+- Supabase Security Advisor: 4 tabele RLS bez polityk (celowo zamknięte), 2 publiczne RPC SECURITY DEFINER, 13 RPC SECURITY DEFINER dostępnych dla zalogowanych, ochrona przed wyciekłymi hasłami wyłączona. Ostrzeżenie nie jest automatycznie podatnością. Linki: https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable i https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- **Nie testowano** aktywnych prób obejścia autoryzacji, rate limitów, mobile ani dwukontowego czatu. Bez nowych kont, bez danych produkcyjnych na staging.
