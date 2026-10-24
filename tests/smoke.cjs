@@ -187,3 +187,7 @@ assert.ok(html.includes('for(let start=0;start<page.length;start+=25)'),'Unread 
 
 assert.ok(html.includes('const editOwnerId=session.user.id;const uploaded=[]'),'Listing edits must capture the initiating account');
 assert.ok(html.includes('editAuth?.user?.id!==editOwnerId||session?.user?.id!==editOwnerId'),'Listing edits must revalidate the account after photo uploads');
+
+// New listings must persist the postal code used by search and distance filters.
+assert.ok(html.includes('id="newPostal"'),'Listing creation form must expose a postal-code field');
+assert.ok(html.includes("postal_code:$('newPostal').value.trim()||null"),'Listing creation must save postal_code');
