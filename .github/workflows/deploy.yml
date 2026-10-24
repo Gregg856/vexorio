@@ -94,6 +94,7 @@ jobs:
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
           node tests/guard-image-features.test.cjs
+          node tests/guard-pixel-features.test.cjs
           node tests/guard-evaluate.test.cjs
           node tests/guard-model-adapter.test.cjs
           node tests/guard-local-model.test.cjs
