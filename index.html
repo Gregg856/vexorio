@@ -2156,7 +2156,7 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&nee
    const response=await fetch(url);if(!response.ok)return;const data=await response.json();
    if(request!==citySuggestRequest||$('vexCityDialog').hidden||$('country').value!==country||input.value.trim()!==typed)return;
    const allowedCountries=new Set([...$('country').options].map(option=>option.value).filter(value=>value!=='all'));const matches=(data.results||[]).filter(p=>(country==='all'?allowedCountries.has(p.country_code):p.country_code===country)&&typeof p.name==='string'&&searchText(p.name).startsWith(needle)&&!/(airport|lotnisko|flughafen|aéroport)/i.test(p.name)).sort((a,b)=>Number(searchText(b.name)===needle)-Number(searchText(a.name)===needle)||a.name.localeCompare(b.name,language));
-   if(matches.length&&!matches.some(p=>searchText(p.name)===needle)&&cities.get(needle)===typed)cities.delete(needle);
+   if(matches.length&&!matches.some(p=>searchText(p.name)===needle)&&country!=='all'&&cities.get(needle)===typed)cities.delete(needle);
    for(const p of matches){const name=p.country_code==='PL'&&searchText(p.name)==='warsaw'?'Warszawa':p.name;const key=searchText(name)+(country==='all'?'|'+p.country_code:'');if(!cities.has(key)){cities.set(key,name);cityCountries.set(key,p.country_code)}}
    paint();
   }catch(e){console.warn('City suggestions unavailable',e)}
