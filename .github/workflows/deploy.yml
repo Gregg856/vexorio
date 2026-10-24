@@ -74,7 +74,7 @@ jobs:
           node tests/public-profile-regression.test.js
           node tests/mobile-filter-baseline.test.js
           node tests/prelaunch-critical-paths.test.js
-          node tests/production-release-gate.test.js
+          node tests/production-release-gate.test.js\n          node tests/push-service-worker.test.cjs
 
       - name: Publikuj w Cloudflare
         id: publish
