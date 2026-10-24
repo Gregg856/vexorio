@@ -2102,6 +2102,7 @@ async function loadAdminUsers(){
    btn.disabled=true;
    try{const {data:auth,error:authError}=await sb.auth.getUser();if(authError||auth?.user?.id!==adminUsersViewerId||session?.user?.id!==adminUsersViewerId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(session?.user?.id!==adminUsersViewerId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');if(verifyError||stillAdmin!==true)throw new Error(language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.');
    const {error:writeError}=await sb.rpc('admin_set_user_block',{p_user:u.user_id,p_block:!u.is_blocked,p_reason:text});
+   if(session?.user?.id!==adminUsersViewerId)return;
    if(writeError)throw writeError;
    await loadAdminUsers();}catch(err){feedback.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+(err?.message||(language==='uk'?'Не вдалося зберегти рішення.':'Nie udało się zapisać decyzji.'));btn.disabled=false;}
   };
