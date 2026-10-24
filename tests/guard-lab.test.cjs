@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const html=fs.readFileSync('guard-lab.html','utf8');
+const script=fs.readFileSync('guard-lab.js','utf8');
+new vm.Script(script,{filename:'guard-lab.js'});
+for(const id of ['f','t','d','out'])assert.ok(html.includes('id="'+id+'"'),'Missing lab control '+id);
+assert.ok(html.includes('noindex,nofollow'),'Lab must not be indexed');
+assert.ok(!/\bsupabase\b|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon/i.test(script),'Lab must remain local-only');
+assert.ok(!/\b(?:delete|approve|reject)Listing\s*\(/.test(script),'Lab must not mutate listings');
+assert.ok(html.includes('src="/guard-lab.js"'),'Lab script must be loaded');
+console.log('PASS: Guard lab JS syntax, UI controls, privacy and advisory-only isolation');
