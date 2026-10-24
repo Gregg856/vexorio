@@ -80,3 +80,13 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - **Staging:** istnieje gotowa koncepcja: prywatna tabela `vexorio_private.listing_view_guard` z unikatowym kluczem `(listing_id,visitor_digest,window_start)`, prywatna funkcja `record_listing_view_guarded` z godzinowym oknem oraz `public.vexorio_record_listing_view_server`. Obie funkcje nie są dostępne bezpośrednio dla anon/authenticated; to dobry punkt wyjścia do zaufanego endpointu serwerowego.
 - **Krytyczna zależność:** digest gościa musi powstawać po stronie zaufanego serwera (np. Cloudflare Worker) z sekretu i stabilnego identyfikatora żądania, a nie z dowolnej wartości przesłanej przez przeglądarkę. W przeciwnym razie atakujący może generować nowe digesty i nadal nabijać licznik. Należy dodać endpoint z rate limiting, walidacją ID i bezpiecznym przechowywaniem sekretu; następnie przestawić frontend na endpoint i odebrać anon/authenticated EXECUTE na starym RPC. Dopiero po wdrożeniu całości przetestować na stagingu, potem uzyskać zgodę na produkcję.
 - **Status:** DIAGNOZA POTWIERDZONA, NAPRAWA NIE WDROŻONA. Nie włączać istniejącego stagingowego RPC dla anon/authenticated ani nie odcinać starego RPC przed gotowym endpointem — inaczej odsłony przestaną działać.
+
+
+## Aktualizacja licznika i CI — 24.10.2026 (najnowszy stan)
+
+- **Wdrożenie potwierdzone:** commit `17fba93`, GitHub checks `40111311654` SUCCESS i Cloudflare deploy `40111311652` SUCCESS.
+- Endpoint `POST /api/listing-view` jest już w `worker.js`, lecz **celowo wyłączony** dopóki `VIEW_COUNT_ENABLED` nie ma wartości `true`. Nie jest używany przez frontend.
+- Testy jednostkowe sprawdzają walidację żądań, origin, HMAC, błędny adres Supabase, awarie upstream, i wymuszenie bezpiecznego wyłączenia; deploy workflow wykonuje `node --check worker.js`.
+- Staging: potwierdzono możliwość EXECUTE RPC przez `service_role`, odrzucenie brakującego ID i złego digestu; brak ogłoszeń staging uniemożliwia jeszcze test deduplikacji dla aktywnego ogłoszenia.
+- **Nie wykonano:** ustawienia Cloudflare secrets, testu rzeczywistego RPC z Worker, migracji na produkcję, przełączenia frontendowego licznika. Produkcyjny `record_listing_view` nadal działa po staremu.
+- Procedura dalszego wdrożenia: `docs/view-counter-rollout.md`. Nie wracać do pisania kolejnych podobnych testów, dopóki nie są dostępne sekrety i dedykowane dane stagingowe. W międzyczasie kontynuować audyt innych funkcji.
