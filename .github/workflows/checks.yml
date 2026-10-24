@@ -17,4 +17,6 @@ jobs:
         with:
           node-version: '22'
       - name: Check inline JavaScript and core UI
-        run: |\n          node tests/smoke.cjs\n          node tests/push-service-worker.test.cjs
+        run: |
+          node tests/smoke.cjs
+          node tests/push-service-worker.test.cjs
