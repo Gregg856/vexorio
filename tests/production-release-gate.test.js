@@ -120,3 +120,7 @@ console.log('PASS: duplicate listing submissions blocked during async validation
 // Damaged or unreadable files must be rejected without an unhandled File.arrayBuffer rejection.
 assert.ok(html.includes('let bytes;try{bytes=new Uint8Array(await file.slice(0,12).arrayBuffer())}catch{return false}'),'Unreadable photo signature must fail closed');
 console.log('PASS: unreadable photo files rejected gracefully');
+
+// New listings must be owned by the identity returned from the fresh Supabase getUser check.
+assert.ok(html.includes("const record={owner_id:authBeforeSave.user.id,title:"),'Listing owner must use freshly verified auth identity');
+console.log('PASS: listing owner bound to freshly verified user');
