@@ -2130,7 +2130,7 @@ function updateCitySuggestions(){
  }
  // Surface major cities early for partial searches without hiding smaller places.
  const priorityCities={DE:['Berlin','Hamburg','München','Köln','Frankfurt am Main','Düsseldorf','Stuttgart','Dortmund','Essen','Leipzig','Bremen','Dresden','Hannover','Nürnberg','Erftstadt'],PL:['Warszawa','Kraków','Łódź','Wrocław','Poznań','Gdańsk','Szczecin','Bydgoszcz','Lublin','Katowice'],AT:['Wien','Graz','Linz','Salzburg']};
- const preferred=priorityCities[country]||[];
+ const preferred=country==='all'?[...new Set(Object.values(priorityCities).flat())]:(priorityCities[country]||[]);
  for(const name of preferred){const key=searchText(name);if(key.startsWith(needle)&&!cities.has(key))cities.set(key,name)}
  const cityRank=name=>{const n=searchText(name),i=preferred.findIndex(p=>searchText(p)===n);return i<0?999:i};
  // Vienna is known locally as Wien; ensure its exact name is selectable in Austria.
