@@ -1,6 +1,14 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const html=fs.readFileSync('index.html','utf8');
+const moderationGuards=[
+ ['Message sending uses current authenticated sender', "sendingUserId=session.user.id"],
+ ['Unread badge update', "function updateUnreadBadges(count)"],
+ ['Admin notifications separate reports and pending photos', "reportCount+pendingCount"],
+ ['Admin panel checks server-side role RPC', "sb.rpc('is_vexorio_admin')"],
+ ['Reported messages require admin role', "async function loadAdminMessageReports()"],
+];
+for(const [label,fragment] of moderationGuards){assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
 const required=[
  ['Email sign-in', "sb.auth.signInWithPassword({email,password}"],
  ['Email registration', "sb.auth.signUp({email,password"],
