@@ -2803,6 +2803,15 @@ async function checkUnreadMessages(){
    if(incomingError){console.warn('Unread message check failed',incomingError);return}
    const latest=new Map();
    for(const m of incoming||[]){const id=String(m.conversation_id);if(!latest.has(id))latest.set(id,m)}
+   // Preserve unread counts for conversations omitted by the 1000-row batch cap.
+   if((incoming||[]).length===1000){
+    for(const missingId of ids.filter(id=>!latest.has(String(id)))){
+     const {data:single,error:singleError}=await sb.from('messages').select('conversation_id,created_at,sender_id').eq('conversation_id',missingId).order('created_at',{ascending:false}).limit(1);
+     if(session?.user?.id!==uid)return;
+     if(singleError){console.warn('Unread fallback lookup failed',singleError);return}
+     if(single?.[0])latest.set(String(missingId),single[0]);
+    }
+   }
    for(const id of ids){const m=latest.get(String(id)),seen=getSeen(id);if(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(id)!==String($('chatDialog').open?activeConversationId:null))unread++}
   }
   if(session?.user?.id!==uid)return;
