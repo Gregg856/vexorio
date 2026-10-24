@@ -2227,7 +2227,7 @@ const servicesMoreBtn=$('servicesMoreBtn');
 servicesMoreBtn?.addEventListener('click',()=>{
  const panel=$('services');const expanded=panel.classList.toggle('services-expanded');
  servicesMoreBtn.setAttribute('aria-expanded',String(expanded));
- servicesMoreBtn.textContent=expanded?(language==='de'?'Weniger anzeigen ↑':language==='en'?'Show fewer ↑':language==='uk'?'Показати менше ↑':'Pokaż mniej ↑'):(language==='de'?'Mehr Dienstleistungen ↓':language==='en'?'Show more services ↓':language==='uk'?'Більше послуг ↓':'Pokaż więcej usług ↓');
+ const labels={pl:{more:'Pokaż więcej usług ↓',less:'Pokaż mniej usług ↑'},de:{more:'Mehr Dienstleistungen anzeigen ↓',less:'Weniger Dienstleistungen anzeigen ↑'},en:{more:'Show more services ↓',less:'Show fewer services ↑'},uk:{more:'Показати більше послуг ↓',less:'Показати менше послуг ↑'}};const copy=labels[language]||labels.pl;servicesMoreBtn.textContent=expanded?copy.less:copy.more;
 });
 let activeSubcategory='';
 function renderCategorySubfilters(){
