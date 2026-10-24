@@ -2054,25 +2054,25 @@ $('adminReportsRefresh').onclick=async()=>{await loadAdminReports();await update
 
 async function loadAdminUsers(){
  const list=$('adminUsersList'),status=$('adminUsersStatus');list.replaceChildren();status.textContent='';
- if(!sb||!session?.user){status.textContent='Zaloguj się.';return}
+ if(!sb||!session?.user){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
- if(accessError||allowed!==true){status.textContent='Brak uprawnień administratora.';return}
+ if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('admin_moderation_users');
- if(error){status.textContent='Błąd: '+error.message;return}
- if(!data?.length){status.textContent='Brak kont do wyświetlenia.';return}
+ if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
+ if(!data?.length){status.textContent=language==='uk'?'Немає акаунтів для відображення.':'Brak kont do wyświetlenia.';return}
  for(const u of data){
   const box=document.createElement('div');box.className='info';box.style.margin='0';
-  const h=document.createElement('h3');h.textContent=u.display_name||('Użytkownik '+String(u.user_id).slice(0,8));
+  const h=document.createElement('h3');h.textContent=u.display_name||((language==='uk'?'Користувач ':'Użytkownik ')+String(u.user_id).slice(0,8));
   const uid=document.createElement('p');uid.className='muted';uid.textContent='ID: '+u.user_id;
-  const info=document.createElement('p');info.textContent='Ogłoszenia: '+u.listing_count+' · '+(u.is_blocked?'ZABLOKOWANY':'Aktywny');
-  const reason=document.createElement('textarea');reason.maxLength=500;reason.minLength=10;reason.placeholder='Powód decyzji (10–500 znaków)';reason.value=u.is_blocked?(u.block_reason||''):'';
-  const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=u.is_blocked?'Odblokuj konto':'Zablokuj konto';
+  const info=document.createElement('p');info.textContent=(language==='uk'?'Оголошення: ':'Ogłoszenia: ')+u.listing_count+' · '+(u.is_blocked?(language==='uk'?'ЗАБЛОКОВАНО':'ZABLOKOWANY'):(language==='uk'?'Активний':'Aktywny'));
+  const reason=document.createElement('textarea');reason.maxLength=500;reason.minLength=10;reason.placeholder=language==='uk'?'Причина рішення (10–500 символів)':'Powód decyzji (10–500 znaków)';reason.value=u.is_blocked?(u.block_reason||''):'';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=u.is_blocked?(language==='uk'?'Розблокувати акаунт':'Odblokuj konto'):(language==='uk'?'Заблокувати акаунт':'Zablokuj konto');
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
   btn.onclick=async()=>{
    if(btn.disabled)return;
    const text=reason.value.trim();
-   if(text.length<10||text.length>500){feedback.textContent='Podaj powód (10–500 znaków).';return}
-   if(!confirm((u.is_blocked?'Odblokować':'Zablokować')+' użytkownika '+u.user_id+'?'))return;
+   if(text.length<10||text.length>500){feedback.textContent=language==='uk'?'Укажіть причину (10–500 символів).':'Podaj powód (10–500 znaków).';return}
+   if(!confirm((u.is_blocked?(language==='uk'?'Розблокувати':'Odblokować'):(language==='uk'?'Заблокувати':'Zablokować'))+(language==='uk'?' користувача ':' użytkownika ')+u.user_id+'?'))return;
    btn.disabled=true;
    try{const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true)throw new Error('Brak uprawnień administratora.');
    const {error:writeError}=await sb.rpc('admin_set_user_block',{p_user:u.user_id,p_block:!u.is_blocked,p_reason:text});
