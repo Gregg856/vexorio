@@ -150,3 +150,7 @@ assert.ok(html.includes(`return !!(m&&m.sender_id!==uid&&(!seen||m.created_at>se
 console.log('PASS: inbox unread total and sort match latest sender');
 
 console.log('PASS: active conversation excluded from inbox unread count and unread-first sorting');
+
+assert.ok(html.includes("catch(error){console.warn('Chat background refresh failed',error)}finally{chatRefreshInProgress=false}"),'Chat background refresh must handle rejected promises');
+assert.ok(html.includes("catch(error){console.warn('Inbox background refresh failed',error)}finally{inboxRefreshInProgress=false}"),'Inbox background refresh must handle rejected promises');
+console.log('PASS: background chat and inbox refresh failures are handled');
