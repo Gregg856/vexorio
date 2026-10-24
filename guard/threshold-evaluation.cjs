@@ -23,6 +23,8 @@ function evaluateThresholds(training,testing,{thresholds=[0,0.1,0.25,0.5,0.75],m
    if(p.actual==='suspicious'&&!review)result.missedSuspicious++;
   }
   result.reviewRate=result.reviewCount/result.samples;
+  result.missedSuspiciousRate=result.missedSuspicious/predictions.filter(x=>x.actual==='suspicious').length||0;
+  result.safeReviewRate=result.safeSentToReview/predictions.filter(x=>x.actual==='safe').length||0;
   return result;
  });
 }
