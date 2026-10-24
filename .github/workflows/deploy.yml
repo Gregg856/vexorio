@@ -83,6 +83,7 @@ jobs:
           node tests/push-service-worker.test.cjs
           node tests/view-endpoint-regression.test.cjs
           node tests/view-endpoint-runtime.test.cjs
+          node tests/guard-engine.test.cjs
           node --check worker.js
 
       - name: Publikuj w Cloudflare
