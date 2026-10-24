@@ -95,6 +95,7 @@ jobs:
           node tests/guard-fraud-explain.test.cjs
           node tests/guard-report.test.cjs
           node tests/guard-review-priority.test.cjs
+          node tests/guard-metrics-summary.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
