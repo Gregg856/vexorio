@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {screenListing,VERSION}=require('../guard/engine.cjs');
+assert.equal(VERSION,'1.0.0');
+const clean=screenListing({title:'Rower miejski',description:'Sprzedam rower w dobrym stanie, odbiór osobisty.'});
+assert.equal(clean.status,'no_text_signals');
+assert.deepEqual(clean.signals,[]);
+const scam=screenListing({title:'Okazja',description:'Send your password to confirm. Pay outside via gift card.'});
+assert.equal(scam.status,'review');
+assert.ok(scam.signals.includes('credential_request'));
+assert.equal(screenListing({title:'',description:'abc'}).status,'review');
+assert.equal(screenListing(null).status,'review');
+assert.equal(screenListing({title:'T',description:'https://a.test https://b.test https://c.test'}).signals.includes('multiple_links'),true);
+assert.equal(screenListing({title:'Продам велосипед',description:'Хороший стан, самовивіз.'}).status,'no_text_signals');
+assert.equal(screenListing({title:'Fahrrad',description:'Gut erhalten, Abholung möglich.'}).status,'no_text_signals');
+assert.equal(screenListing({title:'Bike',description:'Used bike, local pickup.'}).status,'no_text_signals');
+console.log('PASS: VEXORIO Guard advisory rules, multilingual baseline and fail-safe input');
