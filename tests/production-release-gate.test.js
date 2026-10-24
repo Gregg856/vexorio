@@ -158,3 +158,6 @@ console.log('PASS: background chat and inbox refresh failures are handled');
 assert.ok(html.includes("catch(retryError){console.warn('Chat retry failed',retryError)}"),'Chat retry must catch asynchronous errors');
 assert.ok(html.includes("retry.textContent=language==='uk'?'↻ Спробувати ще раз':'↻ Spróbuj ponownie'"),'Chat retry must restore localized button label');
 console.log('PASS: chat retry catches errors and restores localized label');
+
+assert.ok(html.includes("if(latest&&latest.sender_id!==uid&&(!seen||latest.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null)){btn.classList.add('unread-conversation')"),'Unread inbox filter must exclude the currently open conversation');
+console.log('PASS: unread filter and badge agree for open chat');
