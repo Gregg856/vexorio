@@ -4,7 +4,6 @@ const {train}=require('./local-model.cjs');
 const {checkDataset}=require('./dataset-check.cjs');
 function evaluateDataset(training,testing){
  if(!Array.isArray(testing)||testing.length<2)throw Error('At least two held-out examples required');
- const seen=new Set(training.map(x=>String(x.text).normalize('NFKC').trim().toLowerCase()));
  const audit=checkDataset(training,testing);
  if(!audit.clean)throw Error('Near-duplicate training and test examples: '+JSON.stringify(audit.overlaps));
  const model=train(training);
@@ -13,7 +12,7 @@ function evaluateDataset(training,testing){
  for(const item of testing){
   if(!item||typeof item.text!=='string'||!['safe','suspicious'].includes(item.label))throw Error('Invalid test example');
   const normalized=item.text.normalize('NFKC').trim().toLowerCase();
-  if(!normalized||seen.has(normalized))throw Error('Test set overlaps training set or is empty');
+  if(!normalized)throw Error('Test example is empty');
   const result=model.predict(item.text);
   const actual=item.label==='suspicious',predicted=result.label==='suspicious';
   counts[actual?(predicted?'tp':'fn'):(predicted?'fp':'tn')]++;
