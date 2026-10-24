@@ -2264,6 +2264,14 @@ function setLang(v){if(!['pl','de','en','uk'].includes(v))return;language=v;
  const notice=$('inboxNotificationToggle')?.previousElementSibling;if(notice)notice.textContent=accountUi[3];
  setAccountText('vexPushTestButton',accountUi[4]);
  const settingsTile=$('accountSettingsTile')?.querySelector('strong');if(settingsTile)settingsTile.textContent=accountUi[6].replace(/^⚙ /,'');
+ const accountTiles={
+  pl:{accountListingsTile:['Moje ogłoszenia','Twoje wpisy'],accountMessagesTile:['Wiadomości','Twoje rozmowy'],accountFavoritesTile:['Ulubione','Zapisane oferty'],accountSettingsTile:['Ustawienia','Dane i prywatność']},
+  de:{accountListingsTile:['Meine Anzeigen','Deine Einträge'],accountMessagesTile:['Nachrichten','Deine Unterhaltungen'],accountFavoritesTile:['Favoriten','Gespeicherte Angebote'],accountSettingsTile:['Einstellungen','Daten und Datenschutz']},
+  en:{accountListingsTile:['My listings','Your posts'],accountMessagesTile:['Messages','Your conversations'],accountFavoritesTile:['Favorites','Saved listings'],accountSettingsTile:['Settings','Data and privacy']},
+  uk:{accountListingsTile:['Мої оголошення','Ваші записи'],accountMessagesTile:['Повідомлення','Ваші розмови'],accountFavoritesTile:['Обране','Збережені пропозиції'],accountSettingsTile:['Налаштування','Дані та конфіденційність']}
+ }[v];
+ for(const [id,[heading,description]] of Object.entries(accountTiles)){const tile=$(id);if(!tile)continue;const strong=tile.querySelector('strong');if(strong){const counter=strong.querySelector('#accountInboxCount');strong.textContent=heading;if(counter)strong.append(' ',counter)}const small=tile.querySelector('small');if(small)small.textContent=description}
+
  const toggle=$('inboxNotificationToggle');if(toggle){const active=toggle.getAttribute('aria-pressed')==='true';toggle.textContent=({pl:active?'Włączone':'Wyłączone',de:active?'Aktiviert':'Deaktiviert',en:active?'Enabled':'Disabled',uk:active?'Увімкнено':'Вимкнено'}[v])}
 
  const accessibilityText={
