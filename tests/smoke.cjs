@@ -184,3 +184,6 @@ assert.ok(html.includes('if(!visibleCount&&!hasMoreConversations){const activeFi
 assert.ok(html.includes(".range(unreadPage*100,(unreadPage+1)*100-1)"),'Unread badge must paginate beyond first 100 conversations');
 assert.ok(html.includes('if(page.length<100)break;'),'Unread pagination must stop after final page');
 assert.ok(html.includes('for(let start=0;start<page.length;start+=25)'),'Unread counting must process one page at a time');
+
+assert.ok(html.includes('const editOwnerId=session.user.id;const uploaded=[]'),'Listing edits must capture the initiating account');
+assert.ok(html.includes('editAuth?.user?.id!==editOwnerId||session?.user?.id!==editOwnerId'),'Listing edits must revalidate the account after photo uploads');
