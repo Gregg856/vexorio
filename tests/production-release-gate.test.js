@@ -116,3 +116,7 @@ console.log('PASS: five Worker security and SEO guards');
 assert.ok(html.includes("if(submit.disabled||submit.dataset.verifying==='1')return;submit.dataset.verifying='1';try{"),'Missing early listing submission lock');
 assert.ok(html.includes("}finally{delete submit.dataset.verifying}"),'Missing listing submission lock release');
 console.log('PASS: duplicate listing submissions blocked during async validation');
+
+// Damaged or unreadable files must be rejected without an unhandled File.arrayBuffer rejection.
+assert.ok(html.includes('let bytes;try{bytes=new Uint8Array(await file.slice(0,12).arrayBuffer())}catch{return false}'),'Unreadable photo signature must fail closed');
+console.log('PASS: unreadable photo files rejected gracefully');
