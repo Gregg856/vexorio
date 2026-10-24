@@ -19,6 +19,8 @@ jobs:
           # Embed the exact GitHub revision in the deployed HTML for release verification.
           sed -i "s#</head>#<meta name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"></head>#" public/index.html
           cp push-sw.js public/push-sw.js
+          cp manifest.webmanifest public/manifest.webmanifest
+          cp vexorio-app-icon.svg public/vexorio-app-icon.svg
           cp robots.txt public/robots.txt
           cp _headers public/_headers
           cat > wrangler.toml <<'EOF'
