@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://vexorio.grzegorzbub1985.workers.dev/sitemap.xml
+# Sitemap will be published after the permanent VEXORIO domain is connected.
