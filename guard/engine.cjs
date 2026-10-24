@@ -8,6 +8,8 @@ const RULES=Object.freeze([
  {id:'external_payment',weight:35,pattern:/\b(?:pay\s*(?:outside|directly)|western\s*union|moneygram|gift\s*card|zahlung\s*(?:außerhalb|ausserhalb)|płatnoś(?:ć|ci)\s*poza|оплата\s*поза)\b/iu},
  {id:'advance_fee',weight:35,pattern:/\b(?:advance\s*fee|upfront\s*payment|vorkasse\s*(?:nur|zwingend)|zaliczk[ęa]\s*(?:najpierw|z\s*góry)|передоплат[ау]\s*(?:обов'язкова|спочатку))\b/iu},
  {id:'credential_request',weight:60,pattern:/\b(?:send\s*(?:your\s*)?(?:password|otp|verification\s*code)|passwort\s*(?:senden|schicken)|wyślij\s*(?:(?:mi\s+)?(?:swoje\s+|twoje\s+)?hasło|(?:mi\s+)?kod\s*sms)|надішліть\s*(?:пароль|код\s*підтвердження))\b/iu},
+ {id:'guaranteed_profit',weight:35,pattern:/(?:gwarantowan(?:y|e|a)\s+zysk|zarobisz\s+\d+[\s.,]*\d*\s*(?:zł|pln|eur|€)\s+dziennie|guaranteed\s+(?:profit|returns)|garantiert(?:er|e)?\s+gewinn|гарантован(?:ий|і)\s+прибуток)/iu},
+ {id:'pressure_tactic',weight:20,pattern:/(?:tylko\s+dziś\s+wpłać|wpłać\s+natychmiast|pay\s+immediately|sofort\s+bezahlen|сплатіть\s+негайно)/iu},
  {id:'offsite_link',weight:20,pattern:/https?:\/\/[^\s]+/iu},
  {id:'contact_spam',weight:15,pattern:/(?:\+?\d[\s.()-]?){12,}/u}
 ]);
