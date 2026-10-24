@@ -103,6 +103,9 @@ jobs:
 
       - name: Sprawdz opublikowana wersje
         run: |
+          test -s public/guard-lab.html
+          test -s public/guard-lab.js
+          grep -q 'VEXORIO Guard' public/guard-lab.html
           test -f public/index.html
           test -s public/push-sw.js
           test -s public/robots.txt
