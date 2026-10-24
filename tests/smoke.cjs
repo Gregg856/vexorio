@@ -111,6 +111,9 @@ assert.ok(!html.includes("locationFilterValue()='';"),'Whole-country reset must 
 assert.ok(html.includes("all.onclick=()=>{$('radiusFilter').value='0';$('cityFilter').value='';$('cityFilter').dataset.postalValue='';render()}"),'Whole-country reset must clear location fields');
 assert.ok(html.includes('const radiusRetry=radiusActive&&Date.now()<(geoRetryAfter.get(originKey)||0)'),'Radius empty state must recognize transient geocoding failure');
 assert.ok(html.includes('radiusCandidateCount>0&&!radiusLoading&&!radiusNotFound&&!radiusRetry'),'Radius expansion suggestions must be hidden during location-service outages');
+// Admin report fetches must not render after an account switch.
+assert.ok(html.includes('const reportViewerId=session.user.id'),'Admin reports must capture viewer identity');
+assert.ok((html.match(/if\(session\?\.user\?\.id!==reportViewerId\)return;/g)||[]).length>=2,'Admin reports must check identity after async calls');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
