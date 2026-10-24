@@ -2580,8 +2580,8 @@ async function checkUnreadMessages(){
   if(session?.user?.id!==uid)return;
   const countChanged=previousUnreadCount!==unread;
   updateUnreadBadges(unread);
-  if(countChanged&&$('accountDialog').open&&!$('accountMessagesSection').hidden)loadConversations();
- }finally{unreadCheckInProgress=false}
+  if(countChanged&&$('accountDialog').open&&!$('accountMessagesSection').hidden)void loadConversations();
+ }catch(error){console.warn('Unread message refresh failed',error)}finally{unreadCheckInProgress=false}
 }
 
 $('vexHeaderInbox').onclick=async()=>{if(!session)return openAuth();if(!$('accountDialog').open)await openAccount();showAccountSection('Messages');$('accountDialog').scrollTop=0;await loadConversations()};
