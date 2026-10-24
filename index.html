@@ -1852,6 +1852,7 @@ async function loadAdminPendingListings(){
       ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision}));
      }
      if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');
+     if(session?.user?.id!==actingUserId)throw new Error('Sesja zmieniła się.');
      if(reviewError)throw reviewError;
      if(changed!==true)throw new Error(language==='uk'?'Оголошення вже розглянуто або його не існує.':'Ogłoszenie zostało już rozpatrzone lub nie istnieje.');
      await loadAdminPendingListings();await loadAdminOverview();await loadListings();await updateAdminReportBadge();
