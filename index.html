@@ -2880,7 +2880,7 @@ async function loadConversations(){
   filterBar.append(refresh);
  }
  const unreadButton=document.querySelector('#vexInboxFilters button[data-filter="unread"]');
- if(unreadButton){unreadButton.textContent=(language==='uk'?'Непрочитані':'Nieprzeczytane')+(unreadTotal?' ('+unreadTotal+')':'');unreadButton.setAttribute('aria-label',language==='uk'?'Непрочитаних розмов: '+unreadTotal:unreadTotal+' nieprzeczytanych rozmów')}
+ if(unreadButton){const unreadTexts={pl:['Nieprzeczytane','Nieprzeczytanych rozmów: '],de:['Ungelesen','Ungelesene Unterhaltungen: '],en:['Unread','Unread conversations: '],uk:['Непрочитані','Непрочитаних розмов: ']};const labels=unreadTexts[language]||unreadTexts.pl;unreadButton.textContent=labels[0]+(unreadTotal?' ('+unreadTotal+')':'');unreadButton.setAttribute('aria-label',labels[1]+unreadTotal)}
  let visibleCount=0;
  data.sort((a,b)=>{
   if(document.getElementById('vexInboxUnreadFirst')?.getAttribute('aria-pressed')==='true'){
