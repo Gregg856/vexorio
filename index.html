@@ -2973,8 +2973,10 @@ $('backToAccountBtn').onclick=()=>{if($('chatDialog').open)$('chatDialog').close
 $('refreshChatBtn').onclick=async()=>{const button=$('refreshChatBtn');if(button.disabled)return;button.disabled=true;button.setAttribute('aria-busy','true');button.textContent=language==='uk'?'↻ Оновлення…':'↻ Odświeżanie…';try{await refreshConversation()}catch(error){console.error('Nie udało się odświeżyć czatu:',error);$('replyStatus').textContent=language==='uk'?'Не вдалося оновити повідомлення. Спробуйте ще раз.':'Nie udało się odświeżyć wiadomości. Spróbuj ponownie.'}finally{button.disabled=false;button.removeAttribute('aria-busy');button.textContent=language==='uk'?'↻ Оновити':'↻ Odśwież'}};
 $('chatJumpBottom').onclick=()=>{const box=$('chatMessages');box.scrollTop=box.scrollHeight;$('chatJumpBottom').hidden=true};
 $('chatMessages').addEventListener('scroll',()=>{const box=$('chatMessages');$('chatJumpBottom').hidden=box.scrollHeight-box.scrollTop-box.clientHeight<90},{passive:true});
+let chatRefreshRequestId=0;
 async function refreshConversation(){
  if(!activeConversationId||!sb)return;
+ const requestId=++chatRefreshRequestId;
  const conversationId=activeConversationId;
  const box=$('chatMessages');
  const firstLoad=box.textContent==='Ładowanie…'||box.textContent==='Завантаження…';
@@ -2984,7 +2986,7 @@ async function refreshConversation(){
  const readingUserId=session?.user?.id;
  const jump=$('chatJumpBottom');
  const {data,error}=await sb.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(200);
- if(activeConversationId!==conversationId||!$('chatDialog').open||session?.user?.id!==readingUserId)return;
+ if(requestId!==chatRefreshRequestId||activeConversationId!==conversationId||!$('chatDialog').open||session?.user?.id!==readingUserId)return;
  if(error){if(!box.querySelector('.chat-bubble')){box.replaceChildren();const notice=document.createElement('p');notice.setAttribute('role','alert');notice.textContent=language==='uk'?'Не вдалося завантажити повідомлення. Перевірте з’єднання та спробуйте ще раз.':'Nie udało się pobrać wiadomości. Sprawdź połączenie i spróbuj ponownie.';const retry=document.createElement('button');retry.type='button';retry.className='btn small';retry.textContent='↻ Spróbuj ponownie';retry.onclick=async()=>{retry.disabled=true;retry.textContent=language==='uk'?'↻ Завантаження…':'↻ Pobieranie…';try{await refreshConversation()}catch(retryError){console.warn('Chat retry failed',retryError)}finally{retry.disabled=false;retry.textContent=language==='uk'?'↻ Спробувати ще раз':'↻ Spróbuj ponownie'}};box.append(notice,retry)}console.error('Chat messages loading failed:',error);return}
  if(!data?.length){box.replaceChildren();delete box.dataset.lastMessageId;delete box.dataset.firstMessageId;delete box.dataset.messageCount;box.textContent=language==='uk'?'Повідомлень немає.':'Brak wiadomości.';if(jump)jump.hidden=true;return}
  data.reverse(); // Show the newest 200 messages in chronological order.
