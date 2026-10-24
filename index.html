@@ -2573,7 +2573,7 @@ async function checkUnreadMessages(){
  }finally{unreadCheckInProgress=false}
 }
 
-$('vexHeaderInbox').onclick=()=>{if(!session)return openAuth();const mobileChat=$('vexMobileChat');if(mobileChat)mobileChat.click();else openAccount()};
+$('vexHeaderInbox').onclick=async()=>{if(!session)return openAuth();if(!$('accountDialog').open)await openAccount();showAccountSection('Messages');$('accountDialog').scrollTop=0;await loadConversations()};
 $('refreshInboxBtn').onclick=()=>loadConversations();
 let inboxRequestId=0;
 function ensureInboxSearch(){
