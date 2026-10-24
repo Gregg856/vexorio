@@ -196,3 +196,7 @@ assert.ok(html.includes("postal_code:$('newPostal').value.trim()||null"),'Listin
 assert.ok(html.includes('id="editPostal"'),'Listing edit form must expose postal code');
 assert.ok(html.includes("$('editPostal').value=data.postal_code||''"),'Listing editor must load postal code');
 assert.ok(html.includes("postal_code:$('editPostal').value.trim()||null"),'Listing editor must persist postal code');
+
+// Both moderation interfaces must verify the acting admin session.
+assert.ok((html.match(/const actingUserId=session\?\.user\?\.id;if\(!actingUserId\)return;/g)||[]).length>=2,'Both admin review flows must capture the acting session');
+assert.ok((html.match(/session\?\.user\?\.id!==actingUserId/g)||[]).length>=4,'Both admin review flows must check session continuity');
