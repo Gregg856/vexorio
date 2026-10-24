@@ -146,3 +146,5 @@ assert.ok((html.match(/if\(session\?\.user\?\.id!==dashboardViewerId\)return;/g)
 assert.ok(html.includes('await loadAdminMessageReports();\n if(session?.user?.id!==reportViewerId)return;'),'Admin report loading must stop after account switch during message report fetch');
 
 assert.ok(html.includes('if(session?.user?.id!==pendingViewerId)return;\n    if(signError||!signed?.signedUrl)continue;'),'Pending photo previews must stop after an account switch');
+
+assert.ok((html.match(/if\(session\?\.user\?\.id!==actingUserId\)throw new Error\(language==='uk'\?'Сесія змінилася\.'/g)||[]).length>=3,'Photo approval must stop on moderator account switch before upload, publish and completion');
