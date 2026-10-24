@@ -152,3 +152,5 @@ assert.ok((html.match(/if\(session\?\.user\?\.id!==actingUserId\)throw new Error
 assert.ok(html.includes("if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');\n       const {data:blob,error:downloadError}=await sb.storage.from('listing-images-review').download(path);"),'Moderator session must be checked before downloading a review photo');
 
 assert.ok(html.includes("if(session?.user?.id!==actingUserId)return;if(writeError)throw writeError;if(!updated){feedback.textContent="),'Message report status response must be discarded after account switch');
+
+assert.ok(html.includes("const {error:writeError}=await sb.rpc('admin_set_user_block',{p_user:u.user_id,p_block:!u.is_blocked,p_reason:text});\n   if(session?.user?.id!==adminUsersViewerId)return;"),'User blocking response must be ignored after admin account switch');
