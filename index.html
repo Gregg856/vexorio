@@ -1678,9 +1678,9 @@ $('dashCopyLink').onclick=async()=>{
  params.set('admin_age',$('dashAge').value);
  if($('dashSearch').value.trim())params.set('admin_search',$('dashSearch').value.trim().slice(0,120));
  const url=location.origin+location.pathname+'?'+params.toString()+location.hash;
- const btn=$('dashCopyLink');
- try{btn.disabled=true;await navigator.clipboard.writeText(url);btn.textContent=language==='uk'?'✓ Посилання скопійовано':'✓ Link skopiowany';setTimeout(()=>{btn.textContent=language==='uk'?'🔗 Копіювати посилання на фільтри':'🔗 Kopiuj link do filtrów';btn.disabled=false},2000)}
- catch(err){btn.textContent=language==='uk'?'Не вдалося скопіювати':'Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
+ const btn=$('dashCopyLink');const labels={pl:['✓ Link skopiowany','🔗 Kopiuj link do filtrów','Nie można skopiować'],de:['✓ Link kopiert','🔗 Filterlink kopieren','Kopieren fehlgeschlagen'],en:['✓ Link copied','🔗 Copy filter link','Could not copy'],uk:['✓ Посилання скопійовано','🔗 Копіювати посилання на фільтри','Не вдалося скопіювати']};
+ try{btn.disabled=true;await navigator.clipboard.writeText(url);btn.textContent=labels[language][0];setTimeout(()=>{btn.textContent=labels[language][1];btn.disabled=false},2000)}
+ catch(err){btn.textContent=labels[language][2];setTimeout(()=>{btn.textContent=labels[language][1];btn.disabled=false},2500)}
 };
 
 let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);if(!$('adminDashboardDialog').open)return;dashTypingTimer=setTimeout(()=>{dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()}
