@@ -44,3 +44,13 @@ console.log('PASS: admin UI authorization checks retained');
 assert.ok(html.includes("child.addEventListener('close'"),'Admin dialog close event missing');
 assert.ok(html.includes("adminReportListingFilter=null;show('adminDashboardDialog');loadAdminDashboard()"),'Admin subsection return-to-dashboard missing');
 console.log('PASS: admin subsection close returns to dashboard');
+
+// Keep organic sharing metadata consistent while the portal grows.
+const sharingChecks=[
+ ['Search description', '<meta name="description" content="VEXORIO — darmowe ogłoszenia'],
+ ['Open Graph title', '<meta property="og:title" content="VEXORIO — Ogłoszenia bez granic">'],
+ ['Open Graph URL', '<meta property="og:url" content="https://vexorio.grzegorzbub1985.workers.dev/">'],
+ ['Social preview description', '<meta property="og:description" content="Darmowe ogłoszenia, usługi i zlecenia w Europie.">'],
+ ['X summary preview', '<meta name="twitter:card" content="summary">'],
+];
+for(const [label,fragment] of sharingChecks){assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
