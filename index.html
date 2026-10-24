@@ -1681,12 +1681,14 @@ async function updateAdminReportBadge(){
  const badge=$('adminReportBadge');if(!badge)return;
  if(!sb||!session?.user?.id||$('adminReportsBtn').classList.contains('hide'))return;
  adminBadgeRefreshInProgress=true;
+ const badgeUserId=session.user.id;
  try{
   const [ads,chats,pendingResult]=await Promise.all([
    sb.from('listing_reports').select('id',{count:'exact',head:true}).eq('status','new'),
    sb.from('message_reports').select('id',{count:'exact',head:true}).eq('status','new'),
    sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50})
   ]);
+  if(session?.user?.id!==badgeUserId||$('adminReportsBtn').classList.contains('hide'))return;
   const reportsOk=!ads.error&&!chats.error;
   const pendingOk=!pendingResult.error&&Array.isArray(pendingResult.data);
   const reportCount=reportsOk?(ads.count||0)+(chats.count||0):null;
