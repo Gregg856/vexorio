@@ -9,5 +9,5 @@ for(const id of ['f','t','d','out'])assert.ok(html.includes('id="'+id+'"'),'Miss
 assert.ok(html.includes('noindex,nofollow'),'Lab must not be indexed');
 assert.ok(!/\bsupabase\b|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon/i.test(script),'Lab must remain local-only');
 assert.ok(!/\b(?:delete|approve|reject)Listing\s*\(/.test(script),'Lab must not mutate listings');
-assert.ok(html.includes('src="/guard-lab.js"'),'Lab script must be loaded');
+assert.ok(/src="\/guard-lab\.js(?:\?v=[a-z0-9]+)?"/.test(html),'Lab script must be loaded');
 console.log('PASS: Guard lab JS syntax, UI controls, privacy and advisory-only isolation');
