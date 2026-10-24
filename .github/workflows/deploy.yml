@@ -16,6 +16,8 @@ jobs:
         run: |
           mkdir -p public
           cp index.html public/index.html
+          cp guard-lab.html public/guard-lab.html
+          cp guard-lab.js public/guard-lab.js
           # Embed the exact GitHub revision in the deployed HTML for release verification.
           sed -i "s#</head>#<meta name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"></head>#" public/index.html
           cp push-sw.js public/push-sw.js
