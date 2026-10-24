@@ -1952,6 +1952,7 @@ async function loadAdminPendingListings(){
  if(session?.user?.id!==adminUsersViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});
+ if(session?.user?.id!==adminUsersViewerId)return;
  if(error){status.textContent=(language==='uk'?'Не вдалося завантажити чергу: ':'Nie udało się pobrać kolejki: ')+error.message;return}
  status.textContent=data?.length?(language==='uk'?'Очікують перевірки: ':'Oczekujące: ')+data.length:(language==='uk'?'Немає оголошень на перевірці.':'Brak ogłoszeń oczekujących.');
  const badge=$('dashPendingBadge');if(badge)badge.textContent='('+(data?.length||0)+(data?.length===50?'+':'')+')';
