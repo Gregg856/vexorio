@@ -16,10 +16,10 @@ function evaluateDataset(training,testing){
   const result=model.predict(item.text);
   const actual=item.label==='suspicious',predicted=result.label==='suspicious';
   counts[actual?(predicted?'tp':'fn'):(predicted?'fp':'tn')]++;
-  examples.push({actual:item.label,predicted:result.label,confidence:result.confidence});
+  examples.push({index:examples.length,actual:item.label,predicted:result.label,confidence:result.confidence,correct:actual===predicted});
  }
  const {tp,tn,fp,fn}=counts;
  const ratio=(a,b)=>b?a/b:null;
- return {samples:testing.length,counts,accuracy:(tp+tn)/testing.length,precision:ratio(tp,tp+fp),recall:ratio(tp,tp+fn),falsePositiveRate:ratio(fp,fp+tn),examples};
+ return {samples:testing.length,counts,errors:examples.filter(x=>!x.correct),accuracy:(tp+tn)/testing.length,precision:ratio(tp,tp+fp),recall:ratio(tp,tp+fn),falsePositiveRate:ratio(fp,fp+tn),examples};
 }
 module.exports={evaluateDataset};
