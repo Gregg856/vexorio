@@ -72,3 +72,11 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - **Staging:** różnice w zestawie funkcji, tabel i ostrzeżeń względem produkcji; nie traktować staging jako identycznego środowiska testowego.
 - **Otwarte przed finalnym uruchomieniem:** E2E dwóch istniejących kont (czat i licznik, Google/e-mail), Android/Chrome push, moderacja zdjęć i zgłoszeń, kontrola uprawnień DB z rolą nieadministracyjną, tłumaczenia PL/DE/EN/UK, mobilne wyszukiwanie, limity odsłon, ochrona haseł oraz przegląd wydajności.
 - **Nie wykonywano:** żadnych zapisów w bazie produkcyjnej, tworzenia kont, zmian layoutu ani symulacji nieautoryzowanych operacji.
+
+
+### Licznik odsłon — sprawdzenie gotowości do naprawy (2026-10-24)
+- Frontend `openDetail()` wywołuje bezpośrednio `sb.rpc('record_listing_view', {p_listing_id:x.id})` i ma wyłącznie ograniczenie na czas jednej sesji przeglądarki (`viewedListingsThisSession`); ponowne sesje i bezpośrednie żądania omijają je.
+- **Produkcja:** `public.record_listing_view(bigint)` dostępna dla anon/authenticated i zwiększa licznik bez serwerowego ograniczenia. Nie zmieniono funkcji.
+- **Staging:** istnieje gotowa koncepcja: prywatna tabela `vexorio_private.listing_view_guard` z unikatowym kluczem `(listing_id,visitor_digest,window_start)`, prywatna funkcja `record_listing_view_guarded` z godzinowym oknem oraz `public.vexorio_record_listing_view_server`. Obie funkcje nie są dostępne bezpośrednio dla anon/authenticated; to dobry punkt wyjścia do zaufanego endpointu serwerowego.
+- **Krytyczna zależność:** digest gościa musi powstawać po stronie zaufanego serwera (np. Cloudflare Worker) z sekretu i stabilnego identyfikatora żądania, a nie z dowolnej wartości przesłanej przez przeglądarkę. W przeciwnym razie atakujący może generować nowe digesty i nadal nabijać licznik. Należy dodać endpoint z rate limiting, walidacją ID i bezpiecznym przechowywaniem sekretu; następnie przestawić frontend na endpoint i odebrać anon/authenticated EXECUTE na starym RPC. Dopiero po wdrożeniu całości przetestować na stagingu, potem uzyskać zgodę na produkcję.
+- **Status:** DIAGNOZA POTWIERDZONA, NAPRAWA NIE WDROŻONA. Nie włączać istniejącego stagingowego RPC dla anon/authenticated ani nie odcinać starego RPC przed gotowym endpointem — inaczej odsłony przestaną działać.
