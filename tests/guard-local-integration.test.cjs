@@ -32,6 +32,28 @@ const examples=[
  assert.ok(partial.flags.includes('model_insufficient_model_knowledge'));
  assert.equal(partial.requiresHumanReview,true);
  assert.equal(partial.decision,'none');
+ // Synthetic threshold sweep: measure escalation rate, not real-world accuracy.
+ const probes=[
+  {title:'Rower',description:'rower odbiór osobisty sprawny'},
+  {title:'Fahrrad',description:'fahrrad abholung gebraucht'},
+  {title:'Quasar',description:'xenolith nebula'},
+  {title:'Rower',description:'quasar xenolith nebula rower'},
+  {title:'Oferta',description:'wyślij hasło kod sms'},
+  {title:'Bicycle',description:'bicycle local pickup'}
+ ];
+ const sweep=[];
+ for(const minimumCoverage of [0,0.1,0.25,0.5,0.75]){
+  const candidate=createLocalGuard(examples,{minimumConfidence:0.5,minimumCoverage});
+  let escalated=0;
+  for(const probe of probes){
+   const report=await candidate.evaluate(probe);
+   if(report.flags.includes('model_insufficient_model_knowledge'))escalated++;
+   assert.equal(report.decision,'none');
+  }
+  sweep.push({minimumCoverage,escalated,total:probes.length});
+ }
+ assert.ok(sweep.every((row,i)=>i===0||row.escalated>=sweep[i-1].escalated));
+ console.log('Guard SYNTHETIC coverage threshold sweep:',JSON.stringify(sweep));
  assert.throws(()=>createLocalGuard(examples,{minimumConfidence:2}));
  assert.throws(()=>createLocalGuard(examples,{minimumCoverage:-0.1}),/coverage/);
  console.log('PASS: self-trained Guard integrates without external API or autonomous moderation');
