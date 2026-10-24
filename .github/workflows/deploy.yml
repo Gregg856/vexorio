@@ -100,6 +100,7 @@ jobs:
           node tests/guard-combined-image-model.test.cjs
           node tests/guard-image-evaluation.test.cjs
           node tests/guard-image-similarity.test.cjs
+          node tests/guard-image-pipeline.test.cjs
           node tests/guard-evaluate.test.cjs
           node tests/guard-model-adapter.test.cjs
           node tests/guard-local-model.test.cjs
