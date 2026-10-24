@@ -2073,7 +2073,7 @@ function listingGeoLocation(item){const postal=String(item.postal_code||'').trim
 // Mobile city selection uses a top-positioned dialog above the keyboard.
 let citySuggestTimer=null,citySuggestRequest=0;
 function closeCitySuggestions(){clearTimeout(citySuggestTimer);citySuggestRequest++;$('vexorioCitySuggestions').hidden=true}
-function closeCityDialog(){closeCitySuggestions();$('vexCityDialogInput').blur();$('vexCityDialog').hidden=true}
+function closeCityDialog(){closeCitySuggestions();$('vexCityDialogInput').blur();$('vexCityDialog').hidden=true;$('cityFilter').focus({preventScroll:true})}
 function selectCity(name,label){
  const field=$('cityFilter');
  field.value=label&&label!==name?String(label).replace(/^📍\s*/,''):String(name||'').trim();
