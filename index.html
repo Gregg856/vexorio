@@ -2835,7 +2835,7 @@ if(headerBell)headerBell.setAttribute('aria-label',labelFor('messages'));const t
 let unreadCheckInProgress=false;
 async function checkUnreadMessages(){
  if(unreadCheckInProgress)return;
- if(!sb||!session){updateUnreadBadges(0);return}
+ if(!sb||!session?.user?.id){updateUnreadBadges(0);return}
  unreadCheckInProgress=true;
  const uid=session.user.id;
  try{
