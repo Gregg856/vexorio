@@ -2959,7 +2959,7 @@ const chatDraftKey=(userId,conversationId)=>'vex-chat-draft:'+userId+':'+convers
 async function openConversation(id,title){
  if(!sb||!session)return openAuth();
  activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';let savedChatDraft='';try{savedChatDraft=sessionStorage.getItem(chatDraftKey(session.user.id,id))||''}catch(error){console.warn('Chat draft storage unavailable',error)}$('replyText').value=savedChatDraft;$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
- $('chatMessages').textContent=language==='uk'?'Завантаження…':'Ładowanie…';
+ $('chatMessages').textContent=({pl:'Ładowanie…',de:'Wird geladen…',en:'Loading…',uk:'Завантаження…'})[language]||'Ładowanie…';
  delete $('chatMessages').dataset.lastMessageId;
  delete $('chatMessages').dataset.conversationId;
  delete $('chatMessages').dataset.firstMessageId;
@@ -2979,7 +2979,7 @@ async function refreshConversation(){
  const requestId=++chatRefreshRequestId;
  const conversationId=activeConversationId;
  const box=$('chatMessages');
- const firstLoad=box.textContent==='Ładowanie…'||box.textContent==='Завантаження…';
+ const firstLoad=['Ładowanie…','Wird geladen…','Loading…','Завантаження…'].includes(box.textContent);
  const wasNearBottom=firstLoad||box.scrollHeight-box.scrollTop-box.clientHeight<90;
  const previousScrollHeight=box.scrollHeight,previousScrollTop=box.scrollTop;
  const previousLastMessageId=box.dataset.lastMessageId||'';
