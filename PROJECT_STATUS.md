@@ -129,3 +129,11 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - `is_vexorio_blocked(p_user)` sprawdza zgodność `p_user=auth.uid()`.
 - **Uwaga funkcjonalna:** `vexorio_reveal_contact_phone` nadal sprawdza `contractor_access`/premium dla rodzaju `zlecenie`, mimo decyzji produktowej o darmowym kontakcie. Zweryfikować spójność z frontendem i polityką przed zmianą produkcji.
 - Wynik: podstawowe wewnętrzne kontrole admin RPC potwierdzone statycznie na STAGING; testy wykonania jako zwykły użytkownik i pozostałe RPC wciąż do zrobienia. Nie modyfikowano bazy.
+
+
+## Darmowy numer telefonu — STAGING — 24.10.2026
+
+- Zastosowano migrację Supabase STAGING `free_contact_phone_for_approved_listings` w projekcie `owkjdlpawczrnwyszduj`.
+- `public.vexorio_reveal_contact_phone(bigint)` nie wymaga już `contractor_access`/Premium. Zachowano wymóg zalogowania, braku blokady, zgody właściciela `show_contact_phone`, aktywnego statusu i zatwierdzonej moderacji dla osób innych niż właściciel.
+- Produkcja **bez zmian**. Frontend nadal ma komunikat o Premium przy braku numeru dla zlecenia; zmienić komunikat dopiero przy uzgodnionym wdrożeniu produkcyjnym, aby nie wprowadzać użytkowników w błąd.
+- Do zamknięcia: test rzeczywistych ról i numeru na stagingu, zgoda na migrację produkcyjną, aktualizacja frontendowego komunikatu i test końcowy.
