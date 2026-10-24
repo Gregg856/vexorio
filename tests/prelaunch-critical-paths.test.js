@@ -49,7 +49,7 @@ console.log('PASS: admin subsection close returns to dashboard');
 const sharingChecks=[
  ['Search description', '<meta name="description" content="VEXORIO — darmowe ogłoszenia'],
  ['Open Graph title', '<meta property="og:title" content="VEXORIO — Ogłoszenia bez granic">'],
- ['Open Graph URL', '<meta property="og:url" content="https://vexorio.grzegorzbub1985.workers.dev/">'],
+ ['Open Graph URL without personal identifier', '<meta property="og:url" content="">'],
  ['Social preview description', '<meta property="og:description" content="Darmowe ogłoszenia, usługi i zlecenia w Europie.">'],
  ['X summary preview', '<meta name="twitter:card" content="summary">'],
 ];
