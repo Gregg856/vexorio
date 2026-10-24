@@ -5,7 +5,7 @@ export default {
       if (request.method !== 'POST') return new Response(null, {status: 405, headers: {'Allow': 'POST', 'Cache-Control': 'no-store'}});
       if (request.headers.get('Origin') !== url.origin) return new Response(null, {status: 403, headers: {'Cache-Control': 'no-store'}});
       const contentType = request.headers.get('Content-Type') || '';
-      if (!contentType.toLowerCase().startsWith('application/json')) return new Response(null, {status: 415, headers: {'Cache-Control': 'no-store'}});
+      if (contentType.split(';',1)[0].trim().toLowerCase() !== 'application/json') return new Response(null, {status: 415, headers: {'Cache-Control': 'no-store'}});
       if (Number(request.headers.get('Content-Length') || 0) > 512) return new Response(null, {status: 413, headers: {'Cache-Control': 'no-store'}});
       // Disabled until the server-side secrets and staging RPC are verified.
       if (env.VIEW_COUNT_ENABLED !== 'true') return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
