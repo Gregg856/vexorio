@@ -2086,7 +2086,10 @@ let citySuggestTimer=null,citySuggestRequest=0;
 function closeCitySuggestions(){clearTimeout(citySuggestTimer);citySuggestRequest++;$('vexorioCitySuggestions').hidden=true}
 function closeCityDialog(){closeCitySuggestions();$('vexCityDialogInput').blur();$('vexCityDialog').hidden=true;$('cityFilter').focus({preventScroll:true})}
 function selectCity(name,label,selectedCountry){
- if(selectedCountry&&$('country').value==='all'&&[...$('country').options].some(option=>option.value===selectedCountry))$('country').value=selectedCountry;
+ if(selectedCountry&&$('country').value==='all'){
+  const option=[...$('country').options].find(item=>item.value.toUpperCase()===String(selectedCountry).toUpperCase());
+  if(option){$('country').value=option.value;$('country').dispatchEvent(new Event('input',{bubbles:true}));}
+ }
  const field=$('cityFilter');
  field.value=label&&label!==name?String(label).replace(/^📍\s*/,''):String(name||'').trim();
  field.dataset.postalValue=label&&label!==name?String(name||'').trim():'';
