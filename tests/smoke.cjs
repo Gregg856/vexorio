@@ -142,3 +142,5 @@ console.log('VEXORIO smoke tests passed: '+scripts.length+' inline scripts, '+re
 // Admin dashboard must discard stale responses when the signed-in account changes.
 assert.ok(html.includes('const dashboardViewerId=session.user.id;'),'Dashboard must capture account identity');
 assert.ok((html.match(/if\(session\?\.user\?\.id!==dashboardViewerId\)return;/g)||[]).length>=2,'Dashboard must guard auth and listing responses');
+
+assert.ok(html.includes('await loadAdminMessageReports();\n if(session?.user?.id!==reportViewerId)return;'),'Admin report loading must stop after account switch during message report fetch');
