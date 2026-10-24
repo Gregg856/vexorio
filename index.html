@@ -2068,8 +2068,10 @@ $('adminReportsRefresh').onclick=async()=>{await loadAdminReports();await update
 
 async function loadAdminUsers(){
  const list=$('adminUsersList'),status=$('adminUsersStatus');list.replaceChildren();status.textContent='';
- if(!sb||!session?.user){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ if(!sb||!session?.user?.id){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const adminUsersViewerId=session.user.id;
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==adminUsersViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('admin_moderation_users');
  if(session?.user?.id!==adminUsersViewerId)return;
@@ -2085,11 +2087,12 @@ async function loadAdminUsers(){
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
   btn.onclick=async()=>{
    if(btn.disabled)return;
+   if(!sb||session?.user?.id!==adminUsersViewerId){feedback.textContent=language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.';return}
    const text=reason.value.trim();
    if(text.length<10||text.length>500){feedback.textContent=language==='uk'?'Укажіть причину (10–500 символів).':'Podaj powód (10–500 znaków).';return}
    if(!confirm((u.is_blocked?(language==='uk'?'Розблокувати':'Odblokować'):(language==='uk'?'Заблокувати':'Zablokować'))+(language==='uk'?' користувача ':' użytkownika ')+u.user_id+'?'))return;
    btn.disabled=true;
-   try{const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true)throw new Error(language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.');
+   try{const {data:auth,error:authError}=await sb.auth.getUser();if(authError||auth?.user?.id!==adminUsersViewerId||session?.user?.id!==adminUsersViewerId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(session?.user?.id!==adminUsersViewerId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');if(verifyError||stillAdmin!==true)throw new Error(language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.');
    const {error:writeError}=await sb.rpc('admin_set_user_block',{p_user:u.user_id,p_block:!u.is_blocked,p_reason:text});
    if(writeError)throw writeError;
    await loadAdminUsers();}catch(err){feedback.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+(err?.message||(language==='uk'?'Не вдалося зберегти рішення.':'Nie udało się zapisać decyzji.'));btn.disabled=false;}
