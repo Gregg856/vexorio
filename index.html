@@ -1938,8 +1938,10 @@ async function loadAdminPendingListings(){
  const status=$('adminPendingStatus'),list=$('adminPendingList');
  if(!status||!list)return;
  list.replaceChildren();status.textContent=language==='uk'?'Перевірка черги…':'Sprawdzam kolejkę…';
- if(!sb||!session?.user){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ if(!sb||!session?.user?.id){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const adminUsersViewerId=session.user.id;
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==adminUsersViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});
  if(error){status.textContent=(language==='uk'?'Не вдалося завантажити чергу: ':'Nie udało się pobrać kolejki: ')+error.message;return}
