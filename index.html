@@ -1754,9 +1754,12 @@ async function loadAdminMessageReports(){
  const list=$('adminMessageReportsList'),counter=$('adminMessageReportsCount');
  list.replaceChildren();counter.textContent=language==='uk'?'Завантаження скарг на повідомлення…':'Ładowanie zgłoszeń wiadomości…';
  if(!sb||!session?.user?.id){counter.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const messageReportViewerId=session.user.id;
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==messageReportViewerId)return;
  if(accessError||allowed!==true){counter.textContent=language==='uk'?'Недостатньо прав.':'Brak uprawnień.';return}
  const {data,error}=await sb.from('message_reports').select('id,message_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);
+ if(session?.user?.id!==messageReportViewerId)return;
  if(error){counter.textContent=(language==='uk'?'Помилка завантаження: ':'Błąd pobierania: ')+error.message;return}
  const items=data||[],newCount=items.filter(x=>x.status==='new').length;
  counter.textContent=(language==='uk'?'Нові: ':'Nowe: ')+newCount+(language==='uk'?' · Показано: ':' · Wyświetlono: ')+items.length+(items.length===100?(language==='uk'?' (останні 100)':' (ostatnie 100)'):'');
@@ -1781,8 +1784,10 @@ async function loadAdminPendingListings(){
  const status=$('adminPendingStatus'),list=$('adminPendingList');
  if(!status||!list)return;
  list.replaceChildren();status.textContent=language==='uk'?'Перевірка черги…':'Sprawdzam kolejkę…';
- if(!sb||!session?.user){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ if(!sb||!session?.user?.id){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const adminUsersViewerId=session.user.id;
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==adminUsersViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});
  if(error){status.textContent=(language==='uk'?'Не вдалося завантажити чергу: ':'Nie udało się pobrać kolejki: ')+error.message;return}
@@ -2064,6 +2069,7 @@ async function loadAdminUsers(){
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('admin_moderation_users');
+ if(session?.user?.id!==adminUsersViewerId)return;
  if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
  if(!data?.length){status.textContent=language==='uk'?'Немає акаунтів для відображення.':'Brak kont do wyświetlenia.';return}
  for(const u of data){
