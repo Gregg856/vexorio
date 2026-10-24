@@ -20,12 +20,24 @@ const testing=[
  {label:'suspicious',text:'Wyślij kod SMS hasło'},
  {label:'suspicious',text:'Guaranteed profit gift card'},
  {label:'suspicious',text:'Gwarantowany zysk inwestycja wpłać'},
- {label:'suspicious',text:'Send password pay outside'}
+ {label:'suspicious',text:'Send password pay outside'},
+ {label:'safe',text:'Sprzedam używaną lampę do salonu, stan bardzo dobry'},
+ {label:'safe',text:'Laptop Lenovo sprawny, bateria trzyma dwie godziny'},
+ {label:'safe',text:'Kinderwagen gepflegt mit Zubehör zur Abholung'},
+ {label:'safe',text:'Стіл дерев’яний, можливий самовивіз завтра'},
+ {label:'safe',text:'Selling a winter jacket in excellent condition'},
+ {label:'safe',text:'Oddam książki szkolne bezpłatnie, odbiór na miejscu'},
+ {label:'suspicious',text:'Kup kartę podarunkową i prześlij kod zanim wyślę paczkę'},
+ {label:'suspicious',text:'Only today pay immediately for guaranteed returns'},
+ {label:'suspicious',text:'Sofort bezahlen, sonst verlieren Sie die Chance'},
+ {label:'suspicious',text:'Надішліть пароль і код підтвердження'},
+ {label:'suspicious',text:'Send your verification code to unlock your account'},
+ {label:'suspicious',text:'Płatność poza platformą przez moneygram, bez spotkania'}
 ];
 const result=evaluateDataset(training,testing);
-assert.equal(result.samples,8);
+assert.equal(result.samples,20);
 assert.throws(()=>evaluateDataset(training,[null,testing[0]]),/Invalid test example/);
-assert.equal(Object.values(result.counts).reduce((a,b)=>a+b,0),8);
+assert.equal(Object.values(result.counts).reduce((a,b)=>a+b,0),20);
 assert.ok(result.accuracy>=0&&result.accuracy<=1);
 assert.ok(result.falsePositiveRate>=0&&result.falsePositiveRate<=1);
 assert.throws(()=>evaluateDataset(training,[training[0],testing[0]]),/Near-duplicate/);
@@ -34,9 +46,9 @@ console.log('Guard SYNTHETIC HOLDOUT metrics:',JSON.stringify({...result,example
 const {compareModels}=require('../guard/compare.cjs');
 const comparison=compareModels(training,testing);
 assert.equal(comparison.dataset,'synthetic_holdout');
-assert.equal(comparison.learned.samples,8);
-assert.equal(comparison.rules.samples,8);
-assert.equal(Object.values(comparison.rules.counts).reduce((a,b)=>a+b,0),8);
+assert.equal(comparison.learned.samples,20);
+assert.equal(comparison.rules.samples,20);
+assert.equal(Object.values(comparison.rules.counts).reduce((a,b)=>a+b,0),20);
 assert.ok(comparison.accuracyDifference>=-1&&comparison.accuracyDifference<=1);
 console.log('Guard SYNTHETIC model comparison:',JSON.stringify(comparison));
 console.log('PASS: separate holdout evaluation; no user data and no automatic moderation');
