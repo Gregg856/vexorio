@@ -161,3 +161,9 @@ console.log('PASS: chat retry catches errors and restores localized label');
 
 assert.ok(html.includes("if(latest&&latest.sender_id!==uid&&(!seen||latest.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null)){btn.classList.add('unread-conversation')"),'Unread inbox filter must exclude the currently open conversation');
 console.log('PASS: unread filter and badge agree for open chat');
+
+const adminAccessStart=html.indexOf('async function updateAdminReportsAccess(){');
+const adminAccessEnd=html.indexOf('async function loadAdminMessageReports(){',adminAccessStart);
+const adminAccess=html.slice(adminAccessStart,adminAccessEnd);
+assert.ok(adminAccess.includes('const requestedUserId=session?.user?.id;')&&adminAccess.includes('if(session?.user?.id!==requestedUserId)return;'),'Admin access checks must discard responses after account switch');
+console.log('PASS: stale admin role response cannot reveal admin navigation');
