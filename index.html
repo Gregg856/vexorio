@@ -2842,9 +2842,9 @@ function ensureInboxFilters(){
   wrap.append(btn);
  }
  box.parentNode.insertBefore(wrap,box);
- const sort=document.createElement('button');sort.type='button';sort.id='vexInboxUnreadFirst';sort.className='btn small';sort.textContent='⬆ Nowe na górze';sort.setAttribute('aria-pressed',sessionStorage.getItem('vexInboxUnreadFirst:'+String(session?.user?.id||'guest'))==='true'?'true':'false');sort.style.cssText='margin:0 0 10px;border-radius:12px;padding:9px 12px';
- sort.textContent=(sort.getAttribute('aria-pressed')==='true'?'✓ ':'⬆ ')+(language==='uk'?'Нові зверху':'Nowe na górze');
- sort.onclick=()=>{const enabled=sort.getAttribute('aria-pressed')!=='true';sort.setAttribute('aria-pressed',String(enabled));sort.textContent=(enabled?'✓ ':'⬆ ')+(language==='uk'?'Нові зверху':'Nowe na górze');sessionStorage.setItem('vexInboxUnreadFirst:'+String(session?.user?.id||'guest'),String(enabled));loadConversations()};
+ const sort=document.createElement('button');sort.type='button';sort.id='vexInboxUnreadFirst';sort.className='btn small';const sortLabel=({pl:'Nowe na górze',de:'Ungelesene zuerst',en:'Unread first',uk:'Нові зверху'}[language]||'Nowe na górze');const sortKey='vexInboxUnreadFirst:'+String(session?.user?.id||'guest');let sortEnabled=false;try{sortEnabled=sessionStorage.getItem(sortKey)==='true'}catch(error){console.warn('Inbox sorting storage unavailable',error)}sort.setAttribute('aria-pressed',String(sortEnabled));sort.style.cssText='margin:0 0 10px;border-radius:12px;padding:9px 12px';
+ sort.textContent=(sortEnabled?'✓ ':'⬆ ')+sortLabel;
+ sort.onclick=()=>{const enabled=sort.getAttribute('aria-pressed')!=='true';sort.setAttribute('aria-pressed',String(enabled));sort.textContent=(enabled?'✓ ':'⬆ ')+sortLabel;try{sessionStorage.setItem(sortKey,String(enabled))}catch(error){console.warn('Inbox sorting storage unavailable',error)}loadConversations()};
  box.parentNode.insertBefore(sort,box);
 }
 async function loadConversations(){
