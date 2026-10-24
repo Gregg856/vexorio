@@ -118,3 +118,12 @@ for(const fragment of [
  "en:'Check the title (3–120 characters) and description (1–10000 characters).'",
 ])assert.ok(html.includes(fragment),'Missing localized listing validation: '+fragment);
 console.log('PASS: multilingual listing title and description validation');
+
+// Invalid moderation reports must not fail silently for PL/DE/EN users.
+for(const fragment of [
+ "details.length<10||details.length>2000",
+ "pl:'Wybierz prawidłowe ogłoszenie i opisz problem (10–2000 znaków).'",
+ "de:'Wähle eine gültige Anzeige und beschreibe das Problem (10–2000 Zeichen).'",
+ "en:'Choose a valid listing and describe the issue (10–2000 characters).'",
+])assert.ok(html.includes(fragment),'Missing report validation guidance: '+fragment);
+console.log('PASS: invalid reports provide multilingual feedback');
