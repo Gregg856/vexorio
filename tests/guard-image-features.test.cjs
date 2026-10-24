@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {inspectImageBytes}=require('../guard/image-features.cjs');
+const png=Uint8Array.from([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,2,0,0,0,3]);
+const result=inspectImageBytes(png,'image/png');
+assert.equal(result.classification,'unknown');
+assert.equal(result.status,'review');
+assert.equal(result.metadata.width,2);
+assert.equal(result.metadata.height,3);
+assert.deepEqual(result.signals,['visual_review_required']);
+assert.deepEqual(inspectImageBytes(png,'image/jpeg').signals,['mime_signature_mismatch']);
+assert.deepEqual(inspectImageBytes(Uint8Array.from([1,2,3]),'image/png').signals,['unrecognized_image_signature']);
+assert.deepEqual(inspectImageBytes(null,'image/png').signals,['invalid_image_bytes']);
+console.log('PASS: Guard offline image header inspection, mismatch detection and mandatory review');
