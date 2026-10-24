@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {signature,compare,findCandidates}=require('../guard/duplicates.cjs');
+const a={title:'Sprzedam rower miejski',description:'Rower w bardzo dobrym stanie odbiór osobisty Warszawa'};
+const b={title:'ROWER miejski sprzedam',description:'Warszawa odbiór osobisty stan bardzo dobrym w rower'};
+const c={title:'Praca ogrodnika',description:'Koszenie trawnika w weekendy'};
+assert.equal(signature(a).hash,signature(b).hash);
+assert.equal(compare(a,b).possibleDuplicate,true);
+assert.equal(compare(a,c).possibleDuplicate,false);
+assert.equal(compare({},a).status,'insufficient_data');
+assert.equal(findCandidates(a,[c,b]).length,1);
+assert.equal(findCandidates(a,[c,b])[0].index,1);
+assert.deepEqual(findCandidates(a,null),[]);
+assert.equal(findCandidates(a,[b],{limit:0}).length,0);
+console.log('PASS: VEXORIO Guard duplicate candidates; no external calls or writes');
