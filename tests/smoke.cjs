@@ -97,6 +97,8 @@ assert.match(html,/sort==='nearest'&&!radiusActive/,'Nearest sorting must fall b
 assert.match(html,/\$\('sortListings'\)\.value='new';return render\(\)/,'Nearest sorting fallback must re-render');
 // Postal code filtering must ignore formatting separators.
 assert.ok(html.includes("String(x.postal_code||'').replace(/[\\s-]/g,'')===locationFilterValue().replace(/[\\s-]/g,'')"),'Postal code matching must ignore spaces and hyphens');
+// Ukrainian postal-code suggestion messages must not fall back to Polish.
+for(const label of ['Спочатку виберіть країну','Шукаємо місто','Місто не знайдено','Перевірте з’єднання','Німеччина'])assert.ok(html.includes(label),'Missing Ukrainian postal suggestion: '+label);
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
