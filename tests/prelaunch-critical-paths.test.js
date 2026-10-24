@@ -80,3 +80,14 @@ assert.ok(html.includes("for(const id of ['accountBtn','vexMobileChat'])"),'Acco
 assert.ok(html.includes("['accountInboxCount','accountInboxHeadingCount','vexHeaderInboxCount']"),'Header and account unread badge wiring missing');
 assert.ok(html.includes("const value=count>0?String(Math.min(count,99))"),'Unread count value normalization missing');
 console.log('PASS: mobile photo and synchronized unread badge structural checks');
+
+// Discovery readiness: avoid publishing a sitemap pointing at a temporary account hostname.
+const robots=fs.readFileSync('robots.txt','utf8');
+assert.match(robots,/^User-agent: \*$/m,'Robots policy must have a crawler group');
+assert.match(robots,/^Allow: \/$/m,'Public homepage must be crawlable');
+assert.doesNotMatch(robots,/grzegorzbub1985|Sitemap:/i,'Do not publish temporary personal Workers URL as canonical sitemap');
+const workflow=fs.readFileSync('.github/workflows/deploy.yml','utf8');
+assert.ok(workflow.includes('cp robots.txt public/robots.txt'),'Deployment must copy robots policy');
+assert.ok(workflow.includes('test -s public/robots.txt'),'Deployment must validate robots file');
+assert.ok(workflow.includes('DEPLOY_URL/robots.txt'),'Live smoke test must check robots policy');
+console.log('PASS: crawler policy, private account hostname, deploy and live smoke wiring');
