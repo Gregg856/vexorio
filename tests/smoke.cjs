@@ -150,3 +150,5 @@ assert.ok(html.includes('if(session?.user?.id!==pendingViewerId)return;\n    if(
 assert.ok((html.match(/if\(session\?\.user\?\.id!==actingUserId\)throw new Error\(language==='uk'\?'Сесія змінилася\.'/g)||[]).length>=3,'Photo approval must stop on moderator account switch before upload, publish and completion');
 
 assert.ok(html.includes("if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');\n       const {data:blob,error:downloadError}=await sb.storage.from('listing-images-review').download(path);"),'Moderator session must be checked before downloading a review photo');
+
+assert.ok(html.includes("if(session?.user?.id!==actingUserId)return;if(writeError)throw writeError;if(!updated){feedback.textContent="),'Message report status response must be discarded after account switch');
