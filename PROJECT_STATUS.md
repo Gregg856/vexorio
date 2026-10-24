@@ -98,3 +98,15 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - Staging: potwierdzono możliwość EXECUTE RPC przez `service_role`, odrzucenie brakującego ID i złego digestu; brak ogłoszeń staging uniemożliwia jeszcze test deduplikacji dla aktywnego ogłoszenia.
 - **Nie wykonano:** ustawienia Cloudflare secrets, testu rzeczywistego RPC z Worker, migracji na produkcję, przełączenia frontendowego licznika. Produkcyjny `record_listing_view` nadal działa po staremu.
 - Procedura dalszego wdrożenia: `docs/view-counter-rollout.md`. Nie wracać do pisania kolejnych podobnych testów, dopóki nie są dostępne sekrety i dedykowane dane stagingowe. W międzyczasie kontynuować audyt innych funkcji.
+
+
+## Audyt Supabase STAGING — 24.10.2026
+
+- Projekt: `owkjdlpawczrnwyszduj`. Audyt wyłącznie odczytowy, bez zmian danych, schematu lub produkcji.
+- Wszystkie 16 tabel `public` mają RLS włączone (list_tables).
+- Security Advisors: 12 ostrzeżeń `authenticated_security_definer_function_executable`; funkcje dostępne dla `authenticated` wymagają potwierdzenia wewnętrznego sprawdzenia uprawnień, nie jest to automatyczny dowód podatności.
+- Pięć tabel RLS bez polityk: `public.admin_members`, `public.billing_events`, `public.listing_moderation_decisions`, `public.listing_moderation_queue`, `vexorio_private.listing_view_guard`. Brak polityk może być zamierzony.
+- Ostrzeżenie: wyłączona ochrona przed wyciekłymi hasłami w Auth.
+- Funkcje administracyjne nie mają EXECUTE dla `anon` (sprawdzone odczytowo). Zalogowani mogą wywołać wybrane RPC, więc należy zweryfikować kontrolę admina wewnątrz funkcji, polityki tabel oraz testować rolę zwykłego użytkownika na stagingu przed zamknięciem audytu.
+- Bez zmian uprawnień, aby nie uszkodzić działającej moderacji. Wynik: AUDYT W TOKU.
+- Dokumentacja: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
