@@ -2795,8 +2795,8 @@ async function checkUnreadMessages(){
    if(session?.user?.id!==uid)return;
    if(incomingError){console.warn('Unread message check failed',incomingError);return}
    const latest=new Map();
-   for(const m of incoming||[]){const id=String(m.conversation_id);if(m.sender_id!==uid&&!latest.has(id))latest.set(id,m)}
-   for(const id of ids){const m=latest.get(String(id)),seen=getSeen(id);if(m&&(!seen||m.created_at>seen)&&String(id)!==String($('chatDialog').open?activeConversationId:null))unread++}
+   for(const m of incoming||[]){const id=String(m.conversation_id);if(!latest.has(id))latest.set(id,m)}
+   for(const id of ids){const m=latest.get(String(id)),seen=getSeen(id);if(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(id)!==String($('chatDialog').open?activeConversationId:null))unread++}
   }
   if(session?.user?.id!==uid)return;
   const countChanged=previousUnreadCount!==unread;
