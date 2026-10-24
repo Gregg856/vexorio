@@ -2846,9 +2846,15 @@ async function checkUnreadMessages(){
  unreadCheckInProgress=true;
  const uid=session.user.id;
  try{
-  const {data:convos,error}=await sb.from('conversations').select('id').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).order('created_at',{ascending:false}).limit(100);
-  if(session?.user?.id!==uid)return;
-  if(error){console.warn('Unread conversations lookup failed',error);return}
+  const convos=[];let unreadPage=0;
+  while(true){
+   const {data:page,error}=await sb.from('conversations').select('id').or('buyer_id.eq.'+uid+',seller_id.eq.'+uid).order('created_at',{ascending:false}).order('id',{ascending:false}).range(unreadPage*100,(unreadPage+1)*100-1);
+   if(session?.user?.id!==uid)return;
+   if(error){console.warn('Unread conversations lookup failed',error);return}
+   convos.push(...(page||[]));
+   if(!page||page.length<100)break;
+   unreadPage++;
+  }
   if(!convos?.length){if(session?.user?.id===uid){updateUnreadBadges(0);if($('accountDialog').open&&!$('accountMessagesSection').hidden)void loadConversations().catch(error=>console.warn('Empty inbox refresh failed',error))}return}
   let unread=0;
   for(let start=0;start<convos.length;start+=25){
