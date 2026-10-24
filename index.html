@@ -2257,6 +2257,15 @@ function restrictLaunchCountries(){
 restrictLaunchCountries();
 function updateUkrainianMobileLabels(){const labels={vexMobileSearch:'Пошук',vexMobileFav:'Обране',vexMobileAdd:'Додати',vexMobileChat:'Чат',vexMobileAccount:'Акаунт'};for(const [id,uk] of Object.entries(labels)){const button=$(id);const span=button?.querySelector('span:last-child');if(!span)continue;const translations={vexMobileSearch:{pl:'Szukaj',de:'Suchen',en:'Search'},vexMobileFav:{pl:'Ulubione',de:'Favoriten',en:'Favorites'},vexMobileAdd:{pl:'Dodaj',de:'Hinzufügen',en:'Add'},vexMobileChat:{pl:'Czat',de:'Chat',en:'Chat'},vexMobileAccount:{pl:'Konto',de:'Konto',en:'Account'}};span.textContent=language==='uk'?uk:(translations[id]?.[language]||translations[id]?.pl)}const shortcut=$('mobileAddListingShortcut');if(shortcut)shortcut.textContent=language==='uk'?'＋ Додати оголошення':language==='de'?'＋ Anzeige aufgeben':language==='en'?'＋ Post a listing':'＋ Dodaj ogłoszenie'}
 function setLang(v){if(!['pl','de','en','uk'].includes(v))return;language=v;
+ const accountUi={pl:['← Wróć do konta','🔔 Wiadomości','↻ Odśwież','🔔 Powiadomienia w przeglądarce:','Wyślij test push','Zobacz mój profil publiczny →','⚙ Ustawienia'],de:['← Zurück zum Konto','🔔 Nachrichten','↻ Aktualisieren','🔔 Browser-Benachrichtigungen:','Push-Test senden','Mein öffentliches Profil ansehen →','⚙ Einstellungen'],en:['← Back to account','🔔 Messages','↻ Refresh','🔔 Browser notifications:','Send test push','View my public profile →','⚙ Settings'],uk:['← Повернутися до акаунта','🔔 Повідомлення','↻ Оновити','🔔 Сповіщення в браузері:','Надіслати тестове push','Переглянути мій публічний профіль →','⚙ Налаштування']}[v];
+ const setAccountText=(id,value)=>{const node=$(id);if(node)node.textContent=value};
+ setAccountText('accountInboxBack',accountUi[0]);setAccountText('refreshInboxBtn',accountUi[2]);setAccountText('accountViewPublicProfile',accountUi[5]);
+ const messagesHeading=$('accountMessagesSection')?.querySelector('h3');if(messagesHeading){const label=messagesHeading.querySelector('#refreshInboxBtn');for(const node of [...messagesHeading.childNodes])if(node.nodeType===Node.TEXT_NODE)node.textContent=' '+accountUi[1]+' ';if(label)label.textContent=accountUi[2]}
+ const notice=$('inboxNotificationToggle')?.previousElementSibling;if(notice)notice.textContent=accountUi[3];
+ setAccountText('vexPushTestButton',accountUi[4]);
+ const settingsTile=$('accountSettingsTile')?.querySelector('strong');if(settingsTile)settingsTile.textContent=accountUi[6].replace(/^⚙ /,'');
+ const toggle=$('inboxNotificationToggle');if(toggle){const active=toggle.getAttribute('aria-pressed')==='true';toggle.textContent=({pl:active?'Włączone':'Wyłączone',de:active?'Aktiviert':'Deaktiviert',en:active?'Enabled':'Disabled',uk:active?'Увімкнено':'Вимкнено'}[v])}
+
  const accessibilityText={
   pl:{min:'Cena minimalna',max:'Cena maksymalna',nav:'Sekcje VEXORIO',legal:'Informacje prawne'},
   de:{min:'Mindestpreis',max:'Höchstpreis',nav:'VEXORIO-Bereiche',legal:'Rechtliche Informationen'},
@@ -3228,7 +3237,7 @@ async function sendMessage(listingId,sellerId,message){
  let enabled=false;
  try{enabled=localStorage.getItem(key)==='on'}catch(e){}
  const pushStatus=document.createElement('small');pushStatus.id='vexPushStatus';pushStatus.className='muted';pushStatus.style.display='block';pushStatus.style.marginTop='5px';button.parentElement?.append(pushStatus);
- const testPushButton=document.createElement('button');testPushButton.type='button';testPushButton.className='btn small';testPushButton.textContent='Wyślij test push';testPushButton.style.marginTop='7px';testPushButton.hidden=true;button.parentElement?.append(testPushButton);
+ const testPushButton=document.createElement('button');testPushButton.type='button';testPushButton.className='btn small';testPushButton.id='vexPushTestButton';testPushButton.textContent=({pl:'Wyślij test push',de:'Push-Test senden',en:'Send test push',uk:'Надіслати тестове push'}[language]);testPushButton.style.marginTop='7px';testPushButton.hidden=true;button.parentElement?.append(testPushButton);
  testPushButton.addEventListener('click',async()=>{
   testPushButton.disabled=true;pushStatus.textContent='Wysyłanie testu push…';
   try{
@@ -3296,7 +3305,7 @@ async function sendMessage(listingId,sellerId,message){
  function draw(){
   const granted=supported&&Notification.permission==='granted';
   if(enabled&&granted&&session?.user?.id&&pushStatus.textContent==='Zaloguj się, aby włączyć push.')pushStatus.textContent='Powiadomienia push aktywne na tym urządzeniu.';
-  button.textContent=!supported?'Niedostępne':enabled&&granted?'Włączone':'Wyłączone';
+  button.textContent=({pl:!supported?'Niedostępne':enabled&&granted?'Włączone':'Wyłączone',de:!supported?'Nicht verfügbar':enabled&&granted?'Aktiviert':'Deaktiviert',en:!supported?'Unavailable':enabled&&granted?'Enabled':'Disabled',uk:!supported?'Недоступно':enabled&&granted?'Увімкнено':'Вимкнено'}[language]);
   button.setAttribute('aria-pressed',String(enabled&&granted));
   testPushButton.hidden=!(enabled&&granted&&vapidKey());
  }
