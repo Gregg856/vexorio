@@ -1,0 +1,32 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {evaluateDataset}=require('../guard/metrics.cjs');
+// All examples below are synthetic, not copied from real users.
+const training=[
+ {label:'safe',text:'Sprzedam rower miejski odbiór osobisty'},
+ {label:'safe',text:'Fahrrad gebraucht Abholung möglich'},
+ {label:'safe',text:'Used bicycle good condition local pickup'},
+ {label:'safe',text:'Продам велосипед самовивіз хороший стан'},
+ {label:'suspicious',text:'Wyślij hasło kod SMS płatność western union'},
+ {label:'suspicious',text:'Guaranteed profit pay immediately gift card'},
+ {label:'suspicious',text:'Gwarantowany zysk wpłać natychmiast inwestycja'},
+ {label:'suspicious',text:'Send password verification code pay outside'}
+];
+const testing=[
+ {label:'safe',text:'Rower miejski sprawny odbiór'},
+ {label:'safe',text:'Used bicycle local pickup'},
+ {label:'safe',text:'Gebrauchtes Fahrrad Abholung'},
+ {label:'safe',text:'Велосипед хороший стан самовивіз'},
+ {label:'suspicious',text:'Wyślij kod SMS hasło'},
+ {label:'suspicious',text:'Guaranteed profit gift card'},
+ {label:'suspicious',text:'Gwarantowany zysk inwestycja wpłać'},
+ {label:'suspicious',text:'Send password pay outside'}
+];
+const result=evaluateDataset(training,testing);
+assert.equal(result.samples,8);
+assert.equal(Object.values(result.counts).reduce((a,b)=>a+b,0),8);
+assert.ok(result.accuracy>=0&&result.accuracy<=1);
+assert.ok(result.falsePositiveRate>=0&&result.falsePositiveRate<=1);
+assert.throws(()=>evaluateDataset(training,[training[0],testing[0]]),/overlaps/);
+console.log('Guard SYNTHETIC HOLDOUT metrics:',JSON.stringify({...result,examples:undefined}));
+console.log('PASS: separate holdout evaluation; no user data and no automatic moderation');
