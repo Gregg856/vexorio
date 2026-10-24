@@ -132,3 +132,8 @@ console.log('PASS: account switching during photo upload is rejected');
 // Conversation listing IDs must use canonical decimal digits, not coercible floats or scientific notation.
 assert.ok(html.includes("!/^\\d+$/.test(String(listingId).trim())"),'Chat listing ID must reject non-decimal input');
 console.log('PASS: chat rejects malformed listing IDs');
+
+// The sender must still be authenticated when the message is finally inserted.
+assert.ok(html.includes("if(sendAuthError||sendAuth?.user?.id!==user.id)throw new Error"),'Chat must reject sender changes before insert');
+assert.ok(html.includes("sender_id:user.id,body:message.trim()"),'Chat insert must retain verified sender');
+console.log('PASS: chat sender reverified before message insert');
