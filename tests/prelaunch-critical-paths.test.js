@@ -127,3 +127,7 @@ for(const fragment of [
  "en:'Choose a valid listing and describe the issue (10–2000 characters).'",
 ])assert.ok(html.includes(fragment),'Missing report validation guidance: '+fragment);
 console.log('PASS: invalid reports provide multilingual feedback');
+
+// Google OAuth must reject rapid duplicate clicks and recover after network errors.
+for(const fragment of ["const googleButton=$('googleBtn');if(googleButton.disabled)return", "googleButton.disabled=true", "googleButton.setAttribute('aria-busy','true')", "catch(err){authMessage(localizedAuthError(err),true)}finally{googleButton.disabled=false"]){assert.ok(html.includes(fragment),'Missing Google OAuth concurrency guard: '+fragment)}
+console.log('PASS: Google OAuth duplicate click and exception guards');
