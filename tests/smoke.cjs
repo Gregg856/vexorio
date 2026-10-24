@@ -75,6 +75,22 @@ const mobileCardGuards=[
  ['Unread badges are updated',/function updateUnreadBadges\(count\)/]
 ];
 for(const [name,pattern] of mobileCardGuards)assert.match(html,pattern,'Mobile/inbox regression: '+name);
+// Inbox regression guards: these are structural checks, not two-account E2E tests.
+const inboxGuards=[
+ ['Inbox request race protection',/requestId!==inboxRequestId/],
+ ['Chat refresh request race protection',/requestId!==chatRefreshRequestId/],
+ ['Chat refresh conversation isolation',/activeConversationId!==conversationId/],
+ ['Chat refresh account isolation',/session\?\.user\?\.id!==readingUserId/],
+ ['Inbox message cap fallback',/missingIds=ids\.filter\(id=>!previewByConversation\.has\(String\(id\)\)\)/],
+ ['Unread badge cap fallback',/ids\.filter\(id=>!latest\.has\(String\(id\)\)\)/],
+ ['Inbox sort by recent message',/const lastA=previewByConversation\.get\(String\(a\.id\)\)\?\.created_at/],
+ ['Inbox unread filter',/filter==='unread'&&!btn\.classList\.contains\('unread-conversation'\)/],
+ ['Seen marker written on read',/setSeen\(conversationId,latest\.created_at\)/],
+ ['Unread state refresh after read',/Inbox refresh after read failed/],
+ ['German buyer search',/Kupuję Kaufen Buying Купую/],
+ ['German seller search',/Sprzedaję Verkaufen Selling Продаю/]
+];
+for(const [name,pattern] of inboxGuards)assert.match(html,pattern,'Inbox regression: '+name);
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
