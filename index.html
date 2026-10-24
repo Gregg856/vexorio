@@ -2627,6 +2627,7 @@ async function loadConversations(){
   if(incomingError){console.warn('Inbox unread lookup failed',incomingError);continue}
   for(const msg of incoming||[]){const id=String(msg.conversation_id);if(!previewByConversation.has(id))previewByConversation.set(id,msg);if(msg.sender_id!==uid&&!latestByConversation.has(id))latestByConversation.set(id,msg)}
  }
+ const inboxScrollTop=$('accountDialog').scrollTop;
  box.replaceChildren(); // Remove the loading label before rendering conversations.
  const searchValue=(document.getElementById('vexInboxSearch')?.value||'').trim().toLocaleLowerCase();
  const unreadTotal=data.reduce((count,c)=>{const m=latestByConversation.get(String(c.id));const seen=getSeen(c.id);return count+(m&&(!seen||m.created_at>seen)?1:0)},0);
@@ -2662,6 +2663,7 @@ async function loadConversations(){
   btn.onclick=()=>openConversation(c.id,listing?.title||'Rozmowa');
   box.append(btn);visibleCount++;
  }
+ $('accountDialog').scrollTop=inboxScrollTop;
  if(!visibleCount){const activeFilter=document.querySelector('#vexInboxFilters button[aria-pressed="true"]')?.dataset.filter||'all';box.textContent=searchValue?'Brak rozmów pasujących do wpisanej frazy. Zmień wyszukiwanie lub wyczyść pole.':activeFilter==='unread'?'Nie masz nieprzeczytanych rozmów.':activeFilter==='buy'?'Nie masz rozmów dotyczących kupowania.':activeFilter==='sell'?'Nie masz rozmów dotyczących sprzedawania.':'Brak rozmów do wyświetlenia.';}
 }finally{if(requestId===inboxRequestId)box.removeAttribute('aria-busy')}
 }
