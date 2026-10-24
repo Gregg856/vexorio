@@ -6,8 +6,10 @@ const {extractPixelFeatures}=require('./pixel-features.cjs');
 const LABELS=['safe','unsafe'];
 function vector(f){
  if(!f||!Array.isArray(f.meanRGB)||f.meanRGB.length!==3||!Array.isArray(f.luminanceHistogram)||f.luminanceHistogram.length!==16)throw Error('Invalid image features');
- const v=[...f.meanRGB,...f.luminanceHistogram,f.darkFraction,f.brightFraction,f.edgeContrast];
- if(v.length!==22||v.some(x=>!Number.isFinite(x)||x<0||x>1))throw Error('Invalid image feature values');
+ const spatial=f.spatialGrid===undefined?[]:f.spatialGrid;
+ if(!Array.isArray(spatial)||!(spatial.length===0||spatial.length===9))throw Error('Invalid spatial features');
+ const v=[...f.meanRGB,...f.luminanceHistogram,f.darkFraction,f.brightFraction,f.edgeContrast,...spatial];
+ if(!(v.length===22||v.length===31)||v.some(x=>!Number.isFinite(x)||x<0||x>1))throw Error('Invalid image feature values');
  return v;
 }
 function trainImageModel(examples){
