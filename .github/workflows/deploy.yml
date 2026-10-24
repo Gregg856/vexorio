@@ -18,6 +18,7 @@ jobs:
           cp index.html public/index.html
           cp push-sw.js public/push-sw.js
           cp robots.txt public/robots.txt
+          cp _headers public/_headers
           cat > wrangler.toml <<'EOF'
           name = "vexorio"
           compatibility_date = "2026-10-20"
@@ -82,6 +83,7 @@ jobs:
           test -f public/index.html
           test -s public/push-sw.js
           test -s public/robots.txt
+          test -s public/_headers
           grep -q 'function listingRiskSignals' public/index.html
           grep -q 'riskSignals=listingRiskSignals' public/index.html
           grep -q 'row.append(warning)' public/index.html
