@@ -2125,9 +2125,13 @@ $('appealForm').onsubmit=async e=>{
 async function loadAdminAppeals(){
  const list=$('appealsAdminList'),audit=$('moderationAuditList'),status=$('appealsAdminStatus');
  list.replaceChildren();audit.replaceChildren();status.textContent='';
+ if(!sb||!session?.user?.id){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const appealsViewerId=session.user.id;
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==appealsViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав.':'Brak uprawnień.';return}
  const {data,error}=await sb.from('moderation_appeals').select('id,user_id,reason,status,admin_response,created_at').order('created_at',{ascending:false}).limit(100);
+ if(session?.user?.id!==appealsViewerId)return;
  if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
  if(!data?.length)status.textContent=language==='uk'?'Апеляцій немає.':'Brak odwołań.';
  for(const a of data||[]){
@@ -2144,6 +2148,7 @@ async function loadAdminAppeals(){
   box.append(h,p,sel,response,btn,msg);list.append(box);
  }
  const {data:history,error:histError}=await sb.rpc('admin_moderation_audit');
+ if(session?.user?.id!==appealsViewerId)return;
  if(histError){const p=document.createElement('p');p.textContent=histError.message;audit.append(p);return}
  for(const a of history||[]){const p=document.createElement('p');p.className='notice';p.textContent=new Date(a.created_at).toLocaleString(language==='uk'?'uk-UA':undefined)+' · '+(a.action==='block'?(language==='uk'?'Блокування':'Blokada'):(language==='uk'?'Розблокування':'Odblokowanie'))+' · '+a.target_user+' · '+a.reason;audit.append(p)}
 }
