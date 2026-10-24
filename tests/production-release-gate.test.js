@@ -145,8 +145,8 @@ console.log('PASS: unread badge ignores conversations whose latest message is ou
 
 // Inbox unread total and unread-first ordering must match header badge after an outgoing reply.
 assert.ok(html.includes('if(!latestByConversation.has(id))latestByConversation.set(id,msg)'),'Inbox must retain latest message regardless of sender');
-assert.ok(html.includes('return count+(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null)?1:0)'),'Inbox unread total must exclude outgoing latest messages');
-assert.ok(html.includes('return !!(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null))'),'Inbox unread-first sort must exclude outgoing latest messages');
+assert.ok(html.includes(`return count+(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null)?1:0)`),'Inbox unread total must exclude outgoing latest messages');
+assert.ok(html.includes(`return !!(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)&&String(c.id)!==String($('chatDialog').open?activeConversationId:null))`),'Inbox unread-first sort must exclude outgoing latest messages');
 console.log('PASS: inbox unread total and sort match latest sender');
 
 console.log('PASS: active conversation excluded from inbox unread count and unread-first sorting');
