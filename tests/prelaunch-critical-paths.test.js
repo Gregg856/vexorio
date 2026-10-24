@@ -94,7 +94,7 @@ console.log('PASS: crawler policy, private account hostname, deploy and live smo
 
 // New-account email confirmation must respect the active PL/DE/EN language.
 for(const fragment of [
- "mode==='register'&&!data.session",
+ "submittingMode==='register'&&!data.session",
  "pl:'Sprawdź pocztę i kliknij link potwierdzający konto.'",
  "de:'Prüfe dein E-Mail-Postfach und bestätige dein Konto über den Link.'",
  "en:'Check your email and follow the link to confirm your account.'",
