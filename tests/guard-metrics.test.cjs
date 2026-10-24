@@ -70,7 +70,7 @@ assert.ok(sweep.every(x=>Math.abs(x.suspiciousReviewRate+x.missedSuspiciousRate-
 assert.ok(sweep.every(x=>x.safeReviewRate>=0&&x.safeReviewRate<=1));
 assert.ok(sweep.every((x,i)=>i===0||x.reviewCount>=sweep[i-1].reviewCount));
 assert.ok(sweep.every((x,i)=>i===0||x.missedSuspicious<=sweep[i-1].missedSuspicious));
-assert.throws(()=>evaluateThresholds(training,[training[0],testing[1]]),/Near-duplicate/);
+assert.throws(()=>evaluateThresholds(training,[training[0],testing[4]]),/Near-duplicate/);
 console.log('Guard SYNTHETIC workload vs misses:',JSON.stringify(sweep));
 const {buildThresholdReport}=require('../guard/threshold-report.cjs');
 const report=buildThresholdReport(training,testing);
