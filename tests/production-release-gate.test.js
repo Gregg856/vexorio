@@ -99,3 +99,15 @@ for(const fragment of [
 assert.ok(workflow.includes('cp _headers public/_headers'),'Cloudflare deploy must ship static security headers');
 assert.ok(workflow.includes('test -s public/_headers'),'Deployment must check security header file');
 console.log('PASS: five browser protections included in deploy assets');
+
+const worker=fs.readFileSync('worker.js','utf8');
+const workerGuards=[
+ ['HTTPS transport hardening', "headers.set('Strict-Transport-Security', 'max-age=31536000')"],
+ ['safe download behavior', "headers.set('X-Download-Options', 'noopen')"],
+ ['missing and error pages excluded from search', "headers.set('X-Robots-Tag', 'noindex, nofollow')"],
+ ['missing pages never cached', "response.status === 404"],
+ ['server errors never cached', "response.status >= 500"],
+];
+for(const [name,needle] of workerGuards)assert.ok(worker.includes(needle),'Missing Worker hardening: '+name);
+assert.ok(worker.includes("headers.set('Cache-Control', 'no-store')"),'Missing error no-store header');
+console.log('PASS: five Worker security and SEO guards');
