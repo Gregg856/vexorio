@@ -132,6 +132,7 @@ assert.ok(html.includes('if(session?.user?.id!==appealAccessViewerId)return;'),'
 assert.ok(html.includes('const overviewViewerId=session.user.id'),'Admin dashboard must capture viewer');
 assert.ok(html.includes('if(session?.user?.id!==overviewViewerId)return;'),'Admin dashboard must reject stale stats');
 assert.ok(html.includes(".or('buyer_id.eq.'+uid+',seller_id.eq.'+uid)"),'Inbox query must use captured account');
+assert.ok(html.includes("if($('chatDialog')?.open)$('chatDialog').close();$('chatMessages')?.replaceChildren();activeConversationId=null;updateUnreadBadges(0)"),'Account switching must close chat and clear previous account messages');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
