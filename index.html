@@ -3023,7 +3023,7 @@ $('chatJumpBottom').onclick=()=>{const box=$('chatMessages');box.scrollTop=box.s
 $('chatMessages').addEventListener('scroll',()=>{const box=$('chatMessages');$('chatJumpBottom').hidden=box.scrollHeight-box.scrollTop-box.clientHeight<90},{passive:true});
 let chatRefreshRequestId=0;
 async function refreshConversation(){
- if(!activeConversationId||!sb)return;
+ if(!activeConversationId||!sb||!session?.user?.id)return;
  const requestId=++chatRefreshRequestId;
  const conversationId=activeConversationId;
  const box=$('chatMessages');
