@@ -76,6 +76,7 @@ jobs:
           node tests/prelaunch-critical-paths.test.js
           node tests/production-release-gate.test.js
           node tests/push-service-worker.test.cjs
+          node tests/view-endpoint-regression.test.cjs
 
       - name: Publikuj w Cloudflare
         id: publish
