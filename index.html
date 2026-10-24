@@ -1865,25 +1865,25 @@ async function loadAdminReports(){
  if(!filteredData.length){status.textContent=selectedListing===null?(language==='uk'?'Скарг немає.':'Brak zgłoszeń.'):(language==='uk'?'Немає скарг на оголошення #':'Brak zgłoszeń dla ogłoszenia #')+selectedListing+'.';return}
  for(const item of filteredData){
   const box=document.createElement('div');box.className='info';box.style.margin='0';box.dataset.reportStatus=item.status;
-  const heading=document.createElement('h3');heading.textContent=(language==='uk'?'Скарга #':'Zgłoszenie #')+item.id+(language==='uk'?' · Оголошення #':' · Ogłoszenie #')+(item.listing_id??'usunięte');
-  const stateLabel=document.createElement('p');stateLabel.className='muted';const statusNames={new:'NOWE',reviewing:'W TRAKCIE',resolved:'ROZPATRZONE',dismissed:'ODRZUCONE'};stateLabel.textContent='Status: '+(statusNames[item.status]||item.status);
+  const heading=document.createElement('h3');heading.textContent=(language==='uk'?'Скарга #':'Zgłoszenie #')+item.id+(language==='uk'?' · Оголошення #':' · Ogłoszenie #')+(item.listing_id??(language==='uk'?'видалено':'usunięte'));
+  const stateLabel=document.createElement('p');stateLabel.className='muted';const statusNames=language==='uk'?{new:'НОВІ',reviewing:'НА РОЗГЛЯДІ',resolved:'РОЗГЛЯНУТІ',dismissed:'ВІДХИЛЕНІ'}:{new:'NOWE',reviewing:'W TRAKCIE',resolved:'ROZPATRZONE',dismissed:'ODRZUCONE'};stateLabel.textContent=(language==='uk'?'Статус: ':'Status: ')+(statusNames[item.status]||item.status);
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString();
   const detail=document.createElement('p');detail.textContent=item.details;
   const moderation=document.createElement('div');moderation.className='form';
   if(item.listing_id){
-   const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.style.borderColor='#b95d5d';remove.textContent='Usuń ogłoszenie #'+item.listing_id;
+   const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.style.borderColor='#b95d5d';remove.textContent=(language==='uk'?'Видалити оголошення #':'Usuń ogłoszenie #')++item.listing_id;
    const removeStatus=document.createElement('p');removeStatus.className='msg';
    remove.onclick=async()=>{
     const id=Number(item.listing_id);
     if(!Number.isSafeInteger(id)||id<=0||remove.disabled)return;
-    if(!confirm('Czy na pewno trwale usunąć ogłoszenie #'+id+'? Ta operacja jest nieodwracalna.'))return;
-    const typed=prompt('Aby potwierdzić, wpisz numer ogłoszenia: '+id);
-    if(typed!==String(id)){removeStatus.textContent='Anulowano usuwanie.';return}
+    if(!confirm(language==='uk'?'Остаточно видалити оголошення #'+id+'? Цю дію неможливо скасувати.':'Czy na pewno trwale usunąć ogłoszenie #'+id+'? Ta operacja jest nieodwracalna.'))return;
+    const typed=prompt((language==='uk'?'Для підтвердження введіть номер оголошення: ':'Aby potwierdzić, wpisz numer ogłoszenia: ')+id);
+    if(typed!==String(id)){removeStatus.textContent=language==='uk'?'Видалення скасовано.':'Anulowano usuwanie.';return}
     remove.disabled=true;
-    const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true){removeStatus.textContent='Brak uprawnień administratora.';remove.disabled=false;return}
+    const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');if(verifyError||stillAdmin!==true){removeStatus.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';remove.disabled=false;return}
     const {data,error}=await sb.rpc('admin_delete_listing',{p_listing_id:id});
-    if(error){removeStatus.textContent='Błąd: '+error.message;remove.disabled=false;return}
-    if(data!==true){removeStatus.textContent='Nie znaleziono ogłoszenia lub zostało już usunięte.';remove.disabled=false;return}
+    if(error){removeStatus.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;remove.disabled=false;return}
+    if(data!==true){removeStatus.textContent=language==='uk'?'Оголошення не знайдено або вже видалено.':'Nie znaleziono ogłoszenia lub zostało już usunięte.';remove.disabled=false;return}
     removeStatus.textContent='Ogłoszenie usunięte. Odświeżam zgłoszenia…';remove.classList.add('hide');
     try{const listingsRefreshed=await loadListings();await loadAdminReports();await updateAdminReportBadge();if(listingsRefreshed!==true){status.textContent='Ogłoszenie usunięte, ale lista ogłoszeń nie została odświeżona. Użyj przycisku Odśwież.'}}catch(refreshError){status.textContent='Ogłoszenie usunięte, ale odświeżenie panelu nie powiodło się. Użyj przycisku Odśwież.'}
    };
