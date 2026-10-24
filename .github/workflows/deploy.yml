@@ -101,6 +101,26 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
 
+      - name: Sprawdz publiczny panel Guard
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.deployment-url }}
+        run: |
+          if [ -z "$DEPLOY_URL" ]; then DEPLOY_URL="https://vexorio.grzegorzbub1985.workers.dev"; fi
+          DEPLOY_URL="${DEPLOY_URL%/}"
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL/guard-lab.html?release=${GITHUB_SHA}" -o /tmp/vexorio-guard-lab.html &&
+               curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL/guard-lab.js?release=${GITHUB_SHA}" -o /tmp/vexorio-guard-lab.js &&
+               grep -q 'VEXORIO Guard' /tmp/vexorio-guard-lab.html &&
+               grep -q 'credential_request' /tmp/vexorio-guard-lab.js; then
+              echo 'PASS: Guard lab HTML and JavaScript available on Cloudflare'
+              exit 0
+            fi
+            echo "Guard lab unavailable, attempt $attempt/5"
+            sleep 5
+          done
+          echo 'FAIL: Guard lab is not published; inspect Cloudflare deployment and asset routing'
+          exit 1
+
       - name: Sprawdz opublikowana wersje
         run: |
           test -s public/guard-lab.html
