@@ -5,7 +5,7 @@ export default {
       if (request.method !== 'POST') return new Response(null, {status: 405, headers: {'Allow': 'POST', 'Cache-Control': 'no-store'}});
       if (request.headers.get('Origin') !== url.origin) return new Response(null, {status: 403, headers: {'Cache-Control': 'no-store'}});
       const contentType = request.headers.get('Content-Type') || '';
-      if (!/^application\\/json(?:\\s*;|$)/i.test(contentType)) return new Response(null, {status: 415, headers: {'Cache-Control': 'no-store'}});
+      if (!contentType.toLowerCase().startsWith('application/json')) return new Response(null, {status: 415, headers: {'Cache-Control': 'no-store'}});
       if (Number(request.headers.get('Content-Length') || 0) > 512) return new Response(null, {status: 413, headers: {'Cache-Control': 'no-store'}});
       const ip = request.headers.get('CF-Connecting-IP');
       if (!ip || !env.VIEW_COUNT_SECRET || !env.SUPABASE_SERVICE_ROLE_KEY || !env.SUPABASE_URL) {
@@ -20,7 +20,7 @@ export default {
       const digestBytes = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(ip));
       const digest = [...new Uint8Array(digestBytes)].map(b => b.toString(16).padStart(2, '0')).join('');
       const baseUrl = new URL(env.SUPABASE_URL);
-      if (baseUrl.protocol !== 'https:' || !/^[a-z0-9-]+\\.supabase\\.co$/.test(baseUrl.hostname)) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
+      if (baseUrl.protocol !== 'https:' || !baseUrl.hostname.endsWith('.supabase.co')) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
       const endpoint = new URL('/rest/v1/rpc/vexorio_record_listing_view_server', baseUrl);
       const upstream = await fetch(endpoint, {
         method: 'POST',
