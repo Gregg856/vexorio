@@ -154,3 +154,7 @@ console.log('PASS: active conversation excluded from inbox unread count and unre
 assert.ok(html.includes("catch(error){console.warn('Chat background refresh failed',error)}finally{chatRefreshInProgress=false}"),'Chat background refresh must handle rejected promises');
 assert.ok(html.includes("catch(error){console.warn('Inbox background refresh failed',error)}finally{inboxRefreshInProgress=false}"),'Inbox background refresh must handle rejected promises');
 console.log('PASS: background chat and inbox refresh failures are handled');
+
+assert.ok(html.includes("catch(retryError){console.warn('Chat retry failed',retryError)}"),'Chat retry must catch asynchronous errors');
+assert.ok(html.includes("retry.textContent=language==='uk'?'↻ Спробувати ще раз':'↻ Spróbuj ponownie'"),'Chat retry must restore localized button label');
+console.log('PASS: chat retry catches errors and restores localized label');
