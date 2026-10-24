@@ -20,6 +20,8 @@ const assets={fetch:async()=>new Response('ok',{status:200})};
   assert.equal((await worker.fetch(req('POST','https://vexorio.example','{"listing_id":0}'),enabled)).status,400);
   assert.equal((await worker.fetch(req('POST','https://vexorio.example','{"listing_id":7}',{'Content-Type':'text/plain'}),enabled)).status,415);
   assert.equal((await worker.fetch(req(),{...enabled,SUPABASE_URL:'invalid-url'})).status,503);
+  assert.equal((await worker.fetch(req(),{...enabled,SUPABASE_URL:'https://evil.supabase.co.attacker.example'})).status,503);
+  assert.equal((await worker.fetch(req(),{...enabled,SUPABASE_URL:'https://sub.staging.supabase.co'})).status,503);
   const original=context.fetch;
   let calls=0;
   context.fetch=async(endpoint,opts)=>{
