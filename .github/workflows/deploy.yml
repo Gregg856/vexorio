@@ -93,6 +93,7 @@ jobs:
           node tests/view-endpoint-regression.test.cjs
           node tests/view-endpoint-runtime.test.cjs
           node tests/guard-fraud-explain.test.cjs
+          node tests/guard-report.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
