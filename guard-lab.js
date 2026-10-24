@@ -1,7 +1,7 @@
 'use strict';
 (()=>{const f=document.getElementById('f'),out=document.getElementById('out');if(!f||!out)return;
 const rules=[
- ['credential_request',60,/send\s+(?:your\s+)?(?:password|otp|verification\s+code)|wyślij\s+(?:hasło|kod\s+sms)|passwort\s+(?:senden|schicken)|надішліть\s+(?:пароль|код)/iu],
+ ['credential_request',60,/send\s+(?:your\s+)?(?:password|otp|verification\s+code)|wyślij\s+(?:(?:mi\s+)?(?:swoje\s+|twoje\s+)?hasło|(?:mi\s+)?kod\s+sms)|passwort\s+(?:senden|schicken)|надішліть\s+(?:пароль|код)/iu],
  ['external_payment',35,/western\s*union|moneygram|gift\s*card|pay\s+outside|płatnoś(?:ć|ci)\s+poza|zahlung\s+(?:außerhalb|ausserhalb)/iu],
  ['advance_fee',35,/advance\s+fee|upfront\s+payment|zaliczk[ęa]\s+(?:najpierw|z\s+góry)|vorkasse\s+(?:nur|zwingend)/iu],
  ['offsite_link',20,/https?:\/\/\S+/iu],
