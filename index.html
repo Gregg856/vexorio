@@ -2892,7 +2892,9 @@ $('refreshInboxBtn').onclick=()=>loadConversations();
 let inboxRequestId=0;let inboxConversationLimit=100;let inboxLimitUserId=null;
 function ensureInboxSearch(){
  const box=$('myConversations');
- if(!box||document.getElementById('vexInboxSearch'))return;
+ if(!box)return;
+ const existingSearch=document.getElementById('vexInboxSearch');
+ if(existingSearch){const labels={pl:['🔎 Szukaj rozmowy lub ogłoszenia…','Szukaj rozmów','Wyczyść wyszukiwanie rozmów'],de:['🔎 Unterhaltung oder Anzeige suchen…','Unterhaltungen suchen','Unterhaltungssuche löschen'],en:['🔎 Search conversations or listings…','Search conversations','Clear conversation search'],uk:['🔎 Пошук розмови або оголошення…','Пошук розмов','Очистити пошук розмов']}[language]||['🔎 Szukaj rozmowy lub ogłoszenia…','Szukaj rozmów','Wyczyść wyszukiwanie rozmów'];existingSearch.placeholder=labels[0];existingSearch.setAttribute('aria-label',labels[1]);const clear=existingSearch.parentElement?.querySelector('button');if(clear){clear.title=labels[2];clear.setAttribute('aria-label',labels[2])}return;}
  const input=document.createElement('input');input.id='vexInboxSearch';input.type='search';const inboxSearchLabels={pl:{placeholder:'🔎 Szukaj rozmowy lub ogłoszenia…',search:'Szukaj rozmów',clear:'Wyczyść wyszukiwanie rozmów'},de:{placeholder:'🔎 Unterhaltung oder Anzeige suchen…',search:'Unterhaltungen suchen',clear:'Unterhaltungssuche löschen'},en:{placeholder:'🔎 Search conversations or listings…',search:'Search conversations',clear:'Clear conversation search'},uk:{placeholder:'🔎 Пошук розмови або оголошення…',search:'Пошук розмов',clear:'Очистити пошук розмов'}};const searchLabels=inboxSearchLabels[language]||inboxSearchLabels.pl;input.placeholder=searchLabels.placeholder;input.setAttribute('aria-label',searchLabels.search);input.autocomplete='off';input.style.cssText='width:100%;margin:8px 0 12px;min-height:46px;border-radius:12px;padding:10px 14px';
  const searchWrap=document.createElement('div');searchWrap.style.cssText='display:flex;align-items:center;gap:8px;width:100%';input.style.flex='1';input.style.minWidth='0';
  const clear=document.createElement('button');clear.type='button';clear.className='btn small';clear.textContent='✕';clear.title=searchLabels.clear;clear.setAttribute('aria-label',searchLabels.clear);clear.style.cssText='flex-shrink:0;min-width:42px;min-height:42px;border-radius:12px';clear.hidden=true;
@@ -2902,8 +2904,10 @@ function ensureInboxSearch(){
 }
 function ensureInboxFilters(){
  const box=$('myConversations');
- if(!box||document.getElementById('vexInboxFilters'))return;
- const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',({pl:'Filtruj rozmowy',de:'Unterhaltungen filtern',en:'Filter conversations',uk:'Фільтр розмов'}[language]||'Filtruj rozmowy'));wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
+ if(!box)return;
+ const previousFilters=document.getElementById('vexInboxFilters');
+ if(previousFilters){if(previousFilters.dataset.language===language)return;previousFilters.remove()}
+ const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.dataset.language=language;wrap.setAttribute('role','group');wrap.setAttribute('aria-label',({pl:'Filtruj rozmowy',de:'Unterhaltungen filtern',en:'Filter conversations',uk:'Фільтр розмов'}[language]||'Filtruj rozmowy'));wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
  const inboxFilterTranslations={pl:[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']],de:[['all','Alle'],['unread','Ungelesen'],['buy','Ich kaufe'],['sell','Ich verkaufe']],en:[['all','All'],['unread','Unread'],['buy','Buying'],['sell','Selling']],uk:[['all','Усі'],['unread','Непрочитані'],['buy','Купую'],['sell','Продаю']]};
  const options=inboxFilterTranslations[language]||inboxFilterTranslations.pl;
  let savedFilter=null;try{savedFilter=sessionStorage.getItem('vexInboxFilter:'+String(session?.user?.id||'guest'))}catch(error){console.warn('Inbox filter storage unavailable',error)}
