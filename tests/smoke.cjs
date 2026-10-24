@@ -124,6 +124,9 @@ assert.ok(html.includes("!['new','reviewing','accepted','rejected'].includes(sel
 assert.ok(html.includes('const adminUsersViewerId=session.user.id'),'Admin users view must capture session identity');
 assert.ok(html.includes('auth?.user?.id!==adminUsersViewerId'),'Block/unblock must recheck authenticated identity');
 assert.ok(html.includes("sb.rpc('admin_set_user_block'"),'Block/unblock must use admin RPC');
+assert.ok(html.includes(".eq('user_id',viewerId).order('created_at'"),'Appeal history must query captured account');
+assert.ok(html.includes('auth?.user?.id!==viewerId||session?.user?.id!==viewerId'),'Appeal submit must recheck identity');
+assert.ok(html.includes("if(btn.disabled)return;\n if(!sb||!session?.user?.id)"),'Appeal submit must prevent duplicate sends');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
