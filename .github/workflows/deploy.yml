@@ -18,7 +18,6 @@ jobs:
           cp index.html public/index.html
           cp push-sw.js public/push-sw.js
           cp robots.txt public/robots.txt
-          cp sitemap.xml public/sitemap.xml
           cp _headers public/_headers
           cat > wrangler.toml <<'EOF'
           name = "vexorio"
@@ -84,8 +83,6 @@ jobs:
           test -f public/index.html
           test -s public/push-sw.js
           test -s public/robots.txt
-          test -s public/sitemap.xml
-          grep -Fq 'Sitemap: https://vexorio.grzegorzbub1985.workers.dev/sitemap.xml' public/robots.txt
           test -s public/_headers
           grep -q 'function listingRiskSignals' public/index.html
           grep -q 'riskSignals=listingRiskSignals' public/index.html
