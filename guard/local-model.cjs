@@ -1,7 +1,7 @@
 'use strict';
 // VEXORIO Guard: independently implemented, locally trained multinomial Naive Bayes.
 // No third-party model, API, network access or persistent user data.
-const VERSION='0.1.0';
+const VERSION='0.2.0';
 function tokens(text){
  if(typeof text!=='string')return [];
  return (text.normalize('NFKC').toLowerCase().match(/[\p{L}\p{N}]{2,}/gu)||[]).slice(0,3000);
@@ -24,6 +24,8 @@ function train(examples){
   version:VERSION,
   predict(text){
    const words=tokens(text),scores={};
+   const recognized=words.filter(word=>vocabulary.has(word)).length;
+   const coverage=words.length?recognized/words.length:0;
    for(const [label,entry] of classes){
     let log=Math.log(entry.documents/total);
     for(const word of words)log+=Math.log(((entry.counts.get(word)||0)+1)/(entry.total+terms));
@@ -32,7 +34,7 @@ function train(examples){
    const shift=Math.max(...Object.values(scores));
    const safe=Math.exp(scores.safe-shift),suspicious=Math.exp(scores.suspicious-shift);
    const probability=suspicious/(safe+suspicious);
-   return {version:VERSION,label:probability>=0.5?'suspicious':'safe',confidence:Math.max(probability,1-probability),probabilitySuspicious:probability,mode:'advisory',trainedExamples:total};
+   return {version:VERSION,label:recognized?probability>=0.5?'suspicious':'safe':'unknown',confidence:recognized?Math.max(probability,1-probability):0,probabilitySuspicious:probability,coverage,recognizedTokens:recognized,mode:'advisory',trainedExamples:total};
   }
  });
 }
