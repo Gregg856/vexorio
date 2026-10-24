@@ -8,7 +8,7 @@ function features(pixels){
  const base=extractPixelFeatures(pixels),spatial=extractSpatialFeatures(pixels);
  // Empty cells use the global mean luminance; always deterministic.
  const mean=base.meanRGB.reduce((a,b)=>a+b,0)/3;
- return {...base,luminanceHistogram:spatial.grid.map(x=>x===null?mean:x).concat(base.luminanceHistogram.slice(0,7))};
+ return {...base,spatialGrid:spatial.grid.map(x=>x===null?mean:x)};
 }
 function trainCombinedImageModel(examples){
  if(!Array.isArray(examples))throw Error('Invalid training examples');
