@@ -2085,7 +2085,8 @@ function listingGeoLocation(item){const postal=String(item.postal_code||'').trim
 let citySuggestTimer=null,citySuggestRequest=0;
 function closeCitySuggestions(){clearTimeout(citySuggestTimer);citySuggestRequest++;$('vexorioCitySuggestions').hidden=true}
 function closeCityDialog(){closeCitySuggestions();$('vexCityDialogInput').blur();$('vexCityDialog').hidden=true;$('cityFilter').focus({preventScroll:true})}
-function selectCity(name,label){
+function selectCity(name,label,selectedCountry){
+ if(selectedCountry&&$('country').value==='all'&&[...$('country').options].some(option=>option.value===selectedCountry))$('country').value=selectedCountry;
  const field=$('cityFilter');
  field.value=label&&label!==name?String(label).replace(/^📍\s*/,''):String(name||'').trim();
  field.dataset.postalValue=label&&label!==name?String(name||'').trim():'';
@@ -2144,7 +2145,7 @@ if(country!=='all'&&needle.length>=2&&!cities.has(needle)&&!(country==='PL'&&nee
   list.replaceChildren();
   for(const [key,name] of [...cities.entries()].sort((a,b)=>Number(searchText(b[1])===needle)-Number(searchText(a[1])===needle)||Number(searchText(b[1]).startsWith(needle))-Number(searchText(a[1]).startsWith(needle))||cityRank(a[1])-cityRank(b[1])||a[1].localeCompare(b[1],language)).slice(0,5)){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');const code=cityCountries.get(key);btn.textContent=(searchText(name)===needle?'✓ ':'📍 ')+name+(country==='all'&&code?' · '+code:'');
-   btn.addEventListener('click',()=>{if(country==='all'&&code)$('country').value=code;selectCity(name)});list.append(btn);
+   btn.addEventListener('click',()=>selectCity(name,undefined,country==='all'?code:undefined));list.append(btn);
   }
   list.hidden=!list.childElementCount;
  };
