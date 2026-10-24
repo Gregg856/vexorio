@@ -1537,7 +1537,9 @@
 }
 </style><style id="vex-compact-mobile-listings">
 @media(max-width:600px){
- #cards .card{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:5px!important;min-height:0!important}
+ #cards{align-items:start!important}
+ #cards .card{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-self:start!important;height:auto!important;gap:5px!important;min-height:0!important}
+ #cards .card .price{margin-top:0!important;padding-top:2px!important}
  #cards .card .listing-photo{margin-bottom:3px!important}
  #cards .card .loc,#cards .card .price,#cards .card .listing-fresh-label,#cards .card .listing-created-date{margin-top:0!important;margin-bottom:2px!important}
  #cards .card .listing-quick-details{margin-top:5px!important;margin-bottom:2px!important}
