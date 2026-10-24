@@ -182,3 +182,10 @@ assert.ok(privacyModeration.includes('const revealingUserId=session?.user?.id;if
 assert.ok(privacyModeration.includes('allowedNow!==true||session?.user?.id!==revealingUserId'),'Reported message reveal must reject stale moderator role');
 assert.ok(privacyModeration.includes("if(messageError)throw messageError;if(session?.user?.id!==revealingUserId){message.textContent="),'Reported message content must not render after account switch');
 console.log('PASS: reported message privacy guarded across account switch');
+
+const pendingReviewStart=html.indexOf('async function loadAdminPendingListings(){');
+const pendingReviewEnd=html.indexOf('async function loadAdminReports(){',pendingReviewStart);
+const pendingReview=html.slice(pendingReviewStart,pendingReviewEnd);
+assert.ok(pendingReview.includes('const actingUserId=session?.user?.id;if(!actingUserId)return;'),'Photo review action must capture moderator account');
+assert.ok(pendingReview.includes('stillAdmin!==true||session?.user?.id!==actingUserId'),'Photo review must reject account changes during role verification');
+console.log('PASS: photo review rejects stale moderator account');
