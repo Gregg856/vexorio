@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {evaluateWithModel}=require('../guard/model-adapter.cjs');
+(async()=>{
+ const listing={title:'Rower',description:'Sprawny rower, odbiór osobisty'};
+ const none=await evaluateWithModel(listing);
+ assert.equal(none.model.status,'not_configured');
+ assert.equal(none.decision,'none');
+ const flagged=await evaluateWithModel(listing,{modelAdapter:async()=>({labels:['suspected_fraud'],confidence:0.91})});
+ assert.equal(flagged.model.status,'advisory');
+ assert.equal(flagged.requiresHumanReview,true);
+ assert.ok(flagged.flags.includes('model_suspected_fraud'));
+ assert.equal(flagged.decision,'none');
+ const invalid=await evaluateWithModel(listing,{modelAdapter:async()=>({labels:['unsafe'],confidence:9})});
+ assert.equal(invalid.model.status,'invalid_response');
+ assert.equal(invalid.decision,'none');
+ const failed=await evaluateWithModel(listing,{modelAdapter:async()=>{throw Error('offline')}});
+ assert.equal(failed.model.status,'unavailable');
+ assert.equal(failed.requiresHumanReview,true);
+ assert.equal(failed.decision,'none');
+ console.log('PASS: optional Guard AI adapter is advisory, validated and fail-safe');
+})().catch(error=>{console.error(error);process.exitCode=1});
