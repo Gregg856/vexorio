@@ -37,3 +37,11 @@
 - `vexorio_admin_pending_listings_v2`, `vexorio_admin_review_listing`, `vexorio_admin_publish_reviewed_listing`: wymagają administratora, sprawdzają status oczekujący i walidują parametry; nie wykonywano zapisów.
 - Supabase Security Advisor: 4 tabele RLS bez polityk (celowo zamknięte), 2 publiczne RPC SECURITY DEFINER, 13 RPC SECURITY DEFINER dostępnych dla zalogowanych, ochrona przed wyciekłymi hasłami wyłączona. Ostrzeżenie nie jest automatycznie podatnością. Linki: https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable i https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - **Nie testowano** aktywnych prób obejścia autoryzacji, rate limitów, mobile ani dwukontowego czatu. Bez nowych kont, bez danych produkcyjnych na staging.
+
+
+## Licznik wyświetleń — plan zabezpieczenia (24.10.2026)
+- GitHub Actions dla `ba6944f`: checks PASS, deploy PASS.
+- Produkcja: `record_listing_view(bigint)` to `SECURITY DEFINER`, dostępne anonimowo. Każde wywołanie podnosi `view_count` o 1; frontend `viewedListingsThisSession` ogranicza jedynie przypadkowe powtórzenia w tej samej sesji JS, nie bezpośrednie wywołania RPC.
+- STAGING `owkjdlpawczrnwyszduj`: tabela `public.listings` istnieje, lecz `record_listing_view(bigint)` **nie istnieje**. Nie testować produkcyjnej migracji na niezgodnym schemacie i nie kopiować danych użytkowników.
+- Kryteria poprawki: zachować anonimowe, prawdziwe odsłony; limit po stronie serwera odporny na wielokrotne RPC; brak przechowywania surowego IP; izolacja i sprzątanie danych limitera; brak zmian kart; test wywołań powtórnych i równoległych, test anon i zalogowanego, test braku inkrementacji dla nieaktywnych ogłoszeń.
+- Do wykonania: przygotować zgodny schemat funkcji na staging z fikcyjnym ogłoszeniem, wdrożyć limit i testy negatywne, dopiero potem oddzielnie zatwierdzić zmianę produkcyjną. **Żadnej zmiany produkcyjnego RPC w tej iteracji.**
