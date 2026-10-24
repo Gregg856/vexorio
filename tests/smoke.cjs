@@ -172,3 +172,5 @@ assert.ok(html.includes("if(first)first.click();return}selectCity(value)"),'Use-
 assert.ok(html.includes("$('query').value='';$('cityFilter').value='';$('cityFilter').dataset.postalValue='';$('radiusFilter').value='0';"),'Reset search must clear hidden postal code');
 
 assert.ok(html.includes("$('cityFilter').oninput=()=>{$('cityFilter').dataset.postalValue='';scheduleFilterRender()}"),'Manual city edits must clear previously selected postal code');
+
+assert.ok(html.includes("$('vexCityDialogInput').value=''}$('cityFilter').dataset.postalValue='';"),'Changing country must always clear stored postal code');
