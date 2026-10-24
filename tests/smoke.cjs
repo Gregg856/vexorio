@@ -138,3 +138,7 @@ const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
 console.log('VEXORIO smoke tests passed: '+scripts.length+' inline scripts, '+required.length+' feature checks, 7 core IDs, 10 workflow guards and all unique HTML IDs.');
+
+// Admin dashboard must discard stale responses when the signed-in account changes.
+assert.ok(html.includes('const dashboardViewerId=session.user.id;'),'Dashboard must capture account identity');
+assert.ok((html.match(/if\(session\?\.user\?\.id!==dashboardViewerId\)return;/g)||[]).length>=2,'Dashboard must guard auth and listing responses');
