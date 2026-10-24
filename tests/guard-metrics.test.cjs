@@ -57,6 +57,8 @@ assert.ok(comparison.accuracyDifference>=-1&&comparison.accuracyDifference<=1);
 console.log('Guard SYNTHETIC model comparison:',JSON.stringify(comparison));
 const {evaluateThresholds}=require('../guard/threshold-evaluation.cjs');
 const sweep=evaluateThresholds(training,testing);
+assert.throws(()=>evaluateThresholds(training,[testing[0],testing[1]]),/Both test classes required/);
+assert.throws(()=>evaluateThresholds(training,[testing[4],testing[5]]),/Both test classes required/);
 assert.equal(sweep.length,5);
 assert.ok(sweep.every(x=>x.samples===20&&x.reviewCount>=x.flaggedSuspicious));
 assert.ok(sweep.every(x=>x.missedSuspiciousRate>=0&&x.missedSuspiciousRate<=1));
