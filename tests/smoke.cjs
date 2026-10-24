@@ -103,6 +103,9 @@ for(const label of ['Спочатку виберіть країну','Шукає
 assert.ok(html.includes("country==='PL'&&/^\\d{5}$/.test(rawZip)?rawZip.slice(0,2)+'-'+rawZip.slice(2):rawZip"),'Polish postal geocoding normalization missing');
 // Nearest sort must handle a listing at the search origin without a separate geo-cache entry.
 assert.ok(html.includes('geoKey(location,item.country)===geoKey(locationFilterValue().trim(),country)?origin:geoCache.get(geoKey(location,item.country))'),'Nearest sort must use search origin for same-location listings');
+// Distinguish transient geocoding outages from unknown city names.
+for(const message of ['Błąd połączenia z usługą lokalizacji','Verbindungsfehler beim Standortdienst','Location service connection failed','Помилка з’єднання'])assert.ok(html.includes(message),'Missing geocoding outage message: '+message);
+assert.ok(html.includes('geoRetryAfter.get(geoKey(locationFilterValue().trim(),country))'),'Radius status must consult retry state');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
