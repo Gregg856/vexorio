@@ -2933,7 +2933,7 @@ window.addEventListener('focus',()=>{void openPushInbox()});
 const chatDraftKey=(userId,conversationId)=>'vex-chat-draft:'+userId+':'+conversationId;
 async function openConversation(id,title){
  if(!sb||!session)return openAuth();
- activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';$('replyText').value=sessionStorage.getItem(chatDraftKey(session.user.id,id))||'';$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
+ activeConversationId=id;$('chatTitle').textContent=title;$('replyStatus').textContent='';let savedChatDraft='';try{savedChatDraft=sessionStorage.getItem(chatDraftKey(session.user.id,id))||''}catch(error){console.warn('Chat draft storage unavailable',error)}$('replyText').value=savedChatDraft;$('replyText').dispatchEvent(new Event('input',{bubbles:true}));
  $('chatMessages').textContent=language==='uk'?'Завантаження…':'Ładowanie…';
  delete $('chatMessages').dataset.lastMessageId;
  delete $('chatMessages').dataset.conversationId;
