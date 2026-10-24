@@ -2828,7 +2828,7 @@ function ensureInboxSearch(){
 function ensureInboxFilters(){
  const box=$('myConversations');
  if(!box||document.getElementById('vexInboxFilters'))return;
- const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',language==='uk'?'Фільтр розмов':'Filtruj rozmowy');wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
+ const wrap=document.createElement('div');wrap.id='vexInboxFilters';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',({pl:'Filtruj rozmowy',de:'Unterhaltungen filtern',en:'Filter conversations',uk:'Фільтр розмов'}[language]||'Filtruj rozmowy'));wrap.style.cssText='display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:3px 0 11px;scrollbar-width:thin;max-width:100%';
  const inboxFilterTranslations={pl:[['all','Wszystkie'],['unread','Nieprzeczytane'],['buy','Kupuję'],['sell','Sprzedaję']],de:[['all','Alle'],['unread','Ungelesen'],['buy','Ich kaufe'],['sell','Ich verkaufe']],en:[['all','All'],['unread','Unread'],['buy','Buying'],['sell','Selling']],uk:[['all','Усі'],['unread','Непрочитані'],['buy','Купую'],['sell','Продаю']]};
  const options=inboxFilterTranslations[language]||inboxFilterTranslations.pl;
  let savedFilter=null;try{savedFilter=sessionStorage.getItem('vexInboxFilter:'+String(session?.user?.id||'guest'))}catch(error){console.warn('Inbox filter storage unavailable',error)}
@@ -2838,7 +2838,7 @@ function ensureInboxFilters(){
   btn.setAttribute('aria-pressed',String(value===initialFilter));
   const updateFilterStyle=b=>{const active=b.getAttribute('aria-pressed')==='true';b.style.background=active?'#1686a7':'';b.style.color=active?'#fff':'';b.style.borderColor=active?'#1686a7':'';b.style.fontWeight=active?'700':'400'};
   updateFilterStyle(btn);
-  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button[data-filter]')){b.setAttribute('aria-pressed',String(b===btn));updateFilterStyle(b)}sessionStorage.setItem('vexInboxFilter:'+String(session?.user?.id||'guest'),value);loadConversations()};
+  btn.onclick=()=>{for(const b of wrap.querySelectorAll('button[data-filter]')){b.setAttribute('aria-pressed',String(b===btn));updateFilterStyle(b)}try{sessionStorage.setItem('vexInboxFilter:'+String(session?.user?.id||'guest'),value)}catch(error){console.warn('Inbox filter storage unavailable',error)}loadConversations()};
   wrap.append(btn);
  }
  box.parentNode.insertBefore(wrap,box);
