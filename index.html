@@ -1778,19 +1778,19 @@ async function loadAdminMessageReports(){
 async function loadAdminPendingListings(){
  const status=$('adminPendingStatus'),list=$('adminPendingList');
  if(!status||!list)return;
- list.replaceChildren();status.textContent='Sprawdzam kolejkę…';
- if(!sb||!session?.user){status.textContent='Zaloguj się.';return}
+ list.replaceChildren();status.textContent=language==='uk'?'Перевірка черги…':'Sprawdzam kolejkę…';
+ if(!sb||!session?.user){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
- if(accessError||allowed!==true){status.textContent='Brak uprawnień administratora.';return}
+ if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  const {data,error}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});
- if(error){status.textContent='Nie udało się pobrać kolejki: '+error.message;return}
- status.textContent=data?.length?'Oczekujące: '+data.length:'Brak ogłoszeń oczekujących.';
+ if(error){status.textContent=(language==='uk'?'Не вдалося завантажити чергу: ':'Nie udało się pobrać kolejki: ')+error.message;return}
+ status.textContent=data?.length?(language==='uk'?'Очікують перевірки: ':'Oczekujące: ')+data.length:(language==='uk'?'Немає оголошень на перевірці.':'Brak ogłoszeń oczekujących.');
  const badge=$('dashPendingBadge');if(badge)badge.textContent='('+(data?.length||0)+(data?.length===50?'+':'')+')';
  for(const item of data||[]){
   const card=document.createElement('div');card.className='info';card.style.margin='0';
-  const heading=document.createElement('h3');heading.textContent=item.title||('Ogłoszenie #'+item.listing_id);
+  const heading=document.createElement('h3');heading.textContent=item.title||((language==='uk'?'Оголошення #':'Ogłoszenie #')+item.listing_id);
   const meta=document.createElement('p');meta.className='muted';meta.textContent='ID: '+item.listing_id+' · '+new Date(item.created_at).toLocaleString();
-  const desc=document.createElement('p');desc.textContent=item.description||'Brak opisu';
+  const desc=document.createElement('p');desc.textContent=item.description||(language==='uk'?'Опис відсутній':'Brak opisu');
   const photos=document.createElement('div');photos.className='photo-gallery';
   for(const url of (Array.isArray(item.listing_images)?item.listing_images:[]).slice(0,8)){
    if(typeof url!=='string')continue;
@@ -1806,14 +1806,14 @@ async function loadAdminPendingListings(){
     if(parsed.protocol!=='https:'||!parsed.pathname.includes('/storage/v1/object/public/listing-images/'))continue;
     src=parsed.href;
    }
-   const photo=document.createElement('img');photo.src=src;photo.alt='Zdjęcie oczekującego ogłoszenia';photo.loading='lazy';photos.append(photo);
+   const photo=document.createElement('img');photo.src=src;photo.alt=language==='uk'?'Фото оголошення на перевірці':'Zdjęcie oczekującego ogłoszenia';photo.loading='lazy';photos.append(photo);
   }
   const actions=document.createElement('div');actions.style.display='flex';actions.style.gap='8px';actions.style.flexWrap='wrap';
   const feedback=document.createElement('p');feedback.className='msg';feedback.setAttribute('role','status');
-  for(const [decision,label] of [['approved','Zatwierdź'],['rejected','Odrzuć']]){
+  for(const [decision,label] of (language==='uk'?[['approved','Схвалити'],['rejected','Відхилити']]:[['approved','Zatwierdź'],['rejected','Odrzuć']])){
    const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;
    btn.onclick=async()=>{
-    if(!confirm((decision==='approved'?'Zatwierdzić':'Odrzucić')+' ogłoszenie #'+item.listing_id+'?'))return;
+    if(!confirm((decision==='approved'?(language==='uk'?'Схвалити':'Zatwierdzić'):(language==='uk'?'Відхилити':'Odrzucić'))+(language==='uk'?' оголошення #':' ogłoszenie #')+item.listing_id+'?'))return;
     for(const b of actions.querySelectorAll('button'))b.disabled=true;
     try{
      const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');
