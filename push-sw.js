@@ -5,11 +5,11 @@ const MAX_BODY=240;
 const MAX_TAG=80;
 function safeText(value,fallback,max){
   if(typeof value!=='string')return fallback;
-  const clean=value.replace(/[\\u0000-\\u001F\\u007F]/g,' ').trim();
+  const clean=value.replace(/[\x00-\x1F\x7F]/g,' ').trim();
   return clean?clean.slice(0,max):fallback;
 }
 function safePath(value){
-  if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||value.includes('\\\\'))return FALLBACK_URL;
+  if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||value.includes('\\'))return FALLBACK_URL;
   try{
     const url=new URL(value,self.location.origin);
     if(url.origin!==self.location.origin||url.username||url.password)return FALLBACK_URL;
