@@ -131,6 +131,7 @@ assert.ok(html.includes("sb.rpc('is_vexorio_blocked',{p_user:appealAccessViewerI
 assert.ok(html.includes('if(session?.user?.id!==appealAccessViewerId)return;'),'Appeal access must reject stale session');
 assert.ok(html.includes('const overviewViewerId=session.user.id'),'Admin dashboard must capture viewer');
 assert.ok(html.includes('if(session?.user?.id!==overviewViewerId)return;'),'Admin dashboard must reject stale stats');
+assert.ok(html.includes(".or('buyer_id.eq.'+uid+',seller_id.eq.'+uid)"),'Inbox query must use captured account');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
