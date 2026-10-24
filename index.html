@@ -2383,7 +2383,7 @@ function listingRiskSignals(text){
  return signals;
 }
 async function validListingImageSignature(file){if(!file||file.size<12)return false;const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());if(file.type==='image/jpeg')return bytes[0]===255&&bytes[1]===216&&bytes[2]===255;if(file.type==='image/png')return bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&bytes[4]===13&&bytes[5]===10&&bytes[6]===26&&bytes[7]===10;if(file.type==='image/webp')return String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP';return false}
-$('addForm').onsubmit=async e=>{e.preventDefault();if(!sb||!session)return $('addMsg').textContent='Zaloguj się, aby opublikować wpis.';
+$('addForm').onsubmit=async e=>{e.preventDefault();if(!sb||!session)return $('addMsg').textContent=({pl:'Zaloguj się, aby opublikować wpis.',de:'Melde dich an, um eine Anzeige zu veröffentlichen.',en:'Sign in to publish a listing.'}[language]);
 const submit=$('addForm').querySelector('button[type=submit]');if(submit.disabled)return;
 let verifiedAuth,verifiedAuthError;try{({data:verifiedAuth,error:verifiedAuthError}=await sb.auth.getUser())}catch(authFailure){return $('addMsg').textContent='Nie udało się zweryfikować sesji. Spróbuj ponownie.';}
 if(verifiedAuthError||!verifiedAuth?.user||verifiedAuth.user.id!==session.user.id)return $('addMsg').textContent='Sesja wygasła. Zaloguj się ponownie przed publikacją.';
