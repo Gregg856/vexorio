@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {evaluateGuardReport}=require('../guard/report.cjs');
+const {prioritizeGuardReport}=require('../guard/review-priority.cjs');
+const safe=prioritizeGuardReport(evaluateGuardReport({title:'Rower',description:'Sprawny rower, odbiór osobisty'}));
+assert.equal(safe.priority,'none');
+assert.equal(safe.automaticAction,false);
+const risky=prioritizeGuardReport(evaluateGuardReport({title:'Oferta',description:'Wyślij mi kod SMS'}));
+assert.equal(risky.priority,'high');
+assert.ok(risky.reasonIds.includes('credential_phishing'));
+assert.equal(risky.requiresHumanReview,true);
+const invalid=prioritizeGuardReport(null);
+assert.equal(invalid.priority,'high');
+assert.equal(invalid.automaticAction,false);
+const medium=prioritizeGuardReport({mode:'advisory',decision:'none',requiresHumanReview:false,explanations:[{id:'possible_duplicate',severity:'medium'}],fraud:{score:0}});
+assert.equal(medium.priority,'normal');
+assert.equal(medium.requiresHumanReview,true);
+console.log('PASS: Guard explainable review priority, conservative fallback and no automatic actions');
