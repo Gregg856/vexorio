@@ -137,3 +137,8 @@ console.log('PASS: chat rejects malformed listing IDs');
 assert.ok(html.includes("if(sendAuthError||sendAuth?.user?.id!==user.id)throw new Error"),'Chat must reject sender changes before insert');
 assert.ok(html.includes("sender_id:user.id,body:message.trim()"),'Chat insert must retain verified sender');
 console.log('PASS: chat sender reverified before message insert');
+
+// Unread indicator must use the most recent message regardless of sender; an outgoing reply clears it.
+assert.ok(html.includes('if(!latest.has(id))latest.set(id,m)'),'Unread scan must retain latest message regardless of sender');
+assert.ok(html.includes('if(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)'),'Unread badge must ignore latest outgoing messages');
+console.log('PASS: unread badge ignores conversations whose latest message is outgoing');
