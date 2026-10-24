@@ -54,3 +54,13 @@ const sharingChecks=[
  ['X summary preview', '<meta name="twitter:card" content="summary">'],
 ];
 for(const [label,fragment] of sharingChecks){assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
+
+// Five essential user journeys: static regression checks, not authenticated end-to-end tests.
+const userJourneyChecks=[
+ ['Registration creates account through Supabase', "sb.auth.signUp({email,password"],
+ ['Sign-in fetches session', "sb.auth.getSession()"],
+ ['Listings require an authenticated session', "if(!sb||!session)return $('addMsg')"],
+ ['Messages use the authenticated sender', "sendingUserId=session.user.id"],
+ ['Admin tools require a verified server-side role', "sb.rpc('is_vexorio_admin')"],
+];
+for(const [label,fragment] of userJourneyChecks){assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
