@@ -174,3 +174,7 @@ assert.ok(html.includes("$('query').value='';$('cityFilter').value='';$('cityFil
 assert.ok(html.includes("$('cityFilter').oninput=()=>{$('cityFilter').dataset.postalValue='';scheduleFilterRender()}"),'Manual city edits must clear previously selected postal code');
 
 assert.ok(html.includes("$('vexCityDialogInput').value=''}$('cityFilter').dataset.postalValue='';"),'Changing country must always clear stored postal code');
+
+assert.ok(html.includes('.limit(inboxConversationLimit+1)'),'Inbox must detect more conversations beyond page limit');
+assert.ok(html.includes('inboxConversationLimit+=100;void loadConversations()'),'Inbox must offer progressive conversation loading');
+assert.ok(html.includes('if(uid!==inboxLimitUserId){inboxConversationLimit=100;inboxLimitUserId=uid}'),'Inbox pagination must reset on account change');
