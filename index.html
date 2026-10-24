@@ -2260,9 +2260,10 @@ function setLang(v){if(!['pl','de','en','uk'].includes(v))return;language=v;
  const accountUi={pl:['← Wróć do konta','🔔 Wiadomości','↻ Odśwież','🔔 Powiadomienia w przeglądarce:','Wyślij test push','Zobacz mój profil publiczny →','⚙ Ustawienia'],de:['← Zurück zum Konto','🔔 Nachrichten','↻ Aktualisieren','🔔 Browser-Benachrichtigungen:','Push-Test senden','Mein öffentliches Profil ansehen →','⚙ Einstellungen'],en:['← Back to account','🔔 Messages','↻ Refresh','🔔 Browser notifications:','Send test push','View my public profile →','⚙ Settings'],uk:['← Повернутися до акаунта','🔔 Повідомлення','↻ Оновити','🔔 Сповіщення в браузері:','Надіслати тестове push','Переглянути мій публічний профіль →','⚙ Налаштування']}[v];
  const setAccountText=(id,value)=>{const node=$(id);if(node)node.textContent=value};
  setAccountText('accountInboxBack',accountUi[0]);setAccountText('refreshInboxBtn',accountUi[2]);setAccountText('accountViewPublicProfile',accountUi[5]);
- const messagesHeading=$('accountMessagesSection')?.querySelector('h3');if(messagesHeading){const label=messagesHeading.querySelector('#refreshInboxBtn');for(const node of [...messagesHeading.childNodes])if(node.nodeType===Node.TEXT_NODE)node.textContent=' '+accountUi[1]+' ';if(label)label.textContent=accountUi[2]}
+ const messagesHeading=$('accountMessagesSection')?.querySelector('h3');if(messagesHeading){const label=messagesHeading.querySelector('#refreshInboxBtn');for(const node of [...messagesHeading.childNodes])if(node.nodeType===Node.TEXT_NODE)node.textContent='';messagesHeading.prepend(document.createTextNode(accountUi[1]+' '));if(label)label.textContent=accountUi[2]}
  const notice=$('inboxNotificationToggle')?.previousElementSibling;if(notice)notice.textContent=accountUi[3];
  setAccountText('vexPushTestButton',accountUi[4]);
+ const pushState=$('vexPushStatus');if(pushState&&/^(Powiadomienia push aktywne na tym urządzeniu\.|Push-Benachrichtigungen sind auf diesem Gerät aktiv\.|Push notifications are active on this device\.|Push-сповіщення активні на цьому пристрої\.)$/.test(pushState.textContent.trim()))pushState.textContent=({pl:'Powiadomienia push aktywne na tym urządzeniu.',de:'Push-Benachrichtigungen sind auf diesem Gerät aktiv.',en:'Push notifications are active on this device.',uk:'Push-сповіщення активні на цьому пристрої.'}[v]);
  const settingsTile=$('accountSettingsTile')?.querySelector('strong');if(settingsTile)settingsTile.textContent=accountUi[6].replace(/^⚙ /,'');
  const accountTiles={
   pl:{accountListingsTile:['Moje ogłoszenia','Twoje wpisy'],accountMessagesTile:['Wiadomości','Twoje rozmowy'],accountFavoritesTile:['Ulubione','Zapisane oferty'],accountSettingsTile:['Ustawienia','Dane i prywatność']},
@@ -3297,7 +3298,7 @@ async function sendMessage(listingId,sellerId,message){
    ({error}=await saveSubscription(subscription));
   }
   if(error)throw error;
-  pushStatus.textContent='Powiadomienia push aktywne na tym urządzeniu.';
+  pushStatus.textContent=({pl:'Powiadomienia push aktywne na tym urządzeniu.',de:'Push-Benachrichtigungen sind auf diesem Gerät aktiv.',en:'Push notifications are active on this device.',uk:'Push-сповіщення активні на цьому пристрої.'}[language]);
  }
  async function disablePushSubscription(){
   if(!('serviceWorker' in navigator)||!window.isSecureContext)return;
@@ -3312,7 +3313,7 @@ async function sendMessage(listingId,sellerId,message){
  const supported='Notification' in window;
  function draw(){
   const granted=supported&&Notification.permission==='granted';
-  if(enabled&&granted&&session?.user?.id&&pushStatus.textContent==='Zaloguj się, aby włączyć push.')pushStatus.textContent='Powiadomienia push aktywne na tym urządzeniu.';
+  if(enabled&&granted&&session?.user?.id&&pushStatus.textContent==='Zaloguj się, aby włączyć push.')pushStatus.textContent=({pl:'Powiadomienia push aktywne na tym urządzeniu.',de:'Push-Benachrichtigungen sind auf diesem Gerät aktiv.',en:'Push notifications are active on this device.',uk:'Push-сповіщення активні на цьому пристрої.'}[language]);
   button.textContent=({pl:!supported?'Niedostępne':enabled&&granted?'Włączone':'Wyłączone',de:!supported?'Nicht verfügbar':enabled&&granted?'Aktiviert':'Deaktiviert',en:!supported?'Unavailable':enabled&&granted?'Enabled':'Disabled',uk:!supported?'Недоступно':enabled&&granted?'Увімкнено':'Вимкнено'}[language]);
   button.setAttribute('aria-pressed',String(enabled&&granted));
   testPushButton.hidden=!(enabled&&granted&&vapidKey());
