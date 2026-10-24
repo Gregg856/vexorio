@@ -49,7 +49,7 @@ console.log('PASS: admin subsection close returns to dashboard');
 const sharingChecks=[
  ['Search description', '<meta name="description" content="VEXORIO — darmowe ogłoszenia'],
  ['Open Graph title', '<meta property="og:title" content="VEXORIO — Ogłoszenia bez granic">'],
- ['Open Graph URL without personal identifier', '<meta property="og:url" content="">'],
+ ['No personal URL in social metadata', '<meta property="og:locale" content="pl_PL">'],
  ['Social preview description', '<meta property="og:description" content="Darmowe ogłoszenia, usługi i zlecenia w Europie.">'],
  ['X summary preview', '<meta name="twitter:card" content="summary">'],
 ];
@@ -64,3 +64,12 @@ const userJourneyChecks=[
  ['Admin tools require a verified server-side role', "sb.rpc('is_vexorio_admin')"],
 ];
 for(const [label,fragment] of userJourneyChecks){assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
+
+// Privacy and multilingual discovery checks for prelaunch.
+for(const [label,fragment] of [
+ ['German preview locale','<meta property="og:locale:alternate" content="de_DE">'],
+ ['English preview locale','<meta property="og:locale:alternate" content="en_GB">'],
+ ['Referrer privacy','<meta name="referrer" content="strict-origin-when-cross-origin">'],
+ ['Search crawl hint','<meta name="robots" content="index,follow,max-image-preview:large">'],
+ ['No personal worker URL in social metadata', 'grzegorzbub1985.workers.dev'],
+]){if(label==='No personal worker URL in social metadata')assert.ok(!html.includes(fragment),'Personal URL exposed in page source');else assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
