@@ -2018,6 +2018,7 @@ async function loadAdminReports(){
  if(session?.user?.id!==reportViewerId)return;
  if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  await loadAdminMessageReports();
+ if(session?.user?.id!==reportViewerId)return;
  let reportQuery=sb.from('listing_reports').select('id,listing_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);if(adminReportListingFilter!==null)reportQuery=reportQuery.eq('listing_id',adminReportListingFilter);const {data,error}=await reportQuery;
  if(session?.user?.id!==reportViewerId)return;
  if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
