@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "VEXORIO — Ogłoszenia bez granic",
+  "short_name": "VEXORIO",
+  "description": "Ogłoszenia, usługi i zlecenia w Europie",
+  "lang": "pl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#03101d",
+  "theme_color": "#03101d",
+  "icons": [
+    {
+      "src": "/vexorio-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
