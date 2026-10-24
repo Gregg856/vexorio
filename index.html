@@ -2106,7 +2106,9 @@ $('adminUsersRefresh').onclick=loadAdminUsers;
 async function updateAppealAccess(){
  $('appealBtn').classList.add('hide');
  if(!sb||!session?.user?.id)return;
- const {data,error}=await sb.rpc('is_vexorio_blocked',{p_user:session.user.id});
+ const appealAccessViewerId=session.user.id;
+ const {data,error}=await sb.rpc('is_vexorio_blocked',{p_user:appealAccessViewerId});
+ if(session?.user?.id!==appealAccessViewerId)return;
  if(!error&&data===true)$('appealBtn').classList.remove('hide');
 }
 $('appealBtn').onclick=async()=>{$('appealDialog').showModal();await loadOwnAppeals()};
