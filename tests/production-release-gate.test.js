@@ -34,7 +34,7 @@ console.log('PASS: five listing submission regression guards');
 
 // Authenticated-feature regression checks: protect ownership and private messages.
 const authenticatedChecks=[
- ['listing edit owner constraint',/\.from\('listings'\)\.update\(changes\)\.eq\('id',editingListingId\)\.eq\('owner_id',session\.user\.id\)/],
+ ['listing edit owner constraint',/\.from\('listings'\)\.update\(changes\)\.eq\('id',editingListingId\)\.eq\('owner_id',editOwnerId\)/],
  ['listing delete owner constraint',/\.from\('listings'\)\.delete\(\)\.eq\('id',x\.id\)\.eq\('owner_id',session\.user\.id\)/],
  ['chat fresh user verification',/async function sendMessage\(listingId,sellerId,message\)[\s\S]{0,200}sb\.auth\.getUser\(\)/],
  ['chat prevents self-messaging',/if\(user\.id===sellerId\)throw/],
