@@ -180,3 +180,6 @@ assert.ok(html.includes('inboxConversationLimit+=100;void loadConversations()'),
 assert.ok(html.includes('if(uid!==inboxLimitUserId){inboxConversationLimit=100;inboxLimitUserId=uid}'),'Inbox pagination must reset on account change');
 
 assert.ok(html.includes('if(!visibleCount&&!hasMoreConversations){const activeFilter='),'Inbox must retain load-more button when search has no match in loaded conversations');
+
+assert.ok(html.includes(".range(unreadPage*100,(unreadPage+1)*100-1)"),'Unread badge must paginate beyond first 100 conversations');
+assert.ok(html.includes('if(!page||page.length<100)break;'),'Unread pagination must stop after final page');
