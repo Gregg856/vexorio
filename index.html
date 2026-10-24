@@ -2810,7 +2810,7 @@ async function loadListings(){
  for(let page=0;page<maxPages;page++){
   let result;
   try{
-   result=await sb.from('listings').select('id,title,category,description,miasto,kraj,price,owner_id,created_at,rodzaj,subcategory,specialty,show_contact_phone,Images,status,view_count').order('created_at',{ascending:false}).order('id',{ascending:false}).range(page*pageSize,(page+1)*pageSize-1);
+   result=await sb.from('listings').select('id,title,category,description,miasto,kraj,postal_code,price,owner_id,created_at,rodzaj,subcategory,specialty,show_contact_phone,Images,status,view_count').order('created_at',{ascending:false}).order('id',{ascending:false}).range(page*pageSize,(page+1)*pageSize-1);
   }catch(err){error=err;break}
   if(request!==listingsLoadRequest)return false;
   if(result.error){error=result.error;break}
