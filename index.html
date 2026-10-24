@@ -3121,16 +3121,16 @@ async function refreshVisibleChat(){
 setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void refreshVisibleChat()}},5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
 async function sendMessage(listingId,sellerId,message){
- if(!sb)throw new Error('Brak połączenia z bazą.');
+ if(!sb)throw new Error(({pl:'Brak połączenia z bazą.',de:'Keine Datenbankverbindung.',en:'No database connection.',uk:'Немає з’єднання з базою даних.'}[language]));
  const {data:authData,error:authError}=await sb.auth.getUser();
  if(authError)throw authError;
  const user=authData?.user;
- if(!user)throw new Error('Najpierw zaloguj się.');
- if(!sellerId||typeof sellerId!=='string')throw new Error('Nieprawidłowy odbiorca wiadomości.');
- if(user.id===sellerId)throw new Error('Nie możesz pisać do siebie.');
+ if(!user)throw new Error(({pl:'Najpierw zaloguj się.',de:'Bitte melde dich zuerst an.',en:'Please sign in first.',uk:'Спочатку увійдіть в обліковий запис.'}[language]));
+ if(!sellerId||typeof sellerId!=='string')throw new Error(({pl:'Nieprawidłowy odbiorca wiadomości.',de:'Ungültiger Nachrichtenempfänger.',en:'Invalid message recipient.',uk:'Недійсний одержувач повідомлення.'}[language]));
+ if(user.id===sellerId)throw new Error(({pl:'Nie możesz pisać do siebie.',de:'Du kannst dir nicht selbst schreiben.',en:'You cannot message yourself.',uk:'Не можна надсилати повідомлення самому собі.'}[language]));
  const validListingId=Number(listingId);
- if(listingId==null||String(listingId).trim()===''||!/^\d+$/.test(String(listingId).trim())||!Number.isSafeInteger(validListingId)||validListingId<=0)throw new Error('Nieprawidłowe ogłoszenie.');
- if(typeof message!=='string'||!message.trim()||message.trim().length>2000)throw new Error('Wiadomość musi mieć od 1 do 2000 znaków.');
+ if(listingId==null||String(listingId).trim()===''||!/^\d+$/.test(String(listingId).trim())||!Number.isSafeInteger(validListingId)||validListingId<=0)throw new Error(({pl:'Nieprawidłowe ogłoszenie.',de:'Ungültige Anzeige.',en:'Invalid listing.',uk:'Недійсне оголошення.'}[language]));
+ if(typeof message!=='string'||!message.trim()||message.trim().length>2000)throw new Error(({pl:'Wiadomość musi mieć od 1 do 2000 znaków.',de:'Die Nachricht muss 1 bis 2000 Zeichen enthalten.',en:'Message must contain 1 to 2000 characters.',uk:'Повідомлення має містити від 1 до 2000 символів.'}[language]));
  const {data:existing,error:findError}=await sb.from('conversations').select('id').eq('listing_id',validListingId).eq('buyer_id',user.id).eq('seller_id',sellerId).limit(1);
  if(findError)throw findError;
  let conversationId=existing?.[0]?.id;
@@ -3144,7 +3144,7 @@ async function sendMessage(listingId,sellerId,message){
   }else conversationId=data.id;
  }
  const {data:sendAuth,error:sendAuthError}=await sb.auth.getUser();
- if(sendAuthError||sendAuth?.user?.id!==user.id)throw new Error('Sesja zmieniła się przed wysłaniem wiadomości. Zaloguj się ponownie.');
+ if(sendAuthError||sendAuth?.user?.id!==user.id)throw new Error(({pl:'Sesja zmieniła się przed wysłaniem wiadomości. Zaloguj się ponownie.',de:'Die Sitzung hat sich vor dem Senden geändert. Bitte melde dich erneut an.',en:'Your session changed before sending. Please sign in again.',uk:'Сеанс змінився перед надсиланням. Увійдіть знову.'}[language]));
  const {error:messageError}=await sb.from('messages').insert({conversation_id:conversationId,sender_id:user.id,body:message.trim()});
  if(messageError)throw messageError;
 }
