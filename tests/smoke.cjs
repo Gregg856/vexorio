@@ -182,4 +182,5 @@ assert.ok(html.includes('if(uid!==inboxLimitUserId){inboxConversationLimit=100;i
 assert.ok(html.includes('if(!visibleCount&&!hasMoreConversations){const activeFilter='),'Inbox must retain load-more button when search has no match in loaded conversations');
 
 assert.ok(html.includes(".range(unreadPage*100,(unreadPage+1)*100-1)"),'Unread badge must paginate beyond first 100 conversations');
-assert.ok(html.includes('if(!page||page.length<100)break;'),'Unread pagination must stop after final page');
+assert.ok(html.includes('if(page.length<100)break;'),'Unread pagination must stop after final page');
+assert.ok(html.includes('for(let start=0;start<page.length;start+=25)'),'Unread counting must process one page at a time');
