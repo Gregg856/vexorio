@@ -15,6 +15,11 @@ const examples=[
  assert.throws(()=>createLocalGuard(examples,{minimumConfidence:NaN}),/Invalid confidence threshold/);
  assert.throws(()=>createLocalGuard(examples,{minimumConfidence:Infinity}),/Invalid confidence threshold/);
  assert.throws(()=>createLocalGuard(examples,{minimumConfidence:-Infinity}),/Invalid confidence threshold/);
+ const conservative=createLocalGuard(examples,{minimumConfidence:1});
+ const uncertain=await conservative.evaluate({title:'Rower',description:'rower odbiór osobisty sprawny rower'});
+ assert.equal(uncertain.decision,'none');
+ assert.equal(uncertain.requiresHumanReview,true);
+ assert.ok(uncertain.flags.includes('model_insufficient_model_knowledge'));
  const guard=createLocalGuard(examples,{minimumConfidence:0.5});
  const flagged=await guard.evaluate({title:'Oferta',description:'wyślij hasło kod sms'});
  assert.equal(flagged.model.status,'advisory');
