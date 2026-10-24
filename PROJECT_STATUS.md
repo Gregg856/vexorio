@@ -37,3 +37,24 @@ Wcześniejsze wdrożenia #779–#783 nie przechodziły. Logi #783 wykazały, że
 1. Sprawdzić, czy deploy #785 (commit d48abac) zakończył się sukcesem; użytkownik potwierdził poprawne zachowanie języka na stronie.
 2. Kontynuować audyt ukraińskich etykiet, bez zmieniania układu strony.
 3. Testować każde wdrożenie, a nie tylko zapisy w GitHubie.
+
+## Plan zamykania funkcji — 24.10.2026 (aktualizacja)
+
+Zasada: **zamknięte** = potwierdzone właściwym testem i zaakceptowane; **częściowo** = test statyczny lub ograniczony; **otwarte** = wymaga weryfikacji. Nie utożsamiać przejścia CI z testem użytkownika.
+
+| Obszar | Stan | Dowód / kryterium domknięcia |
+| --- | --- | --- |
+| Publikacja GitHub → Cloudflare | ZAMKNIĘTE dla 62a3fef | VEXORIO checks 40108246120 SUCCESS, Deploy 40108246064 SUCCESS; przy następnej zmianie powtórzyć |
+| Push: walidacja payloadu i przekierowanie | CZĘŚCIOWO | Kod i test regresji w CI; otwarte: powiadomienie na Android/Chrome i działający deep-link do rozmowy |
+| Zapamiętywanie ukraińskiego po odświeżeniu | ZAMKNIĘTE funkcjonalnie | Potwierdzone przez użytkownika; nie wracać bez nowego błędu |
+| Logowanie i rejestracja | OTWARTE | Test istniejącego konta e-mail i Google; nie tworzyć nowych kont |
+| Ogłoszenia, zdjęcia, edycja, moderacja | OTWARTE | Pełna ścieżka na istniejących kontach, bez testowych zapisów w produkcji bez zgody |
+| Wyszukiwanie, miasto, promień, kategorie | CZĘŚCIOWO | Statyczne regresje i wcześniejszy test gościa; konieczny test mobile |
+| Czat i liczniki wiadomości | OTWARTE | Test dwóch istniejących kont, unread, zmiany rozmowy, powiadomienia |
+| Zgłoszenia, blokady, bezpieczeństwo | OTWARTE | Weryfikacja ról i RLS/RPC bez modyfikacji produkcji |
+| PL/DE/EN/UK | OTWARTE | Pełny przegląd tekstów, szczególnie DE/EN podkategorie i separator logowania |
+| Wygląd mobilny | OTWARTE | Rzeczywisty telefon: karty, zdjęcia, klawiatura, przyciski |
+| Licznik odsłon — ochrona serwerowa | OTWARTE | Staging i testy bezpieczeństwa przed osobnym zatwierdzeniem prod |
+| Audyt końcowy | OTWARTE | Dopiero po zamknięciu krytycznych ścieżek |
+
+Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków i wyglądu, na końcu pełny test wydania. Bez nowych funkcji, stron i kont. Zamkniętych obszarów nie poprawiać ponownie bez reprodukcji błędu.
