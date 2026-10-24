@@ -91,6 +91,10 @@ const inboxGuards=[
  ['German seller search',/Sprzedaję Verkaufen Selling Продаю/]
 ];
 for(const [name,pattern] of inboxGuards)assert.match(html,pattern,'Inbox regression: '+name);
+// Nearest sort must not remain selected without a country, city and radius.
+assert.match(html,/nearestOption\.disabled=!radiusActive/,'Nearest sorting must require location and radius');
+assert.match(html,/sort==='nearest'&&!radiusActive/,'Nearest sorting must fall back when location is missing');
+assert.match(html,/\$\('sortListings'\)\.value='new';return render\(\)/,'Nearest sorting fallback must re-render');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
