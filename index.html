@@ -1839,15 +1839,18 @@ async function loadAdminPendingListings(){
        if(!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path))throw new Error(language==='uk'?'Неправильний шлях до фото.':'Nieprawidłowa ścieżka zdjęcia.');
        const {data:blob,error:downloadError}=await sb.storage.from('listing-images-review').download(path);
        if(downloadError||!blob)throw downloadError||new Error(language==='uk'?'Не вдалося завантажити фото.':'Nie udało się pobrać zdjęcia.');
+       if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');
        const {error:uploadError}=await sb.storage.from('listing-images').upload(path,blob,{contentType:path.endsWith('.png')?'image/png':path.endsWith('.webp')?'image/webp':'image/jpeg',upsert:false});
        if(uploadError&& !/already exists|duplicate/i.test(uploadError.message||''))throw uploadError;
        const {data:publicImage}=sb.storage.from('listing-images').getPublicUrl(path);
        published.push(publicImage.publicUrl);
       }
+      if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');
       ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_publish_reviewed_listing',{p_listing_id:item.listing_id,p_images:published}));
      }else{
       ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision}));
      }
+     if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');
      if(reviewError)throw reviewError;
      if(changed!==true)throw new Error(language==='uk'?'Оголошення вже розглянуто або його не існує.':'Ogłoszenie zostało już rozpatrzone lub nie istnieje.');
      await loadAdminPendingListings();await loadAdminOverview();await loadListings();await updateAdminReportBadge();
