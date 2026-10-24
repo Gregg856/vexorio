@@ -13,15 +13,15 @@ function evaluateImageHoldout(training,testing,{similarityThreshold=0.95}={}){
  if(!audit.clean)throw Error('Duplicate training and test images');
  const similarityAudit=checkSimilarImages(training,testing,{threshold:similarityThreshold});
  if(!similarityAudit.clean)throw Error('Similar training and test images');
- const model=trainCombinedImageModel(training),counts={tp:0,tn:0,fp:0,fn:0};
+ const model=trainCombinedImageModel(training),counts={tp:0,tn:0,fp:0,fn:0,unknown:0};
  const examples=testing.map((item,index)=>{
   const prediction=model.predict(item.pixels);
   const actual=item.label,predicted=prediction.candidate;
-  if(predicted==='unknown')throw Error('Unexpected unknown candidate');
-  counts[actual==='unsafe'?(predicted==='unsafe'?'tp':'fn'):(predicted==='unsafe'?'fp':'tn')]++;
+  if(predicted==='unknown')counts.unknown++;
+  else counts[actual==='unsafe'?(predicted==='unsafe'?'tp':'fn'):(predicted==='unsafe'?'fp':'tn')]++;
   return {index,actual,predicted,correct:actual===predicted,requiresHumanReview:prediction.requiresHumanReview};
  });
- const {tp,tn,fp,fn}=counts,ratio=(a,b)=>b?a/b:null;
- return {status:'experimental_synthetic_holdout',samples:testing.length,counts,accuracy:(tp+tn)/testing.length,precision:ratio(tp,tp+fp),recall:ratio(tp,tp+fn),falsePositiveRate:ratio(fp,fp+tn),automaticModeration:false,examples};
+ const {tp,tn,fp,fn,unknown}=counts,ratio=(a,b)=>b?a/b:null;
+ return {status:'experimental_synthetic_holdout',samples:testing.length,counts,accuracy:(tp+tn)/testing.length,coverage:(testing.length-unknown)/testing.length,precision:ratio(tp,tp+fp),recall:ratio(tp,tp+fn),falsePositiveRate:ratio(fp,fp+tn),automaticModeration:false,examples};
 }
 module.exports={evaluateImageHoldout};
