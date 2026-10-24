@@ -1981,11 +1981,12 @@ async function loadAdminPendingListings(){
   for(const [decision,label] of (language==='uk'?[['approved','Схвалити'],['rejected','Відхилити']]:[['approved','Zatwierdź'],['rejected','Odrzuć']])){
    const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;
    btn.onclick=async()=>{
+    const actingUserId=session?.user?.id;if(!actingUserId)return;
     if(!confirm((decision==='approved'?(language==='uk'?'Схвалити':'Zatwierdzić'):(language==='uk'?'Відхилити':'Odrzucić'))+(language==='uk'?' оголошення #':' ogłoszenie #')+item.listing_id+'?'))return;
     for(const b of actions.querySelectorAll('button'))b.disabled=true;
     try{
      const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');
-     if(verifyError||stillAdmin!==true)throw new Error('Brak uprawnień administratora.');
+     if(verifyError||stillAdmin!==true||session?.user?.id!==actingUserId)throw new Error('Brak uprawnień administratora.');
      let changed,reviewError;
      if(decision==='approved'&&(item.listing_images||[]).some(u=>typeof u==='string'&&u.startsWith('listing-images-review/'))){
       const published=[];
@@ -2000,7 +2001,7 @@ async function loadAdminPendingListings(){
        const {data:publicImage}=sb.storage.from('listing-images').getPublicUrl(path);
        published.push(publicImage.publicUrl);
       }
-      ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_publish_reviewed_listing',{p_listing_id:item.listing_id,p_images:published}));
+      if(session?.user?.id!==actingUserId)throw new Error('Sesja zmieniła się.');({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_publish_reviewed_listing',{p_listing_id:item.listing_id,p_images:published}));
      }else{
       ({data:changed,error:reviewError}=await sb.rpc('vexorio_admin_review_listing',{p_listing_id:item.listing_id,p_decision:decision}));
      }
