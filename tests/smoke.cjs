@@ -144,3 +144,5 @@ assert.ok(html.includes('const dashboardViewerId=session.user.id;'),'Dashboard m
 assert.ok((html.match(/if\(session\?\.user\?\.id!==dashboardViewerId\)return;/g)||[]).length>=2,'Dashboard must guard auth and listing responses');
 
 assert.ok(html.includes('await loadAdminMessageReports();\n if(session?.user?.id!==reportViewerId)return;'),'Admin report loading must stop after account switch during message report fetch');
+
+assert.ok(html.includes('if(session?.user?.id!==pendingViewerId)return;\n    if(signError||!signed?.signedUrl)continue;'),'Pending photo previews must stop after an account switch');
