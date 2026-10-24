@@ -23,6 +23,8 @@ jobs:
           cp index.html public/index.html
           cp guard-lab.html public/guard-lab.html
           cp guard-lab.js public/guard-lab.js
+          cp guard-install.js public/guard-install.js
+          cp guard-manifest.webmanifest public/guard-manifest.webmanifest
           # Embed the exact GitHub revision in the deployed HTML for release verification.
           sed -i "s#</head>#<meta name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"></head>#" public/index.html
           cp push-sw.js public/push-sw.js
@@ -143,6 +145,8 @@ jobs:
         run: |
           test -s public/guard-lab.html
           test -s public/guard-lab.js
+          test -s public/guard-install.js
+          test -s public/guard-manifest.webmanifest
           grep -q 'VEXORIO Guard' public/guard-lab.html
           test -f public/index.html
           test -s public/push-sw.js
