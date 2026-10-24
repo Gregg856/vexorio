@@ -2805,7 +2805,7 @@ async function checkUnreadMessages(){
   const countChanged=previousUnreadCount!==unread;
   updateUnreadBadges(unread);
   if(countChanged&&$('accountDialog').open&&!$('accountMessagesSection').hidden)void loadConversations().catch(error=>console.warn('Inbox refresh after unread update failed',error));
- }catch(error){console.warn('Unread message refresh failed',error)}finally{unreadCheckInProgress=false}
+ }catch(error){console.warn('Unread message refresh failed',error)}finally{unreadCheckInProgress=false;if(session?.user?.id!==uid)queueMicrotask(()=>{void checkUnreadMessages()})}
 }
 
 $('vexHeaderInbox').onclick=async()=>{if(!session)return openAuth();if(!$('accountDialog').open)await openAccount();showAccountSection('Messages');$('accountDialog').scrollTop=0;await loadConversations()};
