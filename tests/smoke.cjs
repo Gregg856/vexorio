@@ -106,6 +106,10 @@ assert.ok(html.includes('geoKey(location,item.country)===geoKey(locationFilterVa
 // Distinguish transient geocoding outages from unknown city names.
 for(const message of ['Błąd połączenia z usługą lokalizacji','Verbindungsfehler beim Standortdienst','Location service connection failed','Помилка з’єднання'])assert.ok(html.includes(message),'Missing geocoding outage message: '+message);
 assert.ok(html.includes('geoRetryAfter.get(geoKey(locationFilterValue().trim(),country))'),'Radius status must consult retry state');
+// Radius fallback must clear both city display and postal filter without assigning to a function call.
+assert.ok(!html.includes("locationFilterValue()='';"),'Whole-country reset must not assign to function call');
+assert.ok(html.includes("all.onclick=()=>{$('radiusFilter').value='0';$('cityFilter').value='';$('cityFilter').dataset.postalValue='';render()}"),'Whole-country reset must clear location fields');
+assert.ok(html.includes('const radiusRetry=radiusActive&&Date.now()<(geoRetryAfter.get(originKey)||0)'),'Radius empty state must recognize transient geocoding failure');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
