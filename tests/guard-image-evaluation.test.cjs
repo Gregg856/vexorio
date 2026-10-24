@@ -21,5 +21,6 @@ assert.equal(result.accuracy,1);
 assert.equal(result.automaticModeration,false);
 assert.ok(result.examples.every(x=>x.requiresHumanReview&&!('pixels' in x)));
 assert.throws(()=>evaluateImageHoldout(training,[testing[0],testing[0]]),/Both test classes required/);
-assert.throws(()=>evaluateImageHoldout(training,[training[0],testing[1]]),/Shared training and test pixel buffers/);
+assert.throws(()=>evaluateImageHoldout(training,[training[0],testing[1]]),/Duplicate training and test images/);
+assert.throws(()=>evaluateImageHoldout(training,[{label:'safe',pixels:pattern(false,0)},testing[1]]),/Duplicate training and test images/);
 console.log('PASS: Guard synthetic image holdout metrics and no auto moderation');
