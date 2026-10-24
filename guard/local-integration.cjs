@@ -8,7 +8,7 @@ function createLocalGuard(examples,{minimumConfidence=0.85,minimumCoverage=0.25}
  const model=train(examples);
  const modelAdapter=async ({title,description})=>{
   const prediction=model.predict([title,description].filter(x=>typeof x==='string').join(' '));
-  const insufficient=prediction.label==='unknown'||prediction.coverage<minimumCoverage;
+  const insufficient=prediction.label==='unknown'||prediction.coverage<minimumCoverage||prediction.confidence<minimumConfidence;
   return {labels:insufficient?['insufficient_model_knowledge']:prediction.label==='suspicious'&&prediction.confidence>=minimumConfidence?['suspected_fraud']:[],confidence:prediction.confidence};
  };
  return Object.freeze({
