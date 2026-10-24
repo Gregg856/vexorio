@@ -22,4 +22,6 @@ check('English singular listing grammar',html.includes("filtered.length===1?' li
 check('Polish singular listing grammar',html.includes("filtered.length===1?' ogłoszenie'"));
 check('Suggested city selection passes the country explicitly',html.includes("selectCity(name,undefined,country==='all'?code:undefined)"));
 check('German singular listing grammar',html.includes("filtered.length===1?' Anzeige'"));
+check('Country auto-select normalized when city suggested',html.includes("item.value.toUpperCase()===String(selectedCountry).toUpperCase()"));
+check('Postal search instructs to choose country first',html.includes("Select a country first (e.g. Germany) to look up a postal code."));
 console.log('PASS: mobile search static regression guards. Live browser and geocoding API still require end-to-end checks.');
