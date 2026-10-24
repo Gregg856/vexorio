@@ -2618,13 +2618,14 @@ async function loadConversations(){
  if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
  if(error){box.replaceChildren();const notice=document.createElement('p');notice.textContent='Nie udało się pobrać rozmów. Sprawdź połączenie i spróbuj ponownie.';notice.setAttribute('role','alert');const retry=document.createElement('button');retry.type='button';retry.className='btn small';retry.textContent='↻ Spróbuj ponownie';retry.onclick=()=>{retry.disabled=true;void loadConversations().finally(()=>{retry.disabled=false})};box.append(notice,retry);console.error('Inbox loading failed:',error);return}
  if(!data?.length){box.textContent='Nie masz jeszcze żadnych rozmów. Gdy napiszesz do sprzedającego lub ktoś skontaktuje się w sprawie Twojego ogłoszenia, rozmowa pojawi się tutaj.';return}
+ document.getElementById('vexInboxLoadWarning')?.remove();
  const latestByConversation=new Map();const previewByConversation=new Map();
  // Fetch recent messages in batches to show a preview of the latest message.
  for(let start=0;start<data.length;start+=25){
   const ids=data.slice(start,start+25).map(c=>c.id);
   const {data:incoming,error:incomingError}=await sb.from('messages').select('conversation_id,created_at,sender_id,body').in('conversation_id',ids).order('created_at',{ascending:false}).limit(1000);
   if(requestId!==inboxRequestId||session?.user?.id!==uid||!$('accountDialog').open)return;
-  if(incomingError){console.warn('Inbox unread lookup failed',incomingError);continue}
+  if(incomingError){console.warn('Inbox unread lookup failed',incomingError);const warning=document.getElementById('vexInboxLoadWarning')||document.createElement('p');warning.id='vexInboxLoadWarning';warning.setAttribute('role','status');warning.textContent=language==='de'?'Nachrichtenvorschau vorübergehend nicht verfügbar. Bitte aktualisieren.':language==='en'?'Message previews are temporarily unavailable. Please refresh.':'Podgląd wiadomości jest chwilowo niedostępny. Odśwież rozmowy.';box.before(warning);continue}
   for(const msg of incoming||[]){const id=String(msg.conversation_id);if(!previewByConversation.has(id))previewByConversation.set(id,msg);if(msg.sender_id!==uid&&!latestByConversation.has(id))latestByConversation.set(id,msg)}
  }
  const inboxScrollTop=$('accountDialog').scrollTop;
