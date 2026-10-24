@@ -1620,8 +1620,10 @@ $('adminPendingRefresh').onclick=()=>loadAdminPendingListings();
 document.querySelectorAll('[data-admin-back]').forEach(btn=>btn.onclick=()=>{const dialog=$(btn.dataset.adminBack);dialog.close();adminReportListingFilter=null;$('adminDashboardDialog').showModal();loadAdminDashboard()});
 async function loadAdminOverview(){
  const node=$('dashOverview');node.replaceChildren();node.textContent=language==='uk'?'Завантаження статистики…':'Ładowanie statystyk…';
+ if(!sb||!session?.user?.id){node.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
+ const overviewViewerId=session.user.id;
  const checks=await Promise.allSettled([sb.from('listings').select('id',{count:'exact',head:true}),sb.from('listing_reports').select('id',{count:'exact',head:true}).in('status',['new','reviewing']),sb.rpc('admin_moderation_users')]);
- const {data:pending,error:pendingError}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});const pendingCount=!pendingError&&Array.isArray(pending)?pending.length:null;const pendingBadge=$('dashPendingBadge');if(pendingBadge)pendingBadge.textContent=pendingCount===null?'—':'('+pendingCount+(pendingCount===50?'+':'')+')';
+ const {data:pending,error:pendingError}=await sb.rpc('vexorio_admin_pending_listings_v2',{p_limit:50});if(session?.user?.id!==overviewViewerId)return;const pendingCount=!pendingError&&Array.isArray(pending)?pending.length:null;const pendingBadge=$('dashPendingBadge');if(pendingBadge)pendingBadge.textContent=pendingCount===null?'—':'('+pendingCount+(pendingCount===50?'+':'')+')';
  const read=i=>checks[i].status==='fulfilled'&&!checks[i].value.error?checks[i].value:null;
  const listings=read(0),reports=read(1),users=read(2);
  node.replaceChildren();
