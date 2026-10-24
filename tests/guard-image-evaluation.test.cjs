@@ -19,6 +19,7 @@ const testing=[
 const result=evaluateImageHoldout(training,testing);
 assert.equal(result.samples,2);
 assert.equal(Object.values(result.counts).reduce((a,b)=>a+b,0),2);
+assert.ok(result.coverage>=0&&result.coverage<=1);
 assert.ok(result.accuracy>=0&&result.accuracy<=1);
 assert.equal(result.automaticModeration,false);
 assert.ok(result.examples.every(x=>x.requiresHumanReview&&!('pixels' in x)));
