@@ -2388,7 +2388,7 @@ const submit=$('addForm').querySelector('button[type=submit]');if(submit.disable
 let verifiedAuth,verifiedAuthError;try{({data:verifiedAuth,error:verifiedAuthError}=await sb.auth.getUser())}catch(authFailure){return $('addMsg').textContent='Nie udało się zweryfikować sesji. Spróbuj ponownie.';}
 if(verifiedAuthError||!verifiedAuth?.user||verifiedAuth.user.id!==session.user.id)return $('addMsg').textContent='Sesja wygasła. Zaloguj się ponownie przed publikacją.';
 const title=$('newTitle').value.trim(),description=listingDescriptionWithExtras(),priceInput=$('newPrice').value;
-if(title.length<3||title.length>120||!description.trim()||description.length>10000)return $('addMsg').textContent='Sprawdź tytuł (3–120 znaków) i opis (1–10000 znaków).';
+if(title.length<3||title.length>120||!description.trim()||description.length>10000)return $('addMsg').textContent=({pl:'Sprawdź tytuł (3–120 znaków) i opis (1–10000 znaków).',de:'Prüfe den Titel (3–120 Zeichen) und die Beschreibung (1–10000 Zeichen).',en:'Check the title (3–120 characters) and description (1–10000 characters).'}[language]);
 if(priceInput!==''&&(!Number.isFinite(Number(priceInput))||Number(priceInput)<0))return $('addMsg').textContent='Podaj prawidłową cenę.';
 const files=Array.from($('newImages').files);const allowed=['image/jpeg','image/png','image/webp'];
 if(files.length>5)return $('addMsg').textContent='Możesz dodać maksymalnie 5 zdjęć.';
