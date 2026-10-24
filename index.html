@@ -1837,6 +1837,7 @@ async function loadAdminPendingListings(){
        if(typeof url!=='string'||!url.startsWith('listing-images-review/')){published.push(url);continue}
        const path=url.slice('listing-images-review/'.length);
        if(!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path))throw new Error(language==='uk'?'Неправильний шлях до фото.':'Nieprawidłowa ścieżka zdjęcia.');
+       if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');
        const {data:blob,error:downloadError}=await sb.storage.from('listing-images-review').download(path);
        if(downloadError||!blob)throw downloadError||new Error(language==='uk'?'Не вдалося завантажити фото.':'Nie udało się pobrać zdjęcia.');
        if(session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Сесія змінилася.':'Sesja uległa zmianie.');
