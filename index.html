@@ -3030,7 +3030,7 @@ async function sendMessage(listingId,sellerId,message){
  if(!sellerId||typeof sellerId!=='string')throw new Error('Nieprawidłowy odbiorca wiadomości.');
  if(user.id===sellerId)throw new Error('Nie możesz pisać do siebie.');
  const validListingId=Number(listingId);
- if(listingId==null||String(listingId).trim()===''||!Number.isSafeInteger(validListingId)||validListingId<=0)throw new Error('Nieprawidłowe ogłoszenie.');
+ if(listingId==null||String(listingId).trim()===''||!/^\d+$/.test(String(listingId).trim())||!Number.isSafeInteger(validListingId)||validListingId<=0)throw new Error('Nieprawidłowe ogłoszenie.');
  if(typeof message!=='string'||!message.trim()||message.trim().length>2000)throw new Error('Wiadomość musi mieć od 1 do 2000 znaków.');
  const {data:existing,error:findError}=await sb.from('conversations').select('id').eq('listing_id',validListingId).eq('buyer_id',user.id).eq('seller_id',sellerId).limit(1);
  if(findError)throw findError;
