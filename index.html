@@ -1809,6 +1809,7 @@ async function loadAdminPendingListings(){
     const path=url.slice('listing-images-review/'.length);
     if(!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path))continue;
     const {data:signed,error:signError}=await sb.storage.from('listing-images-review').createSignedUrl(path,120);
+    if(session?.user?.id!==pendingViewerId)return;
     if(signError||!signed?.signedUrl)continue;
     src=signed.signedUrl;
    }else{
