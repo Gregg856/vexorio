@@ -114,6 +114,7 @@ assert.ok(html.includes('radiusCandidateCount>0&&!radiusLoading&&!radiusNotFound
 // Admin report fetches must not render after an account switch.
 assert.ok(html.includes('const reportViewerId=session.user.id'),'Admin reports must capture viewer identity');
 assert.ok((html.match(/if\(session\?\.user\?\.id!==reportViewerId\)return;/g)||[]).length>=2,'Admin reports must check identity after async calls');
+for(const viewer of ['messageReportViewerId','adminUsersViewerId']){assert.ok(html.includes('const '+viewer+'=session.user.id'),'Missing admin session capture '+viewer);assert.ok((html.match(new RegExp('if\\(session\\?\\.user\\?\\.id!=='+viewer+'\\)return;','g'))||[]).length>=2,'Missing async session guards '+viewer)}
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
