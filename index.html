@@ -2676,7 +2676,7 @@ let myListingsRequest=0;
 async function loadMine(){
  const request=++myListingsRequest;
  const box=$('myListings');
- if(!sb||!session){box.removeAttribute('aria-busy');box.textContent='Zaloguj się, aby zarządzać wpisami.';$('myListingsStats')?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
+ if(!sb||!session){box.removeAttribute('aria-busy');box.textContent=({pl:"Zaloguj się, aby zarządzać wpisami.",de:"Melde dich an, um Einträge zu verwalten.",en:"Sign in to manage listings.",uk:"Увійдіть, щоб керувати оголошеннями."}[language]);$('myListingsStats')?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
  const ownerId=session.user.id;
  const stats=$('myListingsStats');
  box.setAttribute('aria-busy','true');
@@ -2686,34 +2686,34 @@ async function loadMine(){
  if(request!==myListingsRequest)return false;
  if(!session||session.user.id!==ownerId){box.removeAttribute('aria-busy');box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();return false}
  box.removeAttribute('aria-busy');
- if(error){box.replaceChildren();const warning=document.createElement('p');warning.className='msg error';warning.setAttribute('role','alert');warning.textContent=({pl:'Nie udało się wczytać Twoich ogłoszeń. Sprawdź połączenie i spróbuj ponownie.',de:'Deine Anzeigen konnten nicht geladen werden. Prüfe die Verbindung und versuche es erneut.',en:'Your listings could not be loaded. Check your connection and try again.'}[language]);const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent=({pl:'↻ Spróbuj ponownie',de:'↻ Erneut versuchen',en:'↻ Try again'}[language]);retry.onclick=()=>loadMine();box.append(warning,retry);$('accountMsg').textContent='Nie udało się pobrać wpisów: '+(error.message||'Błąd połączenia.');return false}
+ if(error){box.replaceChildren();const warning=document.createElement('p');warning.className='msg error';warning.setAttribute('role','alert');warning.textContent=({pl:'Nie udało się wczytać Twoich ogłoszeń. Sprawdź połączenie i spróbuj ponownie.',de:'Deine Anzeigen konnten nicht geladen werden. Prüfe die Verbindung und versuche es erneut.',en:'Your listings could not be loaded. Check your connection and try again.'}[language]);const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent=({pl:'↻ Spróbuj ponownie',de:'↻ Erneut versuchen',en:'↻ Try again'}[language]);retry.onclick=()=>loadMine();box.append(warning,retry);$('accountMsg').textContent=({pl:"Nie udało się pobrać wpisów: ",de:"Einträge konnten nicht geladen werden: ",en:"Could not load listings: ",uk:"Не вдалося завантажити оголошення: "}[language])+(error.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));return false}
  box.replaceChildren();stats?.replaceChildren();$('myListingsPager')?.replaceChildren();
  if(!data?.length){
   const empty=document.createElement('div');empty.className='my-listings-empty';
-  const title=document.createElement('strong');title.textContent='Nie masz jeszcze własnych ogłoszeń ani zleceń.';
-  const note=document.createElement('p');note.textContent='Dodaj pierwszy wpis, aby tutaj nim zarządzać.';
-  const add=document.createElement('button');add.type='button';add.className='btn primary';add.textContent='＋ Dodaj ogłoszenie';
+  const title=document.createElement('strong');title.textContent=({pl:"Nie masz jeszcze własnych ogłoszeń ani zleceń.",de:"Du hast noch keine Anzeigen oder Aufträge.",en:"You have no listings or requests yet.",uk:"У вас ще немає оголошень або замовлень."}[language]);
+  const note=document.createElement('p');note.textContent=({pl:"Dodaj pierwszy wpis, aby tutaj nim zarządzać.",de:"Erstelle deinen ersten Eintrag, um ihn hier zu verwalten.",en:"Create your first listing to manage it here.",uk:"Створіть перше оголошення, щоб керувати ним тут."}[language]);
+  const add=document.createElement('button');add.type='button';add.className='btn primary';add.textContent=({pl:"＋ Dodaj ogłoszenie",de:"＋ Anzeige aufgeben",en:"＋ Add listing",uk:"＋ Додати оголошення"}[language]);
   add.onclick=()=>{$('accountDialog').close();$('addBtn').click()};
   empty.append(title,note,add);box.append(empty);return true
  }
- if(stats){const active=data.filter(x=>x.status!=='closed').length;const closed=data.length-active;const views=data.reduce((sum,x)=>sum+Math.max(0,Number(x.view_count)||0),0);stats.replaceChildren();for(const [label,value] of [['Wszystkie',data.length],['Aktywne',active],['Zakończone',closed],['Wyświetlenia',views]]){const tile=document.createElement('div');tile.className='my-stats-tile';const num=document.createElement('strong');num.textContent=value.toLocaleString('pl-PL');const caption=document.createElement('span');caption.textContent=label;tile.append(num,caption);stats.append(tile)}}
- const summary=document.createElement('p');summary.className='my-listings-summary';const offers=data.filter(x=>x.rodzaj!=='zlecenie').length;const jobs=data.length-offers;summary.textContent='Wszystkie: '+data.length+' · Ogłoszenia: '+offers+' · Zlecenia: '+jobs;box.append(summary);
+ if(stats){const active=data.filter(x=>x.status!=='closed').length;const closed=data.length-active;const views=data.reduce((sum,x)=>sum+Math.max(0,Number(x.view_count)||0),0);stats.replaceChildren();for(const [label,value] of [[({pl:"Wszystkie",de:"Alle",en:"All",uk:"Усі"}[language]),data.length],[({pl:"Aktywne",de:"Aktiv",en:"Active",uk:"Активні"}[language]),active],[({pl:"Zakończone",de:"Abgeschlossen",en:"Closed",uk:"Завершені"}[language]),closed],[({pl:"Wyświetlenia",de:"Aufrufe",en:"Views",uk:"Перегляди"}[language]),views]]){const tile=document.createElement('div');tile.className='my-stats-tile';const num=document.createElement('strong');num.textContent=value.toLocaleString('pl-PL');const caption=document.createElement('span');caption.textContent=label;tile.append(num,caption);stats.append(tile)}}
+ const summary=document.createElement('p');summary.className='my-listings-summary';const offers=data.filter(x=>x.rodzaj!=='zlecenie').length;const jobs=data.length-offers;summary.textContent=({pl:"Wszystkie: ",de:"Alle: ",en:"All: ",uk:"Усі: "}[language])+data.length+' · Ogłoszenia: '+offers+' · Zlecenia: '+jobs;box.append(summary);
  for(const x of data){
   const row=document.createElement('article');row.className='account-listing my-listing-card';row.dataset.kind=x.rodzaj==='zlecenie'?'zlecenie':'ogloszenie';row.dataset.status=x.status==='closed'?'closed':'active';row.dataset.views=String(Math.max(0,Number(x.view_count)||0));row.dataset.title=String(x.title||'');row.dataset.time=Date.parse(x.created_at||'')||0;row.dataset.search=(String(x.id)+' '+String(x.title||'')+' '+String(x.miasto||'')+' '+String(x.kraj||'')).toLocaleLowerCase('pl');
   const main=document.createElement('div');main.className='my-listing-details';
-  const kind=document.createElement('span');kind.className='my-listing-kind';kind.textContent=(x.rodzaj==='zlecenie'?'Zlecenie':'Ogłoszenie')+' #'+x.id;
-  const name=document.createElement('strong');name.textContent=x.title||'Bez tytułu';
+  const kind=document.createElement('span');kind.className='my-listing-kind';kind.textContent=(x.rodzaj==='zlecenie'?({pl:"Zlecenie",de:"Auftrag",en:"Request",uk:"Замовлення"}[language]):({pl:"Ogłoszenie",de:"Anzeige",en:"Listing",uk:"Оголошення"}[language]))+' #'+x.id;
+  const name=document.createElement('strong');name.textContent=x.title||({pl:"Bez tytułu",de:"Ohne Titel",en:"Untitled",uk:"Без назви"}[language]);
   const info=document.createElement('span');info.className='my-listing-meta';
-  const money=x.price===null||x.price===undefined?'Cena do uzgodnienia':Number(x.price).toLocaleString('pl-PL')+' '+(x.kraj==='PL'?'zł':'€');
-  const date=x.created_at?new Date(x.created_at):null;const dateLabel=date&&!Number.isNaN(date.getTime())?'Dodano: '+date.toLocaleDateString('pl-PL'):'';info.textContent=[x.miasto,x.kraj,money,dateLabel].filter(Boolean).join(' · ');
-  main.append(kind,name,info);const views=document.createElement('span');views.className='my-listing-views';views.textContent='◉ Wyświetlenia: '+Number(x.view_count||0).toLocaleString('pl-PL');main.append(views);
-  const state=document.createElement('span');state.className='my-listing-status '+(x.status==='closed'?'is-closed':'is-active');state.textContent=x.status==='closed'?'● Zakończone':'● Aktywne';main.append(state);
+  const money=x.price===null||x.price===undefined?({pl:"Cena do uzgodnienia",de:"Preis verhandelbar",en:"Price negotiable",uk:"Ціна договірна"}[language]):Number(x.price).toLocaleString('pl-PL')+' '+(x.kraj==='PL'?'zł':'€');
+  const date=x.created_at?new Date(x.created_at):null;const dateLabel=date&&!Number.isNaN(date.getTime())?({pl:"Dodano: ",de:"Hinzugefügt: ",en:"Added: ",uk:"Додано: "}[language])+date.toLocaleDateString('pl-PL'):'';info.textContent=[x.miasto,x.kraj,money,dateLabel].filter(Boolean).join(' · ');
+  main.append(kind,name,info);const views=document.createElement('span');views.className='my-listing-views';views.textContent=({pl:"◉ Wyświetlenia: ",de:"◉ Aufrufe: ",en:"◉ Views: ",uk:"◉ Перегляди: "}[language])+Number(x.view_count||0).toLocaleString('pl-PL');main.append(views);
+  const state=document.createElement('span');state.className='my-listing-status '+(x.status==='closed'?'is-closed':'is-active');state.textContent=x.status==='closed'?({pl:"● Zakończone",de:"● Abgeschlossen",en:"● Closed",uk:"● Завершено"}[language]):({pl:"● Aktywne",de:"● Aktiv",en:"● Active",uk:"● Активне"}[language]);main.append(state);
   const actions=document.createElement('div');actions.className='listing-actions';actions.setAttribute('role','group');actions.setAttribute('aria-label','Zarządzaj wpisem numer '+x.id);
   const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.setAttribute('aria-label','Edytuj ogłoszenie numer '+x.id);edit.onclick=()=>editListing(x.id);
   const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
   del.onclick=async()=>{
    if(del.disabled)return;
-   if(!confirm('Na pewno usunąć wpis „'+(x.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;
+   if(!confirm('Na pewno usunąć wpis „'+(x.title||({pl:"Bez tytułu",de:"Ohne Titel",en:"Untitled",uk:"Без назви"}[language]))+'”? Tej operacji nie można cofnąć.'))return;
    del.disabled=true;del.setAttribute('aria-busy','true');del.textContent='Usuwanie…';
    try{
     const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
@@ -2722,7 +2722,7 @@ async function loadMine(){
     $('accountMsg').textContent='Wpis został usunięty.';
     const results=await Promise.allSettled([loadMine(),loadListings()]);
     if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Wpis usunięty, ale nie wszystkie dane zostały odświeżone. Użyj „Odśwież dane”.';
-   }catch(err){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(err?.message||'Błąd połączenia.');del.disabled=false;del.textContent='Usuń'}finally{del.removeAttribute('aria-busy')}
+   }catch(err){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(err?.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));del.disabled=false;del.textContent='Usuń'}finally{del.removeAttribute('aria-busy')}
   };
   const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?'↻ Wznów':'✓ Zakończ';toggle.setAttribute('aria-label',(x.status==='closed'?'Wznów':'Zakończ')+' wpis numer '+x.id);
   toggle.onclick=async()=>{
@@ -2734,7 +2734,7 @@ async function loadMine(){
     $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';
     const results=await Promise.allSettled([loadMine(),loadListings()]);
     if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Status zapisany, ale odświeżenie nie powiodło się. Użyj „Odśwież dane”.';
-   }catch(err){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(err?.message||'Błąd połączenia.');toggle.disabled=false;toggle.textContent=original}finally{toggle.removeAttribute('aria-busy')}
+   }catch(err){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(err?.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));toggle.disabled=false;toggle.textContent=original}finally{toggle.removeAttribute('aria-busy')}
   };
   actions.append(edit,toggle,del);row.append(main,actions);box.append(row)
  }
