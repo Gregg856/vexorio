@@ -7,6 +7,15 @@ export default {
     headers.set('X-Frame-Options', 'DENY');
     headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     headers.set('X-Permitted-Cross-Domain-Policies', 'none');
+    // Allow browser push updates to be checked promptly without stale worker code.
+    const pathname = new URL(request.url).pathname;
+    if (pathname === '/push-sw.js') {
+      headers.set('Cache-Control', 'no-cache, must-revalidate');
+    }
+    // Robots directives must refresh when the permanent domain is connected.
+    if (pathname === '/robots.txt') {
+      headers.set('Cache-Control', 'no-cache, must-revalidate');
+    }
     // Enforce HTTPS on subsequent visits; Workers public address is HTTPS-only.
     headers.set('Strict-Transport-Security', 'max-age=31536000');
     // Prevent legacy browsers from opening downloaded files in the site context.
