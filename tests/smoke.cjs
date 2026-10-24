@@ -68,8 +68,8 @@ const mobileCardGuards=[
  ['Mobile cards keep natural height',/#cards \.card\{[^}]*height:auto!important/],
  ['Mobile grid does not stretch cards',/#cards\{align-items:start!important\}/],
  ['Listing price does not create empty vertical space',/#cards \.card \.price\{margin-top:0!important/],
- ['Full mobile photo is not cropped',/#cards \.card \.listing-photo\{[^}]*object-fit:contain!important/],
- ['Photo remains centered',/#cards \.card \.listing-photo\{[^}]*object-position:center!important/],
+ ['Mobile photo uses approved cover crop',/#cards \.card \.listing-photo\{[^}]*object-fit:cover!important/],
+ ['Mobile photo keeps approved vertical framing',/#cards \.card \.listing-photo\{[^}]*object-position:center 25%!important/],
  ['Report actions remain available',/photoReport\.textContent=/],
  ['Inbox sorts by most recent message',/const lastA=previewByConversation\.get\(String\(a\.id\)\)\?\.created_at/],
  ['Unread badges are updated',/function updateUnreadBadges\(count\)/]
