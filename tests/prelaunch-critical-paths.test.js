@@ -91,3 +91,13 @@ assert.ok(workflow.includes('cp robots.txt public/robots.txt'),'Deployment must 
 assert.ok(workflow.includes('test -s public/robots.txt'),'Deployment must validate robots file');
 assert.ok(workflow.includes('DEPLOY_URL/robots.txt'),'Live smoke test must check robots policy');
 console.log('PASS: crawler policy, private account hostname, deploy and live smoke wiring');
+
+// New-account email confirmation must respect the active PL/DE/EN language.
+for(const fragment of [
+ "mode==='register'&&!data.session",
+ "pl:'Sprawdź pocztę i kliknij link potwierdzający konto.'",
+ "de:'Prüfe dein E-Mail-Postfach und bestätige dein Konto über den Link.'",
+ "en:'Check your email and follow the link to confirm your account.'",
+ "}[language]",
+])assert.ok(html.includes(fragment),'Missing localized registration guidance: '+fragment);
+console.log('PASS: localized registration confirmation guidance');
