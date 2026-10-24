@@ -25,6 +25,17 @@ for(const fixture of fixtures){
  const expected=screenListing(fixture);
  assert.equal(expected.score,fixture.score,'Guard engine fixture changed');
  assert.ok(nodes.out.textContent.includes('WYNIK: '+expected.score+'/100'),'Browser and engine score diverged');
- for(const signal of expected.signals)assert.ok(script.includes(signal),'Browser missing engine signal: '+signal);
+ const browserSignals=nodes.out.textContent;
+ const labels={
+  credential_request:'Prośba o hasło lub kod weryfikacyjny',
+  external_payment:'Podejrzana forma płatności poza portalem',
+  guaranteed_profit:'Podejrzana obietnica gwarantowanego zysku',
+  pressure_tactic:'Presja na natychmiastową wpłatę'
+ };
+ for(const signal of expected.signals){
+  assert.ok(script.includes(signal),'Browser missing engine signal: '+signal);
+  if(labels[signal])assert.ok(browserSignals.includes(labels[signal]),'Browser did not actually detect '+signal);
+ }
+ assert.equal((browserSignals.match(/• /g)||[]).length,expected.signals.length,'Browser signal count diverged');
 }
 console.log('PASS: Guard lab JS syntax, UI controls, privacy and advisory-only isolation');
