@@ -58,3 +58,17 @@ Zasada: **zamknięte** = potwierdzone właściwym testem i zaakceptowane; **czę
 | Audyt końcowy | OTWARTE | Dopiero po zamknięciu krytycznych ścieżek |
 
 Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków i wyglądu, na końcu pełny test wydania. Bez nowych funkcji, stron i kont. Zamkniętych obszarów nie poprawiać ponownie bez reprodukcji błędu.
+
+
+## Audyt przekrojowy 2026-10-24 — tylko odczyt (bez testu kont użytkowników)
+
+- **CI i publikacja:** commit `ca1c2e1` — checks i Deploy VEXORIO SUCCESS (GitHub Actions 40109983316 / 40109983213). To nie dowodzi pełnego E2E.
+- **Supabase produkcja, security advisors:** 2 funkcje SECURITY DEFINER wykonywalne przez anon (`is_vexorio_admin`, `record_listing_view`); 13 ostrzeżeń dotyczących funkcji SECURITY DEFINER dla authenticated. Samo uprawnienie EXECUTE nie oznacza skutecznego obejścia kontroli — sprawdzono kod wybranych funkcji.
+- **Sprawdzone funkcje:** `admin_delete_listing`, `admin_set_user_block`, `admin_reported_message_body`, `vexorio_admin_review_listing`, `vexorio_admin_publish_reviewed_listing` mają kontrolę `auth.uid()` i `is_vexorio_admin()` oraz `search_path=''`. Ich dostęp jest ograniczany wewnątrz funkcji, mimo ostrzeżeń o EXECUTE.
+- **Priorytet wysoki:** `record_listing_view(bigint)` jest wywoływalna przez anon, SECURITY DEFINER, i bez ograniczenia częstotliwości zwiększa `view_count` dla aktywnych, zatwierdzonych ogłoszeń. Ryzyko sztucznego nabijania odsłon. Przygotować poprawkę z limitem/ochroną przed nadużyciem, bez wyłączania publicznych odsłon.
+- **`is_vexorio_admin()`:** anon może wywołać funkcję, ale sprawdzony kod zwraca wyłącznie `exists(admin_members where user_id=auth.uid())`; dla anon bez UID wynik false. Ograniczenie EXECUTE do authenticated można rozważyć po analizie zależności.
+- **RLS:** potwierdzono włączenie na `listings`, `conversations`, `messages`, `listing_reports`, `message_reports`, `profiles`, `push_subscriptions`, `admin_members`, `moderation_blocks`. Brak bezpośrednich polityk dla `admin_members` i `moderation_blocks` jest zgodny z modelem dostępu przez zabezpieczone funkcje, wymaga jednak testu uprawnień z rolami.
+- **Wydajność:** advisor produkcji zgłasza 8 brakujących indeksów FK (w tym `conversations.buyer_id`, `conversations.seller_id`) oraz 8 ostrzeżeń `auth_rls_initplan`; priorytet przed wzrostem ruchu.
+- **Staging:** różnice w zestawie funkcji, tabel i ostrzeżeń względem produkcji; nie traktować staging jako identycznego środowiska testowego.
+- **Otwarte przed finalnym uruchomieniem:** E2E dwóch istniejących kont (czat i licznik, Google/e-mail), Android/Chrome push, moderacja zdjęć i zgłoszeń, kontrola uprawnień DB z rolą nieadministracyjną, tłumaczenia PL/DE/EN/UK, mobilne wyszukiwanie, limity odsłon, ochrona haseł oraz przegląd wydajności.
+- **Nie wykonywano:** żadnych zapisów w bazie produkcyjnej, tworzenia kont, zmian layoutu ani symulacji nieautoryzowanych operacji.
