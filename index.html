@@ -2708,33 +2708,33 @@ async function loadMine(){
   const date=x.created_at?new Date(x.created_at):null;const dateLabel=date&&!Number.isNaN(date.getTime())?({pl:"Dodano: ",de:"Hinzugefügt: ",en:"Added: ",uk:"Додано: "}[language])+date.toLocaleDateString('pl-PL'):'';info.textContent=[x.miasto,x.kraj,money,dateLabel].filter(Boolean).join(' · ');
   main.append(kind,name,info);const views=document.createElement('span');views.className='my-listing-views';views.textContent=({pl:"◉ Wyświetlenia: ",de:"◉ Aufrufe: ",en:"◉ Views: ",uk:"◉ Перегляди: "}[language])+Number(x.view_count||0).toLocaleString('pl-PL');main.append(views);
   const state=document.createElement('span');state.className='my-listing-status '+(x.status==='closed'?'is-closed':'is-active');state.textContent=x.status==='closed'?({pl:"● Zakończone",de:"● Abgeschlossen",en:"● Closed",uk:"● Завершено"}[language]):({pl:"● Aktywne",de:"● Aktiv",en:"● Active",uk:"● Активне"}[language]);main.append(state);
-  const actions=document.createElement('div');actions.className='listing-actions';actions.setAttribute('role','group');actions.setAttribute('aria-label','Zarządzaj wpisem numer '+x.id);
-  const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='✎ Edytuj';edit.setAttribute('aria-label','Edytuj ogłoszenie numer '+x.id);edit.onclick=()=>editListing(x.id);
-  const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent='Usuń';del.setAttribute('aria-label','Usuń ogłoszenie numer '+x.id);
+  const actions=document.createElement('div');actions.className='listing-actions';actions.setAttribute('role','group');actions.setAttribute('aria-label',({pl:"Zarządzaj wpisem numer ",de:"Eintrag verwalten, Nummer ",en:"Manage listing number ",uk:"Керувати оголошенням № "}[language])+x.id);
+  const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent=({pl:"✎ Edytuj",de:"✎ Bearbeiten",en:"✎ Edit",uk:"✎ Редагувати"}[language]);edit.setAttribute('aria-label',({pl:"Edytuj ogłoszenie numer ",de:"Anzeige bearbeiten, Nummer ",en:"Edit listing number ",uk:"Редагувати оголошення № "}[language])+x.id);edit.onclick=()=>editListing(x.id);
+  const del=document.createElement('button');del.type='button';del.className='btn small my-listing-delete';del.textContent=({pl:"Usuń",de:"Löschen",en:"Delete",uk:"Видалити"}[language]);del.setAttribute('aria-label',({pl:"Usuń ogłoszenie numer ",de:"Anzeige löschen, Nummer ",en:"Delete listing number ",uk:"Видалити оголошення № "}[language])+x.id);
   del.onclick=async()=>{
    if(del.disabled)return;
-   if(!confirm('Na pewno usunąć wpis „'+(x.title||({pl:"Bez tytułu",de:"Ohne Titel",en:"Untitled",uk:"Без назви"}[language]))+'”? Tej operacji nie można cofnąć.'))return;
-   del.disabled=true;del.setAttribute('aria-busy','true');del.textContent='Usuwanie…';
+   if(!confirm(({pl:"Na pewno usunąć wpis „",de:"Eintrag „",en:"Delete listing “",uk:"Видалити оголошення «"}[language])+(x.title||({pl:"Bez tytułu",de:"Ohne Titel",en:"Untitled",uk:"Без назви"}[language]))+({pl:"”? Tej operacji nie można cofnąć.",de:"“ wirklich löschen? Dies kann nicht rückgängig gemacht werden.",en:"”? This cannot be undone.",uk:"»? Цю дію неможливо скасувати."}[language])))return;
+   del.disabled=true;del.setAttribute('aria-busy','true');del.textContent=({pl:"Usuwanie…",de:"Wird gelöscht…",en:"Deleting…",uk:"Видалення…"}[language]);
    try{
     const {data:removed,error:removeError}=await sb.from('listings').delete().eq('id',x.id).eq('owner_id',session.user.id).select('id');
-    if(removeError||!removed?.length)throw new Error(removeError?.message||'Brak uprawnień');
+    if(removeError||!removed?.length)throw new Error(removeError?.message||({pl:"Brak uprawnień",de:"Keine Berechtigung",en:"Permission denied",uk:"Немає дозволу"}[language]));
     favorites.delete(String(x.id));try{localStorage.setItem('vexorio-favorites',JSON.stringify([...favorites]))}catch(e){}
-    $('accountMsg').textContent='Wpis został usunięty.';
+    $('accountMsg').textContent=({pl:"Wpis został usunięty.",de:"Eintrag wurde gelöscht.",en:"Listing deleted.",uk:"Оголошення видалено."}[language]);
     const results=await Promise.allSettled([loadMine(),loadListings()]);
-    if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Wpis usunięty, ale nie wszystkie dane zostały odświeżone. Użyj „Odśwież dane”.';
-   }catch(err){$('accountMsg').textContent='Nie udało się usunąć wpisu: '+(err?.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));del.disabled=false;del.textContent='Usuń'}finally{del.removeAttribute('aria-busy')}
+    if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent=({pl:"Wpis usunięty, ale nie wszystkie dane zostały odświeżone. Użyj „Odśwież dane”.",de:"Eintrag gelöscht, aber nicht alle Daten wurden aktualisiert. Nutze „Daten aktualisieren“.",en:"Listing deleted, but some data did not refresh. Use “Refresh data”.",uk:"Оголошення видалено, але не всі дані оновлено. Натисніть «Оновити дані»."}[language]);
+   }catch(err){$('accountMsg').textContent=({pl:"Nie udało się usunąć wpisu: ",de:"Eintrag konnte nicht gelöscht werden: ",en:"Could not delete listing: ",uk:"Не вдалося видалити оголошення: "}[language])+(err?.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));del.disabled=false;del.textContent=({pl:"Usuń",de:"Löschen",en:"Delete",uk:"Видалити"}[language])}finally{del.removeAttribute('aria-busy')}
   };
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?'↻ Wznów':'✓ Zakończ';toggle.setAttribute('aria-label',(x.status==='closed'?'Wznów':'Zakończ')+' wpis numer '+x.id);
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='btn small';toggle.textContent=x.status==='closed'?({pl:"↻ Wznów",de:"↻ Reaktivieren",en:"↻ Reopen",uk:"↻ Відновити"}[language]):({pl:"✓ Zakończ",de:"✓ Abschließen",en:"✓ Close",uk:"✓ Завершити"}[language]);toggle.setAttribute('aria-label',(x.status==='closed'?({pl:"Wznów",de:"Reaktivieren",en:"Reopen",uk:"Відновити"}[language]):({pl:"Zakończ",de:"Abschließen",en:"Close",uk:"Завершити"}[language]))+({pl:" wpis numer ",de:" Eintrag Nummer ",en:" listing number ",uk:" оголошення № "}[language])+x.id);
   toggle.onclick=async()=>{
    if(toggle.disabled)return;
-   const next=x.status==='closed'?'active':'closed';toggle.disabled=true;toggle.setAttribute('aria-busy','true');const original=toggle.textContent;toggle.textContent='Zapisywanie…';
+   const next=x.status==='closed'?'active':'closed';toggle.disabled=true;toggle.setAttribute('aria-busy','true');const original=toggle.textContent;toggle.textContent=({pl:"Zapisywanie…",de:"Wird gespeichert…",en:"Saving…",uk:"Збереження…"}[language]);
    try{
     const {data:changed,error:statusError}=await sb.from('listings').update({status:next}).eq('id',x.id).eq('owner_id',session.user.id).eq('status',x.status).select('id');
-    if(statusError||!changed?.length)throw new Error(statusError?.message||'Status ogłoszenia zmienił się w międzyczasie. Odśwież listę i spróbuj ponownie.');
-    $('accountMsg').textContent=next==='closed'?'Ogłoszenie zakończone.':'Ogłoszenie ponownie aktywne.';
+    if(statusError||!changed?.length)throw new Error(statusError?.message||({pl:"Status ogłoszenia zmienił się w międzyczasie. Odśwież listę i spróbuj ponownie.",de:"Der Status wurde inzwischen geändert. Liste aktualisieren und erneut versuchen.",en:"Listing status changed in the meantime. Refresh and try again.",uk:"Статус оголошення вже змінився. Оновіть список і повторіть спробу."}[language]));
+    $('accountMsg').textContent=next==='closed'?({pl:"Ogłoszenie zakończone.",de:"Anzeige abgeschlossen.",en:"Listing closed.",uk:"Оголошення завершено."}[language]):({pl:"Ogłoszenie ponownie aktywne.",de:"Anzeige wieder aktiv.",en:"Listing active again.",uk:"Оголошення знову активне."}[language]);
     const results=await Promise.allSettled([loadMine(),loadListings()]);
-    if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent='Status zapisany, ale odświeżenie nie powiodło się. Użyj „Odśwież dane”.';
-   }catch(err){$('accountMsg').textContent='Nie udało się zmienić statusu: '+(err?.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));toggle.disabled=false;toggle.textContent=original}finally{toggle.removeAttribute('aria-busy')}
+    if(results.some(r=>r.status==='rejected'||r.value===false))$('accountMsg').textContent=({pl:"Status zapisany, ale odświeżenie nie powiodło się. Użyj „Odśwież dane”.",de:"Status gespeichert, Aktualisierung fehlgeschlagen. Nutze „Daten aktualisieren“.",en:"Status saved, but refresh failed. Use “Refresh data”.",uk:"Статус збережено, але оновлення не вдалося. Натисніть «Оновити дані»."}[language]);
+   }catch(err){$('accountMsg').textContent=({pl:"Nie udało się zmienić statusu: ",de:"Status konnte nicht geändert werden: ",en:"Could not change status: ",uk:"Не вдалося змінити статус: "}[language])+(err?.message||({pl:"Błąd połączenia.",de:"Verbindungsfehler.",en:"Connection error.",uk:"Помилка з’єднання."}[language]));toggle.disabled=false;toggle.textContent=original}finally{toggle.removeAttribute('aria-busy')}
   };
   actions.append(edit,toggle,del);row.append(main,actions);box.append(row)
  }
