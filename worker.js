@@ -21,14 +21,18 @@ export default {
       const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.VIEW_COUNT_SECRET), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign']);
       const digestBytes = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(ip));
       const digest = [...new Uint8Array(digestBytes)].map(b => b.toString(16).padStart(2, '0')).join('');
-      const baseUrl = new URL(env.SUPABASE_URL);
-      if (baseUrl.protocol !== 'https:' || !baseUrl.hostname.endsWith('.supabase.co') || baseUrl.username || baseUrl.password || baseUrl.port) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
+      let baseUrl;
+      try { baseUrl = new URL(env.SUPABASE_URL); }
+      catch { return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}}); }
+      if (baseUrl.protocol !== 'https:' || !baseUrl.hostname.endsWith('.supabase.co') || baseUrl.username || baseUrl.password || baseUrl.port || baseUrl.pathname !== '/' || baseUrl.search || baseUrl.hash) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
       const endpoint = new URL('/rest/v1/rpc/vexorio_record_listing_view_server', baseUrl);
-      const upstream = await fetch(endpoint, {
+      let upstream;
+      try { upstream = await fetch(endpoint, {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY},
         body: JSON.stringify({p_listing_id: listingId, p_visitor_digest: digest})
-      });
+      }); }
+      catch { return new Response(null, {status: 502, headers: {'Cache-Control': 'no-store'}}); }
       if (!upstream.ok) return new Response(null, {status: 502, headers: {'Cache-Control': 'no-store'}});
       return new Response(null, {status: 204, headers: {'Cache-Control': 'no-store'}});
     }
