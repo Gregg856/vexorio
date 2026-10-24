@@ -7,6 +7,8 @@ export default {
       const contentType = request.headers.get('Content-Type') || '';
       if (!contentType.toLowerCase().startsWith('application/json')) return new Response(null, {status: 415, headers: {'Cache-Control': 'no-store'}});
       if (Number(request.headers.get('Content-Length') || 0) > 512) return new Response(null, {status: 413, headers: {'Cache-Control': 'no-store'}});
+      // Disabled until the server-side secrets and staging RPC are verified.
+      if (env.VIEW_COUNT_ENABLED !== 'true') return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
       const ip = request.headers.get('CF-Connecting-IP');
       if (!ip || !env.VIEW_COUNT_SECRET || !env.SUPABASE_SERVICE_ROLE_KEY || !env.SUPABASE_URL) {
         return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
@@ -20,7 +22,7 @@ export default {
       const digestBytes = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(ip));
       const digest = [...new Uint8Array(digestBytes)].map(b => b.toString(16).padStart(2, '0')).join('');
       const baseUrl = new URL(env.SUPABASE_URL);
-      if (baseUrl.protocol !== 'https:' || !baseUrl.hostname.endsWith('.supabase.co')) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
+      if (baseUrl.protocol !== 'https:' || !baseUrl.hostname.endsWith('.supabase.co') || baseUrl.username || baseUrl.password || baseUrl.port) return new Response(null, {status: 503, headers: {'Cache-Control': 'no-store'}});
       const endpoint = new URL('/rest/v1/rpc/vexorio_record_listing_view_server', baseUrl);
       const upstream = await fetch(endpoint, {
         method: 'POST',
