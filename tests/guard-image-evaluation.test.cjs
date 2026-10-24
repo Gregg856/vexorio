@@ -10,8 +10,18 @@ const training=[
  {label:'safe',pixels:pattern(false,0)},{label:'safe',pixels:pattern(false,2)},
  {label:'unsafe',pixels:pattern(true,0)},{label:'unsafe',pixels:pattern(true,-2)}
 ];
-const testSafe=pattern(false,-2);testSafe.data.fill(255,0,3);
-const testUnsafe=pattern(true,2);testUnsafe.data.fill(0,24,27);
+// Independent holdout patterns: deliberately different luminance layouts from training.
+// Near-duplicates are exercised separately in the assertions below.
+function checker(inverted=false){
+ const data=new Uint8Array(27);
+ for(let y=0;y<3;y++)for(let x=0;x<3;x++){
+  const bright=((x+y)%2===0)!==inverted;
+  data.fill(bright?225:25,(y*3+x)*3,(y*3+x)*3+3);
+ }
+ return {width:3,height:3,channels:3,data};
+}
+const testSafe=checker(false);
+const testUnsafe=checker(true);
 const testing=[
  {label:'safe',pixels:testSafe},
  {label:'unsafe',pixels:testUnsafe}
