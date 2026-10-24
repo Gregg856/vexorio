@@ -174,3 +174,11 @@ const messageModeration=html.slice(messageModerationStart,messageModerationEnd);
 assert.ok(messageModeration.includes('const actingUserId=session?.user?.id;if(!actingUserId)return;'),'Message report moderation must capture acting account');
 assert.ok(messageModeration.includes('allowedNow!==true||session?.user?.id!==actingUserId'),'Message report status update must reject account switches after role check');
 console.log('PASS: message report status updates reject stale accounts');
+
+const privacyModerationStart=html.indexOf('async function loadAdminMessageReports(){');
+const privacyModerationEnd=html.indexOf('async function loadAdminPendingListings(){',privacyModerationStart);
+const privacyModeration=html.slice(privacyModerationStart,privacyModerationEnd);
+assert.ok(privacyModeration.includes('const revealingUserId=session?.user?.id;if(!revealingUserId)return;'),'Reported message reveal must capture moderator account');
+assert.ok(privacyModeration.includes('allowedNow!==true||session?.user?.id!==revealingUserId'),'Reported message reveal must reject stale moderator role');
+assert.ok(privacyModeration.includes("if(messageError)throw messageError;if(session?.user?.id!==revealingUserId){message.textContent="),'Reported message content must not render after account switch');
+console.log('PASS: reported message privacy guarded across account switch');
