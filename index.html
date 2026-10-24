@@ -3121,8 +3121,8 @@ async function refreshVisibleChat(){
 setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void refreshVisibleChat()}},5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
 async function sendMessage(listingId,sellerId,message){
- if(!sb)throw new Error(({pl:'Brak połączenia z bazą.',de:'Keine Datenbankverbindung.',en:'No database connection.',uk:'Немає з’єднання з базою даних.'}[language]));
  const {data:authData,error:authError}=await sb.auth.getUser();
+ if(!sb)throw new Error(({pl:'Brak połączenia z bazą.',de:'Keine Datenbankverbindung.',en:'No database connection.',uk:'Немає з’єднання з базою даних.'}[language]));
  if(authError)throw authError;
  const user=authData?.user;
  if(!user)throw new Error(({pl:'Najpierw zaloguj się.',de:'Bitte melde dich zuerst an.',en:'Please sign in first.',uk:'Спочатку увійдіть в обліковий запис.'}[language]));
