@@ -131,6 +131,7 @@ assert.ok(html.includes("sb.rpc('is_vexorio_blocked',{p_user:appealAccessViewerI
 assert.ok(html.includes('if(session?.user?.id!==appealAccessViewerId)return;'),'Appeal access must reject stale session');
 assert.ok(html.includes('const overviewViewerId=session.user.id'),'Admin dashboard must capture viewer');
 assert.ok(html.includes('if(session?.user?.id!==overviewViewerId)return;'),'Admin dashboard must reject stale stats');
+assert.ok(html.includes('count>previousUnreadCount&&currentUser&&session?.user?.id===currentUser'),'New message alerts must require an authenticated matching account');
 assert.ok(html.includes(".or('buyer_id.eq.'+uid+',seller_id.eq.'+uid)"),'Inbox query must use captured account');
 assert.ok(html.includes("if($('chatDialog')?.open)$('chatDialog').close();$('chatMessages')?.replaceChildren();chatRefreshRequestId++;inboxRequestId++;activeConversationId=null;updateUnreadBadges(0)"),'Account switching must close chat and clear previous account messages');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
