@@ -95,6 +95,7 @@ jobs:
           node tests/guard-images.test.cjs
           node tests/guard-evaluate.test.cjs
           node tests/guard-model-adapter.test.cjs
+          node tests/guard-local-model.test.cjs
           node tests/guard-lab.test.cjs
           node --check worker.js
 
