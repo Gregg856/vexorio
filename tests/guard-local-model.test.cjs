@@ -20,6 +20,12 @@ for(const row of examples){
  assert.ok(prediction.confidence>=0.5&&prediction.confidence<=1);
  assert.equal(prediction.mode,'advisory');
 }
+const unfamiliar=model.predict('quasar nebula xenolith');
+assert.equal(unfamiliar.label,'unknown');
+assert.equal(unfamiliar.confidence,0);
+assert.equal(unfamiliar.coverage,0);
+assert.equal(unfamiliar.recognizedTokens,0);
+assert.ok(model.predict('Sprzedam xenolith').coverage>0);
 assert.ok(tokens('Zażółć gęślą jaźń').includes('zażółć'));
 assert.throws(()=>train([{text:'test',label:'safe'}]));
 console.log('PASS: VEXORIO own local text model trains and predicts without external services');
