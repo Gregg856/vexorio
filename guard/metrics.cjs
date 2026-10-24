@@ -1,9 +1,12 @@
 'use strict';
 // Evaluate on held-out labeled examples only; never use training rows as proof of accuracy.
 const {train}=require('./local-model.cjs');
+const {checkDataset}=require('./dataset-check.cjs');
 function evaluateDataset(training,testing){
  if(!Array.isArray(testing)||testing.length<2)throw Error('At least two held-out examples required');
  const seen=new Set(training.map(x=>String(x.text).normalize('NFKC').trim().toLowerCase()));
+ const audit=checkDataset(training,testing);
+ if(!audit.clean)throw Error('Near-duplicate training and test examples: '+JSON.stringify(audit.overlaps));
  const model=train(training);
  const counts={tp:0,tn:0,fp:0,fn:0};
  const examples=[];
