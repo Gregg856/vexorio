@@ -95,6 +95,8 @@ for(const [name,pattern] of inboxGuards)assert.match(html,pattern,'Inbox regress
 assert.match(html,/nearestOption\.disabled=!radiusActive/,'Nearest sorting must require location and radius');
 assert.match(html,/sort==='nearest'&&!radiusActive/,'Nearest sorting must fall back when location is missing');
 assert.match(html,/\$\('sortListings'\)\.value='new';return render\(\)/,'Nearest sorting fallback must re-render');
+// Postal code filtering must ignore formatting separators.
+assert.ok(html.includes("String(x.postal_code||'').replace(/[\\s-]/g,'')===locationFilterValue().replace(/[\\s-]/g,'')"),'Postal code matching must ignore spaces and hyphens');
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
