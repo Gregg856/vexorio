@@ -110,3 +110,12 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - Funkcje administracyjne nie mają EXECUTE dla `anon` (sprawdzone odczytowo). Zalogowani mogą wywołać wybrane RPC, więc należy zweryfikować kontrolę admina wewnątrz funkcji, polityki tabel oraz testować rolę zwykłego użytkownika na stagingu przed zamknięciem audytu.
 - Bez zmian uprawnień, aby nie uszkodzić działającej moderacji. Wynik: AUDYT W TOKU.
 - Dokumentacja: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
+
+
+## Weryfikacja polityk moderacji na STAGING — 24.10.2026
+
+- Odczyt `pg_policies` potwierdził: `moderation_appeals` SELECT własne/admin, INSERT tylko własne odwołanie z aktywną blokadą i uzasadnieniem 20–2000, UPDATE admin z USING i WITH CHECK.
+- `moderation_blocks`: SELECT własne lub admin; `moderation_audit`: SELECT tylko admin.
+- `listing_reports`: INSERT tylko własne zgłoszenie, status `new`, dozwolona kategoria, szczegóły 10–2000, nie można zgłosić własnego ogłoszenia; SELECT i UPDATE tylko admin, UPDATE z USING i WITH CHECK.
+- `admin_members`, `listing_moderation_queue`, `listing_moderation_decisions`: brak bezpośrednich polityk; RLS włączone. Dostęp przez RPC wymaga osobnej weryfikacji implementacji funkcji SECURITY DEFINER.
+- Wynik: polityki RLS tych modułów zgodne z podstawowym modelem uprawnień; pełny audyt RPC i test E2E niezamknięty. Bez zmian w bazie.
