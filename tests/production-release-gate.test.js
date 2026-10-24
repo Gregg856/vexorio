@@ -142,3 +142,9 @@ console.log('PASS: chat sender reverified before message insert');
 assert.ok(html.includes('if(!latest.has(id))latest.set(id,m)'),'Unread scan must retain latest message regardless of sender');
 assert.ok(html.includes('if(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)'),'Unread badge must ignore latest outgoing messages');
 console.log('PASS: unread badge ignores conversations whose latest message is outgoing');
+
+// Inbox unread total and unread-first ordering must match header badge after an outgoing reply.
+assert.ok(html.includes('if(!latestByConversation.has(id))latestByConversation.set(id,msg)'),'Inbox must retain latest message regardless of sender');
+assert.ok(html.includes('return count+(m&&m.sender_id!==uid&&(!seen||m.created_at>seen)?1:0)'),'Inbox unread total must exclude outgoing latest messages');
+assert.ok(html.includes('return !!(m&&m.sender_id!==uid&&(!seen||m.created_at>seen))'),'Inbox unread-first sort must exclude outgoing latest messages');
+console.log('PASS: inbox unread total and sort match latest sender');
