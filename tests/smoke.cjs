@@ -159,3 +159,5 @@ assert.ok(html.includes(".eq('id',a.id).eq('status',a.status).select('id').maybe
 assert.ok(html.includes('if(!e&&!updatedAppeal){msg.textContent='),'Concurrent appeal changes must not be reported as successful');
 
 assert.ok(html.includes('if(!e){a.status=sel.value;a.admin_response=response.value.trim()}'),'Successful appeal decisions must refresh local state for subsequent edits');
+
+assert.ok(html.includes("if(!sb){if(request!==listingsLoadRequest)return false;listingLoadError='';"),'Listing fallback must respect current refresh request');
