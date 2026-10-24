@@ -86,6 +86,7 @@ jobs:
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
+          node tests/guard-evaluate.test.cjs
           node --check worker.js
 
       - name: Publikuj w Cloudflare
