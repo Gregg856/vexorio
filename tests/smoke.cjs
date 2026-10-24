@@ -161,3 +161,5 @@ assert.ok(html.includes('if(!e&&!updatedAppeal){msg.textContent='),'Concurrent a
 assert.ok(html.includes('if(!e){a.status=sel.value;a.admin_response=response.value.trim()}'),'Successful appeal decisions must refresh local state for subsequent edits');
 
 assert.ok(html.includes("if(!sb){if(request!==listingsLoadRequest)return false;listingLoadError='';"),'Listing fallback must respect current refresh request');
+
+assert.ok(html.includes("select('id,title,category,description,miasto,kraj,postal_code,price,owner_id"),'Listing fetch must include postal code for search and radius filtering');
