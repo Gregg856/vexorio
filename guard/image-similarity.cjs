@@ -16,6 +16,7 @@ function signature(p){
 }
 function similarity(a,b){
  const x=signature(a),y=signature(b);
+ if(x.every(v=>v===x[0])||y.every(v=>v===y[0]))return 0;
  let equal=0;for(let i=0;i<64;i++)if(x[i]===y[i])equal++;
  return equal/64;
 }
@@ -26,6 +27,8 @@ function checkSimilarImages(training,testing,{threshold=0.95}={}){
  const test=testing.map(x=>signature(x?.pixels));
  const overlaps=[];
  for(let i=0;i<test.length;i++)for(let j=0;j<train.length;j++){
+  // Uniform/low-information signatures are not evidence of similarity.
+  if(test[i].every(v=>v===test[i][0])||train[j].every(v=>v===train[j][0]))continue;
   let matches=0;for(let k=0;k<64;k++)if(test[i][k]===train[j][k])matches++;
   const score=matches/64;
   if(score>=threshold)overlaps.push({trainingIndex:j,testingIndex:i,similarity:score});
