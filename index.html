@@ -1679,8 +1679,8 @@ $('dashCopyLink').onclick=async()=>{
  if($('dashSearch').value.trim())params.set('admin_search',$('dashSearch').value.trim().slice(0,120));
  const url=location.origin+location.pathname+'?'+params.toString()+location.hash;
  const btn=$('dashCopyLink');
- try{btn.disabled=true;await navigator.clipboard.writeText(url);btn.textContent='✓ Link skopiowany';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2000)}
- catch(err){btn.textContent='Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
+ try{btn.disabled=true;await navigator.clipboard.writeText(url);btn.textContent=language==='uk'?'✓ Посилання скопійовано':'✓ Link skopiowany';setTimeout(()=>{btn.textContent=language==='uk'?'🔗 Копіювати посилання на фільтри':'🔗 Kopiuj link do filtrów';btn.disabled=false},2000)}
+ catch(err){btn.textContent=language==='uk'?'Не вдалося скопіювати':'Nie można skopiować';setTimeout(()=>{btn.textContent='🔗 Kopiuj link do filtrów';btn.disabled=false},2500)}
 };
 
 let dashTypingTimer;function scheduleDashFilter(){clearTimeout(dashTypingTimer);if(!$('adminDashboardDialog').open)return;dashTypingTimer=setTimeout(()=>{dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()},450)}function runDashFilterNow(){clearTimeout(dashTypingTimer);dashTypingTimer=undefined;if($('adminDashboardDialog').open)loadAdminDashboard()}
@@ -1721,17 +1721,17 @@ async function updateAdminReportBadge(){
   }
   if(pendingCount!==null&&photos)photos.textContent='('+pendingCount+(pendingCount===50?'+':'')+')';
   if(reportCount!==null&&pendingCount!==null){
-   if(account){account.textContent='🔔 '+countLabel(reportCount+pendingCount);account.setAttribute('aria-label','Zgłoszenia: '+reportCount+', zdjęcia do zatwierdzenia: '+pendingCount)}
+   if(account){account.textContent='🔔 '+countLabel(reportCount+pendingCount);account.setAttribute('aria-label',(language==='uk'?'Скарги: ':'Zgłoszenia: ')+reportCount+(language==='uk'?', фото на перевірці: ':', zdjęcia do zatwierdzenia: ')+pendingCount)}
    if(headerCount){headerCount.textContent=countLabel(reportCount+pendingCount);headerCount.hidden=reportCount+pendingCount===0}
    badge.style.display='inline-block';
    badge.textContent='🔔 '+countLabel(reportCount+pendingCount);
-   badge.setAttribute('aria-label','Zgłoszenia: '+reportCount+', zdjęcia do zatwierdzenia: '+pendingCount);
+   badge.setAttribute('aria-label',(language==='uk'?'Скарги: ':'Zgłoszenia: ')+reportCount+(language==='uk'?', фото на перевірці: ':', zdjęcia do zatwierdzenia: ')+pendingCount);
   }else{
    badge.style.display='inline-block';
    badge.textContent='🔔 …';
    if(account)account.textContent='🔔 …';
    if(headerCount)headerCount.hidden=true;
-   badge.setAttribute('aria-label','Nie udało się pobrać wszystkich powiadomień administratora');
+   badge.setAttribute('aria-label',language==='uk'?'Не вдалося отримати всі сповіщення адміністратора':'Nie udało się pobrać wszystkich powiadomień administratora');
   }
  }catch(e){
   badge.style.display='inline-block';badge.textContent='🔔 …';
@@ -2096,14 +2096,14 @@ async function loadOwnAppeals(){
  const box=$('appealHistory');box.replaceChildren();
  const {data,error}=await sb.from('moderation_appeals').select('reason,status,admin_response,created_at').eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(10);
  if(error){$('appealMessage').textContent=error.message;return}
- for(const a of data||[]){const p=document.createElement('p');p.className='notice';p.textContent=new Date(a.created_at).toLocaleDateString()+' · '+a.status+' · '+a.reason+(a.admin_response?' · Odpowiedź: '+a.admin_response:'');box.append(p)}
+ for(const a of data||[]){const p=document.createElement('p');p.className='notice';p.textContent=new Date(a.created_at).toLocaleDateString(language==='uk'?'uk-UA':undefined)+' · '+a.status+' · '+a.reason+(a.admin_response?(language==='uk'?' · Відповідь: ':' · Odpowiedź: ')+a.admin_response:'');box.append(p)}
 }
 $('appealForm').onsubmit=async e=>{
  e.preventDefault();if(!session?.user)return;
  const reason=$('appealReason').value.trim();if(reason.length<20||reason.length>2000)return;
  const btn=$('appealSubmit');btn.disabled=true;
  const {error}=await sb.from('moderation_appeals').insert({user_id:session.user.id,reason});
- $('appealMessage').textContent=error?'Błąd: '+error.message:'Odwołanie zostało wysłane.';
+ $('appealMessage').textContent=error?(language==='uk'?'Помилка: ':'Błąd: ')+error.message:(language==='uk'?'Апеляцію надіслано.':'Odwołanie zostało wysłane.');
  if(!error){$('appealForm').reset();await loadOwnAppeals()}
  btn.disabled=false;
 };
@@ -2111,26 +2111,26 @@ async function loadAdminAppeals(){
  const list=$('appealsAdminList'),audit=$('moderationAuditList'),status=$('appealsAdminStatus');
  list.replaceChildren();audit.replaceChildren();status.textContent='';
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
- if(accessError||allowed!==true){status.textContent='Brak uprawnień.';return}
+ if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав.':'Brak uprawnień.';return}
  const {data,error}=await sb.from('moderation_appeals').select('id,user_id,reason,status,admin_response,created_at').order('created_at',{ascending:false}).limit(100);
- if(error){status.textContent='Błąd: '+error.message;return}
- if(!data?.length)status.textContent='Brak odwołań.';
+ if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
+ if(!data?.length)status.textContent=language==='uk'?'Апеляцій немає.':'Brak odwołań.';
  for(const a of data||[]){
   const box=document.createElement('div');box.className='info';box.style.margin='0';
-  const h=document.createElement('h3');h.textContent='Odwołanie #'+a.id;
-  const p=document.createElement('p');p.textContent='Użytkownik: '+a.user_id+' · '+a.reason;
+  const h=document.createElement('h3');h.textContent=(language==='uk'?'Апеляція #':'Odwołanie #')+a.id;
+  const p=document.createElement('p');p.textContent=(language==='uk'?'Користувач: ':'Użytkownik: ')+a.user_id+' · '+a.reason;
   const sel=document.createElement('select');
-  [['new','Nowe'],['reviewing','W trakcie'],['accepted','Uznane'],['rejected','Odrzucone']].forEach(([v,label])=>{const o=document.createElement('option');o.value=v;o.textContent=label;sel.append(o)});
+  (language==='uk'?[['new','Нові'],['reviewing','На розгляді'],['accepted','Схвалені'],['rejected','Відхилені']]:[['new','Nowe'],['reviewing','W trakcie'],['accepted','Uznane'],['rejected','Odrzucone']]).forEach(([v,label])=>{const o=document.createElement('option');o.value=v;o.textContent=label;sel.append(o)});
   sel.value=a.status;
-  const response=document.createElement('textarea');response.maxLength=2000;response.placeholder='Odpowiedź administratora';response.value=a.admin_response||'';
-  const btn=document.createElement('button');btn.className='btn';btn.textContent='Zapisz decyzję';
+  const response=document.createElement('textarea');response.maxLength=2000;response.placeholder=language==='uk'?'Відповідь адміністратора':'Odpowiedź administratora';response.value=a.admin_response||'';
+  const btn=document.createElement('button');btn.className='btn';btn.textContent=language==='uk'?'Зберегти рішення':'Zapisz decyzję';
   const msg=document.createElement('p');msg.className='msg';
-  btn.onclick=async()=>{if(response.value.trim().length<10){msg.textContent='Wpisz uzasadnienie (min. 10 znaków).';return}btn.disabled=true;const {error:e}=await sb.from('moderation_appeals').update({status:sel.value,admin_response:response.value.trim(),reviewed_at:new Date().toISOString()}).eq('id',a.id);msg.textContent=e?'Błąd: '+e.message:'Zapisano. Uwaga: uznanie odwołania nie odblokowuje automatycznie konta.';btn.disabled=false};
+  btn.onclick=async()=>{if(response.value.trim().length<10){msg.textContent=language==='uk'?'Укажіть обґрунтування (щонайменше 10 символів).':'Wpisz uzasadnienie (min. 10 znaków).';return}btn.disabled=true;const {error:e}=await sb.from('moderation_appeals').update({status:sel.value,admin_response:response.value.trim(),reviewed_at:new Date().toISOString()}).eq('id',a.id);msg.textContent=e?(language==='uk'?'Помилка: ':'Błąd: ')+e.message:(language==='uk'?'Збережено. Увага: схвалення апеляції не розблоковує акаунт автоматично.':'Zapisano. Uwaga: uznanie odwołania nie odblokowuje automatycznie konta.');btn.disabled=false};
   box.append(h,p,sel,response,btn,msg);list.append(box);
  }
  const {data:history,error:histError}=await sb.rpc('admin_moderation_audit');
  if(histError){const p=document.createElement('p');p.textContent=histError.message;audit.append(p);return}
- for(const a of history||[]){const p=document.createElement('p');p.className='notice';p.textContent=new Date(a.created_at).toLocaleString()+' · '+(a.action==='block'?'Blokada':'Odblokowanie')+' · '+a.target_user+' · '+a.reason;audit.append(p)}
+ for(const a of history||[]){const p=document.createElement('p');p.className='notice';p.textContent=new Date(a.created_at).toLocaleString(language==='uk'?'uk-UA':undefined)+' · '+(a.action==='block'?(language==='uk'?'Блокування':'Blokada'):(language==='uk'?'Розблокування':'Odblokowanie'))+' · '+a.target_user+' · '+a.reason;audit.append(p)}
 }
 $('appealsAdminBtn').onclick=()=>{$('appealsAdminDialog').showModal();loadAdminAppeals()};
 $('appealsRefresh').onclick=loadAdminAppeals;
@@ -2156,7 +2156,7 @@ $('privacyRequestForm').onsubmit=async e=>{
  if(type==='delete'&&!confirm(l.confirm))return;
  const button=$('privacyRequestSubmit');button.disabled=true;
  const {error}=await sb.from('privacy_requests').insert({user_id:session.user.id,request_type:type,details:$('privacyRequestDetails').value.trim()});
- $('privacyRequestStatus').textContent=error?'Błąd: '+error.message:l.sent;
+ $('privacyRequestStatus').textContent=error?(language==='uk'?'Помилка: ':'Błąd: ')+error.message:l.sent;
  if(!error){$('privacyRequestForm').reset();await loadMyPrivacyRequests()}
  button.disabled=false;
 };
@@ -2164,17 +2164,17 @@ async function loadAdminPrivacy(){
  const box=$('privacyAdminList'),status=$('privacyAdminStatus');box.replaceChildren();status.textContent='';
  const {data,error}=await sb.from('privacy_requests').select('id,user_id,request_type,details,status,admin_response,created_at').order('created_at',{ascending:false}).limit(100);
  if(error){status.textContent='Błąd: '+error.message;return}
- if(!data?.length)status.textContent='Brak wniosków.';
+ if(!data?.length)status.textContent=language==='uk'?'Запитів немає.':'Brak wniosków.';
  for(const req of data||[]){
   const wrap=document.createElement('div');wrap.className='info';wrap.style.margin='0';
-  const h=document.createElement('h3');h.textContent='Wniosek #'+req.id+' · '+req.request_type;
-  const desc=document.createElement('p');desc.textContent='Konto: '+req.user_id+' · '+req.details;
+  const h=document.createElement('h3');h.textContent=(language==='uk'?'Запит #':'Wniosek #')+req.id+' · '+req.request_type;
+  const desc=document.createElement('p');desc.textContent=(language==='uk'?'Акаунт: ':'Konto: ')+req.user_id+' · '+req.details;
   const select=document.createElement('select');
-  [['new','Nowy'],['reviewing','W trakcie'],['completed','Zrealizowany'],['rejected','Odrzucony']].forEach(([v,label])=>{const o=document.createElement('option');o.value=v;o.textContent=label;select.append(o)});select.value=req.status;
-  const answer=document.createElement('textarea');answer.maxLength=2000;answer.placeholder='Odpowiedź dla użytkownika';answer.value=req.admin_response||'';
-  const save=document.createElement('button');save.className='btn';save.type='button';save.textContent='Zapisz status';
+  (language==='uk'?[['new','Новий'],['reviewing','На розгляді'],['completed','Виконаний'],['rejected','Відхилений']]:[['new','Nowy'],['reviewing','W trakcie'],['completed','Zrealizowany'],['rejected','Odrzucony']]).forEach(([v,label])=>{const o=document.createElement('option');o.value=v;o.textContent=label;select.append(o)});select.value=req.status;
+  const answer=document.createElement('textarea');answer.maxLength=2000;answer.placeholder=language==='uk'?'Відповідь користувачеві':'Odpowiedź dla użytkownika';answer.value=req.admin_response||'';
+  const save=document.createElement('button');save.className='btn';save.type='button';save.textContent=language==='uk'?'Зберегти статус':'Zapisz status';
   const feedback=document.createElement('p');feedback.className='msg';
-  save.onclick=async()=>{if(answer.value.trim().length<10){feedback.textContent='Wpisz odpowiedź (min. 10 znaków).';return}if(select.value==='completed'&&req.request_type==='delete'&&!confirm('Czy usunięcie zostało rzeczywiście przeprowadzone? Sam status NIE usuwa danych.'))return;save.disabled=true;const {error:e}=await sb.from('privacy_requests').update({status:select.value,admin_response:answer.value.trim(),updated_at:new Date().toISOString()}).eq('id',req.id);feedback.textContent=e?'Błąd: '+e.message:'Zapisano status. Nie wykonano żadnego usuwania danych.';save.disabled=false};
+  save.onclick=async()=>{if(answer.value.trim().length<10){feedback.textContent=language==='uk'?'Укажіть відповідь (щонайменше 10 символів).':'Wpisz odpowiedź (min. 10 znaków).';return}if(select.value==='completed'&&req.request_type==='delete'&&!confirm(language==='uk'?'Видалення справді виконано? Зміна статусу НЕ видаляє дані.':'Czy usunięcie zostało rzeczywiście przeprowadzone? Sam status NIE usuwa danych.'))return;save.disabled=true;const {error:e}=await sb.from('privacy_requests').update({status:select.value,admin_response:answer.value.trim(),updated_at:new Date().toISOString()}).eq('id',req.id);feedback.textContent=e?(language==='uk'?'Помилка: ':'Błąd: ')+e.message:(language==='uk'?'Статус збережено. Жодних даних не видалено.':'Zapisano status. Nie wykonano żadnego usuwania danych.');save.disabled=false};
   wrap.append(h,desc,select,answer,save,feedback);box.append(wrap);
  }
 }
