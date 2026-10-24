@@ -28,6 +28,11 @@ const examples=[
  assert.equal(unfamiliar.requiresHumanReview,true);
  assert.equal(unfamiliar.decision,'none');
  assert.ok(!unfamiliar.flags.includes('model_suspected_fraud'));
+ const partial=await guard.evaluate({title:'quasar',description:'xenolith nebula rower'});
+ assert.ok(partial.flags.includes('model_insufficient_model_knowledge'));
+ assert.equal(partial.requiresHumanReview,true);
+ assert.equal(partial.decision,'none');
  assert.throws(()=>createLocalGuard(examples,{minimumConfidence:2}));
+ assert.throws(()=>createLocalGuard(examples,{minimumCoverage:-0.1}),/coverage/);
  console.log('PASS: self-trained Guard integrates without external API or autonomous moderation');
 })().catch(error=>{console.error(error);process.exitCode=1});
