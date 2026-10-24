@@ -1743,9 +1743,11 @@ async function updateAdminReportBadge(){
 setInterval(()=>{if(!document.hidden&&session?.user?.id&&!$('adminReportsBtn').classList.contains('hide'))void updateAdminReportBadge()},30000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session?.user?.id&&!$('adminReportsBtn').classList.contains('hide'))void updateAdminReportBadge()});
 async function updateAdminReportsAccess(){
+ const requestedUserId=session?.user?.id;
  const btn=$('adminReportsBtn');$('vexAdminAlert').classList.add('hide');$('vexAdminAlertCount').hidden=true;$('accountAdminLaunch').classList.add('hide');btn.classList.add('hide');$('adminUsersBtn').classList.add('hide');$('appealsAdminBtn').classList.add('hide');$('privacyAdminBtn').classList.add('hide');
  if(!sb||!session?.user?.id)return;
  const {data,error}=await sb.rpc('is_vexorio_admin');
+ if(session?.user?.id!==requestedUserId)return;
  if(!error&&data===true){$('vexAdminAlert').classList.remove('hide');$('accountAdminLaunch').classList.remove('hide');btn.classList.remove('hide');$('adminUsersBtn').classList.remove('hide');$('appealsAdminBtn').classList.remove('hide');$('privacyAdminBtn').classList.remove('hide');await updateAdminReportBadge()}
 }
 async function loadAdminMessageReports(){
