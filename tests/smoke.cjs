@@ -165,3 +165,6 @@ assert.ok(html.includes("if(!sb){if(request!==listingsLoadRequest)return false;l
 assert.ok(html.includes("select('id,title,category,description,miasto,kraj,postal_code,price,owner_id"),'Listing fetch must include postal code for search and radius filtering');
 
 assert.ok(html.includes("btn.disabled=true;btn.textContent='📍 '+postal+' — '"),'Postal suggestions must remain disabled until city lookup succeeds');
+
+assert.ok(html.includes("if(first)first.click();else if(!/^[0-9][0-9 -]*$/.test(e.target.value.trim()))selectCity"),'Enter must not accept unverified postal code');
+assert.ok(html.includes("if(first)first.click();return}selectCity(value)"),'Use-city button must not accept unverified postal code');
