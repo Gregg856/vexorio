@@ -1849,23 +1849,23 @@ async function loadAdminPendingListings(){
 let adminReportListingFilter=null;
 async function loadAdminReports(){
  const status=$('adminReportsMessage'),list=$('adminReportsList');status.textContent='';list.replaceChildren();
- if(!session){status.textContent='Zaloguj się.';return}
+ if(!session){status.textContent=language==='uk'?'Увійдіть до акаунта.':'Zaloguj się.';return}
  const {data:allowed,error:accessError}=await sb.rpc('is_vexorio_admin');
- if(accessError||allowed!==true){status.textContent='Brak uprawnień administratora.';return}
+ if(accessError||allowed!==true){status.textContent=language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.';return}
  await loadAdminMessageReports();
  let reportQuery=sb.from('listing_reports').select('id,listing_id,category,details,status,created_at').order('created_at',{ascending:false}).limit(100);if(adminReportListingFilter!==null)reportQuery=reportQuery.eq('listing_id',adminReportListingFilter);const {data,error}=await reportQuery;
- if(error){status.textContent='Błąd: '+error.message;return}
+ if(error){status.textContent=(language==='uk'?'Помилка: ':'Błąd: ')+error.message;return}
  const selectedListing=adminReportListingFilter;
  const filteredData=selectedListing===null?(data||[]):(data||[]).filter(item=>Number(item.listing_id)===Number(selectedListing));
  const queueOrder={new:0,reviewing:1,resolved:2,dismissed:3};filteredData.sort((a,b)=>(queueOrder[a.status]??4)-(queueOrder[b.status]??4)||new Date(b.created_at)-new Date(a.created_at));
- status.textContent=selectedListing===null?'Wszystkie zgłoszenia':'Zgłoszenia wyłącznie dla ogłoszenia #'+selectedListing;
+ status.textContent=selectedListing===null?(language==='uk'?'Усі скарги':'Wszystkie zgłoszenia'):(language==='uk'?'Скарги лише на оголошення #':'Zgłoszenia wyłącznie dla ogłoszenia #')+selectedListing;
  const reportCounts={new:0,reviewing:0,resolved:0,dismissed:0};for(const report of filteredData){if(Object.hasOwn(reportCounts,report.status))reportCounts[report.status]++}
- const filterRow=document.createElement('div');filterRow.className='form';const filterLabel=document.createElement('label');filterLabel.textContent='Filtruj zgłoszenia';const statusFilter=document.createElement('select');[['all','Wszystkie'],['new','Nowe'],['reviewing','W trakcie'],['resolved','Rozpatrzone'],['dismissed','Odrzucone']].forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;statusFilter.append(option)});filterLabel.append(statusFilter);filterRow.append(filterLabel);list.append(filterRow);statusFilter.onchange=()=>{for(const card of list.querySelectorAll('[data-report-status]'))card.hidden=statusFilter.value!=='all'&&card.dataset.reportStatus!==statusFilter.value};
- const reportSummary=document.createElement('p');reportSummary.className='muted';reportSummary.textContent='Nowe: '+reportCounts.new+' · W trakcie: '+reportCounts.reviewing+' · Rozpatrzone: '+reportCounts.resolved+' · Odrzucone: '+reportCounts.dismissed;list.append(reportSummary);
- if(!filteredData.length){status.textContent=selectedListing===null?'Brak zgłoszeń.':'Brak zgłoszeń dla ogłoszenia #'+selectedListing+'.';return}
+ const filterRow=document.createElement('div');filterRow.className='form';const filterLabel=document.createElement('label');filterLabel.textContent=language==='uk'?'Фільтрувати скарги':'Filtruj zgłoszenia';const statusFilter=document.createElement('select');(language==='uk'?[['all','Усі'],['new','Нові'],['reviewing','На розгляді'],['resolved','Розглянуті'],['dismissed','Відхилені']]:[['all','Wszystkie'],['new','Nowe'],['reviewing','W trakcie'],['resolved','Rozpatrzone'],['dismissed','Odrzucone']]).forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;statusFilter.append(option)});filterLabel.append(statusFilter);filterRow.append(filterLabel);list.append(filterRow);statusFilter.setAttribute('aria-label',language==='uk'?'Фільтр статусу скарг':'Filtr statusu zgłoszeń');statusFilter.onchange=()=>{for(const card of list.querySelectorAll('[data-report-status]'))card.hidden=statusFilter.value!=='all'&&card.dataset.reportStatus!==statusFilter.value};
+ const reportSummary=document.createElement('p');reportSummary.className='muted';reportSummary.textContent=(language==='uk'?'Нові: ':'Nowe: ')+reportCounts.new+(language==='uk'?' · На розгляді: ':' · W trakcie: ')+reportCounts.reviewing+(language==='uk'?' · Розглянуті: ':' · Rozpatrzone: ')+reportCounts.resolved+(language==='uk'?' · Відхилені: ':' · Odrzucone: ')+reportCounts.dismissed;list.append(reportSummary);
+ if(!filteredData.length){status.textContent=selectedListing===null?(language==='uk'?'Скарг немає.':'Brak zgłoszeń.'):(language==='uk'?'Немає скарг на оголошення #':'Brak zgłoszeń dla ogłoszenia #')+selectedListing+'.';return}
  for(const item of filteredData){
   const box=document.createElement('div');box.className='info';box.style.margin='0';box.dataset.reportStatus=item.status;
-  const heading=document.createElement('h3');heading.textContent='Zgłoszenie #'+item.id+' · Ogłoszenie #'+(item.listing_id??'usunięte');
+  const heading=document.createElement('h3');heading.textContent=(language==='uk'?'Скарга #':'Zgłoszenie #')+item.id+(language==='uk'?' · Оголошення #':' · Ogłoszenie #')+(item.listing_id??'usunięte');
   const stateLabel=document.createElement('p');stateLabel.className='muted';const statusNames={new:'NOWE',reviewing:'W TRAKCIE',resolved:'ROZPATRZONE',dismissed:'ODRZUCONE'};stateLabel.textContent='Status: '+(statusNames[item.status]||item.status);
   const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category+' · '+new Date(item.created_at).toLocaleString();
   const detail=document.createElement('p');detail.textContent=item.details;
