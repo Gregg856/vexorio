@@ -1815,11 +1815,12 @@ async function loadAdminPendingListings(){
   for(const [decision,label] of (language==='uk'?[['approved','Схвалити'],['rejected','Відхилити']]:[['approved','Zatwierdź'],['rejected','Odrzuć']])){
    const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;
    btn.onclick=async()=>{
+    const actingUserId=session?.user?.id;if(!actingUserId)return;
     if(!confirm((decision==='approved'?(language==='uk'?'Схвалити':'Zatwierdzić'):(language==='uk'?'Відхилити':'Odrzucić'))+(language==='uk'?' оголошення #':' ogłoszenie #')+item.listing_id+'?'))return;
     for(const b of actions.querySelectorAll('button'))b.disabled=true;
     try{
      const {data:stillAdmin,error:verifyError}=await sb.rpc('is_vexorio_admin');
-     if(verifyError||stillAdmin!==true)throw new Error(language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.');
+     if(verifyError||stillAdmin!==true||session?.user?.id!==actingUserId)throw new Error(language==='uk'?'Недостатньо прав адміністратора.':'Brak uprawnień administratora.');
      let changed,reviewError;
      if(decision==='approved'&&(item.listing_images||[]).some(u=>typeof u==='string'&&u.startsWith('listing-images-review/'))){
       const published=[];
