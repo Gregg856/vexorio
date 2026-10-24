@@ -73,3 +73,10 @@ for(const [label,fragment] of [
  ['Search crawl hint','<meta name="robots" content="index,follow,max-image-preview:large">'],
  ['No personal worker URL in social metadata', 'grzegorzbub1985.workers.dev'],
 ]){if(label==='No personal worker URL in social metadata')assert.ok(!html.includes(fragment),'Personal URL exposed in page source');else assert.ok(html.includes(fragment),'Missing: '+label);console.log('PASS: '+label)}
+
+// Mobile listing photos fill the frame; all three unread counters share one value.
+assert.ok(html.includes('#cards .card .listing-photo{margin-bottom:3px!important;object-fit:cover!important'),'Mobile listing images must fill photo frame');
+assert.ok(html.includes("for(const id of ['accountBtn','vexMobileChat'])"),'Account and chat unread badge wiring missing');
+assert.ok(html.includes("['accountInboxCount','accountInboxHeadingCount','vexHeaderInboxCount']"),'Header and account unread badge wiring missing');
+assert.ok(html.includes("const value=count>0?String(Math.min(count,99))"),'Unread count value normalization missing');
+console.log('PASS: mobile photo and synchronized unread badge structural checks');
