@@ -3016,8 +3016,8 @@ async function refreshVisibleChat(){
  if(document.hidden||!session||!sb)return;
  if($('chatDialog').open&&activeConversationId&&!chatRefreshInProgress){
   chatRefreshInProgress=true;
-  try{await refreshConversation()}finally{chatRefreshInProgress=false}
- }else if($('accountDialog').open&&!$('accountMessagesSection').hidden&&!inboxRefreshInProgress){inboxRefreshInProgress=true;try{await loadConversations()}finally{inboxRefreshInProgress=false}}
+  try{await refreshConversation()}catch(error){console.warn('Chat background refresh failed',error)}finally{chatRefreshInProgress=false}
+ }else if($('accountDialog').open&&!$('accountMessagesSection').hidden&&!inboxRefreshInProgress){inboxRefreshInProgress=true;try{await loadConversations()}catch(error){console.warn('Inbox background refresh failed',error)}finally{inboxRefreshInProgress=false}}
 }
 setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void refreshVisibleChat()}},5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
