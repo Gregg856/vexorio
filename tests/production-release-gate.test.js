@@ -124,3 +124,7 @@ console.log('PASS: unreadable photo files rejected gracefully');
 // New listings must be owned by the identity returned from the fresh Supabase getUser check.
 assert.ok(html.includes("const record={owner_id:authBeforeSave.user.id,title:"),'Listing owner must use freshly verified auth identity');
 console.log('PASS: listing owner bound to freshly verified user');
+
+// Reject a user switch between the initial session check and final listing insert.
+assert.ok(html.includes("authBeforeSave?.user?.id!==verifiedAuth.user.id||session?.user?.id!==verifiedAuth.user.id"),'Listing upload must reject changed accounts');
+console.log('PASS: account switching during photo upload is rejected');
