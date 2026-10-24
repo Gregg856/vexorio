@@ -36,6 +36,9 @@ const testing=[
 ];
 const result=evaluateDataset(training,testing);
 assert.equal(result.samples,20);
+assert.equal(result.errors.length,result.counts.fp+result.counts.fn);
+assert.ok(result.errors.every(x=>Number.isInteger(x.index)&&x.correct===false&&!('text' in x)));
+assert.ok(result.examples.every(x=>typeof x.correct==='boolean'));
 assert.throws(()=>evaluateDataset(training,[null,testing[0]]),/Invalid test example/);
 assert.equal(Object.values(result.counts).reduce((a,b)=>a+b,0),20);
 assert.ok(result.accuracy>=0&&result.accuracy<=1);
@@ -43,6 +46,7 @@ assert.ok(result.falsePositiveRate>=0&&result.falsePositiveRate<=1);
 assert.throws(()=>evaluateDataset(training,[training[0],testing[0]]),/Near-duplicate/);
 assert.throws(()=>evaluateDataset(training,[{label:'safe',text:'Osobisty odbiór rower miejski sprzedam'},testing[1]]),/Near-duplicate/);
 console.log('Guard SYNTHETIC HOLDOUT metrics:',JSON.stringify({...result,examples:undefined}));
+console.log('Guard MISCLASSIFIED example indexes:',JSON.stringify(result.errors));
 const {compareModels}=require('../guard/compare.cjs');
 const comparison=compareModels(training,testing);
 assert.equal(comparison.dataset,'synthetic_holdout');
