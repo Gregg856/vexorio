@@ -19,6 +19,14 @@ Ten plik służy jako punkt odniesienia przed następnymi zmianami. Nie oznacza,
 ## Znany problem i jego rozwiązanie
 Wcześniejsze wdrożenia #779–#783 nie przechodziły. Logi #783 wykazały, że testy regresji zatrzymały publikację w kroku „Testy regresji wyszukiwarki i odleglosci” z błędem „Missing moderation protection: reported message body requires explicit reveal”. Problemem była zbyt sztywna asercja względem polskiej etykiety przy ukraińskiej lokalizacji. Test naprawiono, po czym #784 zakończył się sukcesem. Nie przypisywać tego błędu pamięci podręcznej przeglądarki.
 
+## Moduł wiadomości — stan kontrolny (2026-10-24)
+- **Zabezpieczone kodem i testami strukturalnymi:** wyszukiwanie ról PL/DE/EN/UK (584a7fc), podgląd ostatnich wiadomości przy limicie 1000 w partii (a947437), liczniki nieprzeczytanych przy limicie (fd55e0e), odświeżenie listy po oznaczeniu jako przeczytane (f973637), ochrona przed spóźnioną odpowiedzią odświeżania czatu (b0092fd).
+- **Tłumaczenia skrzynki:** brak rozmów i stan niezalogowany (1fd8495); ładowanie, błąd i ponawianie (d222f7e).
+- **Testy automatyczne:** 12 kontroli regresji w tests/smoke.cjs (b93d7bd). GitHub Actions „VEXORIO checks” dla b93d7bd: sukces; publikacja tego commitu była jeszcze w toku w chwili zapisu.
+- **Nie zamykać jako E2E:** wysyłanie i odbieranie na dwóch rzeczywistych kontach, ponowne logowanie, filtrowanie i licznik na telefonie oraz komputerze nie zostały zweryfikowane w tej partii testem przeglądarkowym.
+- **Znane ograniczenie:** znaczniki przeczytania są przechowywane lokalnie w localStorage (na urządzeniu); synchronizacja między urządzeniami wymaga projektu zmiany bazy i osobnej zgody. Nie modyfikować produkcyjnego Supabase bez zgody.
+- **Zasada kontynuacji:** nie poprawiać ponownie powyższych obszarów bez nowego odtwarzalnego błędu; najpierw zakończyć weryfikację wdrożenia i test dwóch kont, potem oznaczyć moduł jako zamknięty.
+
 ## Bieżący zakres
 - Licznik roboczy tłumaczeń: 22/50 (zamrożony do czasu dalszego audytu; nie oznacza 22% całej aplikacji).
 - Ukraiński UI: część tłumaczeń już dodana, ale pełne 100% wymaga osobnej kontroli na żywo; nie oznaczać audytu jako ukończonego.
