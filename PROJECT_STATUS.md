@@ -119,3 +119,13 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - `listing_reports`: INSERT tylko własne zgłoszenie, status `new`, dozwolona kategoria, szczegóły 10–2000, nie można zgłosić własnego ogłoszenia; SELECT i UPDATE tylko admin, UPDATE z USING i WITH CHECK.
 - `admin_members`, `listing_moderation_queue`, `listing_moderation_decisions`: brak bezpośrednich polityk; RLS włączone. Dostęp przez RPC wymaga osobnej weryfikacji implementacji funkcji SECURITY DEFINER.
 - Wynik: polityki RLS tych modułów zgodne z podstawowym modelem uprawnień; pełny audyt RPC i test E2E niezamknięty. Bez zmian w bazie.
+
+
+## Audyt kodu RPC Supabase STAGING — 24.10.2026
+
+- Odczyt `pg_proc.prosrc` bez zmian danych: `is_vexorio_admin` sprawdza `admin_members.user_id=auth.uid()`.
+- `admin_set_user_block`, `admin_delete_listing`, `vexorio_admin_pending_listings`, `_v2`, `vexorio_admin_review_listing` sprawdzają `is_vexorio_admin()` wewnątrz funkcji. Blokowanie zabrania blokowania siebie/admina, sprawdza powód 10–500 i zapisuje audyt; zatwierdzanie waliduje decyzję i zapisuje historię.
+- `admin_moderation_users` i `admin_moderation_audit` filtrują wyniki przez `is_vexorio_admin()`.
+- `is_vexorio_blocked(p_user)` sprawdza zgodność `p_user=auth.uid()`.
+- **Uwaga funkcjonalna:** `vexorio_reveal_contact_phone` nadal sprawdza `contractor_access`/premium dla rodzaju `zlecenie`, mimo decyzji produktowej o darmowym kontakcie. Zweryfikować spójność z frontendem i polityką przed zmianą produkcji.
+- Wynik: podstawowe wewnętrzne kontrole admin RPC potwierdzone statycznie na STAGING; testy wykonania jako zwykły użytkownik i pozostałe RPC wciąż do zrobienia. Nie modyfikowano bazy.
