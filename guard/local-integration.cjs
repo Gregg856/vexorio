@@ -3,7 +3,7 @@
 const {train}=require('./local-model.cjs');
 const {evaluateWithModel}=require('./model-adapter.cjs');
 function createLocalGuard(examples,{minimumConfidence=0.85,minimumCoverage=0.25}={}){
- if(typeof minimumConfidence!=='number'||minimumConfidence<0.5||minimumConfidence>1)throw Error('Invalid confidence threshold');
+ if(!Number.isFinite(minimumConfidence)||minimumConfidence<0.5||minimumConfidence>1)throw Error('Invalid confidence threshold');
  if(!Number.isFinite(minimumCoverage)||minimumCoverage<0||minimumCoverage>1)throw Error('Invalid coverage threshold');
  const model=train(examples);
  const modelAdapter=async ({title,description})=>{
