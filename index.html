@@ -2864,19 +2864,23 @@ setInterval(()=>{if(!document.hidden&&session){void checkUnreadMessages();void r
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session){checkUnreadMessages();refreshVisibleChat()}});
 async function sendMessage(listingId,sellerId,message){
  if(!sb)throw new Error('Brak połączenia z bazą.');
- const {data:{user},error:authError}=await sb.auth.getUser();
+ const {data:authData,error:authError}=await sb.auth.getUser();
  if(authError)throw authError;
+ const user=authData?.user;
  if(!user)throw new Error('Najpierw zaloguj się.');
+ if(!sellerId||typeof sellerId!=='string')throw new Error('Nieprawidłowy odbiorca wiadomości.');
  if(user.id===sellerId)throw new Error('Nie możesz pisać do siebie.');
- if(!Number.isSafeInteger(Number(listingId))||Number(listingId)<=0||!String(message).trim()||String(message).trim().length>2000)throw new Error('Wiadomość musi mieć od 1 do 2000 znaków.');
- const {data:existing,error:findError}=await sb.from('conversations').select('id').eq('listing_id',listingId).eq('buyer_id',user.id).eq('seller_id',sellerId).limit(1);
+ const validListingId=Number(listingId);
+ if(listingId==null||String(listingId).trim()===''||!Number.isSafeInteger(validListingId)||validListingId<=0)throw new Error('Nieprawidłowe ogłoszenie.');
+ if(typeof message!=='string'||!message.trim()||message.trim().length>2000)throw new Error('Wiadomość musi mieć od 1 do 2000 znaków.');
+ const {data:existing,error:findError}=await sb.from('conversations').select('id').eq('listing_id',validListingId).eq('buyer_id',user.id).eq('seller_id',sellerId).limit(1);
  if(findError)throw findError;
  let conversationId=existing?.[0]?.id;
  if(!conversationId){
-  const {data, error:createError}=await sb.from('conversations').insert({listing_id:listingId,buyer_id:user.id,seller_id:sellerId}).select('id').single();
+  const {data, error:createError}=await sb.from('conversations').insert({listing_id:validListingId,buyer_id:user.id,seller_id:sellerId}).select('id').single();
   if(createError){
    if(createError.code!=='23505')throw createError;
-   const {data:retry,error:retryError}=await sb.from('conversations').select('id').eq('listing_id',listingId).eq('buyer_id',user.id).eq('seller_id',sellerId).single();
+   const {data:retry,error:retryError}=await sb.from('conversations').select('id').eq('listing_id',validListingId).eq('buyer_id',user.id).eq('seller_id',sellerId).single();
    if(retryError)throw retryError;
    conversationId=retry.id;
   }else conversationId=data.id;
