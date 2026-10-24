@@ -2104,6 +2104,9 @@ function updateCitySuggestions(){
   list.replaceChildren();
   const postal=typed.replace(/\s+/g,'').trim();
   const valid=country==='DE'?/^\d{5}$/.test(postal):country==='PL'?/^\d{2}-?\d{3}$/.test(postal):/^\d{4,10}$/.test(postal);
+  if(country==='all'&&/^\d{5}$/.test(postal)){
+   const hint=document.createElement('div');hint.className='vex-city-option';hint.setAttribute('role','status');hint.textContent=language==='de'?'Bitte zuerst ein Land wählen (z. B. Deutschland).':language==='en'?'Select a country first (e.g. Germany) to look up a postal code.':'Najpierw wybierz kraj (np. Niemcy), aby wyszukać kod pocztowy.';list.append(hint);
+  }
   if(country!=='all'&&valid){
    const btn=document.createElement('button');btn.type='button';btn.className='vex-city-option';btn.setAttribute('role','option');
    btn.textContent='📍 '+postal+' — '+(language==='de'?'Stadt wird gesucht…':language==='en'?'Looking up city…':'sprawdzam miasto…');
