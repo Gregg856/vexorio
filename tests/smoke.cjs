@@ -168,3 +168,5 @@ assert.ok(html.includes("btn.disabled=true;btn.textContent='📍 '+postal+' — 
 
 assert.ok(html.includes("if(first)first.click();else if(!/^[0-9][0-9 -]*$/.test(e.target.value.trim()))selectCity"),'Enter must not accept unverified postal code');
 assert.ok(html.includes("if(first)first.click();return}selectCity(value)"),'Use-city button must not accept unverified postal code');
+
+assert.ok(html.includes("$('query').value='';$('cityFilter').value='';$('cityFilter').dataset.postalValue='';$('radiusFilter').value='0';"),'Reset search must clear hidden postal code');
