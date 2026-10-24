@@ -20,4 +20,5 @@ check('City suggestion uses country from exact entry',html.includes('const code=
 check('All-country suggestions include preferred cities',html.includes("country==='all'?[...new Set(Object.values(priorityCities).flat())]"));
 check('English singular listing grammar',html.includes("filtered.length===1?' listing'"));
 check('Polish singular listing grammar',html.includes("filtered.length===1?' ogłoszenie'"));
+check('German singular listing grammar',html.includes("filtered.length===1?' Anzeige'"));
 console.log('PASS: mobile search static regression guards. Live browser and geocoding API still require end-to-end checks.');
