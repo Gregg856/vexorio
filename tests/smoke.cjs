@@ -63,6 +63,18 @@ const searchGuards=[
 
 ];
 for(const [name,pattern] of searchGuards)assert.match(html,pattern,'Search regression: '+name);
+// Regression locks for the mobile listing-card issues reported on 24 October 2026.
+const mobileCardGuards=[
+ ['Mobile cards keep natural height',/#cards \.card\{[^}]*height:auto!important/],
+ ['Mobile grid does not stretch cards',/#cards\{align-items:start!important\}/],
+ ['Listing price does not create empty vertical space',/#cards \.card \.price\{margin-top:0!important/],
+ ['Full mobile photo is not cropped',/#cards \.card \.listing-photo\{[^}]*object-fit:contain!important/],
+ ['Photo remains centered',/#cards \.card \.listing-photo\{[^}]*object-position:center!important/],
+ ['Report actions remain available',/photoReport\.textContent=/],
+ ['Inbox sorts by most recent message',/const lastA=previewByConversation\.get\(String\(a\.id\)\)\?\.created_at/],
+ ['Unread badges are updated',/function updateUnreadBadges\(count\)/]
+];
+for(const [name,pattern] of mobileCardGuards)assert.match(html,pattern,'Mobile/inbox regression: '+name);
 const htmlIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const duplicates=htmlIds.filter((id,index)=>htmlIds.indexOf(id)!==index);
 assert.deepEqual([...new Set(duplicates)],[],'Duplicate HTML IDs');
