@@ -34,3 +34,19 @@ assert.equal(matched(entry.replace('potwierdzone', 'do ponownej weryfikacji'), f
 assert.equal(matched(entry.replace('https://github.com/example/repo/actions/runs/456', '[brak]'), fingerprint), false, 'Missing regression test must not match');
 assert.equal(matched(entry.replace('https://github.com/example/repo/commit/123', '[brak]'), fingerprint), false, 'Missing commit must not match');
 console.log('RX verified-fix parser: 5 tests passed');
+
+/* Validate all embedded GitHub Script steps before the workflow reaches production. */
+const lines = workflow.split('\n');
+let scriptCount = 0;
+for (let i = 0; i < lines.length; i++) {
+  if (!/^          script: \\|\\s*$/.test(lines[i])) continue;
+  const block = [];
+  for (let j = i + 1; j < lines.length; j++) {
+    if (lines[j].trim() && !lines[j].startsWith('            ')) break;
+    block.push(lines[j].startsWith('            ') ? lines[j].slice(12) : '');
+  }
+  assert.doesNotThrow(() => new vm.Script(block.join('\n')), 'Invalid GitHub Script block at workflow line ' + (i + 1));
+  scriptCount++;
+}
+assert.ok(scriptCount >= 2, 'Expected failure and recovery GitHub Script steps');
+console.log('RX workflow: ' + scriptCount + ' embedded GitHub scripts parse successfully');
