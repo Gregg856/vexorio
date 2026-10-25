@@ -24,11 +24,12 @@
     const result=await plugins.execute(id,{task},true);
     const message=typeof result?.message==='string'?result.message:'';
     const missing=id==='changes-report'&&message.includes('nie jest jeszcze dostępny');
-    outcomes.push(id+': '+(missing?'BRAK RAPORTU':!message?'BRAK WYNIKU':'OK'));
-   }catch(_){outcomes.push(id+': BŁĄD');}
+    outcomes.push({id,state:missing?'BRAK RAPORTU':!message?'BRAK WYNIKU':'OK'});
+   }catch(_){outcomes.push({id,state:'BŁĄD'});}
   }
   renderHealth();
-  append('RX Strażak','Automatyczna kontrola wtyczek po otwarciu czatu:'+String.fromCharCode(10)+outcomes.map(x=>'• '+x).join(String.fromCharCode(10))+'\\nKontrola lokalna; nie wprowadzono zmian w VEXORIO.');
+  const issues=outcomes.filter(x=>x.state!=='OK');
+  append('RX Strażak',(issues.length?'Automatyczny test wtyczek: wymaga uwagi.':'Automatyczny test wtyczek: 3/3 OK.')+String.fromCharCode(10)+outcomes.map(x=>'• '+x.id+': '+x.state).join(String.fromCharCode(10))+String.fromCharCode(10)+'To lokalny test po otwarciu czatu. Nie oznacza sprawdzenia całej strony ani serwera.');
  }
  function renderHealth(){
   if(!healthBox)return;
