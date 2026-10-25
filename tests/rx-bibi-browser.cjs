@@ -11,9 +11,11 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const incidentLog = [];
+  let activePage = null;
   const logIncident = (source, type, detail) => incidentLog.push({ time: new Date().toISOString(), source, type, detail: String(detail).slice(0, 1200) });
   try {
     const page = await browser.newPage({ ...devices['Pixel 7'], locale: 'pl-PL' });
+    activePage = page;
     const jsErrors = [];
     const guardErrors = [];
     const diagnostics = [];
@@ -64,8 +66,14 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('Diagnostyka konsoli i sieci', diagnostics.length === 0, diagnostics.slice(0, 20).join('; ') + (diagnostics.length > 20 ? ' (więcej: ' + diagnostics.length + ')' : ''));
     await guard.close();
     await page.close();
+    activePage = null;
   } catch (error) {
     record('Wyjątek testu', false, error.stack || error.message);
+    logIncident('RX BIBI Tester', 'exception', error.stack || error.message);
+    if (activePage && !activePage.isClosed()) {
+      try { await activePage.screenshot({ path: path.join(reportDir, 'rx-bibi-error.png'), fullPage: true, timeout: 10000 }); }
+      catch (screenshotError) { logIncident('RX BIBI Tester', 'screenshot', screenshotError.message); }
+    }
   } finally {
     await browser.close();
   }
