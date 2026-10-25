@@ -11,6 +11,25 @@
    return response.json();
   });
  }
+ const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
+ function renderPlugins(){
+  if(!pluginCards)return;
+  pluginCards.replaceChildren();
+  const installed=plugins?.list()||[];
+  if(pluginCount)pluginCount.textContent='('+installed.length+')';
+  if(!installed.length){pluginCards.textContent='Brak dostępnych modułów.';return;}
+  for(const plugin of installed){
+   const card=document.createElement('div');card.className='guard-plugin-card';
+   const title=document.createElement('strong');title.textContent=plugin.id+' · aktywna';
+   const desc=document.createElement('div');desc.textContent=plugin.description;
+   const permissions=document.createElement('small');permissions.textContent='Uprawnienia: '+plugin.permissions.join(', ')+' · tylko odczyt';
+   const button=document.createElement('button');button.type='button';button.textContent='Szczegóły';
+   button.addEventListener('click',()=>{
+    append('Strażak','Moduł: '+plugin.id+'\\nOpis: '+plugin.description+'\\nUprawnienia: '+plugin.permissions.join(', ')+'\\nDziała lokalnie, bez zapisu do GitHuba.');
+   });
+   card.append(title,desc,permissions,button);pluginCards.append(card);
+  }
+ }
  // Persist only predefined, non-sensitive commands in this browser tab.
  const historyKey='vexorio-guard-safe-history-v2';
  const historyLimit=12;
@@ -116,4 +135,5 @@
   }else append('Strażak',answer.message);
  });
  renderTasks();
+ renderPlugins();
 })();
