@@ -5,6 +5,7 @@ const vm=require('node:vm');
 const inspector=fs.readFileSync('guard/developer-inspector.cjs','utf8');
 const ui=fs.readFileSync('guard-code-ui.js','utf8');
 const chat=fs.readFileSync('guard-chat.js','utf8');
+const diff=fs.readFileSync('guard/developer-diff.cjs','utf8');
 function node(value=''){
  const listeners={};
  return {value,textContent:'',children:[],scrollHeight:0,scrollTop:0,addEventListener:(name,fn)=>{listeners[name]=fn;},fire:async(name)=>listeners[name]?.({preventDefault(){}}),append(...items){this.children.push(...items);},replaceChildren(){this.children=[];},className:'',type:''};
@@ -19,6 +20,7 @@ const ctx=vm.createContext({window,document,localStorage:{getItem:k=>storage.get
 vm.runInContext(inspector,ctx,{filename:'developer-inspector.cjs'});
 assert.equal(typeof window.GuardDeveloperInspector.inspectSource,'function');
 vm.runInContext(ui,ctx,{filename:'guard-code-ui.js'});
+vm.runInContext(diff,ctx,{filename:'developer-diff.cjs'});
 vm.runInContext(chat,ctx,{filename:'guard-chat.js'});
 (async()=>{
  await codeForm.fire('submit');
@@ -29,6 +31,9 @@ vm.runInContext(chat,ctx,{filename:'guard-chat.js'});
  assert.match(text,/Strażak Developer/);
  assert.match(text,/Sprawdź, czy logi/);
  assert.doesNotMatch(text,/UNKNOWN/);
+ input.value='diff: diff --git a/a.js b/a.js\n--- a/a.js\n+++ b/a.js\n@@ -1 +1 @@\n-eval(x)\n+eval(userInput)';
+ await chatForm.fire('submit');
+ assert.match(messages.children.map(p=>p.children.map(c=>c.textContent||'').join('')).join('\n'),/Strażak Developer 2.0/);
  source.value='const safe = 1;';
  await codeForm.fire('submit');
  assert.match(out.textContent,/Nie znaleziono sygnałów/);
