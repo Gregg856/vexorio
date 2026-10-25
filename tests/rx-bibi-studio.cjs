@@ -52,8 +52,11 @@ const {chromium,devices}=require('playwright');
    await page.locator('#render').click();
    await page.waitForFunction(oldHref=>{const el=document.getElementById('videoDownload');const href=el?.getAttribute('href');return !!href&&href!==oldHref},previousHref,{timeout:75000});
    const full=await page.locator('#videoPreview').evaluate(async v=>{
+     // A new blob URL may be assigned while readyState still reflects the old 5s clip.
+     // Explicitly reload the new source before reading its metadata.
+     v.load();
      await new Promise((resolve,reject)=>{
-       if(v.readyState>=1)return resolve();
+       if(v.readyState>=1&&v.currentSrc===v.src)return resolve();
        v.addEventListener('loadedmetadata',resolve,{once:true});
        v.addEventListener('error',()=>reject(Error('30s video decode error')),{once:true});
        setTimeout(()=>reject(Error('30s metadata timeout')),15000);
