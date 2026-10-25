@@ -215,6 +215,9 @@ jobs:
             echo "RX plugin syntax: $plugin"
             if ! node --check "$plugin"; then
               echo "::error file=$plugin::RX plugin syntax failed"
+              echo "RX diagnoza: blad skladni JavaScript w $plugin"
+              echo "RX zalecenie: sprawdz ostatnia zmiane pliku, uruchom node --check $plugin i dodaj test regresyjny."
+              echo "RX bezpieczenstwo: nie wdrazaj automatycznie poprawki bez zielonych testow i zatwierdzenia."
               exit 1
             fi
           done
