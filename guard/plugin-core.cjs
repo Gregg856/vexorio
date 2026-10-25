@@ -32,13 +32,22 @@ function createRegistry(){
    throw error;
   }
  }
+ function recommend(task,requiredPermission='read:task'){
+  if(typeof task!=='string'||task.length>2000||!ALLOWED_PERMISSIONS.has(requiredPermission))throw Error('Invalid recommendation request');
+  const tokens=new Set((task.toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[]).filter(word=>word.length>2));
+  return list().filter(plugin=>plugin.permissions.includes(requiredPermission)).map(plugin=>{
+   const terms=new Set(((plugin.id+' '+plugin.description).toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[]).filter(word=>word.length>2));
+   const matches=[...tokens].filter(word=>terms.has(word));
+   return {id:plugin.id,score:matches.length,matches,requiresApproval:true};
+  }).filter(item=>item.score>0).sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
+ }
  function diagnostics(){
   return list().map(plugin=>{
    const stats=health.get(plugin.id);
    return {id:plugin.id,status:stats.lastError?'error':stats.checks?'ok':'not-tested',checks:stats.checks,failures:stats.failures,lastError:stats.lastError};
   });
  }
- return Object.freeze({register,list,execute,diagnostics});
+ return Object.freeze({register,list,recommend,execute,diagnostics});
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={createRegistry};
 if(typeof window!=='undefined')window.GuardPluginCore={createRegistry};
