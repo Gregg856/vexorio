@@ -141,6 +141,48 @@
    finally{fixButton.disabled=false;}
   });
  }
+ const boardButton=document.getElementById('guardProgressBoardButton');
+ const boardOutput=document.getElementById('guardProgressBoardResult');
+ if(boardButton&&boardOutput)boardButton.addEventListener('click',async()=>{
+  boardButton.disabled=true;
+  boardOutput.textContent='Odczytuję stan Strażaka z GitHub…';
+  const repo='https://api.github.com/repos/Gregg856/vexorio';
+  const headers={Accept:'application/vnd.github+json'};
+  const fetchJson=async url=>{const response=await fetch(url,{cache:'no-store',headers});if(!response.ok)throw Error('HTTP '+response.status);return response.json();};
+  try{
+   const [open,closed]=await Promise.all([fetchJson(repo+'/pulls?state=open&per_page=100'),fetchJson(repo+'/pulls?state=closed&per_page=100')]);
+   if(!Array.isArray(open)||!Array.isArray(closed))throw Error('Invalid PR data');
+   const isGuard=pr=>pr&&pr.head&&typeof pr.head.ref==='string'&&pr.head.ref.startsWith('strazak/safe-fix-');
+   const drafts=open.filter(pr=>isGuard(pr)&&pr.draft===true);
+   const finished=closed.filter(pr=>isGuard(pr)&&pr.merged_at);
+   const files=['guard-chat.js','guard-github-panel.js','guard-code-ui.js','guard-code-fix.js'];
+   let detected=0,proposals=0,checked=0;
+   if(window.GuardDeveloperInspector&&window.GuardPatchPreview){
+    for(const file of files){
+     try{
+      const response=await fetch('https://raw.githubusercontent.com/Gregg856/vexorio/main/'+file,{cache:'no-store'});
+      if(!response.ok)continue;
+      const source=await response.text();
+      const audit=window.GuardDeveloperInspector.inspectSource({path:file,source});
+      const preview=window.GuardPatchPreview.preview({path:file,source});
+      detected+=Array.isArray(audit.findings)?audit.findings.length:0;
+      proposals+=Array.isArray(preview.changes)?preview.changes.length:0;
+      checked++;
+     }catch(_){}
+    }
+   }
+   const lines=[
+    'WYKRYTE: '+(checked?detected+' sygnałów w '+checked+'/4 plikach':'brak danych — inspektor lub pliki niedostępne'),
+    'PROPOZYCJE: '+(checked?proposals+' bezpiecznych zmian TLS':'brak danych'),
+    'DO ZATWIERDZENIA: '+drafts.length+' otwartych roboczych PR',
+    'ZAKOŃCZONE: '+finished.length+' scalonych PR Strażaka (ostatnich 100 zamkniętych)',
+    'Stan z GitHub, tylko do odczytu. Propozycje nie oznaczają wykonanych poprawek.'
+   ];
+   if(drafts.length)lines.push('Do przeglądu: '+drafts.slice(0,5).map(pr=>'#'+pr.number).join(', '));
+   boardOutput.textContent=lines.join('\n\n');
+  }catch(_){boardOutput.textContent='Nie udało się odczytać statusu PR z GitHub. Spróbuj później; nic nie zmieniono.';}
+  finally{boardButton.disabled=false;}
+ });
  const prButton=document.getElementById('guardDraftPrStatusButton');
  const prOutput=document.getElementById('guardDraftPrStatusResult');
  if(prButton&&prOutput)prButton.addEventListener('click',async()=>{
