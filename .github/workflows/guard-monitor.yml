@@ -36,8 +36,25 @@ jobs:
             exit 1
           fi
           echo "RX monitor: wszystkie 5 adresow odpowiada" >> "$GITHUB_STEP_SUMMARY"
+      - name: Testy funkcjonalne RX i trzech wtyczek
+        id: functional
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Uruchom testy funkcjonalne
+        id: rx_tests
+        if: steps.functional.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          node --check guard-chat.js
+          node tests/guard-rx-plugin-health.test.cjs
+          node tests/guard-rx-empty-result-regression.test.cjs
+          node tests/guard-chat.test.cjs
+          node tests/guard-rx-orchestrator.test.cjs
       - name: Powiadom przez jedno zgloszenie GitHub o awarii
-        if: steps.check.outcome == 'failure'
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
         uses: actions/github-script@v7
         with:
           script: |
@@ -45,7 +62,7 @@ jobs:
             const {owner, repo} = context.repo;
             const issues = await github.paginate(github.rest.issues.listForRepo, {owner,repo,state:'open',per_page:100});
             const existing = issues.find(i => !i.pull_request && i.title === title);
-            const body = 'Monitoring wykrył niedostępny lub pusty zasób. Sprawdź [logi uruchomienia](' +
+            const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
               '). RX nie zmienia automatycznie kodu.';
             if (existing) {
@@ -54,7 +71,7 @@ jobs:
               await github.rest.issues.create({owner,repo,title,body});
             }
       - name: Zamknij alarm po odzyskaniu dostepnosci
-        if: steps.check.outcome == 'success'
+        if: steps.check.outcome == 'success' && steps.functional.outcome == 'success' && steps.rx_tests.outcome == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -62,9 +79,9 @@ jobs:
             const title = '[RX MONITOR] Awaria VEXORIO';
             const issues = await github.paginate(github.rest.issues.listForRepo, {owner,repo,state:'open',per_page:100});
             for (const issue of issues.filter(i => !i.pull_request && i.title === title)) {
-              await github.rest.issues.createComment({owner,repo,issue_number:issue.number,body:'Monitoring ponownie potwierdził dostępność wszystkich pięciu zasobów. Alarm zamknięty automatycznie.'});
+              await github.rest.issues.createComment({owner,repo,issue_number:issue.number,body:'Monitoring ponownie potwierdził dostępność zasobów i pomyślne testy funkcjonalne RX. Alarm zamknięty automatycznie.'});
               await github.rest.issues.update({owner,repo,issue_number:issue.number,state:'closed',state_reason:'completed'});
             }
       - name: Zakoncz czerwonym statusem przy awarii
-        if: steps.check.outcome == 'failure'
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
         run: exit 1
