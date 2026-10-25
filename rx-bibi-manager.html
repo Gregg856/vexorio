@@ -8,6 +8,7 @@
 'use strict';
 const freshness=document.getElementById('freshness'),latest=document.getElementById('latest'),summary=document.getElementById('summary'),root=document.getElementById('runs'),status=document.getElementById('status'),button=document.getElementById('refresh');
 function el(tag,cls,content){const node=document.createElement(tag);if(cls)node.className=cls;if(content!==undefined)node.textContent=content;return node;}
+function formatDate(value){const time=Date.parse(value||'');return Number.isFinite(time)?new Date(time).toLocaleString('pl-PL'):'brak poprawnej daty';}
 async function refresh(){
  if(button.disabled)return;
  button.disabled=true;status.textContent='Pobieram historię z GitHub…';
@@ -20,14 +21,14 @@ async function refresh(){
   const runs=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||String(r.name).includes('RX Strazak')).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,12);
   const deployments=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'&&r.head_branch==='main').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   const current=deployments[0];latest.replaceChildren();
-  if(current){const state=current.status!=='completed'?'w toku':current.conclusion==='success'?'udana':current.conclusion==='failure'?'nieudana':'wymaga sprawdzenia';const cls=state==='udana'?'ok':state==='nieudana'?'bad':'wait';latest.append(el('strong','','Ostatnia publikacja VEXORIO: '),el('strong',cls,state));latest.append(el('p','meta','Commit: '+String(current.head_sha||'brak').slice(0,8)+' · '+(current.created_at?new Date(current.created_at).toLocaleString('pl-PL'):'brak daty')));if(typeof current.html_url==='string'&&current.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')){const a=el('a','','Szczegóły ostatniej publikacji');a.href=current.html_url;a.rel='noopener noreferrer';a.target='_blank';latest.append(a);}}
+  if(current){const state=current.status!=='completed'?'w toku':current.conclusion==='success'?'udana':current.conclusion==='failure'?'nieudana':'wymaga sprawdzenia';const cls=state==='udana'?'ok':state==='nieudana'?'bad':'wait';latest.append(el('strong','','Ostatnia publikacja VEXORIO: '),el('strong',cls,state));latest.append(el('p','meta','Commit: '+String(current.head_sha||'brak').slice(0,8)+' · '+(current.created_at?formatDate(current.created_at):'brak daty')));if(typeof current.html_url==='string'&&current.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')){const a=el('a','','Szczegóły ostatniej publikacji');a.href=current.html_url;a.rel='noopener noreferrer';a.target='_blank';latest.append(a);}}
   else latest.textContent='Ostatnia publikacja: brak danych w pobranej historii.';
   const counts={success:0,failure:0,pending:0,other:0};for(const run of runs){if(run.status!=='completed')counts.pending++;else if(run.conclusion==='success')counts.success++;else if(run.conclusion==='failure')counts.failure++;else counts.other++;}for(const [key,label] of [['success','Udane'],['failure','Nieudane'],['pending','W toku'],['other','Pozostałe']]){const card=el('div','item');card.append(el('strong',key==='success'?'ok':key==='failure'?'bad':'wait',String(counts[key])),el('small','',label));summary.append(card);}const apiAge=Date.parse(response.headers.get('date')||'');const ageSeconds=Number(response.headers.get('age')||0);const ageMinutes=Number.isFinite(apiAge)?Math.max(0,Math.round((Date.now()-apiAge)/60000)):0;const stale=ageSeconds>300||ageMinutes>5;freshness.textContent=!data.workflow_runs.length?'Świeżość danych: brak uruchomień w odpowiedzi GitHub API.':stale?'Świeżość danych: mogą być nieaktualne (opóźniona odpowiedź API).':'Świeżość danych: aktualne (ostatni udany odczyt).';status.textContent=(runs.length?'Ostatnie '+runs.length+' uruchomień (z 20 pobranych)':'Brak dostępnych uruchomień.')+' · Odczyt: '+new Date().toLocaleString('pl-PL')+' (czas urządzenia).';
   let inspectedFailures=0;
   for(const run of runs){
    const item=el('article','item'),state=run.status==='completed'?(run.conclusion||'brak wyniku'):'w toku';
    const cls=state==='success'?'ok':state==='failure'?'bad':'wait';
-   item.append(el('strong','',String(run.name||'Workflow')),el('p',cls,state),el('div','meta','Data: '+(run.created_at?new Date(run.created_at).toLocaleString('pl-PL'):'brak')+' · Próba: '+String(run.run_attempt||1)));
+   item.append(el('strong','',String(run.name||'Workflow')),el('p',cls,state),el('div','meta','Data: '+(run.created_at?formatDate(run.created_at):'brak')+' · Próba: '+String(run.run_attempt||1)));
    if(state==='failure'){
     const diagnostic=el('p','meta','Diagnoza: sprawdzam nieudany etap…');item.append(diagnostic);
     if(inspectedFailures>=3){diagnostic.textContent='Diagnoza: dla starszych awarii otwórz logi (limit 3 analiz na odświeżenie).';}
