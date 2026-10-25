@@ -135,9 +135,12 @@
    catch(_){append('Strażak','Nie udało się przeanalizować kodu.');}
    return;
   }
-  if(window.GuardRXConversation&&window.GuardEngine2){
-   const natural=window.GuardRXConversation.respondNatural(command,window.GuardEngine2.analyzeTask);
-   if(natural!==null){append('RX Strażak',natural);return;}
+  if(window.GuardRXOrchestrator){
+   const routing=window.GuardRXOrchestrator.route(command,{
+    conversation:window.GuardRXConversation,
+    analyzeTask:window.GuardEngine2?.analyzeTask
+   });
+   if(routing.kind==='advisory'){append('RX Strażak',routing.message);return;}
   }
   const answer=window.GuardCommands.respond(command);
   if(answer.kind==='plan'){
