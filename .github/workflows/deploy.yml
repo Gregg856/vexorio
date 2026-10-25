@@ -115,6 +115,7 @@ jobs:
           node tests/guard-developer-runtime.test.cjs
           node tests/guard-repository-scan.test.cjs
           node tests/guard-repository-summary.test.cjs
+          node tests/guard-developer-diff.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
