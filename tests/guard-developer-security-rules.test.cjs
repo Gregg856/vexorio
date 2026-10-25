@@ -12,6 +12,12 @@ assert.deepEqual(report.findings.map(f=>[f.rule,f.line,f.severity]),[
  ['insecure-http',2,'medium'],
  ['hardcoded-secret',3,'high']
 ]);
+const extra=inspectSource({path:'security.js',source:['const options={rejectUnauthorized:false};','otherWindow.postMessage(payload, "*");'].join('\n')});
+assert.deepEqual(extra.findings.map(f=>[f.rule,f.line,f.severity]),[
+ ['tls-verification-disabled',1,'high'],
+ ['postmessage-wildcard',2,'medium']
+]);
+assert.equal(inspectSource({path:'secure.js',source:'otherWindow.postMessage(payload, "https://example.org");'}).findings.length,0);
 assert.ok(!JSON.stringify(report).includes('abcdefghijklmnopqrstuvwxyz123456'),'Do not leak possible secret in reports');
 assert.equal(inspectSource({path:'safe.js',source:'fetch("https://example.org");'}).findings.length,0);
 console.log('PASS: Strażak Developer additional security rules and secret redaction');
