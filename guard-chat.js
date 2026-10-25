@@ -43,7 +43,7 @@
   for(const r of reports.filter(r=>r.status==='not-tested'))issues.push({id:r.id,priority:'DO SPRAWDZENIA',detail:'Uruchom test wtyczek, aby uzyskać wynik.'});
   const issueTitle=document.createElement('strong');issueTitle.textContent='Kolejka diagnostyczna ('+issues.length+')';
   const issueList=document.createElement('ol');
-  if(!issues.length){const item=document.createElement('li');item.textContent='Brak bieżących błędów i nieprzetestowanych modułów.';issueList.append(item);}
+  if(!issues.length){const item=document.createElement('li');item.textContent=diagnosticsUnavailable?'Stan nieznany — nie udało się odczytać diagnostyki.':'Brak bieżących błędów i nieprzetestowanych modułów.';issueList.append(item);}
   for(const issue of issues){const item=document.createElement('li');item.textContent=issue.priority+' · '+issue.id+' — '+issue.detail;issueList.append(item);}
   const adviceTitle=document.createElement('strong');adviceTitle.textContent='Propozycje napraw RX (bez zmian w kodzie)';
   const adviceList=document.createElement('ul');
@@ -57,7 +57,7 @@
    item.textContent=issue.id+': '+(issue.priority==='DO SPRAWDZENIA'?'Najpierw uruchom test modułu.':suggestions[issue.id]||'Sprawdź logi i testy modułu.');
    adviceList.append(item);
   }
-  if(!issues.length){const item=document.createElement('li');item.textContent='Brak otwartych problemów do zaproponowania naprawy.';adviceList.append(item);}
+  if(!issues.length){const item=document.createElement('li');item.textContent=diagnosticsUnavailable?'Najpierw przywróć odczyt diagnostyki RX. Nie można ocenić stanu modułów.':'Brak otwartych problemów do zaproponowania naprawy.';adviceList.append(item);}
   const note=document.createElement('small');note.textContent='Wyniki tylko z tej karty. To nie jest monitoring GitHub Actions.';
   const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Odśwież stan';refresh.addEventListener('click',renderHealth);
   const run=document.createElement('button');run.type='button';run.textContent='Przetestuj 3 wtyczki';
