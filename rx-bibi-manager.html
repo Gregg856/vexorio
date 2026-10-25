@@ -87,6 +87,9 @@ async function refresh(){
         }catch(error){break;}
        }
        diagnosis.textContent+=' Ten sam nieudany etap: '+same+' z '+compared+' porównanych awarii'+(failed.length>compared?' (część historii nieporównana)':'')+'. To nie potwierdza identycznej przyczyny.';
+       const advice=kind==='Publikacja'?'Sprawdź uprawnienia Cloudflare, token i odpowiedź API w logach. Przy błędzie przejściowym rozważ pojedyncze ponowienie po analizie.':kind==='Testy'?'Otwórz log testu, odtwórz błąd na staging i popraw kod przed ponownym wdrożeniem.':'Sprawdź log nieudanego etapu, wymagane pliki i konfigurację workflow.';
+       const tip=el('p','meta','Propozycja działania: '+advice+' Żadna naprawa nie jest uruchamiana automatycznie.');
+       row.append(tip);
       }else diagnosis.textContent='Nie znaleziono nazwy nieudanego etapu; sprawdź logi.';
      }catch(error){diagnosis.textContent='Nie można odczytać przyczyny ('+String(error.message||'błąd')+').';}
     }
