@@ -33,4 +33,14 @@ function summarizeIncidents(runs){
  }
  return Object.freeze({total:runs.length,counts:Object.freeze(counts),failures:Object.freeze(failures)});
 }
-module.exports={assessDeployment,summarizeIncidents,MAX_ATTEMPTS};
+function classifyFailure(input){
+ if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid failure');
+ const {step='',errorCode=null}=input;
+ if(typeof step!=='string'||step.length>160||!(errorCode===null||typeof errorCode==='string'&&errorCode.length<=64))throw Error('Invalid failure');
+ const normalized=step.toLowerCase();
+ if(/test|regresj|skladni|składni|lint/.test(normalized))return Object.freeze({category:'test-failure',action:'inspect-test-logs',confidence:'step-only'});
+ if(/cloudflare|publikuj|deploy worker|wrangler/.test(normalized))return Object.freeze({category:errorCode==='10013'?'cloudflare-upload-error':'deployment-failure',action:'inspect-deployment-logs',confidence:'step-only'});
+ if(/github api|pobierz histori|fetch workflow/.test(normalized))return Object.freeze({category:'github-api-error',action:'check-api-response',confidence:'step-only'});
+ return Object.freeze({category:'unclassified-failure',action:'inspect-logs',confidence:'unknown'});
+}
+module.exports={assessDeployment,summarizeIncidents,classifyFailure,MAX_ATTEMPTS};
