@@ -148,6 +148,29 @@ async function refresh(){
      clearButton.textContent='🗑️ Wyczyść historię diagnoz';
     });
     entriesPanel.parentElement.append(clearButton,clearStatus);
+    const exportButton=el('button','','⬇️ Eksportuj historię JSON');
+    exportButton.type='button';
+    const exportStatus=el('p','meta','Eksport obejmuje tylko zapisane lokalnie diagnozy.');
+    exportStatus.setAttribute('role','status');
+    exportButton.addEventListener('click',()=>{
+     try{
+      const raw=JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]');
+      const records=Array.isArray(raw)?raw.filter(x=>x&&typeof x.date==='string'&&typeof x.summary==='string').slice(-10):[];
+      if(!records.length){exportStatus.textContent='Brak diagnoz do eksportu.';return;}
+      const payload=JSON.stringify({format:'rx-bibi-diagnoses',version:1,exportedAt:new Date().toISOString(),source:'local-browser',records},null,2);
+      const url=URL.createObjectURL(new Blob([payload],{type:'application/json'}));
+      const link=document.createElement('a');
+      link.href=url;
+      link.download='rx-bibi-diagnozy-'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      exportStatus.textContent='Przygotowano plik JSON z '+records.length+' diagnozami.';
+     }catch(error){exportStatus.textContent='Nie udało się wyeksportować historii.';}
+    });
+    entriesPanel.parentElement.append(exportButton,exportStatus);
+
    }
    if(priorityPanel){
     const copyButton=el('button','','📋 Kopiuj diagnozę RX BIBI');
