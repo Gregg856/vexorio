@@ -239,6 +239,14 @@ jobs:
               echo "- **RX / wtyczki:** odczytaj pierwszy nieudany test Node, popraw jego przyczyne i uruchom test ponownie."
             fi
             echo ""
+            echo "### Bezpieczna decyzja RX"
+            echo "- Status: WYMAGA PRZEGLADU. Brak automatycznego wdrozenia."
+            echo "- 1. Otworz logi nieudanego kroku i potwierdz przyczyne."
+            echo "- 2. Sprawdz, czy w repozytorium istnieje juz otwarty incydent RX."
+            echo "- 3. Jezeli poprawka dotyczy dozwolonego guard-*.js i znanej reguly TLS, uzyj generatora roboczego PR."
+            echo "- 4. W pozostalych przypadkach przygotuj osobny PR z testem regresyjnym."
+            echo "- 5. Wymagaj zielonych testow i zatwierdzenia przed scaleniem."
+            echo ""
             echo "### Klasyfikacja incydentu"
             if [ "$CHECK_RESULT" = "failure" ]; then
               echo "- Kategoria: PRODUKCJA / ZASOBY. Priorytet: WYSOKI."
