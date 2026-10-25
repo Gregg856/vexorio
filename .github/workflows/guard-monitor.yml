@@ -76,6 +76,18 @@ jobs:
               echo "Odebrano: $path"
             fi
           done
+          # Check basic browser-visible page structure, not only HTTP availability.
+          if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/guard-lab.html" -o /tmp/guard-panel-check; then
+            echo "::error::RX monitor: nie mozna pobrac panelu"
+            failed=1
+          else
+            for marker in 'guardPanelChat' 'guard-chat.js' 'guard-plugin-core.js'; do
+              if ! grep -Fq "$marker" /tmp/guard-panel-check; then
+                echo "::error::RX monitor: panel nie zawiera $marker"
+                failed=1
+              fi
+            done
+          fi
           if [ "$failed" -ne 0 ]; then
             echo "RX monitor: AWARIA" >> "$GITHUB_STEP_SUMMARY"
             exit 1
