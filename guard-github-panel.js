@@ -108,8 +108,10 @@
     const source=await response.text();
     const report=window.GuardDeveloperInspector.inspectSource({path:file,source});
     sections.push('PLIK: '+file+' — sygnały: '+report.findings.length+(report.limited?' (limit 50)':''));
+    for(const finding of report.findings){
+     if(Object.prototype.hasOwnProperty.call(totals,finding.severity))totals[finding.severity]++;
+    }
     for(const finding of report.findings.slice(0,20)){
-     totals[finding.severity]=(totals[finding.severity]||0)+1;
      sections.push('Linia '+finding.line+' ['+finding.severity+'] '+finding.message);
     }
     if(report.findings.length>20)sections.push('Pozostałe sygnały pominięte w podglądzie.');
