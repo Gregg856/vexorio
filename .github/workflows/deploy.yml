@@ -115,6 +115,8 @@ jobs:
           node tests/guard-changes-report-plugin.test.cjs
           node tests/guard-code-fix.test.cjs
           node tests/guard-patch-preview.test.cjs
+          node tests/guard-prepare-safe-fix.test.cjs
+          node tests/guard-fix-pipeline.test.cjs
           node tests/guard-greetings.test.cjs
           node tests/guard-developer-inspector.test.cjs
           node tests/guard-developer-security-rules.test.cjs
