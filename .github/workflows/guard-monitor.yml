@@ -28,7 +28,39 @@ jobs:
               echo "::error::RX monitor: pusty plik $path"
               failed=1
             else
-              echo "OK: $path"
+              case "$path" in
+                /guard-lab.html)
+                  if ! grep -Fq 'guardPanelChat' /tmp/guard-check; then
+                    echo "::error::RX monitor: panel czatu nie zostal znaleziony w HTML"
+                    failed=1
+                  fi
+                  ;;
+                /guard-chat.js)
+                  if ! grep -Fq 'GuardRXOrchestrator' /tmp/guard-check; then
+                    echo "::error::RX monitor: nieprawidlowa zawartosc guard-chat.js"
+                    failed=1
+                  fi
+                  ;;
+                /guard-plugin-core.js)
+                  if ! grep -Fq 'GuardPlugin' /tmp/guard-check; then
+                    echo "::error::RX monitor: nieprawidlowa zawartosc guard-plugin-core.js"
+                    failed=1
+                  fi
+                  ;;
+                /guard-rx-orchestrator.js)
+                  if ! grep -Fq 'GuardRXOrchestrator' /tmp/guard-check; then
+                    echo "::error::RX monitor: nieprawidlowa zawartosc koordynatora"
+                    failed=1
+                  fi
+                  ;;
+                /)
+                  if ! grep -Eiq '<html|<!doctype html' /tmp/guard-check; then
+                    echo "::error::RX monitor: brak dokumentu HTML strony glownej"
+                    failed=1
+                  fi
+                  ;;
+              esac
+              echo "Odebrano: $path"
             fi
           done
           if [ "$failed" -ne 0 ]; then
