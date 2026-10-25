@@ -8,6 +8,10 @@ on:
       - '.github/workflows/guard-worker.yml'
   workflow_dispatch:
     inputs:
+      proposal_file:
+        description: 'Optional guard-*.js file for read-only patch proposal'
+        required: false
+        type: string
       scope:
         description: 'Audit scope'
         required: true
@@ -60,6 +64,18 @@ jobs:
             node --check guard-chat.js
             node tests/search-location-regression.test.js
           fi
+      - name: Prepare patch proposal artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.scope == 'guard' && inputs.proposal_file != ''
+        env:
+          PROPOSAL_FILE: ${{ inputs.proposal_file }}
+        run: node guard/patch-proposal.cjs "$PROPOSAL_FILE"
+      - name: Upload patch proposal
+        if: github.event_name == 'workflow_dispatch' && inputs.scope == 'guard' && inputs.proposal_file != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: strazak-patch-proposal
+          path: strazak-patch-proposal.txt
+          retention-days: 7
       - name: Save audit report
         if: always()
         run: |
