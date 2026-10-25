@@ -119,6 +119,28 @@
   }catch(_){findingsOutput.textContent='Analiza jest niedostępna. Sprawdź dostęp do GitHub lub odśwież panel.';}
   finally{findingsButton.disabled=false;}
  });
+ const fixSelect=document.getElementById('guardFixTarget');
+ const fixButton=document.getElementById('guardFixPrepareButton');
+ const fixOutput=document.getElementById('guardFixPrepareResult');
+ if(fixSelect&&fixButton&&fixOutput){
+  const allowed=new Set(['guard-chat.js','guard-github-panel.js','guard-code-ui.js','guard-code-fix.js']);
+  fixButton.addEventListener('click',async()=>{
+   const file=fixSelect.value;
+   if(!allowed.has(file)){fixOutput.textContent='Wybierz dozwolony plik Strażaka.';return;}
+   fixButton.disabled=true;fixOutput.textContent='Sprawdzanie możliwości poprawki…';
+   try{
+    if(!window.GuardDeveloperInspector||!window.GuardPatchPreview)throw Error('Modules unavailable');
+    const response=await fetch('https://raw.githubusercontent.com/Gregg856/vexorio/main/'+file,{cache:'no-store'});
+    if(!response.ok)throw Error('Fetch failed');
+    const source=await response.text();
+    const audit=window.GuardDeveloperInspector.inspectSource({path:file,source});
+    const patch=window.GuardPatchPreview.preview({path:file,source});
+    const relevant=audit.findings.filter(x=>x.rule==='tls-verification-disabled');
+    fixOutput.textContent='Plik: '+file+'\nWszystkie sygnały audytu: '+audit.findings.length+'\nObsługiwane automatyczne poprawki TLS: '+patch.changes.length+'\n'+(relevant.length?'Wykryto sygnały wyłączonej weryfikacji TLS.':'Brak wykrytej reguły TLS w tym pliku.')+'\n\nAby przygotować roboczy PR, otwórz poniższy link do GitHub Actions, wybierz Run workflow i wpisz w polu target dokładnie: '+file+'\nPozostaw smoke_test wyłączony.\nWorkflow uruchomi testy i utworzy roboczy PR tylko gdy powstanie zmiana.\nWymagane jest Twoje zatwierdzenie; panel nie uruchamia workflow ani nie wysyła tokenów.';
+   }catch(_){fixOutput.textContent='Nie można przygotować podglądu. Sprawdź połączenie i odśwież panel.';}
+   finally{fixButton.disabled=false;}
+  });
+ }
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
