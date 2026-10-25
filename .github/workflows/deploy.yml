@@ -144,6 +144,7 @@ jobs:
           node tests/guard-model-adapter.test.cjs
           node tests/guard-local-model.test.cjs
           node tests/guard-rx-engine.test.cjs
+          node tests/guard-rx-browser.test.cjs
           node --check guard-rx-browser.js
           grep -q 'guardRxForm' guard-lab.html
           node tests/guard-local-integration.test.cjs
