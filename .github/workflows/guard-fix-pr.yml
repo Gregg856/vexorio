@@ -266,6 +266,12 @@ jobs:
           else
             test ! -e tests/guard-autofix-smoke.test.cjs
           fi
+      - name: Validate deterministic fix report
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true && inputs.smoke_test != true
+        env:
+          TARGET: ${{ env.RX_TARGET }}
+        run: |
+          node -e "const fs=require('node:fs');const r=JSON.parse(fs.readFileSync('strazak-fix-report.json','utf8'));if(r.file!==process.env.TARGET||r.blocked||r.rule!=='tls-verification-disabled'||r.approval!=='Pull Request review required'||typeof r.changed!=='boolean')throw Error('RX fix report invalid or blocked');console.log('RX fix report verified:',r.changed?'patch':'no change')"
       - name: Check whether a real patch exists
         id: patch_ready
         if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
