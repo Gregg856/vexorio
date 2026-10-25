@@ -190,6 +190,9 @@ jobs:
         run: |
           set -euo pipefail
           node --check guard-chat.js
+          node --check guard-rx-categories.js
+          node --check guard-rx-monitor-report.js
+          node tests/guard-rx-dashboard.test.cjs
           node tests/guard-rx-plugin-health.test.cjs
           node tests/guard-rx-empty-result-regression.test.cjs
           node tests/guard-chat.test.cjs
