@@ -50,7 +50,8 @@ assert.ok(bibi.includes('Świeżość danych: brak połączenia lub danych'),'RX
 assert.ok(bibi.includes("response.headers.get('age')"),'RX BIBI must inspect API cache age');
 assert.ok(bibi.includes('ageSeconds>300'),'RX BIBI must warn for old API responses');
 assert.ok(bibi.includes('!data.workflow_runs.length'),'RX BIBI must not report empty history as current');
-assert.ok(bibi.includes(".sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,12)"),'RX BIBI must sort history newest first before limiting results');
+assert.ok(bibi.includes(".sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at)).slice(0,12)"),'RX BIBI must sort history newest first before limiting results');
+assert.ok(bibi.includes('function timestamp(value)'),'RX BIBI must handle missing dates in sorting');
 assert.ok(bibi.includes('function formatDate(value)'),'RX BIBI must safely format workflow dates');
 assert.ok(bibi.includes('brak poprawnej daty'),'RX BIBI must handle invalid workflow dates');
 assert.ok(bibi.indexOf('root.replaceChildren();summary.replaceChildren();latest.textContent')>bibi.indexOf('if(!response.ok)throw Error'),'RX BIBI must preserve old data until successful API response');
