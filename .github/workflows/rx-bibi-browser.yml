@@ -23,10 +23,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Cache przeglądarki Chromium
+        id: chromium-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-rx-bibi-playwright-1.56.1-chromium-v1
       - name: Instaluj Playwright
-        run: |
-          npm install --no-save --no-package-lock playwright@1.56.1
-          npx playwright install --with-deps chromium
+        run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: Instaluj biblioteki systemowe Chromium
+        run: npx playwright install-deps chromium
+      - name: Pobierz Chromium tylko gdy brak cache
+        if: steps.chromium-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
       - name: Uruchom testy RX BIBI
         run: node tests/rx-bibi-browser.cjs
       - name: Zachowaj raporty i zrzuty
