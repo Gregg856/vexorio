@@ -3,13 +3,15 @@ const assert=require('node:assert/strict');
 const {summarize}=require('../guard/repository-summary.cjs');
 const report={signals:3,files:[
  {path:'a.js',findings:[{severity:'high'},{severity:'medium'}]},
- {path:'b.js',findings:[{severity:'low'}]},
+ {path:'tests/b.test.js',findings:[{severity:'low'}]},
  {path:'c.js',error:'too_large'}
 ]};
 const s=summarize(report);
 assert.equal(s.filesScanned,2);
 assert.equal(s.filesSkipped,1);
 assert.equal(s.signals,3);
+assert.deepEqual(s.byScope.application,{high:1,medium:1,low:0});
+assert.deepEqual(s.byScope.tests,{high:0,medium:0,low:1});
 assert.deepEqual(s.severity,{high:1,medium:1,low:1});
 assert.deepEqual(s.files[2],{path:'c.js',status:'too_large'});
 assert.equal(JSON.stringify(s).includes('source'),false);
