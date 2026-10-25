@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {assessDeployment}=require('../guard/rx-bibi-manager.cjs');
+assert.deepEqual(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'success'}),{status:'healthy',category:'published',retryRecommended:false,requiresApproval:true,action:'none'});
+const failure=assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',errorCode:'10013'});
+assert.equal(failure.action,'propose-retry');
+assert.equal(failure.retryRecommended,true);
+assert.equal(failure.requiresApproval,true);
+assert.equal(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',errorCode:'10013',attempt:2}).retryRecommended,false);
+assert.equal(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',errorCode:'unknown'}).action,'review-logs');
+assert.equal(assessDeployment({provider:'cloudflare',workflowStatus:'in_progress'}).status,'pending');
+assert.equal(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'cancelled'}).action,'review');
+assert.throws(()=>assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',attempt:0}),/Invalid deployment/);
+assert.throws(()=>assessDeployment({provider:'cloudflare',workflowStatus:'in_progress',conclusion:'success'}),/Invalid deployment/);
+console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
