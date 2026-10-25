@@ -29,7 +29,7 @@ async function refresh(){
   for(const run of runs){
    const item=el('article','item'),state=run.status==='completed'?(run.conclusion||'brak wyniku'):'w toku';
    const cls=state==='success'?'ok':state==='failure'?'bad':'wait';
-   item.append(el('strong','',String(run.name||'Workflow')),el('p',cls,state),el('div','meta','Data: '+(run.created_at?formatDate(run.created_at):'brak')+' · Próba: '+String(run.run_attempt||1)));
+   item.append(el('strong','',String(run.name||'Workflow')),el('p',cls,state),el('div','meta','Data: '+(run.created_at?formatDate(run.created_at):'brak')+' · Próba: '+String(run.run_attempt||1)));root.append(item);
    if(state==='failure'){
     const diagnostic=el('p','meta','Diagnoza: sprawdzam nieudany etap…');item.append(diagnostic);
     if(inspectedFailures>=3){diagnostic.textContent='Diagnoza: dla starszych awarii otwórz logi (limit 3 analiz na odświeżenie).';}
@@ -48,7 +48,6 @@ async function refresh(){
     }else diagnostic.textContent='Diagnoza niedostępna: brak identyfikatora uruchomienia.';
    }
    if(typeof run.html_url==='string'&&run.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')){const link=el('a','','Otwórz szczegóły i logi');link.href=run.html_url;link.rel='noopener noreferrer';link.target='_blank';item.append(link);}
-   root.append(item);
   }
  }catch(error){freshness.textContent=root.children.length?'Świeżość danych: mogą być nieaktualne (nieudane odświeżenie).':'Świeżość danych: brak połączenia lub danych.';if(!root.children.length)latest.textContent='Ostatnia publikacja: nie można potwierdzić (błąd odczytu).';status.textContent='Nie udało się pobrać nowych danych: '+String(error.message||'nieznany błąd')+'. '+(root.children.length?'Widoczne dane mogą być nieaktualne.':'Otwórz GitHub Actions, aby sprawdzić status.');}
  finally{button.disabled=false;}
