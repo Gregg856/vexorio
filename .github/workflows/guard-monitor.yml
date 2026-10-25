@@ -302,10 +302,10 @@ jobs:
                 const markdown = Buffer.from(file.data.content, 'base64').toString('utf8');
                 const entries = markdown.split(/^### RX-FIX-/m).slice(1);
                 for (const entry of entries) {
-                  const status = entry.match(/^- \\*\\*Status:\\*\\*\\s*(.+)$/m)?.[1]?.trim().toLowerCase();
-                  const match = entry.match(/^- \\*\\*Odcisk awarii \\(RX-FINGERPRINT\\):\\*\\*\\s*([a-f0-9]{16})\\s*$/m);
-                  const commit = entry.match(/^- \\*\\*Commit lub PR:\\*\\*\\s*(https:\\/\\/\\S+)/m);
-                  const test = entry.match(/^- \\*\\*Test regresyjny:\\*\\*\\s*(https:\\/\\/\\S+)/m);
+                  const status = entry.match(/^- \*\*Status:\*\*\s*(.+)$/m)?.[1]?.trim().toLowerCase();
+                  const match = entry.match(/^- \*\*Odcisk awarii \(RX-FINGERPRINT\):\*\*\s*([a-f0-9]{16})\s*$/m);
+                  const commit = entry.match(/^- \*\*Commit lub PR:\*\*\s*(https:\/\/\S+)/m);
+                  const test = entry.match(/^- \*\*Test regresyjny:\*\*\s*(https:\/\/\S+)/m);
                   if (status === 'potwierdzone' && match?.[1] === fingerprint && commit && test) {
                     const id = entry.split(' — ')[0].trim();
                     fixNote = 'Potwierdzona poprawka RX-FIX-' + id + ': ' + commit[1] + ' | test: ' + test[1];
