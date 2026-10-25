@@ -41,6 +41,7 @@ assert.ok(bibi.includes("s.conclusion==='failure'"),'RX BIBI must only report fa
 assert.ok(bibi.includes('Diagnoza niedostępna'),'RX BIBI must disclose unavailable diagnosis');
 assert.ok(bibi.includes('inspectedFailures>=3'),'RX BIBI must limit failed-run API diagnostics');
 assert.ok(bibi.includes('if(button.disabled)return;'),'RX BIBI must prevent overlapping refreshes');
+assert.ok(bibi.includes('Odczyt: '),'RX BIBI must show when data was retrieved');
 assert.ok(bibi.includes('Limit GitHub API'),'RX BIBI must identify rate limiting');
 assert.ok(bibi.includes('Historia GitHub Actions niedostępna'),'RX BIBI must identify unavailable history');
 assert.ok(bibi.includes('Sprawdź komunikat testu'),'RX BIBI must recommend inspecting failed tests');
