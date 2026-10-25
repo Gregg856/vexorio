@@ -20,6 +20,16 @@
     }
     lines.push('Code Fix nie zmienił ani nie uruchomił kodu.');
    }
+   if(window.GuardPatchPreview&&/\\.(?:js|cjs|mjs)$/.test(report.path)){
+    const patch=window.GuardPatchPreview.preview({path:report.path,source:source.value});
+    if(patch.changes.length){
+     lines.push('\\nStrażak Patch Preview — propozycja zmian (niezastosowana):');
+     for(const change of patch.changes.slice(0,10)){
+      lines.push('Linia '+change.line+'\\n- '+change.before+'\\n+ '+change.after);
+     }
+     lines.push(patch.warning);
+    }
+   }
    out.textContent=lines.join('\n');
   }catch(_){out.textContent='Nieprawidłowa nazwa pliku lub zbyt długi kod (maks. 100 000 znaków).';}
  });
