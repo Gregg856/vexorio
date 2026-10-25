@@ -3,8 +3,6 @@ on:
   workflow_run:
     workflows: ['RX Strazak — monitoring 24/7']
     types: [completed]
-  schedule:
-    - cron: '19 5 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -29,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   propose:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
