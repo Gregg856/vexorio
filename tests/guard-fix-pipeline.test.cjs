@@ -33,5 +33,17 @@ try{
  const rerun=cp.spawnSync(process.execPath,[generator,target],{cwd:dir,encoding:'utf8'});
  assert.equal(rerun.status,0,rerun.stderr);
  assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8')).changed,false);
+ const ambiguous='guard-ambiguous-fixture.js';
+ const ambiguousOriginal='const a={rejectUnauthorized: false};\\nconst b={rejectUnauthorized: false};\\n';
+ fs.writeFileSync(path.join(dir,ambiguous),ambiguousOriginal);
+ const blocked=cp.spawnSync(process.execPath,[generator,ambiguous],{cwd:dir,encoding:'utf8'});
+ assert.equal(blocked.status,0,blocked.stderr);
+ assert.equal(fs.readFileSync(path.join(dir,ambiguous),'utf8'),ambiguousOriginal);
+ const blockedReport=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(blockedReport.changed,false);
+ assert.equal(blockedReport.blocked,'ambiguous-or-commented-tls-setting');
+ assert.match(workflow,/Validate deterministic fix report/);
+ assert.match(workflow,/r\.blocked/);
+ assert.match(workflow,/steps\.patch_ready\.outputs\.ready == 'true'/);
  console.log('PASS: detect → preview → safe fix → tests → draft PR configuration; no PR created');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
