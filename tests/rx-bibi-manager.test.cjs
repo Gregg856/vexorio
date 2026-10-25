@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {assessDeployment,summarizeIncidents}=require('../guard/rx-bibi-manager.cjs');
+const {assessDeployment,summarizeIncidents,classifyFailure}=require('../guard/rx-bibi-manager.cjs');
 assert.deepEqual(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'success'}),{status:'healthy',category:'published',retryRecommended:false,requiresApproval:true,action:'none'});
 const failure=assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',errorCode:'10013'});
 assert.equal(failure.action,'propose-retry');
@@ -23,6 +23,11 @@ assert.deepEqual(incidentSummary.counts,{success:1,failure:1,pending:1,other:1})
 assert.equal(incidentSummary.failures[0].reason,'unconfirmed');
 assert.equal(incidentSummary.failures[0].url,'https://github.com/Gregg856/vexorio/actions/runs/123');
 assert.throws(()=>summarizeIncidents([null]),/Invalid run/);
+assert.equal(classifyFailure({step:'Testy regresji wyszukiwarki i odleglosci'}).category,'test-failure');
+assert.equal(classifyFailure({step:'Publikuj w Cloudflare',errorCode:'10013'}).category,'cloudflare-upload-error');
+assert.equal(classifyFailure({step:'GitHub API: pobierz historie'}).category,'github-api-error');
+assert.equal(classifyFailure({step:'unknown'}).confidence,'unknown');
+assert.throws(()=>classifyFailure({step:42}),/Invalid failure/);
 const fs=require('node:fs');
 const strazak=fs.readFileSync('guard-lab.html','utf8');
 const bibi=fs.readFileSync('rx-bibi-manager.html','utf8');
