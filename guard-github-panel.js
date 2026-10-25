@@ -13,7 +13,18 @@
    const html=await response.text();
    const match=html.match(/<meta\s+name=["']vexorio-deploy-sha["']\s+content=["']([a-f0-9]{40})["']/i);
    if(!match)throw Error('No deploy marker');
-   liveOutput.textContent='Wersja na serwerze: '+match[1].slice(0,10)+'. To potwierdza odczyt opublikowanej wersji, nie wynik wszystkich testów.';
+   const deployed=match[1].toLowerCase();
+   liveOutput.textContent='Cloudflare: '+deployed.slice(0,10)+' · Sprawdzanie GitHub…';
+   try{
+    const github=await fetch('https://api.github.com/repos/Gregg856/vexorio/commits/main',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+    if(!github.ok)throw Error('GitHub unavailable');
+    const data=await github.json();
+    if(!data||typeof data.sha!=='string'||!/^[a-f0-9]{40}$/i.test(data.sha))throw Error('Invalid GitHub SHA');
+    const latest=data.sha.toLowerCase();
+    liveOutput.textContent='Cloudflare: '+deployed.slice(0,10)+'\\nGitHub main: '+latest.slice(0,10)+'\\n'+(deployed===latest?'✓ Wersje zgodne.':'⏳ Wersje różne — publikacja może być w toku albo wymagać sprawdzenia.')+'\\nPorównanie numerów wersji nie zastępuje testów.';
+   }catch(_){
+    liveOutput.textContent='Cloudflare: '+deployed.slice(0,10)+'\\nNie udało się odczytać aktualnej wersji GitHub. Sprawdź Actions.';
+   }
   }catch(_){liveOutput.textContent='Nie udało się potwierdzić wersji na serwerze. Sprawdź GitHub Actions.';}
   finally{liveButton.disabled=false;}
  });
