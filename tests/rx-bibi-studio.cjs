@@ -14,6 +14,27 @@ const {chromium,devices}=require('playwright');
   check('Sterowanie kamera',await page.locator('#motion option').count()===3);
   check('Przejscia',await page.locator('#transition option').count()===2);
   check('Pole napisu w edytorze',await page.locator('#caption').count()===1);
+  check('Pozycje napisu',JSON.stringify(await page.locator('#captionPosition option').evaluateAll(els=>els.map(x=>x.value)))===JSON.stringify(['bottom','center','top']));
+  const captionPositions=await page.evaluate(async()=>{
+    const c=document.createElement('canvas');c.width=320;c.height=320;c.getContext('2d').fillStyle='#286ab5';c.getContext('2d').fillRect(0,0,320,320);
+    const raw=atob(c.toDataURL('image/png').split(',')[1]),bytes=Uint8Array.from(raw,x=>x.charCodeAt(0));
+    const file=new File([bytes],'caption.png',{type:'image/png'});
+    const results={};
+    for(const position of ['top','center','bottom']){
+      const blob=await RXPhotoMotion.render({files:[file],duration:1,ratio:'9:16',motion:'static',caption:'RX TEST',captionPosition:position});
+      const url=URL.createObjectURL(blob),v=document.createElement('video');v.muted=true;v.src=url;
+      try{
+        await new Promise((resolve,reject)=>{v.addEventListener('loadeddata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('decode error')),{once:true});v.load()});
+        v.currentTime=Math.min(.5,v.duration/2);
+        await new Promise(resolve=>{v.addEventListener('seeked',resolve,{once:true});setTimeout(resolve,1000)});
+        const canvas=document.createElement('canvas');canvas.width=v.videoWidth;canvas.height=v.videoHeight;const ctx=canvas.getContext('2d');ctx.drawImage(v,0,0);
+        const zones=[.1,.5,.9].map(f=>{const data=ctx.getImageData(0,Math.round(canvas.height*f),canvas.width,Math.max(1,Math.round(canvas.height*.035))).data;let dark=0;for(let i=0;i<data.length;i+=4)if(data[i]<70&&data[i+1]<70&&data[i+2]<70)dark++;return dark});
+        results[position]=zones;
+      }finally{URL.revokeObjectURL(url)}
+    }
+    return results;
+  });
+  check('Napisy gora/srodek/dol — faktyczne klatki',captionPositions.top[0]>captionPositions.top[2]&&captionPositions.center[1]>captionPositions.center[0]&&captionPositions.bottom[2]>captionPositions.bottom[0],JSON.stringify(captionPositions));
   await page.locator('#kind').selectOption('image-video');
   await page.locator('#prompt').fill('Test RX BIBI PhotoMotion');
   await page.locator('#prepare').click();
