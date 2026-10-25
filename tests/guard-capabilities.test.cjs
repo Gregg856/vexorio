@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {listCapabilities,getCapability}=require('../guard-capabilities.js');
+const capabilities=listCapabilities();
+assert.equal(capabilities.length,5);
+assert.equal(getCapability('guardian').state,'prototype');
+assert.equal(getCapability('studio-video').state,'planned');
+assert.equal(getCapability('unknown'),null);
+capabilities[0].state='live';
+assert.equal(getCapability('guardian').state,'prototype');
+console.log('PASS: Guard capability registry describes real vs planned modules safely');
