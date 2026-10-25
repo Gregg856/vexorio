@@ -170,6 +170,36 @@ async function refresh(){
      }catch(error){exportStatus.textContent='Nie udało się wyeksportować historii.';}
     });
     entriesPanel.parentElement.append(exportButton,exportStatus);
+    const importLabel=el('label','','📥 Importuj historię JSON');
+    const importInput=document.createElement('input');
+    importInput.type='file';
+    importInput.accept='.json,application/json';
+    importInput.setAttribute('aria-label','Wybierz plik historii RX BIBI JSON');
+    importLabel.append(importInput);
+    const importStatus=el('p','meta','Import łączy poprawne wpisy z lokalną historią, maksymalnie 10 najnowszych. Dane nie są wysyłane na serwer.');
+    importStatus.setAttribute('role','status');
+    importInput.addEventListener('change',async()=>{
+     const file=importInput.files&&importInput.files[0];
+     if(!file)return;
+     try{
+      if(file.size>65536)throw Error('Za duży plik');
+      const parsed=JSON.parse(await file.text());
+      if(!parsed||parsed.format!=='rx-bibi-diagnoses'||parsed.version!==1||!Array.isArray(parsed.records)||parsed.records.length>10)throw Error('Nieobsługiwany format');
+      if(parsed.records.some(x=>!x||typeof x.date!=='string'||!/^\d{4}-\d{2}-\d{2}T/.test(x.date)||!Number.isFinite(Date.parse(x.date))||typeof x.summary!=='string'||x.summary.length>2000))throw Error('Nieprawidłowe wpisy');
+      const old=JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]');
+      const existing=Array.isArray(old)?old.filter(x=>x&&typeof x.date==='string'&&typeof x.summary==='string'):[];
+      const unique=new Map();
+      [...existing,...parsed.records].forEach(x=>unique.set(x.date+'|'+x.summary,{date:x.date,summary:x.summary}));
+      const merged=[...unique.values()].sort((a,b)=>a.date.localeCompare(b.date)).slice(-10);
+      localStorage.setItem('rx-bibi-diagnoses-v1',JSON.stringify(merged));
+      showDiagnosisEntries();
+      const summary=document.getElementById('diagnosisHistory');
+      if(summary)summary.textContent='🗂️ Historia diagnoz na tym urządzeniu: '+merged.length+'/10. Zaimportowano dane z pliku.';
+      importStatus.textContent='Zaimportowano historię. Zapisanych diagnoz: '+merged.length+'/10.';
+     }catch(error){importStatus.textContent='Import odrzucony: nieprawidłowy plik lub brak dostępu do pamięci.';}
+     importInput.value='';
+    });
+    entriesPanel.parentElement.append(importLabel,importStatus);
 
    }
    if(priorityPanel){
