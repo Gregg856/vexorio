@@ -1,7 +1,7 @@
 /* RX PhotoMotion 1.0 — local slideshow renderer, not generative AI. */
 (function(root){
 'use strict';
-async function render({files,duration=5,ratio='9:16',onProgress=()=>{}}){
+async function render({files,duration=5,ratio='9:16',motion='zoom',onProgress=()=>{}}){
  if(!files||!files.length)throw Error('Dodaj zdjęcia, aby utworzyć film.');
  if(!root.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error('Ta przeglądarka nie obsługuje lokalnego nagrywania wideo.');
  const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));
@@ -27,9 +27,12 @@ async function render({files,duration=5,ratio='9:16',onProgress=()=>{}}){
    const index=Math.min(loaded.length-1,Math.floor(t/duration*loaded.length));
    const img=loaded[index],local=(t*loaded.length/duration)%1;
    ctx.fillStyle='#080d18';ctx.fillRect(0,0,width,height);
-   const scale=Math.max(width/img.width,height/img.height)*(1+0.045*local);
-   const w=img.width*scale,h=img.height*scale;
-   ctx.drawImage(img,(width-w)/2,(height-h)/2,w,h);
+   const progress=Math.min(1,Math.max(0,local));
+   const baseScale=Math.max(width/img.width,height/img.height);
+   const factor=motion==='pan'?1.10:motion==='static'?1:1+0.10*progress;
+   const w=img.width*baseScale*factor,h=img.height*baseScale*factor;
+   const pan=motion==='pan'?(progress-.5)*Math.max(0,w-width)*0.7:0;
+   ctx.drawImage(img,(width-w)/2-pan,(height-h)/2,w,h);
    onProgress(Math.round(t/duration*100));
   }
   draw(0);recorder.start(250);
