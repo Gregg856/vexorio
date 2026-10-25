@@ -66,4 +66,14 @@ assert.ok(bibi.includes('Sprawdź komunikat testu'),'RX BIBI must recommend insp
 assert.ok(bibi.includes('nie ponawiaj bez analizy'),'RX BIBI must not suggest blind deployment retries');
 assert.ok(bibi.includes("r.name==='Deploy VEXORIO'&&r.head_branch==='main'"),'Latest deployment must use production branch');
 assert.ok(bibi.includes("'Data: '+(run.created_at"),'RX BIBI must format run dates correctly');
+// Cross-panel integration audit: links, production endpoints and inline JavaScript syntax.
+const vm=require('node:vm');
+const bibiScripts=[...bibi.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]).filter(Boolean);
+assert.ok(bibiScripts.length>0,'RX BIBI must contain its dashboard script');
+for(const [i,script] of bibiScripts.entries())new vm.Script(script,{filename:'rx-bibi-inline-'+i+'.js'});
+assert.ok(strazak.includes('aria-label="Otwórz RX BIBI Manager 1.0"'),'Strażak must identify BIBI navigation');
+assert.ok(bibi.includes("https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=20"),'RX BIBI must query the correct repository');
+assert.ok(bibi.includes("r.head_branch==='main'"),'RX BIBI must filter production deployments');
+assert.ok(bibi.includes("if(button.disabled)return;"),'RX BIBI must avoid duplicate API refreshes');
+assert.ok(bibi.includes("finally{button.disabled=false;}"),'RX BIBI must reenable refresh after failures');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
