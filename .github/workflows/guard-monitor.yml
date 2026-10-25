@@ -196,13 +196,13 @@ jobs:
           const lines = yaml.split(/\r?\n/);
           let checked = 0;
           for (let i = 0; i < lines.length; i++) {
-            if (!/^          script: \|\s*$/.test(lines[i])) continue;
+            if (!/^script: \|\s*$/.test(lines[i])) continue;
             const source = [];
             for (let j = i + 1; j < lines.length; j++) {
-              if (!/^            /.test(lines[j]) && lines[j].trim()) break;
-              source.push(lines[j].startsWith('            ') ? lines[j].slice(12) : '');
+              if (!/^  /.test(lines[j]) && lines[j].trim()) break;
+              source.push(lines[j].startsWith('  ') ? lines[j].slice(2) : '');
             }
-            const code = source.join('\\n').replace(/\$\{\{[^}]+\}\}/g, 'success');
+            const code = source.join(String.fromCharCode(10)).replace(/\$\{\{[^}]+\}\}/g, 'success');
             try { new (require('node:vm').Script)(code); }
             catch (error) { throw new Error('GitHub script at line ' + (i + 1) + ': ' + error.message); }
             checked++;
