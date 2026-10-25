@@ -1,15 +1,20 @@
 'use strict';
 (async function rxBibiTesterStatus(){
  const panel=document.getElementById('browserTester');if(!panel)return;
- const url='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-bibi-browser.yml/runs?per_page=1';
+ const url='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-bibi-browser.yml/runs?per_page=20';
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);
  const line=(tag,cls,value)=>{const e=document.createElement(tag);if(cls)e.className=cls;e.textContent=value;return e;};
  try{
   const response=await fetch(url,{headers:{Accept:'application/vnd.github+json'},cache:'no-store',signal:controller.signal});
   if(!response.ok)throw Error('GitHub API HTTP '+response.status);
-  const data=await response.json();const run=Array.isArray(data.workflow_runs)?data.workflow_runs[0]:null;
+  const data=await response.json();const runs=Array.isArray(data.workflow_runs)?data.workflow_runs:[];const run=runs[0]||null;
   panel.replaceChildren(line('strong','','🧪 RX BIBI Tester 1.0'));
   if(!run){panel.append(line('p','wait','Nie uruchomiono jeszcze testów przeglądarkowych.'));return;}
+  const finished=runs.filter(item=>item.status==='completed');
+  const passed=finished.filter(item=>item.conclusion==='success').length;
+  const failedCount=finished.filter(item=>item.conclusion==='failure').length;
+  const other=finished.length-passed-failedCount;
+  panel.append(line('p','meta','Ostatnie '+runs.length+' uruchomień: '+passed+' udanych · '+failedCount+' nieudanych · '+(runs.length-finished.length)+' w toku'+(other?' · '+other+' innych':'')+'.'));
   const success=run.status==='completed'&&run.conclusion==='success';
   const failed=run.status==='completed'&&run.conclusion==='failure';
   const label=success?'Ostatni test: udany':failed?'Ostatni test: nieudany':run.status!=='completed'?'Test w toku':'Test zakończony: '+String(run.conclusion||'brak wyniku');
