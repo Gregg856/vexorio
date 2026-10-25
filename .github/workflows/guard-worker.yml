@@ -42,7 +42,7 @@ jobs:
             });
             const allowed = name =>
               /^guard-[a-z0-9-]+\.js$/.test(name) ||
-              /^guard\/[a-z0-9/_-]+\.(?:cjs|js)$/.test(name) ||
+              /^guard\/[a-z0-9_-]+(?:\/[a-z0-9_-]+)*\.(?:cjs|js)$/.test(name) ||
               /^tests\/guard-[a-z0-9-]+\.test\.(?:cjs|js)$/.test(name);
             const blocked = files.filter(f => !allowed(f.filename)).map(f => f.filename);
             if (blocked.length) core.setFailed('Strażak PR cannot change other files: ' + blocked.join(', '));
