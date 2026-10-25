@@ -106,7 +106,7 @@
  });
  viewport?.addEventListener('resize',resizeComposer);
  viewport?.addEventListener('scroll',resizeComposer);
- window.addEventListener('resize',resizeComposer);
+ window.addEventListener?.('resize',resizeComposer);
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
