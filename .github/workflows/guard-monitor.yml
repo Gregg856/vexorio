@@ -88,6 +88,16 @@ jobs:
               fi
             done
           fi
+          # Search and listings structure smoke test (read-only).
+          # This catches missing UI hooks, but does not replace browser interaction tests.
+          if [ -s /tmp/vexorio-home-check ]; then
+            for marker in 'id="searchBtn"' 'id="cityFilter"' 'id="radiusFilter"' 'id="quickCategoryFilter"' 'id="cards"'; do
+              if ! grep -Fq "$marker" /tmp/vexorio-home-check; then
+                echo "::error::RX monitor: brak elementu wyszukiwarki lub ogloszen: $marker"
+                failed=1
+              fi
+            done
+          fi
           # Check basic browser-visible page structure, not only HTTP availability.
           if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/guard-lab.html" -o /tmp/guard-panel-check; then
             echo "::error::RX monitor: nie mozna pobrac panelu"
