@@ -19,37 +19,44 @@ jobs:
           set -euo pipefail
           base="https://vexorio.grzegorzbub1985.workers.dev"
           failed=0
+          : > /tmp/rx-monitor-errors
           for path in / /guard-lab.html /guard-chat.js /guard-plugin-core.js /guard-rx-orchestrator.js /guard-changes-summary.json /guard-task-analyzer-plugin.js /guard-changes-report-plugin.js /guard-code-audit-plugin.js; do
             echo "Sprawdzam $path"
             if ! curl --fail --silent --show-error --location --retry 2 --retry-delay 3 --max-time 20 -H 'Cache-Control: no-cache' "$base$path" -o /tmp/guard-check; then
               echo "::error::RX monitor: niedostepny $path"
+              echo "niedostepny $path" >> /tmp/rx-monitor-errors
               failed=1
             elif [ ! -s /tmp/guard-check ]; then
               echo "::error::RX monitor: pusty plik $path"
+              echo "pusty plik $path" >> /tmp/rx-monitor-errors
               failed=1
             else
               case "$path" in
                 /guard-lab.html)
                   if ! grep -Fq 'guardPanelChat' /tmp/guard-check; then
                     echo "::error::RX monitor: panel czatu nie zostal znaleziony w HTML"
+                    echo "panel czatu nie zostal znaleziony w HTML" >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
                 /guard-chat.js)
                   if ! grep -Fq 'GuardRXOrchestrator' /tmp/guard-check; then
                     echo "::error::RX monitor: nieprawidlowa zawartosc guard-chat.js"
+                    echo "nieprawidlowa zawartosc guard-chat.js" >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
                 /guard-plugin-core.js)
                   if ! grep -Fq 'GuardPlugin' /tmp/guard-check; then
                     echo "::error::RX monitor: nieprawidlowa zawartosc guard-plugin-core.js"
+                    echo "nieprawidlowa zawartosc guard-plugin-core.js" >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
                 /guard-rx-orchestrator.js)
                   if ! grep -Fq 'GuardRXOrchestrator' /tmp/guard-check; then
                     echo "::error::RX monitor: nieprawidlowa zawartosc koordynatora"
+                    echo "nieprawidlowa zawartosc koordynatora" >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
@@ -63,12 +70,14 @@ jobs:
                     }
                   '; then
                     echo "::error::RX monitor: raport zmian jest niepoprawny lub niekompletny"
+                    echo "raport zmian jest niepoprawny lub niekompletny" >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
                 /)
                   if ! grep -Eiq '<html|<!doctype html' /tmp/guard-check; then
                     echo "::error::RX monitor: brak dokumentu HTML strony glownej"
+                    echo "brak dokumentu HTML strony glownej" >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
@@ -79,11 +88,13 @@ jobs:
           # Public marketplace smoke test: check the real landing-page content.
           if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/" -o /tmp/vexorio-home-check; then
             echo "::error::RX monitor: nie mozna pobrac strony glownej VEXORIO"
+            echo "nie mozna pobrac strony glownej VEXORIO" >> /tmp/rx-monitor-errors
             failed=1
           else
             for marker in 'VEXORIO' 'Ogłoszenia' 'Kupuj'; do
               if ! grep -Fqi "$marker" /tmp/vexorio-home-check; then
                 echo "::error::RX monitor: brak podstawowego elementu strony: $marker"
+                echo "brak podstawowego elementu strony: $marker" >> /tmp/rx-monitor-errors
                 failed=1
               fi
             done
@@ -94,6 +105,7 @@ jobs:
             for marker in 'id="searchBtn"' 'id="cityFilter"' 'id="radiusFilter"' 'id="quickCategoryFilter"' 'id="cards"'; do
               if ! grep -Fq "$marker" /tmp/vexorio-home-check; then
                 echo "::error::RX monitor: brak elementu wyszukiwarki lub ogloszen: $marker"
+                echo "brak elementu wyszukiwarki lub ogloszen: $marker" >> /tmp/rx-monitor-errors
                 failed=1
               fi
             done
@@ -104,6 +116,7 @@ jobs:
             for marker in 'id="accountMessagesSection"' 'id="myConversations"' 'id="chatDialog"' 'id="chatMessages"' 'id="replyForm"' 'id="replySendBtn"'; do
               if ! grep -Fq "$marker" /tmp/vexorio-home-check; then
                 echo "::error::RX monitor: brak elementu wiadomosci: $marker"
+                echo "brak elementu wiadomosci: $marker" >> /tmp/rx-monitor-errors
                 failed=1
               fi
             done
@@ -114,6 +127,7 @@ jobs:
             for marker in 'id="authDialog"' 'id="authForm"' 'id="googleBtn"' 'id="addDialog"' 'id="addForm"' 'id="newTitle"' 'id="newCategory"' 'id="newDesc"' 'id="adminReportsBtn"'; do
               if ! grep -Fq "$marker" /tmp/vexorio-home-check; then
                 echo "::error::RX monitor: brak elementu konta, ogloszenia lub moderacji: $marker"
+                echo "brak elementu konta, ogloszenia lub moderacji: $marker" >> /tmp/rx-monitor-errors
                 failed=1
               fi
             done
@@ -121,16 +135,30 @@ jobs:
           # Check basic browser-visible page structure, not only HTTP availability.
           if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/guard-lab.html" -o /tmp/guard-panel-check; then
             echo "::error::RX monitor: nie mozna pobrac panelu"
+            echo "nie mozna pobrac panelu" >> /tmp/rx-monitor-errors
             failed=1
           else
             for marker in 'guardPanelChat' 'guard-chat.js' 'guard-plugin-core.js'; do
               if ! grep -Fq "$marker" /tmp/guard-panel-check; then
                 echo "::error::RX monitor: panel nie zawiera $marker"
+                echo "panel nie zawiera $marker" >> /tmp/rx-monitor-errors
                 failed=1
               fi
             done
           fi
           if [ "$failed" -ne 0 ]; then
+            {
+              echo "### Konkretne uszkodzone elementy"
+              echo ""
+              if [ -s /tmp/rx-monitor-errors ]; then
+                while IFS= read -r error; do
+                  echo "- $error"
+                done < /tmp/rx-monitor-errors
+              else
+                echo "- Nieznana przyczyna. Sprawdz log kroku monitoringu."
+              fi
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
             echo "RX monitor: AWARIA" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
