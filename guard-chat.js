@@ -109,6 +109,14 @@
    catch(_){append('Strażak','Raport GitHub jest chwilowo niedostępny.');}
    return;
   }
+  if(/^audyt\s*:/i.test(command)){
+   const code=command.slice(command.indexOf(':')+1).trim();
+   if(!code){append('Strażak','Po „audyt:” wklej kod JavaScript.');return;}
+   if(!plugins){append('Strażak','Moduły są niedostępne.');return;}
+   try{const result=await plugins.execute('code-audit',{task:code},true);append('Strażak Code Audit',result.message);}
+   catch(_){append('Strażak','Nie udało się przeprowadzić audytu. Maksymalnie 2000 znaków kodu.');}
+   return;
+  }
   if(/^diff\s*:/i.test(command)){
    const patch=command.slice(command.indexOf(':')+1).trim();
    if(!window.GuardDeveloperDiff){append('Strażak','Analiza zmian jest chwilowo niedostępna.');return;}
