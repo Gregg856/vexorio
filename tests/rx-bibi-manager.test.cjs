@@ -41,6 +41,11 @@ assert.ok(bibi.includes('id="lastSuccess"'),'RX BIBI must show latest known succ
 assert.ok(bibi.includes('id="strażakStatus"'),'RX BIBI must show RX Strażak monitoring status');
 assert.ok(bibi.includes('id="incidents"'),'RX BIBI must have incident overview');
 assert.ok(bibi.includes('Priorytet RX BIBI:'),'RX BIBI 1.2 must display priority');
+assert.ok(bibi.includes('const streak=(items)=>'),'RX BIBI must count consecutive failures');
+assert.ok(bibi.includes("if(run.status!=='completed')continue"),'RX BIBI must skip unfinished runs in streaks');
+assert.ok(bibi.includes('Powtarzające się niepowodzenia:'),'RX BIBI must flag repeated failures');
+assert.ok(bibi.includes('to nie musi być jedna przyczyna'),'RX BIBI must not claim shared root cause');
+assert.ok(bibi.includes('starsze nieudane publikacje'),'RX BIBI must distinguish historical errors from active streaks');
 assert.ok(bibi.includes('Najpierw sprawdź ostatnią nieudaną publikację Cloudflare'),'RX BIBI must prioritize failed deployment');
 assert.ok(bibi.includes('Sprawdź ostatni nieudany przebieg testów VEXORIO'),'RX BIBI must prioritize failed checks');
 assert.ok(bibi.includes('Sprawdź ostatni nieudany test monitoringu RX Strażak'),'RX BIBI must prioritize failed monitoring');
