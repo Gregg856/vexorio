@@ -44,6 +44,10 @@ assert.ok(bibi.includes('Priorytet RX BIBI:'),'RX BIBI 1.2 must display priority
 assert.ok(bibi.includes('const streak=(items)=>'),'RX BIBI must count consecutive failures');
 assert.ok(bibi.includes("if(run.status!=='completed')continue"),'RX BIBI must skip unfinished runs in streaks');
 assert.ok(bibi.includes('Powtarzające się niepowodzenia:'),'RX BIBI must flag repeated failures');
+assert.ok(bibi.includes('const groupedFailures=new Map()'),'RX BIBI must group failed workflows by commit');
+assert.ok(bibi.includes('Wspólny raport:'),'RX BIBI must show combined incident report');
+assert.ok(bibi.includes('nie oznacza to liczby niezależnych awarii'),'RX BIBI must not overcount independent incidents');
+assert.ok(bibi.includes('nie potwierdza wspólnej przyczyny'),'RX BIBI must not claim shared root cause');
 assert.ok(bibi.includes('to nie musi być jedna przyczyna'),'RX BIBI must not claim shared root cause');
 assert.ok(bibi.includes('starsze nieudane publikacje'),'RX BIBI must distinguish historical errors from active streaks');
 assert.ok(bibi.includes('Najpierw sprawdź ostatnią nieudaną publikację Cloudflare'),'RX BIBI must prioritize failed deployment');
