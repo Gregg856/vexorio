@@ -54,8 +54,16 @@ jobs:
                   fi
                   ;;
                 /guard-changes-summary.json)
-                  if ! grep -Eq '"(changes|summary|generatedAt|timestamp|items|commits)"' /tmp/guard-check; then
-                    echo "::warning::RX monitor: raport zmian ma nieoczekiwana strukture"
+                  if ! node -e '
+                    const fs = require("fs");
+                    const data = JSON.parse(fs.readFileSync("/tmp/guard-check", "utf8"));
+                    if (!data || data.status !== "ok" || typeof data.changedFiles !== "number" ||
+                        !data.summary || !["high","medium","low"].every(k => typeof data.summary[k] === "number")) {
+                      process.exit(1);
+                    }
+                  '; then
+                    echo "::error::RX monitor: raport zmian jest niepoprawny lub niekompletny"
+                    failed=1
                   fi
                   ;;
                 /)
