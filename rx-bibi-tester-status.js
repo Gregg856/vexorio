@@ -29,11 +29,20 @@
     const failedSteps=steps.filter(step=>step.conclusion==='failure');
     const passedSteps=steps.filter(step=>step.conclusion==='success');
     details.replaceChildren(line('p','meta','Etapy GitHub Actions: '+passedSteps.length+' udanych · '+failedSteps.length+' nieudanych.'));
+    const testStep=steps.find(step=>step.name==='Uruchom testy RX BIBI');
+    if(testStep)details.append(line('p',testStep.conclusion==='success'?'ok':testStep.conclusion==='failure'?'bad':'wait','Testy przeglądarkowe: '+(testStep.conclusion==='success'?'zaliczone':testStep.conclusion==='failure'?'wykryto problem':'brak rozstrzygnięcia')+'.'));
     if(failedSteps.length){
      const list=document.createElement('ul');
      for(const step of failedSteps.slice(0,5))list.append(line('li','bad',String(step.name||'Nieznany etap')));
-     details.append(list,line('p','meta','Szczegółowe wyniki testów i zrzuty ekranu znajdziesz w raporcie uruchomienia.'));
+     details.append(list,line('p','meta','Dalszy krok: otwórz log nieudanego etapu i raport z testów. Nie ponawiaj wdrożenia bez ustalenia przyczyny.'));
     }else if(success)details.append(line('p','ok','Wszystkie etapy workflow zakończyły się pomyślnie.'));
+    const artifactResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/artifacts?per_page=20',{headers:{Accept:'application/vnd.github+json'},cache:'no-store',signal:controller.signal});
+    if(artifactResponse.ok){
+     const artifactData=await artifactResponse.json();
+     const artifact=(Array.isArray(artifactData.artifacts)?artifactData.artifacts:[]).find(item=>item.name==='rx-bibi-mobile-report'&&!item.expired);
+     if(artifact){const report=line('a','','Pobierz raport JSON/HTML, incydenty i zrzuty ekranu');report.href='https://github.com/Gregg856/vexorio/actions/runs/'+run.id+'/artifacts/'+artifact.id;report.target='_blank';report.rel='noopener noreferrer';details.append(report);}
+     else details.append(line('p','meta','Raport nie jest dostępny lub wygasł.'));
+    }
    }catch(error){details.textContent='Szczegóły etapów niedostępne ('+String(error.message||'błąd')+'). Otwórz raport GitHub.';}
   }
   panel.append(line('p','meta','Wynik dotyczy testów Playwright, a nie pełnego audytu całego serwisu. Raporty dostępne w artefaktach GitHub.'));
