@@ -43,6 +43,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('Centrum narzędzi RX na telefonie',await toolCenter.count()===1);
     const incidentPanel=page.getByRole('region',{name:'Automatyczny rejestr awarii'});
     record('Rejestr awarii na telefonie',await incidentPanel.count()===1);
+    const reportPanel=page.getByRole('region',{name:'Raport RX BIBI 1.6'});
+    record('Raport RX BIBI 1.6 widoczny na telefonie',await reportPanel.count()===1);
+    try {
+      await reportPanel.getByText('📊 RX BIBI 1.6 — raport historii').waitFor({state:'visible',timeout:15000});
+      const reportText=await reportPanel.innerText();
+      record('RX BIBI 1.6 podsumowanie uruchomień',/Udane:\\s*\\d+.*Błędy:\\s*\\d+.*W toku:\\s*\\d+.*Pominięte:\\s*\\d+/.test(reportText),reportText.slice(0,450));
+      record('RX BIBI 1.6 zakres historii',/maksymalnie 50 ostatnich rekordów/.test(reportText));
+    } catch(error){record('RX BIBI 1.6 odczyt raportu',false,error.message);}
+
     record('Historia napraw na telefonie',await page.getByRole('region',{name:'Historia rozwiązanych problemów'}).count()===1);
     const mobileLinks=await toolCenter.getByRole('link').count();
     record('Nawigacja narzędzi RX',mobileLinks>=4,'Liczba linków: '+mobileLinks);
