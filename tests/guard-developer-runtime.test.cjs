@@ -23,7 +23,7 @@ vm.runInContext(chat,ctx,{filename:'guard-chat.js'});
 (async()=>{
  await codeForm.fire('submit');
  assert.match(out.textContent,/Linia 1 \[low\]/);
- assert.match(out.textContent,/console\.log/);
+ assert.match(out.textContent,/Sprawdź, czy logi/);
  await chatForm.fire('submit');
  const text=messages.children.map(p=>p.children.map(c=>c.textContent||'').join('')).join('\n');
  assert.match(text,/Strażak Developer/);
