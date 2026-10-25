@@ -1,6 +1,35 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/rx/run-test') {
+      const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
+      const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
+      if(request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      // Fail closed until the owner configures both secrets in Cloudflare.
+      if(!env.RX_GITHUB_DISPATCH_TOKEN||!env.RX_ADMIN_USER_ID||!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Uruchamianie testów wymaga konfiguracji administratora.');
+      const auth=request.headers.get('Authorization')||'';
+      if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Zaloguj się jako administrator.');
+      const base=new URL(env.SUPABASE_URL);
+      if(base.protocol!=='https:'||!/^[a-z0-9-]+[.]supabase[.]co$/.test(base.hostname)||base.pathname!=='/'||base.search||base.hash)return reply(503,'Nieprawidłowa konfiguracja Supabase.');
+      let identity;
+      try{
+        const response=await fetch(new URL('/auth/v1/user',base),{headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},signal:AbortSignal.timeout(8000)});
+        if(!response.ok)return reply(401,'Sesja administratora jest nieważna.');
+        identity=await response.json();
+      }catch{return reply(502,'Nie udało się sprawdzić sesji.');}
+      if(!identity?.id||identity.id!==env.RX_ADMIN_USER_ID||identity.is_anonymous===true)return reply(403,'Brak uprawnień administratora.');
+      let github;
+      try{
+        github=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-bibi-browser.yml/dispatches',{
+          method:'POST',
+          headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-BIBI-Manager','Content-Type':'application/json'},
+          body:JSON.stringify({ref:'main'}),signal:AbortSignal.timeout(12000)
+        });
+      }catch{return reply(502,'Nie udało się połączyć z GitHub.');}
+      if(github.status!==204)return reply(502,'GitHub odrzucił uruchomienie (HTTP '+github.status+').');
+      return new Response(JSON.stringify({ok:true,message:'Test zlecony. Odśwież wyniki za chwilę.'}),{status:202,headers});
+    }
     if (url.pathname === '/api/listing-view') {
       if (request.method !== 'POST') return new Response(null, {status: 405, headers: {'Allow': 'POST', 'Cache-Control': 'no-store'}});
       if (request.headers.get('Origin') !== url.origin) return new Response(null, {status: 403, headers: {'Cache-Control': 'no-store'}});
