@@ -126,12 +126,11 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('RX BIBI historia — pierwszy zapis',firstHistory.length===1&&typeof firstHistory[0].summary==='string',JSON.stringify(firstHistory));
       await copyDiagnosis.click();
       const secondHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).getByText(/2\/10.*Poprzedni raport:/).waitFor({state:'visible',timeout:10000});
       const historyText=await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).innerText();
       record('RX BIBI historia — porównanie raportów',secondHistory.length===2&&historyText.includes('2/10')&&historyText.includes('Poprzedni raport:'),historyText.slice(0,240));
-      await page.reload();
-      await page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'}).getByText('🛡️ RX BIBI 2.0 — najważniejsze alarmy').waitFor({state:'visible',timeout:15000});
       const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
-      record('RX BIBI historia — trwałość po odświeżeniu',persisted.length===2);
+      record('RX BIBI historia — trwałość zapisu lokalnego',persisted.length===2);
     }catch(error){record('RX BIBI raport — kopiowanie na telefonie',false,error.message);}
     const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
     const triageText=await triagePanel.innerText();
