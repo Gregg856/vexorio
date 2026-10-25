@@ -70,7 +70,7 @@ jobs:
             core.setOutput('skip',active?'true':'false');
             if(active)core.notice('Existing RX draft PR: skip duplicate automatic proposal');
       - name: Checkout RX sources
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -88,15 +88,28 @@ jobs:
             echo "Istniejący roboczy PR: ${RX_DUPLICATE:-nie}"
             echo 'Naprawa ograniczona do plików RX; PR roboczy, bez automatycznego scalania.'
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Check automatic repair scope
+        id: scope
+        if: github.event_name == 'workflow_run' && steps.existing.outputs.skip != 'true'
+        env:
+          MONITOR_RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'skip=true' >> "$GITHUB_OUTPUT"
+          echo 'RX: monitoring failure does not automatically identify a repairable source file.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Monitor run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$MONITOR_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only a verified, explicitly classified code issue may authorize a future automatic patch.' >> "$GITHUB_STEP_SUMMARY"
       - name: Validate target
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         env:
           TARGET: ${{ env.RX_TARGET }}
         run: |
           node -e "if (!/^guard-[a-z0-9-]+\\.js$/.test(process.env.TARGET)) process.exit(1)"
           test -f "$TARGET"
       - name: Run baseline tests
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         run: |
           node tests/guard-security-diagnostics.test.cjs
           node tests/guard-code-fix.test.cjs
@@ -105,7 +118,7 @@ jobs:
           node tests/guard-prepare-safe-fix.test.cjs
           node tests/guard-fix-pipeline.test.cjs
       - name: Prepare deterministic patch and audit
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         env:
           TARGET: ${{ env.RX_TARGET }}
         run: |
@@ -116,14 +129,14 @@ jobs:
           node tests/guard-developer-inspector.test.cjs
           node tests/guard-prepare-safe-fix.test.cjs
       - name: Prepare harmless smoke-test fixture
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true && inputs.smoke_test == true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true && inputs.smoke_test == true
         run: |
           mkdir -p tests
           printf "'use strict';\\nconst assert = require('node:assert/strict');\\nassert.ok(true);\\n" > tests/guard-autofix-smoke.test.cjs
           node tests/guard-autofix-smoke.test.cjs
           echo 'RX smoke: only a harmless test fixture may be proposed; never merge this PR.' >> "$GITHUB_STEP_SUMMARY"
       - name: Recheck proposed code and regression suite
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         run: |
           set -euo pipefail
           node --check "$RX_TARGET"
@@ -135,7 +148,7 @@ jobs:
           node tests/guard-fix-pipeline.test.cjs
           git diff --check
       - name: Verify allowed changed files
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         env:
           TARGET: ${{ env.RX_TARGET }}
         run: |
@@ -159,7 +172,7 @@ jobs:
             test ! -e tests/guard-autofix-smoke.test.cjs
           fi
       - name: Create draft pull request (never merge)
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
