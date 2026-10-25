@@ -262,11 +262,18 @@ jobs:
           script: |
             const title = '[RX MONITOR] Awaria VEXORIO';
             const {owner, repo} = context.repo;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {owner,repo,state:'open',per_page:100});
-            const existing = issues.find(i => !i.pull_request && i.title === title);
+            const issues = await github.paginate(github.rest.issues.listForRepo, {owner,repo,state:'all',per_page:100});
+            const incidents = issues.filter(i => !i.pull_request && i.title === title);
+            const existing = incidents.find(i => i.state === 'open');
+            const last30 = incidents.filter(i => Date.now() - new Date(i.created_at).getTime() <= 30 * 24 * 60 * 60 * 1000);
+            const previousClosed = last30.filter(i => i.state === 'closed');
+            const recurrence = previousClosed.length > 0
+              ? 'Uwaga: w ostatnich 30 dniach wystapilo ' + previousClosed.length + ' wczesniejszych, zamknietych incydentow RX. Nie musi to byc ta sama przyczyna.'
+              : 'Brak wczesniejszych zamknietych incydentow RX z ostatnich 30 dni.';
+            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence).write();
             const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
-              '). RX nie zmienia automatycznie kodu.';
+              '). RX nie zmienia automatycznie kodu.\\n\\n' + recurrence;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
               core.notice('RX incident already open: #' + existing.number);
