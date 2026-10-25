@@ -24,7 +24,21 @@ async function refresh(){
    const item=el('article','item'),state=run.status==='completed'?(run.conclusion||'brak wyniku'):'w toku';
    const cls=state==='success'?'ok':state==='failure'?'bad':'wait';
    item.append(el('strong','',String(run.name||'Workflow')),el('p',cls,state),el('div','meta','Data: '+(run.created_at?new Date(run.created_at).toLocaleString('pl-PL'):'brak')+' · Próba: '+String(run.run_attempt||1)));
-   if(state==='failure'){const hint=run.name==='Deploy VEXORIO'?'Publikacja nie powiodła się. Możliwy problem z testami, uprawnieniami lub Cloudflare; szczegóły są w logach.':'Test lub monitoring nie powiódł się. Sprawdź nieudany etap w logach.';item.append(el('p','meta',hint));}
+   if(state==='failure'){
+    const diagnostic=el('p','meta','Diagnoza: sprawdzam nieudany etap…');item.append(diagnostic);
+    if(Number.isSafeInteger(run.id)&&run.id>0){
+     try{
+      const jobResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/jobs?per_page=30',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+      if(!jobResponse.ok)throw Error('HTTP '+jobResponse.status);
+      const jobsData=await jobResponse.json();const jobs=Array.isArray(jobsData.jobs)?jobsData.jobs:[];
+      const failedSteps=jobs.flatMap(j=>Array.isArray(j.steps)?j.steps.filter(s=>s.conclusion==='failure').map(s=>s.name):[]);
+      const failedJobs=jobs.filter(j=>j.conclusion==='failure').map(j=>j.name);
+      if(failedSteps.length){const step=String(failedSteps[0]);const s=step.toLowerCase();const category=/test|regresj|lint/.test(s)?'Błąd testów':/cloudflare|publikuj|wrangler|deploy worker/.test(s)?'Błąd etapu publikacji':'Nieudany etap';diagnostic.textContent='Diagnoza: '+category+' — '+step+'. Szczegóły w logach.';}
+      else if(failedJobs.length)diagnostic.textContent='Diagnoza: nieudane zadanie — '+String(failedJobs[0])+'. Brak szczegółów etapu; sprawdź logi.';
+      else diagnostic.textContent='Diagnoza: GitHub nie udostępnił nieudanego etapu. Sprawdź logi.';
+     }catch(error){diagnostic.textContent='Diagnoza niedostępna ('+String(error.message||'błąd API')+'). Otwórz logi.';}
+    }else diagnostic.textContent='Diagnoza niedostępna: brak identyfikatora uruchomienia.';
+   }
    if(typeof run.html_url==='string'&&run.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')){const link=el('a','','Otwórz szczegóły i logi');link.href=run.html_url;link.rel='noopener noreferrer';link.target='_blank';item.append(link);}
    root.append(item);
   }
