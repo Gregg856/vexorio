@@ -144,6 +144,11 @@ jobs:
                 regression:'inspect_test_logs',
                 unknown:'manual_review'
               };
+              // A monitoring failure alone never proves a TLS source-code defect.
+              // Keep source patching blocked until a validated finding identifies
+              // the exact file, vulnerable construct, and passing regression tests.
+              const sourceFixEligible=false;
+              if(sourceFixEligible)core.setFailed('Unexpected RX automatic patch authorization');
               const valid=report&&report.schema_version===1
                 && Object.prototype.hasOwnProperty.call(knownActions,report.category)
                 && report.recommended_action===knownActions[report.category]
