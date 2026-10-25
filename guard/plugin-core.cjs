@@ -44,7 +44,7 @@ function createRegistry(){
  function recommendForModel(model,predict,task,requiredPermission='read:task'){
   if(typeof predict!=='function')throw Error('Invalid model predictor');
   const assessment=predict(model,task);
-  if(!assessment||typeof assessment!=='object'||typeof assessment.needsReview!=='boolean'||typeof assessment.confidence!=='number'||!Number.isFinite(assessment.confidence))throw Error('Invalid model assessment');
+  if(!assessment||typeof assessment!=='object'||typeof assessment.needsReview!=='boolean'||typeof assessment.confidence!=='number'||!Number.isFinite(assessment.confidence)||assessment.confidence<0||assessment.confidence>1||typeof assessment.label!=='string'||!assessment.label)throw Error('Invalid model assessment');
   const candidates=recommend(task,requiredPermission);
   return Object.freeze({intent:assessment.label,confidence:assessment.confidence,needsReview:assessment.needsReview,canExecuteAutomatically:false,candidates:assessment.needsReview?[]:candidates});
  }
