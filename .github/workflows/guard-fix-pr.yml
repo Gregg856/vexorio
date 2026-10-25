@@ -147,6 +147,10 @@ jobs:
               // A monitoring failure alone never proves a TLS source-code defect.
               // Keep source patching blocked until a validated finding identifies
               // the exact file, vulnerable construct, and passing regression tests.
+              // Confirmed-fix entries are advisory only: a matching fingerprint
+              // is not evidence that a source edit is safe on the current revision.
+              // In particular, never enable a TLS rewrite for availability,
+              // checkout, or regression monitor categories.
               const sourceFixEligible=false;
               if(sourceFixEligible)core.setFailed('Unexpected RX automatic patch authorization');
               const valid=report&&report.schema_version===1
