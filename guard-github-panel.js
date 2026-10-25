@@ -28,6 +28,25 @@
   }catch(_){liveOutput.textContent='Nie udało się potwierdzić wersji na serwerze. Sprawdź GitHub Actions.';}
   finally{liveButton.disabled=false;}
  });
+ const auditButton=document.getElementById('guardAutoAuditButton');
+ const auditOutput=document.getElementById('guardAutoAuditResult');
+ if(auditButton&&auditOutput)auditButton.addEventListener('click',async()=>{
+  auditButton.disabled=true;auditOutput.textContent='Sprawdzanie ostatniego audytu…';
+  try{
+   const url='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/guard-worker.yml/runs?per_page=15';
+   const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+   if(!response.ok)throw Error('GitHub HTTP '+response.status);
+   const data=await response.json();
+   const runs=Array.isArray(data.workflow_runs)?data.workflow_runs:[];
+   const latest=runs[0];
+   if(!latest)throw Error('Brak audytów');
+   const safeDate=typeof latest.created_at==='string'?latest.created_at.slice(0,16).replace('T',' '):'brak daty';
+   const state=latest.status==='completed'?(latest.conclusion==='success'?'✓ Zielony':latest.conclusion==='failure'?'✗ Błędy':'Zakończony: '+String(latest.conclusion||'nieznany')):'⏳ '+String(latest.status||'w toku');
+   const scheduled=runs.find(r=>r.event==='schedule');
+   auditOutput.textContent='Ostatni audyt: '+state+'\nData UTC: '+safeDate+'\nTryb: '+String(latest.event||'nieznany')+(scheduled?'\nOstatni automatyczny: '+String(scheduled.conclusion||scheduled.status):'\nAutomatyczny audyt jeszcze się nie odbył.')+'\nSzczegóły: GitHub Actions. Wynik nie oznacza automatycznej naprawy.';
+  }catch(_){auditOutput.textContent='Nie udało się odczytać audytu z GitHub. Sprawdź GitHub Actions lub limit publicznego API.';}
+  finally{auditButton.disabled=false;}
+ });
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
