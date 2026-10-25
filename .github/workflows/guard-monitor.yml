@@ -255,6 +255,16 @@ jobs:
             echo ""
             echo "To diagnoza wstepna, nie automatyczna naprawa. RX nie zmienia kodu ani danych uzytkownikow."
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Podpowiedz bezpieczny generator roboczego PR
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
+        run: |
+          {
+            echo "### RX Auto Fix — bezpieczne przygotowanie"
+            echo "Generator roboczego PR: https://github.com/Gregg856/vexorio/actions/workflows/guard-fix-pr.yml"
+            echo "Dostepna regula automatyczna: tylko wlaczenie weryfikacji TLS w wybranym guard-*.js."
+            echo "Inne bledy wymagaja analizy; RX nie generuje dowolnych zmian na podstawie samych logow."
+            echo "Uruchomienie generatora wymaga wyboru pliku. PR pozostaje roboczy i nie jest scalany automatycznie."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Zapisz historie awarii RX
         if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
         env:
