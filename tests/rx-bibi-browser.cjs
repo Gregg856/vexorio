@@ -77,7 +77,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const fs=require('node:fs');
       const payload=JSON.parse(fs.readFileSync(filteredPath,'utf8'));
       record('RX BIBI 1.8 eksport tylko błędów',filtered.filter==='failure'&&payload.selected_filter==='failure'&&payload.runs.length===filtered.expected&&payload.runs.every(r=>r.status==='completed'&&r.conclusion==='failure')&&payload.summary.total===filtered.expected,JSON.stringify({expected:filtered.expected,actual:payload.runs.length}));
-      record('RX BIBI 1.8 nazwa filtrowanego raportu',/-failure\\.json$/.test(filteredDownload.suggestedFilename()),filteredDownload.suggestedFilename());
+      record('RX BIBI 1.8 nazwa filtrowanego raportu',/-failure\.json$/.test(filteredDownload.suggestedFilename()),filteredDownload.suggestedFilename());
       await page.locator('[data-filter="all"]').click();
     }catch(error){record('RX BIBI 1.8 test filtrowanego eksportu',false,error.message);}
     record('Historia napraw na telefonie',await page.getByRole('region',{name:'Historia rozwiązanych problemów'}).count()===1);
