@@ -1,0 +1,39 @@
+name: RX BIBI Tester — mobile browser
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rx-bibi-browser-tests
+  cancel-in-progress: false
+
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instaluj Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Uruchom testy RX BIBI
+        run: node tests/rx-bibi-browser.cjs
+      - name: Zachowaj raporty i zrzuty
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-bibi-mobile-report
+          path: rx-bibi-reports/
+          if-no-files-found: warn
+          retention-days: 7
