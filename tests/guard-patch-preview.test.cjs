@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {preview}=require('../guard-patch-preview.js');
+const source='const options = {rejectUnauthorized: false};\nconsole.log("test");';
+const result=preview({path:'guard-test.js',source});
+assert.equal(result.applied,false);
+assert.equal(result.readOnly,true);
+assert.equal(result.changes.length,1);
+assert.match(result.proposedSource,/rejectUnauthorized: true/);
+assert.match(source,/rejectUnauthorized: false/);
+assert.throws(()=>preview({path:'../index.js',source}),/Invalid/);
+assert.equal(preview({path:'safe.js',source:'const x=1;'}).changes.length,0);
+console.log('PASS: Strażak patch preview never applies changes');
