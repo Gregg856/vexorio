@@ -108,6 +108,19 @@ async function refresh(){
     if(pending.length)priorityPanel.append(el('p','wait','W toku: '+pending.map(item=>item.name).slice(0,3).join(', ')+(pending.length>3?' i inne':'')+'.'));
     priorityPanel.append(el('p','meta','Dotyczy tylko ostatnich pobranych przebiegów na main. Brak alarmu nie potwierdza pełnego bezpieczeństwa.'));
    }
+   if(priorityPanel){
+    const copyButton=el('button','','📋 Kopiuj diagnozę RX BIBI');
+    copyButton.type='button';
+    const copyStatus=el('p','meta','Raport dotyczy dostępnej próbki GitHub Actions; bez logów i danych poufnych.');
+    copyStatus.setAttribute('role','status');
+    copyButton.addEventListener('click',async()=>{
+     const lines=Array.from(priorityPanel.querySelectorAll('p')).map(node=>node.innerText.trim()).filter(Boolean);
+     const report=['RX BIBI — raport diagnostyczny',new Date().toISOString(),'Źródło: publiczne GitHub Actions, gałąź main','',...lines].join('\\n');
+     try{await navigator.clipboard.writeText(report);copyStatus.textContent='Skopiowano diagnozę do schowka.';}
+     catch(error){copyStatus.textContent='Nie udało się skopiować. Sprawdź uprawnienia schowka przeglądarki.';}
+    });
+    priorityPanel.append(copyButton,copyStatus);
+   }
    if(!failures.length)incidentPanel.append(el('p','ok','Brak nieudanych uruchomień w pobranej historii. To nie jest pełny audyt.'));
    for(const [name,history] of groups){
     const failed=history.filter(r=>r.status==='completed'&&r.conclusion==='failure');
