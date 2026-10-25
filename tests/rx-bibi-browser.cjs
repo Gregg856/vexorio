@@ -125,8 +125,8 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const firstHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
       record('RX BIBI historia — pierwszy zapis',firstHistory.length===1&&typeof firstHistory[0].summary==='string',JSON.stringify(firstHistory));
       await copyDiagnosis.click();
-      const secondHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
       await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).getByText(/2\/10.*Poprzedni raport:/).waitFor({state:'visible',timeout:10000});
+      const secondHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
       const historyText=await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).innerText();
       record('RX BIBI historia — porównanie raportów',secondHistory.length===2&&historyText.includes('2/10')&&historyText.includes('Poprzedni raport:'),historyText.slice(0,240));
       const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
