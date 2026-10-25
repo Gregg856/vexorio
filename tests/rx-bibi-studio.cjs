@@ -9,6 +9,16 @@ const {chromium,devices}=require('playwright');
  try{
   const response=await page.goto(base+'/rx-bibi-studio.html',{waitUntil:'load',timeout:30000});
   check('Studio HTTP 200',response?.status()===200,String(response?.status()));
+  // Push tests can start before Cloudflare deploy finishes. Wait for the new UI.
+  let musicReady=false;
+  for(let attempt=0;attempt<24;attempt++){
+    musicReady=await page.locator('#music').count()===1&&await page.locator('#audioVolume').count()===1;
+    if(musicReady)break;
+    await page.waitForTimeout(5000);
+    await page.reload({waitUntil:'load',timeout:30000});
+  }
+  check('Wdrozenie panelu muzyki',musicReady);
+  if(!musicReady)throw Error('Cloudflare nie wdrozyl jeszcze panelu muzyki po 120 sekundach.');
   const engines=await page.evaluate(()=>({director:typeof window.RXDirector?.plan==='function',motion:typeof window.RXPhotoMotion?.render==='function',formats:window.RXPhotoMotion?.supportedTypes?.()||[]}));
   check('RX AI Director',engines.director);check('RX PhotoMotion',engines.motion);
   check('Sterowanie kamera',await page.locator('#motion option').count()===3);
