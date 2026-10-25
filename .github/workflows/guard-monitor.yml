@@ -221,6 +221,40 @@ jobs:
             echo ""
             echo "To diagnoza wstepna, nie automatyczna naprawa. RX nie zmienia kodu ani danych uzytkownikow."
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Zapisz historie awarii RX
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
+        env:
+          CHECK_RESULT: ${{ steps.check.outcome }}
+          CHECKOUT_RESULT: ${{ steps.functional.outcome }}
+          TEST_RESULT: ${{ steps.rx_tests.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p rx-incident-history
+          {
+            echo "RX Strazak - zapis awarii"
+            echo "UTC: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Commit: $GITHUB_SHA"
+            echo "Produkcja: $CHECK_RESULT"
+            echo "Pobranie kodu: $CHECKOUT_RESULT"
+            echo "Testy RX: $TEST_RESULT"
+            echo ""
+            echo "Szczegoly:"
+            if [ -s /tmp/rx-monitor-errors ]; then
+              cat /tmp/rx-monitor-errors
+            else
+              echo "Brak szczegolow HTTP/UI. Sprawdz logi testow Node lub checkout."
+            fi
+          } > rx-incident-history/incident.txt
+      - name: Archiwizuj historie awarii RX (30 dni)
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-incident-${{ github.run_id }}
+          path: rx-incident-history/incident.txt
+          retention-days: 30
+          if-no-files-found: warn
       - name: Powiadom przez jedno zgloszenie GitHub o awarii
         if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
         uses: actions/github-script@v7
