@@ -100,7 +100,7 @@ jobs:
             if (existing) {
               await github.rest.issues.createComment({owner,repo,issue_number:existing.number,body});
             } else {
-              await github.rest.issues.create({owner,repo,title,body});
+              await github.rest.issues.create({owner,repo,title,body,assignees:[owner]});
             }
       - name: Zamknij alarm po odzyskaniu dostepnosci
         if: steps.check.outcome == 'success' && steps.functional.outcome == 'success' && steps.rx_tests.outcome == 'success'
