@@ -110,6 +110,7 @@ jobs:
           node tests/guard-task-analyzer-plugin.test.cjs
           node tests/guard-greetings.test.cjs
           node tests/guard-developer-inspector.test.cjs
+          node tests/guard-developer-security-rules.test.cjs
           node tests/guard-developer-ui.test.cjs
           node tests/guard-developer-runtime.test.cjs
           node tests/guard-repository-scan.test.cjs
