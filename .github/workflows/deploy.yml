@@ -157,6 +157,27 @@ jobs:
           node tests/guard-lab.test.cjs
           node --check worker.js
 
+      - name: Test regresji Centrum błędów RX
+        run: |
+          node --check guard-chat.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const js=fs.readFileSync('guard-chat.js','utf8');
+          const html=fs.readFileSync('guard-lab.html','utf8');
+          for(const marker of [
+            'function renderHealth()',
+            'Kolejka diagnostyczna',
+            'Propozycje napraw RX',
+            'Przetestuj 3 wtyczki',
+            'Kopiuj raport błędów',
+            'lines.join(String.fromCharCode(10))',
+            'finally{renderHealth();}'
+          ])assert.ok(js.includes(marker),'Missing RX diagnostic feature: '+marker);
+          assert.ok(html.includes('id="guardRxHealth"'),'Missing RX diagnostic panel');
+          console.log('PASS: RX diagnostics structure, copy formatting and refresh');
+          NODE
+
       - name: Test trzech wtyczek RX Strażak
         run: node tests/guard-rx-plugin-health.test.cjs
 
