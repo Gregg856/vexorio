@@ -189,6 +189,30 @@
   }catch(_){boardOutput.textContent='Nie udało się odczytać statusu PR z GitHub. Spróbuj później; nic nie zmieniono.';}
   finally{boardButton.disabled=false;}
  });
+ const rxAutomationStatus=document.getElementById('guardRxAutomationStatus');
+ async function refreshAutomationStatus(){
+  if(!rxAutomationStatus)return;
+  rxAutomationStatus.textContent='Sprawdzam harmonogramy RX…';
+  const workflows=[['Monitoring','guard-monitor.yml'],['Generator poprawek','guard-fix-pr.yml']];
+  const results=await Promise.all(workflows.map(async([label,file])=>{
+   try{
+    const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+file+'/runs?per_page=1',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const data=await response.json();
+    const run=Array.isArray(data.workflow_runs)?data.workflow_runs[0]:null;
+    if(!run)return label+': brak uruchomień';
+    const state=run.status!=='completed'?'W TOKU':run.conclusion==='success'?'ZIELONY':run.conclusion==='failure'?'CZERWONY':String(run.conclusion||'nieznany').toUpperCase();
+    const age=Date.now()-Date.parse(run.created_at||'');
+    const stale=Number.isFinite(age)&&age>2*60*60*1000?' · UWAGA: wynik starszy niż 2 godziny':'';
+    return label+': '+state+stale+' · '+String(run.head_sha||'').slice(0,8)+' · '+String(run.event||'')+'\\n'+String(run.html_url||'');
+   }catch(_){return label+': nie udało się pobrać stanu';}
+  }));
+  rxAutomationStatus.textContent=results.join('\\n\\n')+'\\n\\nStatus odczytywany z GitHub. Zielony wynik starszego commita nie potwierdza najnowszych zmian.';
+ }
+ if(rxAutomationStatus){
+  refreshAutomationStatus();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshAutomationStatus();});
+ }
  const prButton=document.getElementById('guardDraftPrStatusButton');
  const prOutput=document.getElementById('guardDraftPrStatusResult');
  if(prButton&&prOutput){
