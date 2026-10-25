@@ -43,7 +43,10 @@
    const safeDate=typeof latest.created_at==='string'?latest.created_at.slice(0,16).replace('T',' '):'brak daty';
    const state=latest.status==='completed'?(latest.conclusion==='success'?'✓ Zielony':latest.conclusion==='failure'?'✗ Błędy':'Zakończony: '+String(latest.conclusion||'nieznany')):'⏳ '+String(latest.status||'w toku');
    const scheduled=runs.find(r=>r.event==='schedule');
-   auditOutput.textContent='Ostatni audyt: '+state+'\nData UTC: '+safeDate+'\nTryb: '+String(latest.event||'nieznany')+(scheduled?'\nOstatni automatyczny: '+String(scheduled.conclusion||scheduled.status):'\nAutomatyczny audyt jeszcze się nie odbył.')+'\nSzczegóły: GitHub Actions. Wynik nie oznacza automatycznej naprawy.';
+   const advice=latest.status!=='completed'?'Audyt trwa. Poczekaj na wynik.':latest.conclusion==='success'?'Testy przeszły. To nie gwarantuje braku innych błędów.':latest.conclusion==='failure'?'Audyt wykrył nieudany krok. Otwórz logi GitHub Actions, ustal przyczynę i przygotuj poprawkę do zatwierdzenia.':'Sprawdź szczegóły uruchomienia w GitHub Actions.';
+   const runId=Number.isSafeInteger(latest.id)&&latest.id>0?latest.id:null;
+
+   auditOutput.textContent='Ostatni audyt: '+state+'\nData UTC: '+safeDate+'\nTryb: '+String(latest.event||'nieznany')+(scheduled?'\nOstatni automatyczny: '+String(scheduled.conclusion||scheduled.status):'\nAutomatyczny audyt jeszcze się nie odbył.')+'\nRekomendacja: '+advice+'\n'+(runId?'Raport: https://github.com/Gregg856/vexorio/actions/runs/'+runId:'Raport: GitHub Actions')+'\nBez automatycznej naprawy.';
   }catch(_){auditOutput.textContent='Nie udało się odczytać audytu z GitHub. Sprawdź GitHub Actions lub limit publicznego API.';}
   finally{auditButton.disabled=false;}
  });
