@@ -204,7 +204,19 @@
     const number=Number.isSafeInteger(pr.number)?pr.number:'?';
     const title=String(pr.title||'Bez tytułu').slice(0,100);
     const link=typeof pr.html_url==='string'&&pr.html_url.startsWith('https://github.com/Gregg856/vexorio/pull/')?pr.html_url:'';
-    rows.push('#'+number+' — '+title+'\n'+link);
+    rows.push('#'+number+' — '+title+'\\n'+link);
+    if(Number.isSafeInteger(pr.number)){
+     try{
+      const checksResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/commits/'+encodeURIComponent(pr.head.sha)+'/check-runs?per_page=30',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+      if(checksResponse.ok){
+       const checks=await checksResponse.json();
+       const runs=Array.isArray(checks.check_runs)?checks.check_runs:[];
+       const pending=runs.filter(x=>x.status!=='completed').length;
+       const failed=runs.filter(x=>x.status==='completed'&&!['success','neutral','skipped'].includes(x.conclusion)).length;
+       rows.push('Testy PR: '+(failed?'CZERWONE ('+failed+')':pending?'W TOKU ('+pending+')':runs.length?'ZIELONE ('+runs.length+')':'BRAK WYNIKÓW')+'. Sprawdź również wymagane kontrole gałęzi.');
+      }else rows.push('Testy PR: nie udało się pobrać wyników.');
+     }catch(_){rows.push('Testy PR: niedostępne.');}
+    }
    }
    if(!matches.length)rows.push('Nie ma otwartych roboczych PR z automatycznego generatora.');
    if(matches.length>10)rows.push('Pozostałe PR sprawdź w GitHub.');
