@@ -11,6 +11,8 @@ function inspectSource({path,source}={}){
   {id:'console-log',severity:'low',pattern:/\bconsole\.log\s*\(/g,message:'Sprawdź, czy logi nie ujawniają danych.'},
   {id:'document-write',severity:'medium',pattern:/\bdocument\.write\s*\(/g,message:'document.write może wprowadzić niebezpieczny HTML.'},
   {id:'insecure-http',severity:'medium',pattern:/\bfetch\s*\(\s*['"]http:\/\//g,message:'Żądanie HTTP bez szyfrowania. Sprawdź, czy wymagane jest HTTPS.'},
+  {id:'tls-verification-disabled',severity:'high',pattern:/\brejectUnauthorized\s*:\s*false\b/g,message:'Wyłączona weryfikacja certyfikatu TLS. Sprawdź bezpieczeństwo połączenia.'},
+  {id:'postmessage-wildcard',severity:'medium',pattern:/\.postMessage\s*\([^;\n]*,\s*['"]\*['"]\s*\)/g,message:'postMessage z odbiorcą * może ujawniać dane innym oknom.'},
   {id:'hardcoded-secret',severity:'high',pattern:/\b(?:api[_-]?key|secret|access[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_-]{24,}['"]/gi,message:'Możliwy sekret wpisany bezpośrednio w kodzie. Nie umieszczaj go w publicznym repozytorium.'}
  ];
  for(const rule of rules){
