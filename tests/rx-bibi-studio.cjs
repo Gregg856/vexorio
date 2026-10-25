@@ -13,6 +13,7 @@ const {chromium,devices}=require('playwright');
   check('RX AI Director',engines.director);check('RX PhotoMotion',engines.motion);
   check('Sterowanie kamera',await page.locator('#motion option').count()===3);
   check('Przejscia',await page.locator('#transition option').count()===2);
+  check('Pole napisu w edytorze',await page.locator('#caption').count()===1);
   await page.locator('#kind').selectOption('image-video');
   await page.locator('#prompt').fill('Test RX BIBI PhotoMotion');
   await page.locator('#prepare').click();
@@ -29,7 +30,23 @@ const {chromium,devices}=require('playwright');
    await page.locator('#videoResult').waitFor({state:'visible',timeout:45000});
    const details=await page.locator('#videoPreview').evaluate(async v=>{await new Promise((resolve,reject)=>{if(v.readyState>=1)return resolve();v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('Video decode error')),{once:true});setTimeout(()=>reject(Error('Video metadata timeout')),15000)});return {duration:v.duration,src:!!v.currentSrc}});
    check('Playable recording',details.src&&Number.isFinite(details.duration)&&details.duration>0,JSON.stringify(details));
-   check('Download link',Boolean(await page.locator('#videoDownload').getAttribute('href')));
+   check('Download link',Boolean(await page.locator('#videoDownload').getAttribute('href'))); 
+   // Render a captioned clip and verify that the caption pixels are part of the video frame.
+   await page.locator('#caption').fill('RX NAPIS TEST');
+   const beforeCaption=await page.locator('#videoDownload').getAttribute('href');
+   await page.locator('#render').click();
+   await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeCaption,{timeout:45000});
+   const captionPixels=await page.locator('#videoPreview').evaluate(async v=>{
+     v.load();await new Promise((resolve,reject)=>{v.addEventListener('loadeddata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('caption video decode failed')),{once:true});setTimeout(()=>reject(Error('caption decode timeout')),15000)});
+     v.currentTime=Math.min(1,Math.max(0,v.duration/2));
+     await new Promise(resolve=>{v.addEventListener('seeked',resolve,{once:true});setTimeout(resolve,3000)});
+     const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext('2d');x.drawImage(v,0,0);
+     const y=Math.round(c.height*.88),data=x.getImageData(0,y,c.width,Math.max(1,Math.round(c.height*.08))).data;
+     let bright=0;for(let i=0;i<data.length;i+=4)if(data[i]>190&&data[i+1]>190&&data[i+2]>190)bright++;
+     return {bright,width:c.width,height:c.height};
+   });
+   check('Napis wypalony w filmie',captionPixels.bright>40,JSON.stringify(captionPixels));
+   await page.locator('#caption').fill('');
    // A second, shorter transition test with two different frames.
    const green=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=320;c.height=320;const x=c.getContext('2d');x.fillStyle='#29b46c';x.fillRect(0,0,320,320);return c.toDataURL('image/png').split(',')[1]});
    await page.locator('#photos').setInputFiles([
