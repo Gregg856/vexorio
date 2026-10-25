@@ -96,6 +96,10 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const invalidLabels=await priorityLabels.filter({hasText:/undefined|NaN|\[object Object\]/}).count();
       record('RX BIBI 1.4 priorytety poprawne',invalidLabels===0,'Oznaczenia: '+priorityCount+', błędne: '+invalidLabels);
     } catch(error) {record('RX BIBI 1.4 diagnostyka rejestru',false,error.message);}
+    const incidentStates=await incidentPanel.locator('p').filter({hasText:/AKTUALNA AWARIA|TEST W TOKU — wynik niepotwierdzony|OSTATNI PRZEBIEG UDANY \\(wymaga porównania\\)|WYNIK NIEJEDNOZNACZNY/}).allTextContents();
+    record('RX BIBI 1.9 statusy bez fałszywego potwierdzenia',incidentStates.every(s=>!s.includes('undefined')&&!s.includes('NaN')),JSON.stringify(incidentStates.slice(0,5)));
+    const incidentLinks=await incidentPanel.getByRole('link',{name:'Sprawdź najnowszy przebieg'}).count();
+    record('RX BIBI 1.9 linki do aktualnego przebiegu',incidentStates.length===0||incidentLinks>=incidentStates.length,'Statusy: '+incidentStates.length+', linki: '+incidentLinks);
     const diagnosticPlans=incidentPanel.locator('p').filter({hasText:'RX BIBI 1.5 · Plan diagnostyczny:'});
     const planCount=await diagnosticPlans.count();
     const incidentPriorities=await incidentPanel.locator('p').filter({hasText:'RX BIBI 1.4 ·'}).count();
