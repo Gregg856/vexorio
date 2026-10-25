@@ -61,12 +61,13 @@ assert.ok(bibi.includes('RX Strazak — monitoring 24/7'),'RX BIBI must recogniz
 assert.ok(bibi.includes("monitor.conclusion==='cancelled'?'anulowany'"),'RX BIBI must distinguish cancelled monitoring runs');
 assert.ok(bibi.includes("String(monitor.run_attempt||1)"),'RX BIBI must display monitoring retry attempt');
 assert.ok(bibi.includes('ageHours>24'),'RX BIBI must warn about monitoring results older than 24 hours');
+assert.ok(bibi.includes('timestamp(monitor.updated_at)||timestamp(monitor.created_at)'),'RX BIBI must use latest monitoring update time for freshness');
 assert.ok(bibi.includes('Wynik może być nieaktualny'),'RX BIBI must disclose stale monitoring');
 assert.ok(bibi.includes('Przejdź do panelu RX Strażak'),'RX BIBI must provide direct navigation to guard');
 assert.ok(bibi.includes('nie potwierdza dostępności serwisu'),'RX BIBI must distinguish CI result from live uptime');
-assert.ok(bibi.includes('brak wyniku monitoringu 24/7 w 20 ostatnich uruchomieniach'),'RX BIBI must disclose missing monitoring history');
+assert.ok(bibi.includes('brak wyniku monitoringu 24/7 w 50 ostatnich uruchomieniach'),'RX BIBI must disclose missing monitoring history');
 assert.ok(bibi.includes("r.status==='completed'&&r.conclusion==='success'"),'RX BIBI must only treat completed successful deploys as successful');
-assert.ok(bibi.includes('brak potwierdzenia w 20 pobranych uruchomieniach'),'RX BIBI must disclose limited success history');
+assert.ok(bibi.includes('brak potwierdzenia w 50 pobranych uruchomieniach'),'RX BIBI must disclose limited success history');
 assert.ok(bibi.includes("'/jobs?per_page=30'"),'RX BIBI must inspect GitHub jobs for failed runs');
 assert.ok(bibi.includes("s.conclusion==='failure'"),'RX BIBI must only report failed steps');
 assert.ok(bibi.includes('Diagnoza niedostępna'),'RX BIBI must disclose unavailable diagnosis');
@@ -103,7 +104,7 @@ const bibiScripts=[...bibi.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)].map(
 assert.ok(bibiScripts.length>0,'RX BIBI must contain its dashboard script');
 for(const [i,script] of bibiScripts.entries())new vm.Script(script,{filename:'rx-bibi-inline-'+i+'.js'});
 assert.ok(strazak.includes('aria-label="Otwórz RX BIBI Manager 1.0"'),'Strażak must identify BIBI navigation');
-assert.ok(bibi.includes("https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=20"),'RX BIBI must query the correct repository');
+assert.ok(bibi.includes("https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=50"),'RX BIBI must query the correct repository');
 assert.ok(bibi.includes("r.head_branch==='main'"),'RX BIBI must filter production deployments');
 assert.ok(bibi.includes("if(button.disabled)return;"),'RX BIBI must avoid duplicate API refreshes');
 assert.ok(bibi.includes("finally{button.disabled=false;}"),'RX BIBI must reenable refresh after failures');
