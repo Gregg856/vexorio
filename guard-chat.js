@@ -76,6 +76,13 @@
    append('Strażak',installed.length?'Nasze aktywne moduły ('+installed.length+'):\n'+installed.map(p=>'• '+p.id+' — '+p.description+' ['+p.permissions.join(', ')+']').join('\n')+'\nWtyczki działają lokalnie, tylko w zakresie przyznanych uprawnień.':'Nie znaleziono aktywnych modułów.');
    return;
   }
+  if(/^wtyczka\s*:/i.test(command)){
+   if(!plugins){append('Strażak','Rejestr wtyczek jest niedostępny.');return;}
+   const id=command.slice(command.indexOf(':')+1).trim().toLowerCase();
+   const plugin=plugins.list().find(p=>p.id===id);
+   append('Strażak',plugin?'Moduł: '+plugin.id+'\\nOpis: '+plugin.description+'\\nUprawnienia: '+plugin.permissions.join(', ')+'\\nDostęp: tylko lokalnie, bez zapisu do GitHuba.':'Nie znaleziono modułu. Wpisz „wtyczki”, aby zobaczyć dostępne nazwy.');
+   return;
+  }
   if(/^(github|zmiany|raport github)$/i.test(command)){
    if(!plugins){append('Strażak','Wtyczki są chwilowo niedostępne.');return;}
    try{const result=await plugins.execute('changes-report',{task:command},true);append('Strażak GitHub',result.message);}
