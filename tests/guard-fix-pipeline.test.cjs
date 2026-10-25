@@ -1,0 +1,37 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const cp=require('node:child_process');
+const root=path.resolve(__dirname,'..');
+const workflow=fs.readFileSync(path.join(root,'.github/workflows/guard-fix-pr.yml'),'utf8');
+const generator=path.join(root,'guard/prepare-safe-fix.cjs');
+const preview=require('../guard-patch-preview.js').preview;
+const inspector=require('../guard/developer-inspector.cjs').inspectSource;
+const os=require('node:os');
+assert.match(workflow,/workflow_dispatch:/);
+assert.match(workflow,/draft:\s*true/);
+assert.match(workflow,/node guard\/prepare-safe-fix\.cjs/);
+assert.doesNotMatch(workflow,/gh pr merge|auto-merge|merge-method:/);
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'strazak-e2e-'));
+try{
+ const target='guard-test-fixture.js';
+ const original='const tls = {rejectUnauthorized: false};\n';
+ fs.writeFileSync(path.join(dir,target),original);
+ const findings=inspector({path:target,source:original});
+ assert.ok(findings.findings.some(x=>x.rule==='tls-verification-disabled'));
+ const proposal=preview({path:target,source:original});
+ assert.equal(proposal.changes.length,1);
+ assert.equal(fs.readFileSync(path.join(dir,target),'utf8'),original,'Preview must not modify files');
+ const run=cp.spawnSync(process.execPath,[generator,target],{cwd:dir,encoding:'utf8'});
+ assert.equal(run.status,0,run.stderr);
+ const modified=fs.readFileSync(path.join(dir,target),'utf8');
+ assert.match(modified,/rejectUnauthorized: true/);
+ const report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(report.changed,true);
+ assert.equal(report.approval,'Pull Request review required');
+ const rerun=cp.spawnSync(process.execPath,[generator,target],{cwd:dir,encoding:'utf8'});
+ assert.equal(rerun.status,0,rerun.stderr);
+ assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8')).changed,false);
+ console.log('PASS: detect → preview → safe fix → tests → draft PR configuration; no PR created');
+}finally{fs.rmSync(dir,{recursive:true,force:true});}
