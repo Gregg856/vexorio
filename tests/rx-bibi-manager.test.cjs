@@ -43,6 +43,10 @@ assert.ok(bibi.includes('inspectedFailures>=3'),'RX BIBI must limit failed-run A
 assert.ok(bibi.includes('if(button.disabled)return;'),'RX BIBI must prevent overlapping refreshes');
 assert.ok(bibi.includes('Odczyt: '),'RX BIBI must show when data was retrieved');
 assert.ok(bibi.includes('Widoczne dane mogą być nieaktualne'),'RX BIBI must warn about stale data');
+assert.ok(bibi.includes('id="freshness"'),'RX BIBI must display data freshness');
+assert.ok(bibi.includes('Świeżość danych: aktualne'),'RX BIBI must label successful fetches');
+assert.ok(bibi.includes('Świeżość danych: mogą być nieaktualne'),'RX BIBI must label stale history');
+assert.ok(bibi.includes('Świeżość danych: brak połączenia lub danych'),'RX BIBI must label missing history');
 assert.ok(bibi.indexOf('root.replaceChildren();summary.replaceChildren();latest.textContent')>bibi.indexOf('if(!response.ok)throw Error'),'RX BIBI must preserve old data until successful API response');
 assert.ok(bibi.includes('Limit GitHub API'),'RX BIBI must identify rate limiting');
 assert.ok(bibi.includes('Historia GitHub Actions niedostępna'),'RX BIBI must identify unavailable history');
