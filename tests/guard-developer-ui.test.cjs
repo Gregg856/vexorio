@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync('guard-lab.html','utf8');
 for(const name of ['Chat','Developer','Moderation']){assert.ok(html.includes('id="guardTab'+name+'"'));assert.ok(html.includes('id="guardPanel'+name+'"'));}
-assert.ok(html.includes('src="/guard-tabs.js"'));
+assert.match(html, /src="\/guard-tabs\.js(?:\?[^\"]*)?"/);
 new vm.Script(fs.readFileSync('guard-tabs.js','utf8'),{filename:'guard-tabs.js'});
 for(const id of ['guardCodeForm','guardCodePath','guardCodeSource','guardCodeResult'])assert.ok(html.includes('id="'+id+'"'),id);
 for(const src of ['/guard-developer-inspector.js','/guard-code-ui.js'])assert.ok(html.includes('src="'+src+'"'),src);
