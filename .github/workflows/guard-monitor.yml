@@ -76,6 +76,18 @@ jobs:
               echo "Odebrano: $path"
             fi
           done
+          # Public marketplace smoke test: check the real landing-page content.
+          if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/" -o /tmp/vexorio-home-check; then
+            echo "::error::RX monitor: nie mozna pobrac strony glownej VEXORIO"
+            failed=1
+          else
+            for marker in 'VEXORIO' 'Ogłoszenia' 'Kupuj'; do
+              if ! grep -Fqi "$marker" /tmp/vexorio-home-check; then
+                echo "::error::RX monitor: brak podstawowego elementu strony: $marker"
+                failed=1
+              fi
+            done
+          fi
           # Check basic browser-visible page structure, not only HTTP availability.
           if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/guard-lab.html" -o /tmp/guard-panel-check; then
             echo "::error::RX monitor: nie mozna pobrac panelu"
