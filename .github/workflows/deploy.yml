@@ -154,7 +154,7 @@ jobs:
           path: |
             guard-developer-report.json
             guard-developer-summary.json
-      guard-developer-changes.json
+            guard-developer-changes.json
           retention-days: 7
           if-no-files-found: error
 
