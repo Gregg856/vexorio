@@ -44,6 +44,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
   }
   const output = { timestamp: new Date().toISOString(), base, results, passed: results.every(x => x.passed) };
   fs.writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify(output, null, 2));
+  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const rows=results.map(item=>'<tr><td>'+escapeHtml(item.name)+'</td><td>'+(item.passed?'OK':'BŁĄD')+'</td><td>'+escapeHtml(item.detail)+'</td></tr>').join('');
+  const html='<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RX BIBI Tester — raport</title><style>body{font:16px system-ui;background:#08131f;color:#eaf7ff;padding:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #375165;padding:10px;text-align:left;overflow-wrap:anywhere}a{color:#78e8f1}</style></head><body><h1>RX BIBI Tester — raport</h1><p>Data: '+escapeHtml(output.timestamp)+' · Wynik: '+(output.passed?'UDANY':'NIEUDANY')+'</p><table><thead><tr><th>Test</th><th>Wynik</th><th>Szczegóły</th></tr></thead><tbody>'+rows+'</tbody></table><p>Zrzuty ekranu znajdują się w tym samym archiwum.</p></body></html>';
+  fs.writeFileSync(path.join(reportDir, 'report.html'), html);
+  if(process.env.GITHUB_STEP_SUMMARY){
+    const lines=['## RX BIBI Tester — testy Playwright','','| Test | Wynik |','|---|---|',...results.map(item=>'| '+item.name.replace(/\\|/g,'/')+' | '+(item.passed?'OK':'BŁĄD')+' |'),'','**Wynik: '+(output.passed?'UDANY':'NIEUDANY')+'**'];
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');
+  }
+
   console.log(JSON.stringify(output, null, 2));
   if (!output.passed) process.exitCode = 1;
 })().catch(error => { console.error(error); process.exitCode = 1; });
