@@ -107,9 +107,8 @@ jobs:
               core.summary.addRaw('Brak klasyfikacji: bezpieczna blokada automatycznej zmiany.\\n');
             }else{
               const archive=await github.rest.actions.downloadArtifact({owner,repo,artifact_id:artifact.id,archive_format:'zip'});
-              const bytes=Buffer.from(archive.data);
+              const bytes=Buffer.isBuffer(archive.data) ? archive.data : Buffer.from(archive.data);
               const zlib=require('zlib');
-              const marker=Buffer.from('rx-classification.json');
               let report=null;
               for(let i=0;i+30<bytes.length;i++){
                 if(bytes.readUInt32LE(i)!==0x04034b50)continue;
@@ -117,6 +116,7 @@ jobs:
                 const nameLen=bytes.readUInt16LE(i+26),extraLen=bytes.readUInt16LE(i+28);
                 const name=bytes.subarray(i+30,i+30+nameLen).toString('utf8');
                 const start=i+30+nameLen+extraLen;
+                if(start+size>bytes.length)break;
                 if(name==='rx-classification.json'&&size>0&&size<65536){
                   const compressed=bytes.subarray(start,start+size);
                   const data=method===8?zlib.inflateRawSync(compressed):method===0?compressed:null;
