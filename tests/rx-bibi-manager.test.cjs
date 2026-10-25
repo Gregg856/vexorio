@@ -46,6 +46,10 @@ assert.ok(bibi.includes("if(run.status!=='completed')continue"),'RX BIBI must sk
 assert.ok(bibi.includes('Powtarzające się niepowodzenia:'),'RX BIBI must flag repeated failures');
 assert.ok(bibi.includes('const groupedFailures=new Map()'),'RX BIBI must group failed workflows by commit');
 assert.ok(bibi.includes('Wspólny raport:'),'RX BIBI must show combined incident report');
+assert.ok(bibi.includes("'Log: '+(run.name==='Deploy VEXORIO'"),'RX BIBI must provide log links for grouped failures');
+assert.ok(bibi.includes('sorted.slice(0,3)'),'RX BIBI must cap log links per group');
+assert.ok(bibi.includes('row.append(document.createTextNode'),'RX BIBI must build safe DOM links');
+assert.ok(!bibi.includes("current.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')"),'RX BIBI must validate exact latest deployment URL');
 assert.ok(bibi.includes('nie oznacza to liczby niezależnych awarii'),'RX BIBI must not overcount independent incidents');
 assert.ok(bibi.includes('nie potwierdza wspólnej przyczyny'),'RX BIBI must not claim shared root cause');
 assert.ok(bibi.includes('to nie musi być jedna przyczyna'),'RX BIBI must not claim shared root cause');
