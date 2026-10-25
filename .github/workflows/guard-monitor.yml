@@ -239,6 +239,24 @@ jobs:
               echo "- **RX / wtyczki:** odczytaj pierwszy nieudany test Node, popraw jego przyczyne i uruchom test ponownie."
             fi
             echo ""
+            echo "### Klasyfikacja incydentu"
+            if [ "$CHECK_RESULT" = "failure" ]; then
+              echo "- Kategoria: PRODUKCJA / ZASOBY. Priorytet: WYSOKI."
+              if [ -s /tmp/rx-monitor-errors ]; then
+                echo "- Wykryte zasoby lub znaczniki:"
+                while IFS= read -r incident; do
+                  echo "  - $incident"
+                done < /tmp/rx-monitor-errors
+              fi
+            fi
+            if [ "$TEST_RESULT" = "failure" ]; then
+              echo "- Kategoria: TESTY / REGRESJA. Priorytet: WYSOKI. Szczegoly w logu testow Node."
+            fi
+            if [ "$CHECKOUT_RESULT" = "failure" ]; then
+              echo "- Kategoria: INFRASTRUKTURA GITHUB. Priorytet: SREDNI."
+            fi
+            echo "- Klasyfikacja na podstawie nieudanego kroku; nie przesadza o przyczynie technicznej."
+            echo ""
             echo "### Proponowany plan naprawy RX"
             if [ "$CHECK_RESULT" = "failure" ]; then
               echo "1. Porownaj niedostepne zasoby z lista plikow kopiowanych w .github/workflows/deploy.yml."
