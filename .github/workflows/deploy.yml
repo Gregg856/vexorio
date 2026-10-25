@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Pobierz pliki
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Pobierz poprzedni commit do analizy zmian
         run: git fetch --no-tags --depth=2 origin main
