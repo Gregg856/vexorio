@@ -44,6 +44,11 @@ assert.ok(bibi.includes('Priorytet RX BIBI:'),'RX BIBI 1.3 must display priority
 assert.ok(bibi.includes('id="alerts"'),'RX BIBI 1.3 must have a dedicated alert center');
 assert.ok(bibi.includes('id="availability"'),'RX BIBI must show separate HTTP availability panel');
 assert.ok(bibi.includes('async function checkAvailability()'),'RX BIBI must independently probe HTTP availability');
+assert.ok(bibi.includes('checkId!==availabilityCheckId'),'HTTP availability must ignore stale overlapping probe results');
+assert.ok(bibi.includes("const nonSuccess=[current,latestCheck,monitor].some"),'Cancelled or ambiguous completed checks must not show healthy priority');
+assert.ok(bibi.includes("monitorStale||nonSuccess?'NIEPEŁNE DANE'"),'Incomplete result must have non-green priority');
+assert.ok(bibi.includes("const monitoring=data.workflow_runs.filter(r=>r.head_branch==='main'"),'Monitoring must filter production branch');
+assert.ok(bibi.includes("const runs=data.workflow_runs.filter(r=>r.head_branch==='main'"),'History must filter production branch');
 assert.ok(bibi.includes("response.ok&&type.includes('text/html')"),'RX BIBI must validate HTTP status and content type');
 assert.ok(bibi.includes('Pojedynczy test HTTP nie potwierdza poprawności wszystkich funkcji'),'RX BIBI must qualify single HTTP probe');
 assert.ok(bibi.includes('refresh();checkAvailability();'),'RX BIBI must probe on manual refresh');
