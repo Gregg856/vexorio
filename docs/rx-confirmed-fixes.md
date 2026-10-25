@@ -25,6 +25,14 @@ Ten plik przechowuje wyłącznie **ręcznie zweryfikowane** sposoby naprawy bł�
 - **Data weryfikacji:** [RRRR-MM-DD]
 - **Uwagi / ograniczenia:** [co nie zostało przetestowane]
 
+## Dopasowywanie wcześniejszych incydentów
+
+- Najpierw porównuj dokładny **RX-FINGERPRINT**. Podobny opis bez zgodnego odcisku to tylko wskazówka, nie dowód.
+- Podpowiadaj wyłącznie wpisy o statusie **potwierdzone** z działającym odnośnikiem do commita/PR oraz zielonego testu regresyjnego.
+- Powracający błąd po wcześniej potwierdzonej naprawie wymaga ponownej diagnozy. Nie uznawaj automatycznie dawnej przyczyny za aktualną.
+- Gdy brak dopasowania, oznacz incydent jako **nieznany** i zachowaj bezpieczne zachowanie: diagnostyka oraz propozycja do przeglądu, bez zmiany produkcji.
+- Nigdy nie ucz modelu na surowych prywatnych zgłoszeniach, tokenach ani danych użytkowników.
+
 ## Potwierdzone rozwiązania
 
 Brak wpisów. Dodamy pierwszy po zweryfikowaniu konkretnej naprawy.
