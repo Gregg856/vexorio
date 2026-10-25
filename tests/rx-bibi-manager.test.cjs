@@ -46,6 +46,9 @@ assert.ok(bibi.includes('Historia napraw: po nieudanej publikacji'),'RX BIBI 1.3
 assert.ok(bibi.includes('To potwierdza wynik wdrożenia, nie dostępność serwisu'),'RX BIBI must not conflate deployment recovery with uptime');
 assert.ok(bibi.includes('brak późniejszej udanej publikacji'),'RX BIBI must disclose unresolved failed deployment');
 assert.ok(bibi.includes('Centrum alarmów — RX BIBI 1.3'),'RX BIBI 1.3 must render alert center heading');
+assert.ok(bibi.includes('const uniqueAlerts=[...new Map(alertItems.map'),'RX BIBI 1.3 must deduplicate alert entries');
+assert.ok(bibi.includes('Aktywne ostrzeżenia:'),'RX BIBI 1.3 must count deduplicated alerts');
+assert.ok(bibi.includes("monitorStale&&!(monitor&&monitor.status!=='completed')"),'RX BIBI 1.3 must not double warn about pending stale monitoring');
 assert.ok(bibi.includes('Pilne: ostatnia publikacja nieudana'),'RX BIBI 1.3 must prioritize failed deployments');
 assert.ok(bibi.includes('Pilne: ostatnie testy nieudane'),'RX BIBI 1.3 must prioritize failed tests');
 assert.ok(bibi.includes('Monitoring Strażaka: brak aktualnego wyniku'),'RX BIBI 1.3 must warn of stale monitoring');
