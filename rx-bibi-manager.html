@@ -12,7 +12,7 @@ async function refresh(){
  button.disabled=true;latest.textContent='Ostatnia publikacja: sprawdzanie…';status.textContent='Pobieram historię z GitHub…';root.replaceChildren();summary.replaceChildren();
  try{
   const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=20',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
-  if(!response.ok)throw Error('GitHub API HTTP '+response.status);
+  if(!response.ok)throw Error(response.status===403||response.status===429?'Limit GitHub API — odczekaj przed kolejnym odświeżeniem':response.status===404?'Historia GitHub Actions niedostępna (HTTP 404)':'GitHub API HTTP '+response.status);
   const data=await response.json();
   const runs=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||String(r.name).includes('RX Strazak')).slice(0,12);
   const deployments=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'&&r.head_branch==='main').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
@@ -32,7 +32,7 @@ async function refresh(){
      inspectedFailures++;
      try{
       const jobResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/jobs?per_page=30',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
-      if(!jobResponse.ok)throw Error('HTTP '+jobResponse.status);
+      if(!jobResponse.ok)throw Error(jobResponse.status===403||jobResponse.status===429?'limit GitHub API': 'HTTP '+jobResponse.status);
       const jobsData=await jobResponse.json();const jobs=Array.isArray(jobsData.jobs)?jobsData.jobs:[];
       const failedSteps=jobs.flatMap(j=>Array.isArray(j.steps)?j.steps.filter(s=>s.conclusion==='failure').map(s=>s.name):[]);
       const failedJobs=jobs.filter(j=>j.conclusion==='failure').map(j=>j.name);
