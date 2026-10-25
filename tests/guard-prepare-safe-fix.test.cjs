@@ -34,6 +34,15 @@ try{
  report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
  assert.equal(report.changed,false);
  assert.equal(report.blocked,'ambiguous-or-commented-tls-setting');
+ const sameLine='guard-same-line.js';
+ const sameLineSource='const a={rejectUnauthorized: false}, b={rejectUnauthorized: false};\\n';
+ fs.writeFileSync(path.join(dir,sameLine),sameLineSource);
+ result=cp.spawnSync(process.execPath,[script,sameLine],{cwd:dir,encoding:'utf8'});
+ assert.equal(result.status,0,result.stderr);
+ assert.equal(fs.readFileSync(path.join(dir,sameLine),'utf8'),sameLineSource);
+ report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(report.changed,false);
+ assert.equal(report.blocked,'ambiguous-or-commented-tls-setting');
  const commented='guard-commented.js';
  fs.writeFileSync(path.join(dir,commented),'// rejectUnauthorized: false\n');
  result=cp.spawnSync(process.execPath,[script,commented],{cwd:dir,encoding:'utf8'});
