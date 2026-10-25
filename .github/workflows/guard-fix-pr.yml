@@ -24,6 +24,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   propose:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -54,6 +55,7 @@ jobs:
             core.setOutput('skip',active?'true':'false');
             if(active)core.notice('Existing RX draft PR: skip duplicate automatic proposal');
       - name: Checkout RX sources
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
           persist-credentials: false
