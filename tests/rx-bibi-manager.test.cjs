@@ -36,10 +36,15 @@ assert.ok(bibi.includes('href="/guard-lab.html"'),'RX BIBI must link to Strażak
 assert.ok(bibi.includes('https://github.com/Gregg856/vexorio/actions'),'RX BIBI must link to GitHub Actions');
 assert.ok(bibi.includes('id="summary"'),'RX BIBI must show incident summary');
 assert.ok(bibi.includes('id="latest"'),'RX BIBI must show latest deployment');
-assert.ok(bibi.includes('RX BIBI Manager 1.1'),'RX BIBI must show version 1.1');
+assert.ok(bibi.includes('RX BIBI Manager 1.2'),'RX BIBI must show version 1.1');
 assert.ok(bibi.includes('id="lastSuccess"'),'RX BIBI must show latest known successful deployment');
 assert.ok(bibi.includes('id="strażakStatus"'),'RX BIBI must show RX Strażak monitoring status');
 assert.ok(bibi.includes('id="incidents"'),'RX BIBI must have incident overview');
+assert.ok(bibi.includes('Priorytet RX BIBI:'),'RX BIBI 1.2 must display priority');
+assert.ok(bibi.includes('Najpierw sprawdź ostatnią nieudaną publikację Cloudflare'),'RX BIBI must prioritize failed deployment');
+assert.ok(bibi.includes('Sprawdź ostatni nieudany przebieg testów VEXORIO'),'RX BIBI must prioritize failed checks');
+assert.ok(bibi.includes('Sprawdź ostatni nieudany test monitoringu RX Strażak'),'RX BIBI must prioritize failed monitoring');
+assert.ok(bibi.includes('NIEPEŁNE DANE'),'RX BIBI must not misreport missing history as healthy');
 assert.ok(bibi.includes('data-filter="failure"'),'RX BIBI must offer a failed-runs filter');
 assert.ok(bibi.includes('data-filter="pending"'),'RX BIBI must offer a pending-runs filter');
 assert.ok(bibi.includes('data-filter="success"'),'RX BIBI must offer a successful-runs filter');
