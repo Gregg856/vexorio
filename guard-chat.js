@@ -14,7 +14,7 @@
  // Persist only predefined, non-sensitive commands in this browser tab.
  const historyKey='vexorio-guard-safe-history-v2';
  const historyLimit=12;
- const safeCommands=new Set(['pomoc','status','test','github','zmiany','raport github','historia']);
+ const safeCommands=new Set(['pomoc','status','test','github','zmiany','raport github','historia','wtyczki']);
  let history=[];
  try{
   const stored=JSON.parse(sessionStorage.getItem(historyKey)||'[]');
@@ -70,6 +70,12 @@
    history.length=0;try{sessionStorage.removeItem(historyKey);}catch(_){}append('Strażak','Historia poleceń w tej karcie została wyczyszczona.');return;
   }
   remember(command);
+  if(/^(wtyczki|plugins)$/i.test(command)){
+   if(!plugins){append('Strażak','Rejestr wtyczek jest niedostępny.');return;}
+   const installed=plugins.list();
+   append('Strażak',installed.length?'Nasze aktywne moduły ('+installed.length+'):\n'+installed.map(p=>'• '+p.id+' — '+p.description+' ['+p.permissions.join(', ')+']').join('\n')+'\nWtyczki działają lokalnie, tylko w zakresie przyznanych uprawnień.':'Nie znaleziono aktywnych modułów.');
+   return;
+  }
   if(/^(github|zmiany|raport github)$/i.test(command)){
    if(!plugins){append('Strażak','Wtyczki są chwilowo niedostępne.');return;}
    try{const result=await plugins.execute('changes-report',{task:command},true);append('Strażak GitHub',result.message);}
