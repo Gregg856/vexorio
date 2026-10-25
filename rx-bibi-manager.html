@@ -123,6 +123,32 @@ async function refresh(){
     });
    }
    showDiagnosisEntries();
+   const entriesPanel=document.getElementById('diagnosisEntries');
+   if(entriesPanel&&entriesPanel.parentElement){
+    const clearButton=el('button','','🗑️ Wyczyść historię diagnoz');
+    clearButton.type='button';
+    const clearStatus=el('p','meta','Usuwanie dotyczy tylko raportów zapisanych w tej przeglądarce.');
+    clearStatus.setAttribute('role','status');
+    let awaitingConfirmation=false;
+    clearButton.addEventListener('click',()=>{
+     if(!awaitingConfirmation){
+      awaitingConfirmation=true;
+      clearButton.textContent='Potwierdź usunięcie 10 ostatnich diagnoz';
+      clearStatus.textContent='Naciśnij ponownie, aby trwale usunąć lokalną historię. Odśwież stronę, aby anulować.';
+      return;
+     }
+     try{
+      localStorage.removeItem('rx-bibi-diagnoses-v1');
+      showDiagnosisEntries();
+      const summary=document.getElementById('diagnosisHistory');
+      if(summary)summary.textContent='🗂️ Historia diagnoz na tym urządzeniu: 0/10. Brak zapisanych raportów.';
+      clearStatus.textContent='Usunięto lokalną historię diagnoz.';
+     }catch(error){clearStatus.textContent='Nie udało się usunąć historii w tej przeglądarce.';}
+     awaitingConfirmation=false;
+     clearButton.textContent='🗑️ Wyczyść historię diagnoz';
+    });
+    entriesPanel.parentElement.append(clearButton,clearStatus);
+   }
    if(priorityPanel){
     const copyButton=el('button','','📋 Kopiuj diagnozę RX BIBI');
     copyButton.type='button';
