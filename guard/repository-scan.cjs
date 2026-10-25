@@ -24,7 +24,7 @@ function listFiles(root){
  }
  return [...new Set(names)].slice(0,MAX_FILES);
 }
-const GENERATED_ASSETS={'guard-plugin-core.js':'guard/plugin-core.cjs','guard-developer-inspector.js':'guard/developer-inspector.cjs'};
+const GENERATED_ASSETS={'guard-plugin-core.js':'guard/plugin-core.cjs','guard-developer-inspector.js':'guard/developer-inspector.cjs','guard-developer-diff.js':'guard/developer-diff.cjs'};
 function checkHtmlReferences(root,source){
  const findings=[];
  for(const match of source.matchAll(/<script\b[^>]*\bsrc=["'](\/[-\w./]+(?:\?[^"']*)?)["'][^>]*>/gi)){
