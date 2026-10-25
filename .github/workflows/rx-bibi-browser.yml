@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: rx-bibi-browser-tests
@@ -33,6 +34,8 @@ jobs:
       - name: Sprawdź gotowość Chromium
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
       - name: Uruchom testy RX BIBI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node tests/rx-bibi-browser.cjs
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         if: always()
