@@ -37,9 +37,11 @@ async function refresh(){
   const unresolved=failedDeploys.filter(r=>!lastSuccessfulTime||timestamp(r.created_at)>lastSuccessfulTime);
   const olderFailures=failedDeploys.length-unresolved.length;
   const failedChecks=data.workflow_runs.filter(r=>r.name==='VEXORIO checks'&&r.head_branch==='main'&&r.status==='completed'&&r.conclusion==='failure');
+  const latestCheck=data.workflow_runs.filter(r=>r.name==='VEXORIO checks'&&r.head_branch==='main').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at))[0];
   const pendingDeploys=deployments.filter(r=>r.status!=='completed').length;
   incidents.replaceChildren();
   incidents.append(el('strong','','Przegląd błędów i testów'));
+  incidents.append(el('p','meta','Ostatnie testy VEXORIO: '+(!latestCheck?'brak danych':latestCheck.status!=='completed'?'w toku':latestCheck.conclusion==='success'?'udane':latestCheck.conclusion==='failure'?'nieudane':'wymagają sprawdzenia')));
   incidents.append(el('p',unresolved.length?'bad':'ok','Nieudane publikacje po ostatnim sukcesie: '+unresolved.length));
   incidents.append(el('p','meta','Wcześniejsze nieudane publikacje: '+olderFailures+' · Nieudane testy VEXORIO: '+failedChecks.length+' · Publikacje w toku: '+pendingDeploys));
   if(unresolved.length>1)incidents.append(el('p','meta','Kilka nieudanych prób po ostatnim sukcesie — nie oznacza to automatycznie tej samej przyczyny.'));
@@ -63,7 +65,7 @@ async function refresh(){
       const jobsData=await jobResponse.json();const jobs=Array.isArray(jobsData.jobs)?jobsData.jobs:[];
       const failedSteps=jobs.flatMap(j=>Array.isArray(j.steps)?j.steps.filter(s=>s.conclusion==='failure').map(s=>s.name):[]);
       const failedJobs=jobs.filter(j=>j.conclusion==='failure').map(j=>j.name);
-      if(failedSteps.length){const step=String(failedSteps[0]);const s=step.toLowerCase();const category=/test|regresj|lint/.test(s)?'Błąd testów':/cloudflare|publikuj|wrangler|deploy worker/.test(s)?'Błąd etapu publikacji':'Nieudany etap';const advice=category==='Błąd testów'?' Sprawdź komunikat testu i popraw kod przed ponowną publikacją.':category==='Błąd etapu publikacji'?' Sprawdź log Cloudflare, konfigurację i uprawnienia; nie ponawiaj bez analizy.':' Sprawdź log nieudanego etapu.';diagnostic.textContent='Diagnoza: '+category+' — '+step+'.'+advice;}
+      if(failedSteps.length){const step=String(failedSteps[0]);const s=step.toLowerCase();const category=/test|regresj|lint|sprawdź|sprawdz/.test(s)?'Błąd testów':/przygotuj stron|build|kopiuj|copy|artifact/.test(s)?'Błąd przygotowania strony':/cloudflare|publikuj|wrangler|deploy worker/.test(s)?'Błąd etapu publikacji':'Nieudany etap';const advice=category==='Błąd testów'?' Sprawdź komunikat testu i popraw kod przed ponowną publikacją.':category==='Błąd przygotowania strony'?' Sprawdź brakujące pliki, kopiowanie i kontrolę wersji w workflow.':category==='Błąd etapu publikacji'?' Sprawdź log Cloudflare, konfigurację i uprawnienia; nie ponawiaj bez analizy.':' Sprawdź log nieudanego etapu.';diagnostic.textContent='Diagnoza: '+category+' — '+step+'.'+advice;}
       else if(failedJobs.length)diagnostic.textContent='Diagnoza: nieudane zadanie — '+String(failedJobs[0])+'. Brak szczegółów etapu; sprawdź logi.';
       else diagnostic.textContent='Diagnoza: GitHub nie udostępnił nieudanego etapu. Sprawdź logi.';
      }catch(error){diagnostic.textContent='Diagnoza niedostępna ('+String(error.message||'błąd API')+'). Otwórz logi.';}
