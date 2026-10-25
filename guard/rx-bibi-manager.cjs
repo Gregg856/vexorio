@@ -16,4 +16,21 @@ function assessDeployment(input){
  const transient=errorCode==='10013';
  return Object.freeze({status:'failed',category:transient?'cloudflare-upload-error':'unclassified-failure',retryRecommended:transient&&attempt<MAX_ATTEMPTS,requiresApproval:true,action:transient&&attempt<MAX_ATTEMPTS?'propose-retry':'review-logs'});
 }
-module.exports={assessDeployment,MAX_ATTEMPTS};
+function summarizeIncidents(runs){
+ if(!Array.isArray(runs)||runs.length>100)throw Error('Invalid runs');
+ const counts={success:0,failure:0,pending:0,other:0};
+ const failures=[];
+ for(const run of runs){
+  if(!run||typeof run!=='object'||Array.isArray(run))throw Error('Invalid run');
+  const {status,conclusion,html_url}=run;
+  if(!['queued','in_progress','completed'].includes(status))throw Error('Invalid run');
+  if(status!=='completed')counts.pending++;
+  else if(conclusion==='success')counts.success++;
+  else if(conclusion==='failure'){
+   counts.failure++;
+   failures.push(Object.freeze({url:typeof html_url==='string'&&/^https:\\/\\/github\\.com\\/Gregg856\\/vexorio\\/actions\\/runs\\/\\d+$/.test(html_url)?html_url:null,reason:'unconfirmed'}));
+  }else counts.other++;
+ }
+ return Object.freeze({total:runs.length,counts:Object.freeze(counts),failures:Object.freeze(failures)});
+}
+module.exports={assessDeployment,summarizeIncidents,MAX_ATTEMPTS};
