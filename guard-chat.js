@@ -197,8 +197,13 @@
     const data=await response.json();
     const run=Array.isArray(data.workflow_runs)?data.workflow_runs[0]:null;
     if(!run){append('RX Strażak','Brak dotychczasowych uruchomień monitoringu. Nie można potwierdzić stanu strony.');return;}
-    const state=run.status!=='completed'?'TRWA / OCZEKUJE':run.conclusion==='success'?'OK — testy zakończone pomyślnie':run.conclusion==='failure'?'BŁĄD — sprawdź logi':'NIEPOTWIERDZONY ('+String(run.conclusion||'brak wyniku')+')';
-    append('RX Strażak','Ostatni monitoring: '+state+'\\nCzas: '+String(run.created_at||'brak')+'\\nŹródło: GitHub Actions, uruchomienie #'+String(run.run_number||'?')+'\\n'+String(run.html_url||'')+'\\nTo odczyt ostatniego raportu, nie nowy test na żądanie.');
+    const started=Date.parse(run.created_at||'');
+    const ageMinutes=Number.isFinite(started)?Math.max(0,Math.floor((Date.now()-started)/60000)):null;
+    const stale=ageMinutes===null||ageMinutes>90;
+    const state=stale?'NIEAKTUALNY / STAN NIEZNANY':run.status!=='completed'?'TRWA / OCZEKUJE':run.conclusion==='success'?'OK — testy zakończone pomyślnie':run.conclusion==='failure'?'BŁĄD — sprawdź logi':'NIEPOTWIERDZONY ('+String(run.conclusion||'brak wyniku')+')';
+    const lines=['Ostatni monitoring: '+state,'Czas: '+String(run.created_at||'brak'),ageMinutes===null?'Wiek raportu: nieznany':'Wiek raportu: '+ageMinutes+' min','Źródło: GitHub Actions, uruchomienie #'+String(run.run_number||'?'),String(run.html_url||''),'To odczyt ostatniego raportu, nie nowy test na żądanie.'];
+    if(stale)lines.push('UWAGA: wynik starszy niż 90 minut. Nie potwierdza bieżącego działania strony.');
+    append('RX Strażak',lines.join(String.fromCharCode(10)));
    }catch(_){append('RX Strażak','Nie udało się odczytać wyniku monitoringu. Stan NIEZNANY — nie oznacza to, że strona działa poprawnie.');}
    return;
   }
