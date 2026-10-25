@@ -46,7 +46,7 @@ for (let i = 0; i < lines.length; i++) {
     if (lines[j].trim() && !lines[j].startsWith('            ')) break;
     block.push(lines[j].startsWith('            ') ? lines[j].slice(12) : '');
   }
-  assert.doesNotThrow(() => new vm.Script(block.join('\n')), 'Invalid GitHub Script block at workflow line ' + (i + 1));
+  assert.doesNotThrow(() => new vm.Script('(async () => {\n' + block.join('\n') + '\n})()'), 'Invalid GitHub Script block at workflow line ' + (i + 1));
   scriptCount++;
 }
 assert.ok(scriptCount >= 2, 'Expected failure and recovery GitHub Script steps');
