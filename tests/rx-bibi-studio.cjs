@@ -14,6 +14,8 @@ const {chromium,devices}=require('playwright');
   check('Sterowanie kamera',await page.locator('#motion option').count()===3);
   check('Przejscia',await page.locator('#transition option').count()===2);
   check('Pole napisu w edytorze',await page.locator('#caption').count()===1);
+  check('Pole muzyki',await page.locator('#music').count()===1);
+  check('Suwak glosnosci',await page.locator('#audioVolume').inputValue()==='70');
   check('Pozycje napisu',JSON.stringify(await page.locator('#captionPosition option').evaluateAll(els=>els.map(x=>x.value)))===JSON.stringify(['bottom','center','top']));
   check('Pozycja domyslna',await page.locator('#captionPosition').inputValue()==='bottom');
   await page.locator('#captionPosition').selectOption('top');
@@ -54,6 +56,21 @@ const {chromium,devices}=require('playwright');
    });
    check('Napis wypalony w filmie',captionPixels.bright>40,JSON.stringify(captionPixels));
    await page.locator('#caption').fill('');
+   // Generate a short WAV tone, mix it into the recording and check the audio track.
+   const wav=Buffer.alloc(44+22050*2);
+   wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(22050,24);wav.writeUInt32LE(44100,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(44100,40);
+   for(let i=0;i<22050;i++)wav.writeInt16LE(Math.round(Math.sin(i*2*Math.PI*440/22050)*10000),44+i*2);
+   await page.locator('#music').setInputFiles({name:'rx-test-tone.wav',mimeType:'audio/wav',buffer:wav});
+   await page.locator('#audioVolume').fill('60');
+   const beforeAudio=await page.locator('#videoDownload').getAttribute('href');
+   await page.locator('#render').click();
+   await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeAudio,{timeout:45000});
+   const audioTrack=await page.locator('#videoPreview').evaluate(async v=>{
+     v.load();await new Promise((resolve,reject)=>{v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('audio video decode error')),{once:true});setTimeout(()=>reject(Error('audio metadata timeout')),15000)});
+     return {duration:v.duration,audioTracks:v.audioTracks?.length??null,blobType:(await fetch(v.src)).headers.get('content-type')};
+   });
+   check('Film z muzyka',audioTrack.duration>0&&audioTrack.audioTracks!==0,JSON.stringify(audioTrack));
+   await page.locator('#music').setInputFiles([]);
    // A second, shorter transition test with two different frames.
    const green=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=320;c.height=320;const x=c.getContext('2d');x.fillStyle='#29b46c';x.fillRect(0,0,320,320);return c.toDataURL('image/png').split(',')[1]});
    await page.locator('#photos').setInputFiles([
