@@ -177,9 +177,10 @@
   if(panel)panel.style.top='';
  }
  input.addEventListener('focus',openComposer);
+ document.getElementById('guardChatExitFullscreen')?.addEventListener('click',()=>{closeComposer();input.blur();});
  input.addEventListener('blur',()=>{
   // Avoid hiding the composer when tapping Send while keyboard is open.
-  if(document.activeElement!==input)closeComposer();
+  if(!document.getElementById('guardPanelChat')?.contains(document.activeElement))return;
  });
  viewport?.addEventListener('resize',resizeComposer);
  viewport?.addEventListener('scroll',resizeComposer);
