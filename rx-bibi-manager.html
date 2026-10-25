@@ -71,7 +71,22 @@ async function refresh(){
       if(failedSteps.length){
        const step=failedSteps[0],kind=/cloudflare|wrangler|publikuj/i.test(step)?'Publikacja':/test|lint|check|sprawd|regresj/i.test(step)?'Testy':'Inny etap';
        const signature=failureSignature(name,step);
-       diagnosis.textContent='Ostatnia awaria — '+kind+': '+step+' · sygnatura: '+signature+'.'+(failed.length>1?' W historii są '+failed.length+' awarie tego workflow; nie zakładamy identycznej przyczyny.':'');
+       diagnosis.textContent='Ostatnia awaria — '+kind+': '+step+' · sygnatura: '+signature+'.';
+       const candidates=failed.slice(1,4);
+       let same=1,compared=1;
+       for(const prior of candidates){
+        if(!Number.isSafeInteger(prior.id)||prior.id<=0)continue;
+        try{
+         const previousResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+prior.id+'/jobs?per_page=30',{headers:{Accept:'application/vnd.github+json'},cache:'no-store',signal:githubController.signal});
+         if(!previousResponse.ok)continue;
+         const previousData=await previousResponse.json();
+         const previousSteps=(Array.isArray(previousData.jobs)?previousData.jobs:[]).flatMap(j=>Array.isArray(j.steps)?j.steps.filter(s=>s.conclusion==='failure').map(s=>String(s.name||'Nieznany etap')):[]);
+         if(!previousSteps.length)continue;
+         compared++;
+         if(previousSteps.some(value=>failureSignature(name,value)===signature))same++;
+        }catch(error){break;}
+       }
+       diagnosis.textContent+=' Ten sam nieudany etap: '+same+' z '+compared+' porównanych awarii'+(failed.length>compared?' (część historii nieporównana)':'')+'. To nie potwierdza identycznej przyczyny.';
       }else diagnosis.textContent='Nie znaleziono nazwy nieudanego etapu; sprawdź logi.';
      }catch(error){diagnosis.textContent='Nie można odczytać przyczyny ('+String(error.message||'błąd')+').';}
     }
