@@ -243,7 +243,7 @@
    const task=queue.add(command.slice(command.indexOf(':')+1).trim());
    append('Strażak','Zadanie #'+task.id+' dodane do lokalnej kolejki. Zatwierdzenie nie uruchamia zmian w GitHubie.');
    persist();renderTasks();
-   if(plugins){try{const report=await plugins.execute('task-analyzer',{task:task.title},true);append('Analiza Strażaka',report.message);}catch(_){append('Strażak','Analiza jest chwilowo niedostępna.');}}
+   if(plugins){try{const report=await plugins.execute('task-analyzer',{task:task.title},true);append('Analiza Strażaka',report.message);}catch(_){append('Strażak','Analiza jest chwilowo niedostępna.');}finally{renderHealth();}}
   }else append('Strażak',answer.message);
  });
  renderTasks();
