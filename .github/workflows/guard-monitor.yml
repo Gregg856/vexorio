@@ -152,6 +152,26 @@ jobs:
           node tests/guard-rx-empty-result-regression.test.cjs
           node tests/guard-chat.test.cjs
           node tests/guard-rx-orchestrator.test.cjs
+      - name: Raport diagnostyczny RX
+        if: always()
+        env:
+          CHECK_RESULT: ${{ steps.check.outcome }}
+          CHECKOUT_RESULT: ${{ steps.functional.outcome }}
+          TEST_RESULT: ${{ steps.rx_tests.outcome }}
+        run: |
+          {
+            echo "## RX Strazak — diagnoza"
+            echo ""
+            echo "| Kontrola | Wynik |"
+            echo "| --- | --- |"
+            echo "| Strona i zasoby produkcyjne | $CHECK_RESULT |"
+            echo "| Pobranie kodu testow | $CHECKOUT_RESULT |"
+            echo "| Testy Node RX | $TEST_RESULT |"
+            echo ""
+            echo "Uruchomienie: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo ""
+            echo "Kontrole HTML sprawdzaja obecnosc elementow, nie dzialanie zalogowanych funkcji."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Powiadom przez jedno zgloszenie GitHub o awarii
         if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
         uses: actions/github-script@v7
