@@ -11,12 +11,24 @@
    return response.json();
   });
  }
- // Session-only conversation context. Never store pasted code, diffs or secrets.
- const history=[];
+ // Persist only predefined, non-sensitive commands in this browser tab.
+ const historyKey='vexorio-guard-safe-history-v2';
  const historyLimit=12;
+ const safeCommands=new Set(['pomoc','status','test','github','zmiany','raport github','historia']);
+ let history=[];
+ try{
+  const stored=JSON.parse(sessionStorage.getItem(historyKey)||'[]');
+  if(Array.isArray(stored))history=stored.filter(c=>typeof c==='string'&&safeCommands.has(c)).slice(-historyLimit);
+ }catch(_){}
+ function saveHistory(){
+  try{sessionStorage.setItem(historyKey,JSON.stringify(history));}catch(_){}
+ }
  function remember(command){
-  if(command.length>160||/^(kod|diff|plan)\s*:/i.test(command)||/(?:password|token|secret|api[_-]?key|hasło)\s*[:=]/i.test(command))return;
-  history.push(command);if(history.length>historyLimit)history.shift();
+  const normalized=command.trim().toLocaleLowerCase('pl');
+  if(!safeCommands.has(normalized)||normalized==='historia')return;
+  history.push(normalized);
+  if(history.length>historyLimit)history.shift();
+  saveHistory();
  }
  const storageKey='vexorio-guard-local-tasks-v1';
  let saved=[];
@@ -51,11 +63,11 @@
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
   if(/^historia$/i.test(command)){
-   append('Strażak',history.length?'Ostatnie polecenia w tej karcie:\\n'+history.map((c,i)=>(i+1)+'. '+c).join('\\n'):'Nie ma jeszcze zapisanych poleceń. Pamięć działa tylko w otwartej karcie.');
+   append('Strażak',history.length?'Ostatnie bezpieczne polecenia (także po odświeżeniu):\\n'+history.map((c,i)=>(i+1)+'. '+c).join('\\n'):'Nie ma jeszcze zapisanych poleceń. Pamięć działa w tej karcie i po odświeżeniu.');
    return;
   }
   if(/^wyczyść historię$/i.test(command)){
-   history.length=0;append('Strażak','Historia poleceń w tej karcie została wyczyszczona.');return;
+   history.length=0;try{sessionStorage.removeItem(historyKey);}catch(_){}append('Strażak','Historia poleceń w tej karcie została wyczyszczona.');return;
   }
   remember(command);
   if(/^(github|zmiany|raport github)$/i.test(command)){
