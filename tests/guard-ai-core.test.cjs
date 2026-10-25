@@ -13,6 +13,13 @@ const examples=[
 ];
 const model=train(examples);
 for(const item of examples)assert.equal(predict(model,item.text).label,item.label,item.text);
+const unknown=predict(model,'kwazar nebulosa galaktyka');
+assert.equal(unknown.unknownInput,true);
+assert.equal(unknown.coverage,0);
+assert.equal(unknown.needsReview,true);
+const familiar=predict(model,'popraw kod strony');
+assert.equal(familiar.unknownInput,false);
+assert.equal(familiar.coverage,1);
 assert.equal(model.weights.length,4);
 assert.ok(model.vocab.length>0);
 assert.deepEqual(train(examples),model);
