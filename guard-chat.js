@@ -2,6 +2,7 @@
 (()=>{
  const form=document.getElementById('guardChatForm'),input=document.getElementById('guardChatInput'),messages=document.getElementById('guardChatMessages'),tasksBox=document.getElementById('guardTasks');
  if(!form||!input||!messages||!window.GuardCommands||!window.GuardTaskQueue)return;
+ const rxSession=window.GuardRXOrchestrator?.createSession?.();
  const plugins=window.GuardPluginCore?.createRegistry();
  if(plugins&&window.GuardTaskAnalyzerPlugin&&window.GuardEngine2)window.GuardTaskAnalyzerPlugin.installTaskAnalyzer(plugins,window.GuardEngine2.analyzeTask);
  if(plugins&&window.GuardChangesReportPlugin){
@@ -90,6 +91,15 @@
    history.length=0;try{sessionStorage.removeItem(historyKey);}catch(_){}append('Strażak','Historia poleceń w tej karcie została wyczyszczona.');return;
   }
   remember(command);
+  if(/^(?:rx pamięć|rx pamiec|ostatnie zadanie)$/iu.test(command)){
+   append('RX Strażak',rxSession?.lastTask()?'Ostatnie zadanie w tej sesji: '+rxSession.lastTask():'Brak zapamiętanego zadania w tej sesji.');
+   return;
+  }
+  if(/^(?:rx zapomnij|wyczyść pamięć rx|wyczysc pamiec rx)$/iu.test(command)){
+   rxSession?.clear();append('RX Strażak','Wyczyszczono pamięć ostatniego zadania w tej sesji.');return;
+  }
+  const followUp=rxSession?.followUp(command,{analyzeTask:window.GuardEngine2?.analyzeTask});
+  if(followUp){append('RX Strażak',followUp);return;}
   if(/^(wtyczki|plugins)$/i.test(command)){
    if(!plugins){append('Strażak','Rejestr wtyczek jest niedostępny.');return;}
    const installed=plugins.list();
@@ -147,7 +157,7 @@
     conversation:window.GuardRXConversation,
     analyzeTask:window.GuardEngine2?.analyzeTask
    });
-   if(routing.kind==='advisory'){append('RX Strażak',routing.message);return;}
+   if(routing.kind==='advisory'){rxSession?.remember(command);append('RX Strażak',routing.message);return;}
   }
   const answer=window.GuardCommands.respond(command);
   if(answer.kind==='plan'){
