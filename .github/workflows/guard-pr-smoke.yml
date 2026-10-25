@@ -1,0 +1,53 @@
+name: RX Strazak — automatyczny test Draft PR
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/guard-pr-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create harmless fixture
+        run: |
+          mkdir -p tests
+          printf "'use strict';\nrequire('node:assert/strict').ok(true);\n" > tests/guard-autofix-smoke.test.cjs
+          node tests/guard-autofix-smoke.test.cjs
+          test "$(git ls-files --others --exclude-standard)" = "tests/guard-autofix-smoke.test.cjs"
+          git diff --quiet
+      - name: Create test draft PR
+        id: pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: tests/guard-autofix-smoke.test.cjs
+          branch: strazak/smoke-${{ github.run_id }}
+          draft: true
+          delete-branch: true
+          title: '[RX SMOKE] Automatyczny test propozycji'
+          body: 'Automatyczny test tworzenia Draft PR. Tylko nieszkodliwy plik testowy. NIE SCALAĆ.'
+      - name: Verify and close smoke PR
+        if: always() && steps.pr.outputs.pull-request-number != ''
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        with:
+          script: |
+            const {owner,repo}=context.repo;
+            const number=Number(process.env.PR_NUMBER);
+            const files=await github.paginate(github.rest.pulls.listFiles,{owner,repo,pull_number:number});
+            const safe=files.length===1&&files[0].filename==='tests/guard-autofix-smoke.test.cjs';
+            await github.rest.pulls.update({owner,repo,pull_number:number,state:'closed'});
+            core.summary.addRaw('RX smoke PR #'+number+' zamkniety bez scalania. Pliki: '+files.map(x=>x.filename).join(', ')+'\\n');
+            if(!safe)core.setFailed('Unexpected files in RX smoke PR');
+      - name: Require created PR
+        if: always()
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        run: |
+          test -n "$PR_NUMBER" || { echo 'RX smoke: Draft PR was not created'; exit 1; }
