@@ -28,7 +28,7 @@ function summarizeIncidents(runs){
   else if(conclusion==='success')counts.success++;
   else if(conclusion==='failure'){
    counts.failure++;
-   failures.push(Object.freeze({url:typeof html_url==='string'&&/^https:\\/\\/github\\.com\\/Gregg856\\/vexorio\\/actions\\/runs\\/\\d+$/.test(html_url)?html_url:null,reason:'unconfirmed'}));
+   failures.push(Object.freeze({url:typeof html_url==='string'&&html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')&&/^\d+$/.test(html_url.slice('https://github.com/Gregg856/vexorio/actions/runs/'.length))?html_url:null,reason:'unconfirmed'}));
   }else counts.other++;
  }
  return Object.freeze({total:runs.length,counts:Object.freeze(counts),failures:Object.freeze(failures)});
