@@ -59,6 +59,12 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const invalidLabels=await priorityLabels.filter({hasText:/undefined|NaN|\[object Object\]/}).count();
       record('RX BIBI 1.4 priorytety poprawne',invalidLabels===0,'Oznaczenia: '+priorityCount+', błędne: '+invalidLabels);
     } catch(error) {record('RX BIBI 1.4 diagnostyka rejestru',false,error.message);}
+    const diagnosticPlans=incidentPanel.locator('p').filter({hasText:'RX BIBI 1.5 · Plan diagnostyczny:'});
+    const planCount=await diagnosticPlans.count();
+    const incidentPriorities=await incidentPanel.locator('p').filter({hasText:'RX BIBI 1.4 ·'}).count();
+    record('RX BIBI 1.5 plan dla każdej sklasyfikowanej awarii',planCount===incidentPriorities,'Plany: '+planCount+', priorytety: '+incidentPriorities);
+    const unsafePlans=await diagnosticPlans.filter({hasText:/undefined|NaN|\\[object Object\\]/}).count();
+    record('RX BIBI 1.5 czytelne podpowiedzi',unsafePlans===0,'Niepoprawne plany: '+unsafePlans);
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
