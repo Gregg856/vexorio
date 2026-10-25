@@ -27,7 +27,7 @@ jobs:
           cp guard-lab.html public/guard-lab.html
           cp guard-lab.js public/guard-lab.js
           cp guard-install.js public/guard-install.js
-          cp guard-tabs.js guard-chat.js guard-commands.js guard-task-queue.js guard-engine-2.js guard-capabilities.js guard-icon.svg public/
+          cp guard-changes-report-plugin.js guard-tabs.js guard-chat.js guard-commands.js guard-task-queue.js guard-engine-2.js guard-capabilities.js guard-icon.svg public/
           cp guard/plugin-core.cjs public/guard-plugin-core.js
           cp guard-task-analyzer-plugin.js public/guard-task-analyzer-plugin.js
           cp guard/developer-inspector.cjs public/guard-developer-inspector.js
@@ -146,6 +146,7 @@ jobs:
           node guard/repository-scan.cjs
           node guard/repository-summary.cjs
           node guard/developer-changes.cjs
+          node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('guard-developer-changes.json','utf8'));fs.writeFileSync('public/guard-changes-summary.json',JSON.stringify({status:r.status,changedFiles:r.changedFiles,summary:r.summary})+'\\n')"
 
       - name: Zapisz raport Strazaka jako artefakt GitHub Actions
         uses: actions/upload-artifact@v4
