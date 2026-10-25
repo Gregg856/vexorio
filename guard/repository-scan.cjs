@@ -4,9 +4,23 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {inspectSource}=require('./developer-inspector.cjs');
 const FILES=['guard-chat.js','guard-code-ui.js','guard-commands.js','guard-engine-2.js','guard-task-analyzer-plugin.js','guard-lab.js','worker.js'];
+const DIRECTORIES=['guard','tests'];
+const MAX_FILES=150;
+function listFiles(root){
+ const names=[...FILES];
+ for(const directory of DIRECTORIES){
+  const base=path.join(root,directory);
+  if(!fs.existsSync(base))continue;
+  for(const entry of fs.readdirSync(base,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){
+   if(!entry.isFile()||!/^[-\w]+\.(?:js|cjs|mjs)$/.test(entry.name))continue;
+   names.push(directory+'/'+entry.name);
+  }
+ }
+ return [...new Set(names)].slice(0,MAX_FILES);
+}
 function scan(root=process.cwd()){
  const files=[];let count=0;
- for(const name of FILES){
+ for(const name of listFiles(root)){
   const full=path.join(root,name);
   if(!fs.existsSync(full)){files.push({path:name,error:'missing'});continue;}
   const source=fs.readFileSync(full,'utf8');
@@ -23,4 +37,4 @@ if(require.main===module){
  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n',{mode:0o600});
  console.log('Strażak Developer: checked '+report.checked+' files; '+report.signals+' signals. Report: guard-developer-report.json (CI artifact only).');
 }
-module.exports={scan,FILES};
+module.exports={scan,FILES,listFiles,MAX_FILES};
