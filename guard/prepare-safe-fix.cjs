@@ -8,6 +8,8 @@ const {diagnose}=require('./security-diagnostics.cjs');
 const file=process.argv[2];
 if(!file||!/^guard-[a-z0-9-]+\.js$/.test(file))throw Error('Only root-level guard-*.js allowed');
 const absolute=path.resolve(process.cwd(),file);
+const stat=fs.lstatSync(absolute);
+if(!stat.isFile()||stat.isSymbolicLink())throw Error('RX refuses symlinks and non-regular source files');
 const before=fs.readFileSync(absolute,'utf8');
 const proposal=preview({path:file,source:before});
 const findings=proposal.changes;
