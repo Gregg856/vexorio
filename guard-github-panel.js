@@ -207,7 +207,16 @@
     return label+': '+state+stale+' · '+String(run.head_sha||'').slice(0,8)+' · '+String(run.event||'')+'\\n'+String(run.html_url||'');
    }catch(_){return label+': nie udało się pobrać stanu';}
   }));
-  rxAutomationStatus.textContent=results.join('\\n\\n')+'\\n\\nStatus odczytywany z GitHub. Zielony wynik starszego commita nie potwierdza najnowszych zmian.';
+  let incident='Alarmy RX: nie udało się odczytać zgłoszeń.';
+  try{
+   const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/issues?state=open&per_page=100',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+   if(!response.ok)throw Error('GitHub issues unavailable');
+   const issues=await response.json();
+   if(!Array.isArray(issues))throw Error('Invalid issues');
+   const alarms=issues.filter(issue=>!issue.pull_request&&issue.title==='[RX MONITOR] Awaria VEXORIO');
+   incident=alarms.length?'ALARM RX: '+alarms.length+' aktywne zgłoszenie.\\n'+alarms.map(issue=>issue.html_url).join('\\n'):'Alarmy RX: brak otwartego zgłoszenia awarii (nie zastępuje to testów).';
+  }catch(_){}
+  rxAutomationStatus.textContent=results.join('\\n\\n')+'\\n\\n'+incident+'\\n\\nStatus odczytywany z GitHub. Zielony wynik starszego commita nie potwierdza najnowszych zmian.';
  }
  if(rxAutomationStatus){
   refreshAutomationStatus();
