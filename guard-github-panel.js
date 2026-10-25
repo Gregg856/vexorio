@@ -191,7 +191,8 @@
  });
  const prButton=document.getElementById('guardDraftPrStatusButton');
  const prOutput=document.getElementById('guardDraftPrStatusResult');
- if(prButton&&prOutput)prButton.addEventListener('click',async()=>{
+ if(prButton&&prOutput){
+  const refreshDrafts=async()=>{
   prButton.disabled=true;prOutput.textContent='Sprawdzam robocze PR Strażaka…';
   try{
    const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/pulls?state=open&per_page=100',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
@@ -224,7 +225,11 @@
    prOutput.textContent=rows.join('\n\n');
   }catch(_){prOutput.textContent='Nie udało się odczytać listy PR. Sprawdź dostęp do GitHub lub limit API.';}
   finally{prButton.disabled=false;}
- });
+  };
+  prButton.addEventListener('click',refreshDrafts);
+  if(document.visibilityState==='visible')refreshDrafts();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshDrafts();});
+ }
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
