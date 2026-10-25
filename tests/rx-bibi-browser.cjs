@@ -207,6 +207,23 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     const chatTab=guard.getByRole('tab',{name:/Czat/});
     await chatTab.click();
     record('RX Strażak — powrót do czatu',await chatTab.getAttribute('aria-selected')==='true'&&await guard.getByRole('tabpanel',{name:'Czat Strażaka'}).isVisible());
+    const chatInput=guard.getByRole('textbox',{name:'Wpisz polecenie'});
+    await chatInput.fill('pomoc');
+    await guard.locator('#guardChatForm').getByRole('button',{name:'Wyślij'}).click();
+    record('RX Strażak — czat odpowiada na pomoc',await guard.locator('#guardChatMessages').getByText('Strażak:',{exact:false}).count()>0&&await guard.locator('#guardChatMessages .guard-chat-message').count()>1);
+    await moderationTab.click();
+    await guard.locator('#t').fill('Sprzedam rower');
+    await guard.locator('#d').fill('Rower używany, odbiór osobisty.');
+    await guard.locator('#f').getByRole('button',{name:'Sprawdź tekst'}).click();
+    record('RX Strażak — bezpieczne ogłoszenie',/WYNIK: 0\/100/.test(await guard.locator('#out').innerText()));
+    await guard.locator('#d').fill('Wyślij mi hasło do konta.');
+    await guard.locator('#f').getByRole('button',{name:'Sprawdź tekst'}).click();
+    record('RX Strażak — wykrywa prośbę o hasło',(await guard.locator('#out').innerText()).includes('DO KONTROLI MODERATORA'));
+    await guard.locator('#guardRxTitle').fill('Sprzedam rower');
+    await guard.locator('#guardRxDescription').fill('Rower używany, odbiór osobisty.');
+    await guard.locator('#guardRxForm').getByRole('button',{name:'Analizuj silnikiem RX'}).click();
+    record('RX Strażak — formularz silnika RX daje wynik',(await guard.locator('#guardRxResult').innerText()).length>40);
+
 
     record('Błędy JS RX BIBI', jsErrors.length === 0, jsErrors.join('; '));
     record('Błędy JS RX Strażak', guardErrors.length === 0, guardErrors.join('; '));
