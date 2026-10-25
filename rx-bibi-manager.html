@@ -74,10 +74,12 @@ async function refresh(){
   if(current&&current.status!=='completed')alertItems.push(['wait','Publikacja w toku — oczekujemy na wynik',current]);
   if(checkPending)alertItems.push(['wait','Testy w toku — oczekujemy na wynik',latestCheck]);
   if(monitor&&monitor.status!=='completed')alertItems.push(['wait','Monitoring Strażaka w toku',monitor]);
-  if(monitorStale)alertItems.push(['wait','Monitoring Strażaka: brak aktualnego wyniku',monitor]);
+  if(monitorStale&&!(monitor&&monitor.status!=='completed'))alertItems.push(['wait','Monitoring Strażaka: brak aktualnego wyniku',monitor]);
   if(!current||!latestCheck||!monitor)alertItems.push(['wait','Niepełne dane z GitHub Actions',null]);
-  if(!alertItems.length)alerts.append(el('p','ok','Brak aktywnych alarmów w ostatnich pobranych wynikach. Nie jest to test dostępności strony.'));
-  else for(const [cls,message,run] of alertItems){const line=el('p',cls,message);if(run&&typeof run.html_url==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(run.html_url)){const link=el('a','','Otwórz wynik');link.href=run.html_url;link.target='_blank';link.rel='noopener noreferrer';line.append(document.createTextNode(' · '),link);}alerts.append(line);}
+  const uniqueAlerts=[...new Map(alertItems.map(item=>[item[1],item])).values()].sort((a,b)=>(a[0]==='bad'?0:1)-(b[0]==='bad'?0:1));
+  alerts.append(el('p','meta','Aktywne ostrzeżenia: '+uniqueAlerts.length+' (bez powtórzeń).'));
+  if(!uniqueAlerts.length)alerts.append(el('p','ok','Brak aktywnych alarmów w ostatnich pobranych wynikach. Nie jest to test dostępności strony.'));
+  else for(const [cls,message,run] of uniqueAlerts){const line=el('p',cls,message);if(run&&typeof run.html_url==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(run.html_url)){const link=el('a','','Otwórz wynik');link.href=run.html_url;link.target='_blank';link.rel='noopener noreferrer';line.append(document.createTextNode(' · '),link);}alerts.append(line);}
 
   incidents.append(el('p',priorityClass,'Priorytet RX BIBI: '+priority));
   incidents.append(el('p','meta','Kolejne nieudane przebiegi (od najnowszych zakończonych): publikacje '+deployStreak+' · testy '+checkStreak+' · Strażak '+monitorStreak));
