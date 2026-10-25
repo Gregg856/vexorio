@@ -89,7 +89,15 @@ jobs:
           script: |
             const {owner,repo}=context.repo;
             const runId=context.payload.workflow_run.id;
-            const result=await github.rest.actions.listWorkflowRunArtifacts({owner,repo,run_id:runId,per_page:100});
+            let result;
+            try {
+              result=await github.rest.actions.listWorkflowRunArtifacts({owner,repo,run_id:runId,per_page:100});
+            } catch(error) {
+              core.warning('Nie mozna odczytac artefaktow RX: '+error.message);
+              core.setOutput('skip','true');
+              core.setOutput('classification_found','false');
+              return;
+            }
             const artifact=result.data.artifacts.find(a=>a.name==='rx-classification-'+runId&&!a.expired);
             core.setOutput('skip','true');
             core.setOutput('classification_found',artifact?'true':'false');
