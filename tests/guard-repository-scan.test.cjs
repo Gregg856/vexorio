@@ -23,6 +23,10 @@ try{
  assert.ok(!names.includes('guard/ignored.txt'));
  assert.ok(!names.includes('guard/nested/skip.js'));
  assert.equal(scan(dir).checked,FILES.length+2);
+ fs.writeFileSync(path.join(dir,'guard','broken.js'),'function ( {');
+ const syntaxReport=scan(dir);
+ assert.ok(syntaxReport.files.find(f=>f.path==='guard/broken.js').findings.some(f=>f.rule==='syntax-error'&&f.severity==='high'));
+ assert.ok(!syntaxReport.files.find(f=>f.path==='guard/helper.cjs').findings.some(f=>f.rule==='syntax-error'));
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
