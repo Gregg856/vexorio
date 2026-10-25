@@ -237,6 +237,22 @@ jobs:
               echo "- **RX / wtyczki:** odczytaj pierwszy nieudany test Node, popraw jego przyczyne i uruchom test ponownie."
             fi
             echo ""
+            echo "### Proponowany plan naprawy RX"
+            if [ "$CHECK_RESULT" = "failure" ]; then
+              echo "1. Porownaj niedostepne zasoby z lista plikow kopiowanych w .github/workflows/deploy.yml."
+              echo "2. Sprawdz ostatni zielony deploy i wersje plikow na Cloudflare."
+              echo "3. Po naprawie uruchom monitor i potwierdz HTTP 200 oraz znaczniki HTML."
+            fi
+            if [ "$TEST_RESULT" = "failure" ]; then
+              echo "1. Odczytaj pierwszy blad w kroku 'Uruchom testy funkcjonalne'."
+              echo "2. Odtworz lokalnie wskazany test Node i dodaj test regresyjny."
+              echo "3. Przygotuj zmiane w osobnym PR; po zatwierdzeniu sprawdz zielony monitor."
+            fi
+            if [ "$CHECKOUT_RESULT" = "failure" ]; then
+              echo "1. Sprawdz dostep do repozytorium i uprawnienia GitHub Actions."
+              echo "2. Ponow checkout bez ujawniania tokenow w logach."
+            fi
+            echo ""
             echo "To diagnoza wstepna, nie automatyczna naprawa. RX nie zmienia kodu ani danych uzytkownikow."
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Zapisz historie awarii RX
