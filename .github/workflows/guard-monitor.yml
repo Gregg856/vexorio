@@ -189,6 +189,27 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
+          # Validate embedded github-script JavaScript before an incident happens.
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const yaml = fs.readFileSync('.github/workflows/guard-monitor.yml', 'utf8');
+          const lines = yaml.split(/\r?\n/);
+          let checked = 0;
+          for (let i = 0; i < lines.length; i++) {
+            if (!/^          script: \|\s*$/.test(lines[i])) continue;
+            const source = [];
+            for (let j = i + 1; j < lines.length; j++) {
+              if (!/^            /.test(lines[j]) && lines[j].trim()) break;
+              source.push(lines[j].startsWith('            ') ? lines[j].slice(12) : '');
+            }
+            const code = source.join('\\n').replace(/\$\{\{[^}]+\}\}/g, 'success');
+            try { new (require('node:vm').Script)(code); }
+            catch (error) { throw new Error('GitHub script at line ' + (i + 1) + ': ' + error.message); }
+            checked++;
+          }
+          if (checked < 2) throw new Error('Missing expected GitHub incident scripts');
+          console.log('Validated ' + checked + ' GitHub incident scripts');
+          NODE
           node --check guard-chat.js
           node --check guard-rx-categories.js
           node --check guard-rx-monitor-report.js
