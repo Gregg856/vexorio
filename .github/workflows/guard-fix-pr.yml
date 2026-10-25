@@ -99,6 +99,7 @@ jobs:
             const result=await github.rest.actions.listWorkflowRunArtifacts({owner,repo,run_id:runId,per_page:100});
             const artifact=result.data.artifacts.find(a=>a.name==='rx-classification-'+runId&&!a.expired);
             core.setOutput('skip','true');
+            core.setOutput('classification_found',artifact?'true':'false');
             core.summary.addHeading('RX: klasyfikacja przed automatyczna naprawa',3);
             core.summary.addRaw('Monitoring: '+context.payload.workflow_run.html_url+'\n\n');
             if(!artifact){
@@ -109,6 +110,22 @@ jobs:
             }
             core.summary.addRaw('Dopiero jednoznaczna, przetestowana regula i wskazany plik moga odblokowac roboczy PR.\n');
             await core.summary.write();
+      - name: Summarize autonomous RX response
+        if: github.event_name == 'workflow_run' && steps.existing.outputs.skip != 'true'
+        env:
+          RX_CLASSIFICATION_FOUND: ${{ steps.scope.outputs.classification_found }}
+        shell: bash
+        run: |
+          {
+            echo '### RX — dalsza akcja'
+            if [ "$RX_CLASSIFICATION_FOUND" = true ]; then
+              echo 'Raport klasyfikacji jest dostepny w artefaktach monitoringu.'
+              echo 'RX zachowuje blokade zmian kodu bez sprawdzonego dopasowania do reguly naprawczej.'
+            else
+              echo 'Brak raportu klasyfikacji: wymagana diagnostyka monitoringu.'
+            fi
+            echo 'Nie wykonano automatycznego merge ani wdrozenia.'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Validate target
         if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
         env:
