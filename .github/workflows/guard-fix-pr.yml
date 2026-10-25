@@ -59,14 +59,22 @@ jobs:
           git diff --check
           git diff --name-only > /tmp/strazak-changed-files
           if test -s /tmp/strazak-changed-files; then
-            test "$(wc -l < /tmp/strazak-changed-files | tr -d ' ')" = 1
-            test "$(cat /tmp/strazak-changed-files)" = "$TARGET"
+            while IFS= read -r file; do
+              if [ "$file" != "$TARGET" ]; then
+                echo "Blocked tracked change: $file"; exit 1
+              fi
+            done < /tmp/strazak-changed-files
+          fi
+          if [ "${{ inputs.smoke_test }}" = "true" ]; then
+            test -f tests/guard-autofix-smoke.test.cjs
           fi
       - name: Create draft pull request (never merge)
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          add-paths: ${{ inputs.target }}
+          add-paths: |
+            ${{ inputs.target }}
+            tests/guard-autofix-smoke.test.cjs
           branch: strazak/safe-fix-${{ github.run_id }}
           delete-branch: true
           draft: true
@@ -78,6 +86,8 @@ jobs:
             Reguła: włączenie weryfikacji TLS (rejectUnauthorized: false → true).
             Przed zatwierdzeniem sprawdź diff, testy i wpływ na działanie.
             Nie zmieniono strony głównej VEXORIO.
+            Smoke test: ${{ inputs.smoke_test }}. W trybie testowym PR może zawierać kontrolny plik testowy.
+            Testowego PR nie scalać.
       - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4
