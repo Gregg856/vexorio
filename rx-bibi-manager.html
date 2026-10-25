@@ -9,6 +9,7 @@
 const freshness=document.getElementById('freshness'),latest=document.getElementById('latest'),summary=document.getElementById('summary'),root=document.getElementById('runs'),status=document.getElementById('status'),button=document.getElementById('refresh');
 function el(tag,cls,content){const node=document.createElement(tag);if(cls)node.className=cls;if(content!==undefined)node.textContent=content;return node;}
 function formatDate(value){const time=Date.parse(value||'');return Number.isFinite(time)?new Date(time).toLocaleString('pl-PL'):'brak poprawnej daty';}
+function timestamp(value){const time=Date.parse(value||'');return Number.isFinite(time)?time:0;}
 async function refresh(){
  if(button.disabled)return;
  button.disabled=true;status.textContent='Pobieram historię z GitHub…';
@@ -18,8 +19,8 @@ async function refresh(){
   const data=await response.json();
   if(!Array.isArray(data.workflow_runs))throw Error('Nieprawidłowa odpowiedź GitHub API');
   root.replaceChildren();summary.replaceChildren();latest.textContent='Ostatnia publikacja: sprawdzanie…';
-  const runs=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||String(r.name).includes('RX Strazak')).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,12);
-  const deployments=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'&&r.head_branch==='main').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const runs=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||String(r.name).includes('RX Strazak')).sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at)).slice(0,12);
+  const deployments=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'&&r.head_branch==='main').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at));
   const current=deployments[0];latest.replaceChildren();
   if(current){const state=current.status!=='completed'?'w toku':current.conclusion==='success'?'udana':current.conclusion==='failure'?'nieudana':'wymaga sprawdzenia';const cls=state==='udana'?'ok':state==='nieudana'?'bad':'wait';latest.append(el('strong','','Ostatnia publikacja VEXORIO: '),el('strong',cls,state));latest.append(el('p','meta','Commit: '+String(current.head_sha||'brak').slice(0,8)+' · '+(current.created_at?formatDate(current.created_at):'brak daty')));if(typeof current.html_url==='string'&&current.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')){const a=el('a','','Szczegóły ostatniej publikacji');a.href=current.html_url;a.rel='noopener noreferrer';a.target='_blank';latest.append(a);}}
   else latest.textContent='Ostatnia publikacja: brak danych w pobranej historii.';
