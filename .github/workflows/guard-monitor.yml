@@ -108,6 +108,16 @@ jobs:
               fi
             done
           fi
+          # Read-only checks for login, listing creation and moderation entry point.
+          # No account creation, login, listing submission or admin actions.
+          if [ -s /tmp/vexorio-home-check ]; then
+            for marker in 'id="authDialog"' 'id="authForm"' 'id="googleBtn"' 'id="addDialog"' 'id="addForm"' 'id="newTitle"' 'id="newCategory"' 'id="newDesc"' 'id="adminReportsBtn"'; do
+              if ! grep -Fq "$marker" /tmp/vexorio-home-check; then
+                echo "::error::RX monitor: brak elementu konta, ogloszenia lub moderacji: $marker"
+                failed=1
+              fi
+            done
+          fi
           # Check basic browser-visible page structure, not only HTTP availability.
           if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/guard-lab.html" -o /tmp/guard-panel-check; then
             echo "::error::RX monitor: nie mozna pobrac panelu"
