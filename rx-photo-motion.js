@@ -51,7 +51,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   draw(0);
   try{recorder.start(250)}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   const start=performance.now();
-  function frame(now){const t=Math.min(duration,(now-start)/1000);draw(t);if(t>=duration){stopped=true;recorder.stop();stream.getTracks().forEach(track=>track.stop())}else frameId=requestAnimationFrame(frame)}
+  function frame(now){if(recorder.state==='inactive'){stopped=true;stream.getTracks().forEach(track=>track.stop());return}const t=Math.min(duration,(now-start)/1000);try{draw(t)}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;recorder.stop();stream.getTracks().forEach(track=>track.stop())}else frameId=requestAnimationFrame(frame)}
   frameId=requestAnimationFrame(frame);
   try{return await result}finally{if(frameId)cancelAnimationFrame(frameId);if(!stopped&&recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop())}
  }finally{loaded.length=0}
