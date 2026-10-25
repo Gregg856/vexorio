@@ -1,4 +1,6 @@
 'use strict';
+// Isolate implementation constants from other classic scripts on the dashboard.
+(()=>{
 // Guard Engine 2.0: deterministic local task analysis. No network, code execution or credentials.
 const RULES=[
  {intent:'security',risk:'high',terms:/(?<![\p{L}\p{N}])(usuń|usun|kasuj|wyczyść|wyczysc|delete|drop|truncate|hasło|haslo|token|sekret|secret|production database|baza danych)(?![\p{L}\p{N}])/iu},
@@ -22,3 +24,5 @@ function analyzeTask(value){
 }
 if(typeof module!=='undefined')module.exports={analyzeTask};
 if(typeof window!=='undefined')window.GuardEngine2={analyzeTask};
+
+})();
