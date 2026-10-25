@@ -12,6 +12,14 @@
    if(!report.findings.length)lines.push('Nie znaleziono sygnałów objętych obecnymi regułami. To nie gwarantuje bezpieczeństwa.');
    if(report.limited)lines.push('Wynik ograniczony do 50 sygnałów.');
    lines.push('Analiza lokalna, bez uruchamiania kodu i bez wysyłania go na serwer.');
+   if(window.GuardCodeFix){
+    const fixes=window.GuardCodeFix.suggestFixes(report);
+    if(fixes.suggestions.length){
+     lines.push('\\nStrażak Code Fix — propozycje napraw:');
+     for(const fix of fixes.suggestions)lines.push('Linia '+fix.line+' ['+fix.severity+'] '+fix.title+': '+fix.advice);
+    }
+    lines.push('Code Fix nie zmienił ani nie uruchomił kodu.');
+   }
    out.textContent=lines.join('\n');
   }catch(_){out.textContent='Nieprawidłowa nazwa pliku lub zbyt długi kod (maks. 100 000 znaków).';}
  });
