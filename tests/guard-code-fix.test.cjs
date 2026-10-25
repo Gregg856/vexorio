@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {inspectSource}=require('../guard/developer-inspector.cjs');
+const {suggestFixes}=require('../guard-code-fix.js');
+const r=inspectSource({path:'sample.js',source:'eval(input);\nconsole.log("ok");'});
+const suggestions=suggestFixes(r);
+assert.equal(suggestions.readOnly,true);
+assert.equal(suggestions.applied,false);
+assert.equal(suggestions.suggestions.length,2);
+assert.equal(suggestions.suggestions[0].title,'Usuń eval');
+assert.match(suggestions.suggestions[0].advice,/JSON.parse/);
+assert.throws(()=>suggestFixes({findings:[],readOnly:false}),/Invalid/);
+console.log('PASS: Strażak Code Fix safe suggestions');
