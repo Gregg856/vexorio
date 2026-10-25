@@ -49,5 +49,13 @@ try{
  assert.equal(report.changed,false);
  assert.equal(report.blocked,'ambiguous-or-commented-tls-setting');
  assert.match(fs.readFileSync(path.join(dir,mixed),'utf8'),/rejectUnauthorized: false/);
+ const realTarget=path.join(dir,'guard-symlink-real.js');
+ const symlinkTarget=path.join(dir,'guard-symlink.js');
+ fs.writeFileSync(realTarget,'const tls={rejectUnauthorized: false};\\n');
+ fs.symlinkSync(realTarget,symlinkTarget);
+ result=cp.spawnSync(process.execPath,[script,'guard-symlink.js'],{cwd:dir,encoding:'utf8'});
+ assert.notEqual(result.status,0,'RX must reject symlink targets');
+ assert.match(result.stderr,/refuses symlinks/);
+ assert.match(fs.readFileSync(realTarget,'utf8'),/rejectUnauthorized: false/);
  console.log('PASS: safe fix generator changes only permitted file and is idempotent');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
