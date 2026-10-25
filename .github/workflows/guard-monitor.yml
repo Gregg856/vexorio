@@ -481,7 +481,7 @@ jobs:
             ].filter(([, status]) => status === 'failure').map(([name]) => name);
             const signatureItems = [...new Set([...stages.map(x => 'stage:' + x), ...rawErrors.map(x => 'detail:' + x)])].sort();
             const fingerprint = crypto.createHash('sha256').update(signatureItems.join('\\n')).digest('hex').slice(0, 16);
-            const exactMatches = previousClosed.filter(i => (i.body || '').includes('RX-FINGERPRINT: ' + fingerprint));
+            const exactMatches = previousClosed.filter(i => new RegExp('(?:^|\\\\n)RX-FINGERPRINT: ' + fingerprint + '(?:\\\\n|$)').test(i.body || ''));
             const priorReferences = exactMatches.slice(0, 3).map(i =>
               '- [Poprzedni incydent #' + i.number + '](' + i.html_url + ') — zamkniety ' + (i.closed_at || 'brak daty')
             );
