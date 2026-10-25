@@ -31,6 +31,7 @@ jobs:
           node tests/guard-code-fix.test.cjs
           node tests/guard-patch-preview.test.cjs
           node tests/guard-developer-inspector.test.cjs
+          node tests/guard-prepare-safe-fix.test.cjs
       - name: Prepare deterministic patch and audit
         env:
           TARGET: ${{ inputs.target }}
