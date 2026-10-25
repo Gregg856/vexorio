@@ -127,6 +127,13 @@
   }
   const followUp=rxSession?.followUp(command,{analyzeTask:window.GuardEngine2?.analyzeTask});
   if(followUp){append('RX Strażak',followUp);return;}
+  if(/^(?:błędy wtyczek|bledy wtyczek|diagnostyka wtyczek|rx błędy|rx bledy)$/iu.test(command)){
+   const reports=plugins?.diagnostics?.();
+   append('RX Strażak',reports?.length
+    ?'Diagnostyka wtyczek (od uruchomienia panelu):'+String.fromCharCode(10)+reports.map(p=>'• '+p.id+': '+(p.status==='error'?'BŁĄD':p.status==='ok'?'OK':'nie testowano')+'; uruchomienia '+p.checks+', błędy '+p.failures).join(String.fromCharCode(10))+String.fromCharCode(10)+'To wyniki lokalne, bez automatycznego monitoringu serwera.'
+    :'Brak danych diagnostycznych wtyczek.');
+   return;
+  }
   if(/^(wtyczki|plugins)$/i.test(command)){
    if(!plugins){append('Strażak','Rejestr wtyczek jest niedostępny.');return;}
    const installed=plugins.list();
