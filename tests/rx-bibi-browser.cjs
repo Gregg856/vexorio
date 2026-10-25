@@ -25,7 +25,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('Wynik RX BIBI Tester',/Ostatni test:|Test w toku|Test zakończony:/.test(testerText),testerText.slice(0,300));
       const reportLink=tester.getByRole('link',{name:'Otwórz test i raporty'});
       const href=await reportLink.getAttribute('href');
-      record('Link raportu RX BIBI Tester',/^https:\\/\\/github\\.com\\/Gregg856\\/vexorio\\/actions\\/runs\\/\\d+$/.test(href||''),href);
+      record('Link raportu RX BIBI Tester',typeof href==='string'&&href.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')&&Number.isSafeInteger(Number(href.split('/').pop()))&&Number(href.split('/').pop())>0,href);
     }catch(error){record('Odczyt panelu RX BIBI Tester',false,error.message);}
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
