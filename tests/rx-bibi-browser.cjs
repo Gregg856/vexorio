@@ -50,7 +50,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
   fs.writeFileSync(path.join(reportDir, 'report.html'), html);
   if(process.env.GITHUB_STEP_SUMMARY){
     const lines=['## RX BIBI Tester — testy Playwright','','| Test | Wynik |','|---|---|',...results.map(item=>'| '+item.name.replace(/\\|/g,'/')+' | '+(item.passed?'OK':'BŁĄD')+' |'),'','**Wynik: '+(output.passed?'UDANY':'NIEUDANY')+'**'];
-    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
   }
 
   console.log(JSON.stringify(output, null, 2));
