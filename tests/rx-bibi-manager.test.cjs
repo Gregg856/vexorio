@@ -51,6 +51,8 @@ assert.ok(bibi.includes("r.head_branch==='main'&&r.status==='completed'"),'RX BI
 assert.ok(bibi.includes('Bieżące nieudane przebiegi w raporcie:'),'RX BIBI must distinguish current failed runs');
 assert.ok(bibi.includes('Historyczne nieudane przebiegi:'),'RX BIBI must distinguish historical failures');
 assert.ok(bibi.includes('Anulowane publikacje:'),'RX BIBI must report cancellations separately');
+assert.ok(bibi.includes("monitor&&monitor.status!=='completed'"),'RX BIBI must include pending monitoring in in-progress priority');
+assert.ok(bibi.includes('Nie potwierdzamy jeszcze wyniku ani usunięcia wcześniejszych problemów'),'RX BIBI must avoid claiming recovery during pending workflows');
 assert.ok(bibi.includes("r.conclusion==='cancelled'"),'RX BIBI must detect cancelled deployments');
 assert.ok(bibi.includes('anulowanie nie oznacza automatycznie błędu'),'RX BIBI must not treat cancellation as failure');
 assert.ok(bibi.includes('najnowsza zakończona publikacja była udana'),'RX BIBI must recognize recovered deployment after cancellations');
