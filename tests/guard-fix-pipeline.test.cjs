@@ -34,7 +34,7 @@ try{
  assert.equal(rerun.status,0,rerun.stderr);
  assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8')).changed,false);
  const ambiguous='guard-ambiguous-fixture.js';
- const ambiguousOriginal='const a={rejectUnauthorized: false};\\nconst b={rejectUnauthorized: false};\\n';
+ const ambiguousOriginal='const a={rejectUnauthorized: false};\nconst b={rejectUnauthorized: false};\n';
  fs.writeFileSync(path.join(dir,ambiguous),ambiguousOriginal);
  const blocked=cp.spawnSync(process.execPath,[generator,ambiguous],{cwd:dir,encoding:'utf8'});
  assert.equal(blocked.status,0,blocked.stderr);
