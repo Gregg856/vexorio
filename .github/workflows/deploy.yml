@@ -125,6 +125,7 @@ jobs:
           node tests/guard-prepare-safe-fix.test.cjs
           node tests/guard-confirmed-fix-memory.test.cjs
           node tests/guard-incident-report.test.cjs
+          node tests/rx-bibi-manager.test.cjs
           node tests/guard-fix-pipeline.test.cjs
           node tests/guard-greetings.test.cjs
           node tests/guard-developer-inspector.test.cjs
