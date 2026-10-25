@@ -20,7 +20,18 @@
   if(typeof natural==='string')return {kind:'advisory',module:'rx-conversation',message:natural,requiresApproval:false};
   return {kind:'legacy',module:'commands',requiresApproval:false};
  }
- const api={route,version:'1.0.0'};
+ function capabilities(){
+  return Object.freeze([
+   {id:'rx-conversation',role:'Rozmowa i analiza intencji',mode:'advisory'},
+   {id:'task-analyzer',role:'Planowanie i ocena ryzyka',mode:'advisory'},
+   {id:'code-audit',role:'Audyt kodu',mode:'read-only'},
+   {id:'changes-report',role:'Raport GitHub',mode:'read-only'},
+   {id:'developer-inspector',role:'Analiza kodu',mode:'read-only'},
+   {id:'developer-diff',role:'Przegląd zmian',mode:'read-only'},
+   {id:'task-queue',role:'Lokalna kolejka zadań',mode:'approval-required'}
+  ]);
+ }
+ const api={route,capabilities,version:'1.1.0'};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  if(root)root.GuardRXOrchestrator=api;
 })(typeof window!=='undefined'?window:null);
