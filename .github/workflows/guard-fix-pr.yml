@@ -242,6 +242,12 @@ jobs:
               echo 'Blocked: smoke test must not change RX source code'; exit 1
             fi
           fi
+          # Also reject unexpected untracked files; git diff does not list them.
+          while IFS= read -r file; do
+            if [ "$file" != "tests/guard-autofix-smoke.test.cjs" ] || [ "${{ github.event_name == 'workflow_dispatch' && inputs.smoke_test || false }}" != "true" ]; then
+              echo "Blocked unexpected untracked file: $file"; exit 1
+            fi
+          done < <(git ls-files --others --exclude-standard)
           git diff --name-only > /tmp/strazak-changed-files
           if test -s /tmp/strazak-changed-files; then
             while IFS= read -r file; do
