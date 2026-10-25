@@ -17,6 +17,8 @@ try{
  let report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
  assert.equal(report.changed,true);
  assert.equal(report.findings.length,1);
+ assert.ok(Array.isArray(report.diagnostics));
+ assert.ok(report.diagnostics.every(item=>item.automaticFix===false));
  result=cp.spawnSync(process.execPath,[script,target],{cwd:dir,encoding:'utf8'});
  assert.equal(result.status,0,result.stderr);
  report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
