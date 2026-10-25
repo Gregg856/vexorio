@@ -33,6 +33,19 @@
   const issueList=document.createElement('ol');
   if(!issues.length){const item=document.createElement('li');item.textContent='Brak bieżących błędów i nieprzetestowanych modułów.';issueList.append(item);}
   for(const issue of issues){const item=document.createElement('li');item.textContent=issue.priority+' · '+issue.id+' — '+issue.detail;issueList.append(item);}
+  const adviceTitle=document.createElement('strong');adviceTitle.textContent='Propozycje napraw RX (bez zmian w kodzie)';
+  const adviceList=document.createElement('ul');
+  const suggestions={
+   'task-analyzer':'Sprawdź format zadania i działanie analizatora. Uruchom ponownie test z krótkim poleceniem.',
+   'changes-report':'Sprawdź dostępność /guard-changes-summary.json oraz krok generowania raportu w GitHub Actions.',
+   'code-audit':'Sprawdź format wejściowego kodu i reguły inspektora. Uruchom test na prostym fragmencie JavaScript.'
+  };
+  for(const issue of issues){
+   const item=document.createElement('li');
+   item.textContent=issue.id+': '+(issue.priority==='DO SPRAWDZENIA'?'Najpierw uruchom test modułu.':suggestions[issue.id]||'Sprawdź logi i testy modułu.');
+   adviceList.append(item);
+  }
+  if(!issues.length){const item=document.createElement('li');item.textContent='Brak otwartych problemów do zaproponowania naprawy.';adviceList.append(item);}
   const note=document.createElement('small');note.textContent='Wyniki tylko z tej karty. To nie jest monitoring GitHub Actions.';
   const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Odśwież stan';refresh.addEventListener('click',renderHealth);
   const run=document.createElement('button');run.type='button';run.textContent='Przetestuj 3 wtyczki';
@@ -62,7 +75,7 @@
    try{await navigator.clipboard.writeText(lines.join('\\n'));copy.textContent='Skopiowano';}
    catch(_){copy.textContent='Nie udało się skopiować';}
   });
-  healthBox.append(title,summary,list,issueTitle,issueList,note,refresh,run,copy);
+  healthBox.append(title,summary,list,issueTitle,issueList,adviceTitle,adviceList,note,refresh,run,copy);
  }
  const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
  function renderPlugins(){
