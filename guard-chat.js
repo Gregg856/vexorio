@@ -36,6 +36,14 @@
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
+  if(/^kod\s*:/i.test(command)){
+   const code=command.slice(command.indexOf(':')+1).trim();
+   if(!code){append('Strażak','Po „kod:” wklej fragment kodu. Dłuższy kod możesz wkleić w formularzu poniżej.');return;}
+   if(!window.GuardDeveloperInspector){append('Strażak','Analizator kodu jest chwilowo niedostępny.');return;}
+   try{const result=window.GuardDeveloperInspector.inspectSource({path:'fragment.js',source:code});append('Strażak Developer',result.findings.length?result.findings.map(f=>'Linia '+f.line+' ['+f.severity+']: '+f.message).join('\n'):'Nie znaleziono sygnałów objętych regułami. To nie gwarantuje bezpieczeństwa.');}
+   catch(_){append('Strażak','Nie udało się przeanalizować kodu.');}
+   return;
+  }
   const answer=window.GuardCommands.respond(command);
   if(answer.kind==='plan'){
    const task=queue.add(command.slice(command.indexOf(':')+1).trim());
