@@ -31,7 +31,9 @@ jobs:
             "report.automatic_patch_allowed===false",
             "core.setOutput('skip','true')",
             "report.monitor_run.endsWith('/actions/runs/'+runId)",
-            "report.failed_stages.every"
+            "report.failed_stages.every",
+            "git ls-files --others --exclude-standard",
+            "Blocked unexpected untracked file"
           ];
           for(const gate of required)assert.ok(fix.includes(gate),'Brak bramki: '+gate);
           assert.ok(monitor.includes("automatic_patch_allowed: false"),'Monitor nie blokuje patchowania');
@@ -66,6 +68,16 @@ jobs:
           const unknown={...good,category:'unknown',recommended_action:'manual_review',failed_stages:['tests']};
           assert.equal(valid(unknown,123),true);
           assert.equal(valid({...good,automatic_patch_allowed:true},123),false);
+          // Exercise the same untracked-file allowlist used by the draft PR workflow.
+          function allowedUntracked(files,smoke){
+            return files.every(file=>smoke&&file==='tests/guard-autofix-smoke.test.cjs');
+          }
+          assert.equal(allowedUntracked([],false),true);
+          assert.equal(allowedUntracked(['tests/guard-autofix-smoke.test.cjs'],true),true);
+          assert.equal(allowedUntracked(['tests/guard-autofix-smoke.test.cjs'],false),false);
+          assert.equal(allowedUntracked(['index.html'],true),false);
+          assert.equal(allowedUntracked(['tests/guard-autofix-smoke.test.cjs','worker.js'],true),false);
+          console.log('RX PASS: 5 untracked-file allowlist scenarios');
           // Draft PR pipeline readiness: verify guardrails without creating a PR.
           for(const gate of [
             "inputs.smoke_test == true",
