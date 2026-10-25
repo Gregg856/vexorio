@@ -204,6 +204,8 @@
  window.addEventListener?.('resize',resizeComposer);
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
+  // Keep conversation mode open after Send; the keyboard may close on Android.
+  if(window.matchMedia?.('(max-width:700px)').matches)openComposer();
   append('Ty',command);input.value='';
   // Read-only live monitoring: never claim a check was executed by this chat.
   if(/^(?:sprawdź|sprawdz|sprawdź błędy|sprawdz bledy|monitoring|status monitoringu|status)$/iu.test(command)){
