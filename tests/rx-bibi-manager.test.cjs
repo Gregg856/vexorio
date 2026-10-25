@@ -47,6 +47,8 @@ assert.ok(bibi.includes('id="freshness"'),'RX BIBI must display data freshness')
 assert.ok(bibi.includes('Świeżość danych: aktualne'),'RX BIBI must label successful fetches');
 assert.ok(bibi.includes('Świeżość danych: mogą być nieaktualne'),'RX BIBI must label stale history');
 assert.ok(bibi.includes('Świeżość danych: brak połączenia lub danych'),'RX BIBI must label missing history');
+assert.ok(bibi.includes("response.headers.get('age')"),'RX BIBI must inspect API cache age');
+assert.ok(bibi.includes('ageSeconds>300'),'RX BIBI must warn for old API responses');
 assert.ok(bibi.indexOf('root.replaceChildren();summary.replaceChildren();latest.textContent')>bibi.indexOf('if(!response.ok)throw Error'),'RX BIBI must preserve old data until successful API response');
 assert.ok(bibi.includes('Limit GitHub API'),'RX BIBI must identify rate limiting');
 assert.ok(bibi.includes('Historia GitHub Actions niedostępna'),'RX BIBI must identify unavailable history');
