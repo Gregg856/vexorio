@@ -17,6 +17,9 @@ jobs:
       - name: Pobierz pliki
         uses: actions/checkout@v4
 
+      - name: Pobierz poprzedni commit do analizy zmian
+        run: git fetch --no-tags --depth=2 origin main
+
       - name: Przygotuj strone
         run: |
           mkdir -p public
@@ -117,6 +120,7 @@ jobs:
           node tests/guard-repository-scan.test.cjs
           node tests/guard-repository-summary.test.cjs
           node tests/guard-developer-diff.test.cjs
+          node tests/guard-developer-changes.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
@@ -141,6 +145,7 @@ jobs:
         run: |
           node guard/repository-scan.cjs
           node guard/repository-summary.cjs
+          node guard/developer-changes.cjs
 
       - name: Zapisz raport Strazaka jako artefakt GitHub Actions
         uses: actions/upload-artifact@v4
@@ -149,6 +154,7 @@ jobs:
           path: |
             guard-developer-report.json
             guard-developer-summary.json
+      guard-developer-changes.json
           retention-days: 7
           if-no-files-found: error
 
