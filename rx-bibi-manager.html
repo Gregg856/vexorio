@@ -94,6 +94,8 @@ async function refresh(){
        const advice=kind==='Publikacja'?'Sprawdź uprawnienia Cloudflare, token i odpowiedź API w logach. Przy błędzie przejściowym rozważ pojedyncze ponowienie po analizie.':kind==='Testy'?'Otwórz log testu, odtwórz błąd na staging i popraw kod przed ponownym wdrożeniem.':'Sprawdź log nieudanego etapu, wymagane pliki i konfigurację workflow.';
        const tip=el('p','meta','Propozycja działania: '+advice+' Żadna naprawa nie jest uruchamiana automatycznie.');
        row.append(tip);
+       const next=el('p','meta','RX BIBI 1.5 · Plan diagnostyczny: '+(recovered?'Najpierw porównaj ostatni udany przebieg z wcześniejszą awarią.':'Najpierw otwórz nieudany etap i ustal konkretny komunikat błędu.')+' '+(same>=2?'Ponieważ etap powraca, porównaj logi '+same+' podobnych uruchomień i sprawdź, czy błąd ma tę samą treść.':'Brak potwierdzonej serii podobnych awarii — nie zakładaj powtarzalnej przyczyny.')+' Następnie sprawdź poprawkę na staging, wykonaj test regresyjny i dopiero po zatwierdzeniu wdrażaj.');
+       row.append(next);
       }else diagnosis.textContent='Nie znaleziono nazwy nieudanego etapu; sprawdź logi.';
      }catch(error){diagnosis.textContent='Nie można odczytać przyczyny ('+String(error.message||'błąd')+').';}
     }
