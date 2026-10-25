@@ -4,6 +4,13 @@
  if(!form||!input||!messages||!window.GuardCommands||!window.GuardTaskQueue)return;
  const plugins=window.GuardPluginCore?.createRegistry();
  if(plugins&&window.GuardTaskAnalyzerPlugin&&window.GuardEngine2)window.GuardTaskAnalyzerPlugin.installTaskAnalyzer(plugins,window.GuardEngine2.analyzeTask);
+ if(plugins&&window.GuardChangesReportPlugin){
+  window.GuardChangesReportPlugin.installChangesReport(plugins,async()=>{
+   const response=await fetch('/guard-changes-summary.json',{cache:'no-store'});
+   if(!response.ok)throw Error('Report unavailable');
+   return response.json();
+  });
+ }
  const storageKey='vexorio-guard-local-tasks-v1';
  let saved=[];
  try{const parsed=JSON.parse(localStorage.getItem(storageKey)||'[]');if(Array.isArray(parsed))saved=parsed;}catch(_){}
@@ -36,6 +43,12 @@
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
+  if(/^(github|zmiany|raport github)$/i.test(command)){
+   if(!plugins){append('Strażak','Wtyczki są chwilowo niedostępne.');return;}
+   try{const result=await plugins.execute('changes-report',{task:command},true);append('Strażak GitHub',result.message);}
+   catch(_){append('Strażak','Raport GitHub jest chwilowo niedostępny.');}
+   return;
+  }
   if(/^diff\s*:/i.test(command)){
    const patch=command.slice(command.indexOf(':')+1).trim();
    if(!window.GuardDeveloperDiff){append('Strażak','Analiza zmian jest chwilowo niedostępna.');return;}
