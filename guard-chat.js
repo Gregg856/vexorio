@@ -14,6 +14,22 @@
  }
  if(plugins && window.GuardCodeAuditPlugin && window.GuardDeveloperInspector) window.GuardCodeAuditPlugin.installCodeAudit(plugins, window.GuardDeveloperInspector.inspectSource);
  const healthBox=document.getElementById('guardRxHealth');
+ // Automatically exercise the three read-only plugins once per page load.
+ async function autoCheckPlugins(){
+  if(!plugins)return;
+  const checks=[['task-analyzer','Sprawdź poprawność analizy'],['code-audit','const bezpiecznyTest = true;'],['changes-report','status']];
+  const outcomes=[];
+  for(const [id,task] of checks){
+   try{
+    const result=await plugins.execute(id,{task},true);
+    const message=typeof result?.message==='string'?result.message:'';
+    const missing=id==='changes-report'&&message.includes('nie jest jeszcze dostępny');
+    outcomes.push(id+': '+(missing?'BRAK RAPORTU':!message?'BRAK WYNIKU':'OK'));
+   }catch(_){outcomes.push(id+': BŁĄD');}
+  }
+  renderHealth();
+  append('RX Strażak','Automatyczna kontrola wtyczek po otwarciu czatu:'+String.fromCharCode(10)+outcomes.map(x=>'• '+x).join(String.fromCharCode(10))+'\\nKontrola lokalna; nie wprowadzono zmian w VEXORIO.');
+ }
  function renderHealth(){
   if(!healthBox)return;
   healthBox.replaceChildren();
@@ -317,4 +333,5 @@
  renderTasks();
  renderPlugins();
  renderHealth();
+ void autoCheckPlugins();
 })();
