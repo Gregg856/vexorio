@@ -16,6 +16,22 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
   try {
     const page = await browser.newPage({ ...devices['Pixel 7'], locale: 'pl-PL' });
     activePage = page;
+    // Proxy public GitHub API calls through the runner's short-lived token.
+    // The token never reaches the page, its JavaScript or report artifacts.
+    if(process.env.GITHUB_TOKEN){
+      await page.route(/^https:\/\/api\.github\.com\//,async route=>{
+        try{
+          const original=route.request();
+          const upstream=await fetch(original.url(),{
+            method:original.method(),
+            headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+process.env.GITHUB_TOKEN,'X-GitHub-Api-Version':'2022-11-28'},
+            signal:AbortSignal.timeout(15000)
+          });
+          const body=await upstream.text();
+          await route.fulfill({status:upstream.status,contentType:upstream.headers.get('content-type')||'application/json',body,headers:{'access-control-allow-origin':'*','cache-control':'no-store'}});
+        }catch(err){console.error('RX GitHub API proxy:',err.message);await route.abort();}
+      });
+    }
     const jsErrors = [];
     const guardErrors = [];
     const diagnostics = [];
