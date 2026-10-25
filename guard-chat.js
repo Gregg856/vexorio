@@ -29,7 +29,28 @@
   }
   const note=document.createElement('small');note.textContent='Wyniki tylko z tej karty. To nie jest monitoring GitHub Actions.';
   const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Odśwież stan';refresh.addEventListener('click',renderHealth);
-  healthBox.append(title,summary,list,note,refresh);
+  const run=document.createElement('button');run.type='button';run.textContent='Przetestuj 3 wtyczki';
+  run.disabled=!plugins||reports.length!==3;
+  run.addEventListener('click',async()=>{
+   run.disabled=true;run.textContent='Testowanie…';
+   const checks=[
+    ['task-analyzer','Sprawdź poprawność analizy'],
+    ['code-audit','const bezpiecznyTest = true;'],
+    ['changes-report','status']
+   ];
+   const outcomes=[];
+   for(const [id,task] of checks){
+    try{
+     const result=await plugins.execute(id,{task},true);
+     const unavailable=id==='changes-report'&&result.message.includes('nie jest jeszcze dostępny');
+     outcomes.push(id+': '+(unavailable?'BRAK RAPORTU':'OK'));
+    }catch(_){outcomes.push(id+': BŁĄD');}
+   }
+   renderHealth();
+   const result=document.createElement('p');result.textContent='Wynik testu: '+outcomes.join(' · ');
+   healthBox.append(result);
+  });
+  healthBox.append(title,summary,list,note,refresh,run);
  }
  const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
  function renderPlugins(){
