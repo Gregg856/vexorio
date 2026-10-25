@@ -6,6 +6,11 @@ on:
         description: 'Dozwolony plik Strażaka, np. guard-chat.js'
         required: true
         type: string
+      smoke_test:
+        description: 'Kontrolny PR tylko z plikiem testowym (bez zmian produkcyjnych)'
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: write
   pull-requests: write
@@ -41,7 +46,13 @@ jobs:
           node tests/guard-patch-preview.test.cjs
           node tests/guard-code-fix.test.cjs
           node tests/guard-developer-inspector.test.cjs
-      - name: Verify exactly one allowed changed file
+      - name: Prepare harmless smoke-test fixture
+        if: inputs.smoke_test == true
+        run: |
+          mkdir -p tests
+          printf "'use strict';\\nconst assert = require('node:assert/strict');\\nassert.ok(true);\\n" > tests/guard-autofix-smoke.test.cjs
+          node tests/guard-autofix-smoke.test.cjs
+      - name: Verify allowed changed files
         env:
           TARGET: ${{ inputs.target }}
         run: |
