@@ -20,7 +20,7 @@ jobs:
           base="https://vexorio.grzegorzbub1985.workers.dev"
           failed=0
           : > /tmp/rx-monitor-errors
-          for path in / /guard-lab.html /guard-chat.js /guard-plugin-core.js /guard-rx-orchestrator.js /guard-changes-summary.json /guard-task-analyzer-plugin.js /guard-changes-report-plugin.js /guard-code-audit-plugin.js; do
+          for path in / /guard-lab.html /guard-chat.js /guard-rx-categories.js /guard-rx-monitor-report.js /guard-plugin-core.js /guard-rx-orchestrator.js /guard-changes-summary.json /guard-task-analyzer-plugin.js /guard-changes-report-plugin.js /guard-code-audit-plugin.js; do
             echo "Sprawdzam $path"
             if ! curl --fail --silent --show-error --location --retry 2 --retry-delay 3 --max-time 20 -H 'Cache-Control: no-cache' "$base$path" -o /tmp/guard-check; then
               echo "::error::RX monitor: niedostepny $path"
@@ -43,6 +43,20 @@ jobs:
                   if ! grep -Fq 'GuardRXOrchestrator' /tmp/guard-check; then
                     echo "::error::RX monitor: nieprawidlowa zawartosc guard-chat.js"
                     echo "nieprawidlowa zawartosc guard-chat.js" >> /tmp/rx-monitor-errors
+                    failed=1
+                  fi
+                  ;;
+                /guard-rx-categories.js)
+                  if ! grep -Fq 'rxCategoryNav' /tmp/guard-check; then
+                    echo '::error::RX monitor: modul kategorii niepoprawny'
+                    echo 'modul kategorii niepoprawny' >> /tmp/rx-monitor-errors
+                    failed=1
+                  fi
+                  ;;
+                /guard-rx-monitor-report.js)
+                  if ! grep -Fq 'guardRxLiveReport' /tmp/guard-check; then
+                    echo '::error::RX monitor: modul raportu niepoprawny'
+                    echo 'modul raportu niepoprawny' >> /tmp/rx-monitor-errors
                     failed=1
                   fi
                   ;;
