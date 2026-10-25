@@ -126,7 +126,7 @@ jobs:
           node tests/guard-prepare-safe-fix.test.cjs
           node tests/guard-fix-pipeline.test.cjs
       - name: Prepare deterministic patch and audit
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true && inputs.smoke_test != true
         env:
           TARGET: ${{ env.RX_TARGET }}
         run: |
