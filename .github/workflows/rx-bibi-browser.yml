@@ -32,7 +32,10 @@ jobs:
       - name: Instaluj Playwright
         run: npm install --no-save --no-package-lock playwright@1.56.1
       - name: Instaluj biblioteki systemowe Chromium
-        run: npx playwright install-deps chromium
+        timeout-minutes: 3
+        run: |
+          echo 'Instalacja zależności Chromium (maksymalnie 3 minuty)'
+          npx playwright install-deps chromium
       - name: Pobierz Chromium tylko gdy brak cache
         if: steps.chromium-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium
