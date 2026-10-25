@@ -48,13 +48,20 @@ function createRegistry(){
   const candidates=recommend(task,requiredPermission);
   return Object.freeze({intent:assessment.label,confidence:assessment.confidence,needsReview:assessment.needsReview,canExecuteAutomatically:false,candidates:assessment.needsReview?[]:candidates});
  }
+ function resetHealth(id,approved=false){
+  if(!plugins.has(id))throw Error('Unknown plugin');
+  if(approved!==true)throw Error('Explicit approval required');
+  const stats=health.get(id);
+  stats.lastError=null;
+  return Object.freeze({id,status:'not-tested',checks:stats.checks,failures:stats.failures,requiresVerification:true});
+ }
  function diagnostics(){
   return list().map(plugin=>{
    const stats=health.get(plugin.id);
    return {id:plugin.id,status:stats.lastError?'error':stats.checks?'ok':'not-tested',checks:stats.checks,failures:stats.failures,lastError:stats.lastError};
   });
  }
- return Object.freeze({register,list,recommend,recommendForModel,execute,diagnostics});
+ return Object.freeze({register,list,recommend,recommendForModel,execute,resetHealth,diagnostics});
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={createRegistry};
 if(typeof window!=='undefined')window.GuardPluginCore={createRegistry};
