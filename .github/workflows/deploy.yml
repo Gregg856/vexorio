@@ -28,6 +28,8 @@ jobs:
           cp index.html public/index.html
           cp guard-lab.html public/guard-lab.html
           cp rx-bibi-manager.html public/rx-bibi-manager.html
+          test -s public/rx-bibi-manager.html
+          grep -q 'RX BIBI Manager 1.0' public/rx-bibi-manager.html
           cp guard-lab.js public/guard-lab.js
           cp guard-rx-conversation.js public/guard-rx-conversation.js
           cp guard-rx-orchestrator.js public/guard-rx-orchestrator.js
