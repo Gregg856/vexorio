@@ -46,6 +46,10 @@ assert.ok(bibi.includes("if(run.status!=='completed')continue"),'RX BIBI must sk
 assert.ok(bibi.includes('Powtarzające się niepowodzenia:'),'RX BIBI must flag repeated failures');
 assert.ok(bibi.includes('const groupedFailures=new Map()'),'RX BIBI must group failed workflows by commit');
 assert.ok(bibi.includes('Wspólny raport:'),'RX BIBI must show combined incident report');
+assert.ok(bibi.includes('const latestByWorkflow=new Map()'),'RX BIBI must compare failures with latest completed workflow');
+assert.ok(bibi.includes("r.head_branch==='main'&&r.status==='completed'"),'RX BIBI must ignore unfinished runs when assessing recovery');
+assert.ok(bibi.includes('Bieżące nieudane przebiegi w raporcie:'),'RX BIBI must distinguish current failed runs');
+assert.ok(bibi.includes('Historyczne nieudane przebiegi:'),'RX BIBI must distinguish historical failures');
 assert.ok(bibi.includes("'Log: '+(run.name==='Deploy VEXORIO'"),'RX BIBI must provide log links for grouped failures');
 assert.ok(bibi.includes('sorted.slice(0,3)'),'RX BIBI must cap log links per group');
 assert.ok(bibi.includes('row.append(document.createTextNode'),'RX BIBI must build safe DOM links');
