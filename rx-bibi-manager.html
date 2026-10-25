@@ -44,6 +44,8 @@ async function refresh(){
   const failedChecks=data.workflow_runs.filter(r=>r.name==='VEXORIO checks'&&r.head_branch==='main'&&r.status==='completed'&&r.conclusion==='failure');
   const latestCheck=data.workflow_runs.filter(r=>r.name==='VEXORIO checks'&&r.head_branch==='main').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at))[0];
   const pendingDeploys=deployments.filter(r=>r.status!=='completed').length;
+  const cancelledDeploys=deployments.filter(r=>r.status==='completed'&&r.conclusion==='cancelled').length;
+  const latestCompletedDeploy=deployments.find(r=>r.status==='completed');
   const streak=(items)=>{let count=0;for(const run of items){if(run.status!=='completed')continue;if(run.conclusion==='failure')count++;else break;}return count;};
   const deployStreak=streak(deployments);
   const checkHistory=data.workflow_runs.filter(r=>r.name==='VEXORIO checks'&&r.head_branch==='main').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at));
@@ -82,7 +84,9 @@ async function refresh(){
   incidents.append(el('p','meta','Grupowanie po commicie ułatwia przegląd, ale nie potwierdza wspólnej przyczyny błędów.'));
   incidents.append(el('p','meta','Ostatnie testy VEXORIO: '+(!latestCheck?'brak danych':latestCheck.status!=='completed'?'w toku':latestCheck.conclusion==='success'?'udane':latestCheck.conclusion==='failure'?'nieudane':'wymagają sprawdzenia')));
   incidents.append(el('p',unresolved.length?'bad':'ok','Nieudane publikacje po ostatnim sukcesie: '+unresolved.length));
-  incidents.append(el('p','meta','Wcześniejsze nieudane publikacje: '+olderFailures+' · Nieudane testy VEXORIO: '+failedChecks.length+' · Publikacje w toku: '+pendingDeploys));
+  incidents.append(el('p','meta','Wcześniejsze nieudane publikacje: '+olderFailures+' · Nieudane testy VEXORIO: '+failedChecks.length+' · Publikacje w toku: '+pendingDeploys+' · Anulowane publikacje: '+cancelledDeploys));
+  if(latestCompletedDeploy&&latestCompletedDeploy.conclusion==='cancelled')incidents.append(el('p','wait','Ostatnia zakończona publikacja została anulowana; anulowanie nie oznacza automatycznie błędu wdrożenia.'));
+  if(cancelledDeploys&&latestCompletedDeploy&&latestCompletedDeploy.conclusion==='success')incidents.append(el('p','meta','W historii są anulowane publikacje, ale najnowsza zakończona publikacja była udana.'));
   if(unresolved.length>1)incidents.append(el('p','meta','Kilka nieudanych prób po ostatnim sukcesie — nie oznacza to automatycznie tej samej przyczyny.'));
   if(!successful)incidents.append(el('p','wait','Brak potwierdzonego udanego wdrożenia w pobranej historii; nie można ustalić, czy awarie są nowsze od ostatniego sukcesu.'));
   incidents.append(el('p','meta','Zakres: ostatnie '+data.workflow_runs.length+' uruchomień GitHub Actions. To wyniki CI, nie pomiar dostępności strony. Wcześniejszy sukces nie gwarantuje usunięcia przyczyny awarii.'));
