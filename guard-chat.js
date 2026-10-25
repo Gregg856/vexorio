@@ -73,8 +73,9 @@
    for(const [id,task] of checks){
     try{
      const result=await plugins.execute(id,{task},true);
-     const unavailable=id==='changes-report'&&result.message.includes('nie jest jeszcze dostępny');
-     outcomes.push(id+': '+(unavailable?'BRAK RAPORTU':'OK'));
+     const message=typeof result?.message==='string'?result.message:'';
+     const unavailable=id==='changes-report'&&message.includes('nie jest jeszcze dostępny');
+     outcomes.push(id+': '+(unavailable?'BRAK RAPORTU':!message?'BRAK WYNIKU':'OK'));
     }catch(_){outcomes.push(id+': BŁĄD');}
    }
    renderHealth();
