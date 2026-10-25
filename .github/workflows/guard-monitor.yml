@@ -1,5 +1,9 @@
 name: RX Strazak — monitoring 24/7
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/guard-monitor.yml'
   schedule:
     - cron: '7,37 * * * *'
   workflow_dispatch:
