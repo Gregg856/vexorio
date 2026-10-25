@@ -71,7 +71,7 @@
   });
   const copy=document.createElement('button');copy.type='button';copy.textContent='Kopiuj raport błędów';
   copy.addEventListener('click',async()=>{
-   const lines=['RX Strażak — raport lokalny',summary.textContent,...reports.map(r=>r.id+': '+r.status+'; próby '+r.checks+'; błędne próby '+r.failures),...issues.map(i=>i.priority+' · '+i.id+': '+i.detail),'Uwaga: tylko bieżąca karta, bez monitoringu GitHub Actions.'];
+   const lines=['RX Strażak — raport lokalny',summary.textContent,...reports.map(r=>r.id+': '+r.status+'; próby '+r.checks+'; błędne próby '+r.failures),...issues.map(i=>i.priority+' · '+i.id+': '+i.detail),...issues.map(i=>'Propozycja · '+i.id+': '+(i.priority==='DO SPRAWDZENIA'?'Najpierw uruchom test modułu.':suggestions[i.id]||'Sprawdź logi i testy modułu.')),'Uwaga: tylko bieżąca karta, bez monitoringu GitHub Actions.'];
    try{await navigator.clipboard.writeText(lines.join('\\n'));copy.textContent='Skopiowano';}
    catch(_){copy.textContent='Nie udało się skopiować';}
   });
