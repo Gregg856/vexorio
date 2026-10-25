@@ -9,8 +9,8 @@ function parseConfirmedFixes(markdown){
  for(let i=1;i+1<sections.length;i+=2){
   const id='RX-FIX-'+sections[i],body=sections[i+1];
   const title=body.split(/\r?\n/,1)[0].trim();
-  const field=(name)=>{const match=body.match(new RegExp('^\\- \\*\\*'+name+'\\*\\*:\\s*(.*)$','m'));return match?match[1].trim():'';};
-  const status=field('Status'),fingerprint=field('Odcisk awarii \\(RX-FINGERPRINT\\)');
+  const field=(name)=>{const line=body.split(/\r?\n/).find(value=>value.startsWith('- **'+name+'**:'));return line?line.slice(('- **'+name+'**:').length).trim():'';};
+  const status=field('Status'),fingerprint=field('Odcisk awarii (RX-FINGERPRINT)');
   const commit=field('Commit lub PR'),test=field('Test regresyjny');
   if(status!=='potwierdzone'||!FINGERPRINT.test(fingerprint))continue;
   if(!/^https:\/\/github\.com\/Gregg856\/vexorio\/(?:commit|pull)\/\S+$/.test(commit))continue;
