@@ -356,6 +356,33 @@ jobs:
             echo "automatic_patch_allowed=false"
             echo "monitor_run=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } > /tmp/rx-classification.txt
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const statuses = {
+            public: process.env.PUBLIC_RESULT,
+            checkout: process.env.CHECKOUT_RESULT,
+            tests: process.env.TEST_RESULT
+          };
+          const failed = Object.entries(statuses).filter(([,status]) => status === 'failure').map(([stage]) => stage);
+          const category = failed.includes('checkout') ? 'infrastructure'
+            : failed.includes('public') ? 'public_availability'
+            : failed.includes('tests') ? 'regression' : 'unknown';
+          const recommendedAction = {
+            infrastructure: 'retry_checkout',
+            public_availability: 'verify_deploy',
+            regression: 'inspect_test_logs',
+            unknown: 'manual_review'
+          }[category];
+          const report = {
+            schema_version: 1,
+            category,
+            failed_stages: failed,
+            recommended_action: recommendedAction,
+            automatic_patch_allowed: false,
+            monitor_run: process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID
+          };
+          fs.writeFileSync('/tmp/rx-classification.json', JSON.stringify(report, null, 2) + '\\n');
+          NODE
           {
             echo '### RX — klasyfikacja automatyczna'
             echo "Kategoria: $category"
@@ -367,7 +394,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rx-classification-${{ github.run_id }}
-          path: /tmp/rx-classification.txt
+          path: |
+            /tmp/rx-classification.txt
+            /tmp/rx-classification.json
           retention-days: 30
           if-no-files-found: error
       - name: Zapisz historie awarii RX
