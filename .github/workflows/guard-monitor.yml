@@ -395,7 +395,8 @@ jobs:
             await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\n' + fixNote + '\\n\\nOdcisk bledu: ' + fingerprint).write();
             const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
-              '). RX nie zmienia automatycznie kodu.\n\n' + recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\n' + fixNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
+              '). RX nie zmienia automatycznie kodu.' + '\\n\\n' + recurrence + '\\n\\n' + matchNote +
+              priorNote + '\\n\\n' + fixNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
               // Keep one open issue, but record a new signature once if the failure changes.
