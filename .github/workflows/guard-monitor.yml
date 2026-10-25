@@ -329,6 +329,47 @@ jobs:
             echo "Inne bledy wymagaja analizy; RX nie generuje dowolnych zmian na podstawie samych logow."
             echo "Uruchomienie generatora wymaga wyboru pliku. PR pozostaje roboczy i nie jest scalany automatycznie."
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Klasyfikuj przyczyne awarii RX
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
+        env:
+          PUBLIC_RESULT: ${{ steps.check.outcome }}
+          CHECKOUT_RESULT: ${{ steps.functional.outcome }}
+          TEST_RESULT: ${{ steps.rx_tests.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          category=unknown
+          action=manual_review
+          if [ "$CHECKOUT_RESULT" = failure ]; then
+            category=infrastructure
+            action=retry_checkout
+          elif [ "$PUBLIC_RESULT" = failure ]; then
+            category=public_availability
+            action=verify_deploy
+          elif [ "$TEST_RESULT" = failure ]; then
+            category=regression
+            action=inspect_test_logs
+          fi
+          {
+            echo "category=$category"
+            echo "recommended_action=$action"
+            echo "automatic_patch_allowed=false"
+            echo "monitor_run=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > /tmp/rx-classification.txt
+          {
+            echo '### RX — klasyfikacja automatyczna'
+            echo "Kategoria: $category"
+            echo "Nastepny krok: $action"
+            echo 'Automatyczna zmiana kodu: zablokowana do czasu potwierdzenia konkretnej reguly naprawy.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Zachowaj klasyfikacje awarii RX
+        if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-classification-${{ github.run_id }}
+          path: /tmp/rx-classification.txt
+          retention-days: 30
+          if-no-files-found: error
       - name: Zapisz historie awarii RX
         if: steps.check.outcome == 'failure' || steps.functional.outcome == 'failure' || steps.rx_tests.outcome == 'failure'
         env:
