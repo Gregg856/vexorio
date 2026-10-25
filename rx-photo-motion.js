@@ -1,7 +1,7 @@
 /* RX PhotoMotion 1.0 — local slideshow renderer, not generative AI. */
 (function(root){
 'use strict';
-async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',caption='',captionPosition='bottom',onProgress=()=>{}}){
+async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',caption='',captionPosition='bottom',audioFile=null,audioVolume=0.7,onProgress=()=>{}}){
  if(!files||!files.length)throw Error('Dodaj zdjęcia, aby utworzyć film.');
  if(!root.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error('Ta przeglądarka nie obsługuje lokalnego nagrywania wideo.');
  const mime=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9'].find(x=>MediaRecorder.isTypeSupported(x));
@@ -21,6 +21,22 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   }
   if(!loaded.length)throw Error('Nie udało się wczytać zdjęć.');
   const stream=canvas.captureStream(24),chunks=[];
+  let audioContext=null,audioSource=null;
+  if(audioFile){
+   if(!audioFile.type.startsWith('audio/'))throw Error('Wybierz plik muzyczny.');
+   if(audioFile.size>30*1024*1024)throw Error('Muzyka jest zbyt duża (maks. 30 MB).');
+   const AudioCtx=root.AudioContext||root.webkitAudioContext;
+   if(!AudioCtx)throw Error('Przeglądarka nie obsługuje miksowania audio.');
+   audioContext=new AudioCtx();
+   try{
+    const decoded=await audioContext.decodeAudioData(await audioFile.arrayBuffer());
+    const destination=audioContext.createMediaStreamDestination(),gain=audioContext.createGain();
+    gain.gain.value=Math.min(1,Math.max(0,Number(audioVolume)||0));
+    audioSource=audioContext.createBufferSource();audioSource.buffer=decoded;audioSource.loop=true;
+    audioSource.connect(gain);gain.connect(destination);
+    destination.stream.getAudioTracks().forEach(track=>stream.addTrack(track));
+   }catch(error){await audioContext.close();stream.getTracks().forEach(track=>track.stop());throw Error('Nie można odczytać muzyki: '+error.message)}
+  }
   let recorder;
   try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2500000})}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   const result=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=e=>reject(e.error||new Error('Błąd nagrywania'));recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||mime});if(!blob.size){reject(new Error('Nagranie jest puste. Spróbuj ponownie lub użyj innej przeglądarki.'));return}resolve(blob)}});
@@ -66,10 +82,11 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   }
   draw(0);
   try{recorder.start(250)}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
+  if(audioSource)audioSource.start();
   const start=performance.now();
   function frame(now){if(recorder.state==='inactive'){stopped=true;stream.getTracks().forEach(track=>track.stop());return}const t=Math.min(duration,(now-start)/1000);try{draw(t)}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;recorder.stop();stream.getTracks().forEach(track=>track.stop())}else frameId=requestAnimationFrame(frame)}
   frameId=requestAnimationFrame(frame);
-  try{return await result}finally{if(frameId)cancelAnimationFrame(frameId);if(!stopped&&recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop())}
+  try{return await result}finally{if(frameId)cancelAnimationFrame(frameId);if(!stopped&&recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());if(audioSource){try{audioSource.stop()}catch{}}if(audioContext)await audioContext.close()}
  }finally{loaded.length=0}
 }
 root.RXPhotoMotion={render,supportedTypes:()=>root.MediaRecorder?['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9'].filter(t=>MediaRecorder.isTypeSupported(t)):[]};
