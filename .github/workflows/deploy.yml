@@ -157,6 +157,20 @@ jobs:
           node tests/guard-lab.test.cjs
           node --check worker.js
 
+      - name: Diagnostyka modułów Strażaka
+        run: |
+          node - <<'NODE'
+          const {createRegistry}=require('./guard/plugin-core.cjs');
+          const registry=createRegistry();
+          registry.register({id:'health-check',description:'Local self-test',permissions:['read:status'],run:async()=>({message:'OK'})});
+          (async()=>{
+            await registry.execute('health-check',{task:'self-test'},true);
+            const reports=registry.diagnostics();
+            if(reports.length!==1||reports[0].status!=='ok'||reports[0].checks!==1)throw Error('Plugin diagnostics failed');
+            console.log('RX plugin diagnostics: PASS');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+
       - name: Strazak Developer — bezpieczny skan repozytorium
         run: |
           node guard/repository-scan.cjs
