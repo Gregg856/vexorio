@@ -27,7 +27,7 @@
    remember(command){
     if(typeof command!=='string'||command.length>500)return false;
     const value=command.trim();
-    if(!/^(sprawdź|sprawdz|przeanalizuj|oceń|ocen|napraw|popraw|dodaj|zbuduj|przetestuj|testuj|zoptymalizuj|przetłumacz|przetlumacz)(?=\\s|$)/iu.test(value))return false;
+    if(!/^(sprawdź|sprawdz|przeanalizuj|oceń|ocen|napraw|popraw|dodaj|zbuduj|przetestuj|testuj|zoptymalizuj|przetłumacz|przetlumacz)(?:[ ]|$)/iu.test(value))return false;
     last=value;return true;
    },
    lastTask(){return last;},
