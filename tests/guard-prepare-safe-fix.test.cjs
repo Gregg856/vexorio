@@ -27,7 +27,7 @@ try{
  assert.notEqual(result.status,0);
  assert.equal(fs.existsSync(path.join(dir,'index.html')),false);
  const ambiguous='guard-ambiguous.js';
- fs.writeFileSync(path.join(dir,ambiguous),'const a={rejectUnauthorized: false};\\nconst b={rejectUnauthorized: false};\\n');
+ fs.writeFileSync(path.join(dir,ambiguous),'const a={rejectUnauthorized: false};\nconst b={rejectUnauthorized: false};\n');
  result=cp.spawnSync(process.execPath,[script,ambiguous],{cwd:dir,encoding:'utf8'});
  assert.equal(result.status,0,result.stderr);
  assert.match(fs.readFileSync(path.join(dir,ambiguous),'utf8'),/rejectUnauthorized: false/);
@@ -35,7 +35,7 @@ try{
  assert.equal(report.changed,false);
  assert.equal(report.blocked,'ambiguous-or-commented-tls-setting');
  const commented='guard-commented.js';
- fs.writeFileSync(path.join(dir,commented),'// rejectUnauthorized: false\\n');
+ fs.writeFileSync(path.join(dir,commented),'// rejectUnauthorized: false\n');
  result=cp.spawnSync(process.execPath,[script,commented],{cwd:dir,encoding:'utf8'});
  assert.equal(result.status,0,result.stderr);
  report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
