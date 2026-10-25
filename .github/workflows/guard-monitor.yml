@@ -1,0 +1,35 @@
+name: RX Strazak — monitoring 24/7
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Sprawdz strone i modul RX
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://vexorio.grzegorzbub1985.workers.dev"
+          failed=0
+          for path in / /guard-lab.html /guard-chat.js /guard-plugin-core.js /guard-rx-orchestrator.js; do
+            echo "Sprawdzam $path"
+            if ! curl --fail --silent --show-error --location --retry 2 --retry-delay 3 --max-time 20 -H 'Cache-Control: no-cache' "$base$path" -o /tmp/guard-check; then
+              echo "::error::RX monitor: niedostepny $path"
+              failed=1
+            elif [ ! -s /tmp/guard-check ]; then
+              echo "::error::RX monitor: pusty plik $path"
+              failed=1
+            else
+              echo "OK: $path"
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "RX monitor: AWARIA" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "RX monitor: wszystkie 5 adresow odpowiada" >> "$GITHUB_STEP_SUMMARY"
