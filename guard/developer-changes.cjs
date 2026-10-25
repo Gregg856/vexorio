@@ -10,7 +10,11 @@ function inspectLatest({exec=cp.execFileSync,write=fs.writeFileSync}={}){
  try{
   patch=exec('git',['diff','--no-ext-diff','--no-textconv','--unified=3','HEAD^','HEAD','--','*.js','*.cjs','*.mjs','*.html'],options);
  }catch(error){
-  if(error.status===128||error.status===129)return {status:'skipped',reason:'Previous commit unavailable',readOnly:true};
+  if(error.status===128||error.status===129){
+   const report={version:'2.1',status:'skipped',reason:'Previous commit unavailable',readOnly:true,changedFiles:0,summary:{high:0,medium:0,low:0}};
+   write('guard-developer-changes.json',JSON.stringify(report,null,2)+'\n',{encoding:'utf8'});
+   return report;
+  }
   throw error;
  }
  const result=reviewDiff(patch);
