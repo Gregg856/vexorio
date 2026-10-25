@@ -46,6 +46,9 @@ assert.ok(bibi.includes('Wcześniejszy sukces nie gwarantuje usunięcia przyczyn
 assert.ok(bibi.includes("r.name==='VEXORIO checks'&&r.head_branch==='main'"),'RX BIBI must count failed production checks separately');
 assert.ok(bibi.includes('Publikacje w toku:'),'RX BIBI must show pending deployments');
 assert.ok(bibi.includes('To wyniki CI, nie pomiar dostępności strony'),'RX BIBI must not imply site uptime');
+assert.ok(bibi.includes('Błąd przygotowania strony'),'RX BIBI must distinguish preparation errors from Cloudflare deployment');
+assert.ok(bibi.includes('Sprawdź brakujące pliki, kopiowanie i kontrolę wersji'),'RX BIBI must suggest inspecting workflow preparation');
+assert.ok(bibi.includes('Ostatnie testy VEXORIO:'),'RX BIBI must show latest checks state');
 assert.ok(bibi.includes('nie oznacza to automatycznie tej samej przyczyny'),'RX BIBI must avoid falsely claiming repeated identical failures');
 assert.ok(bibi.includes('test monitoringu udany'),'RX BIBI must distinguish monitoring test success from full service health');
 assert.ok(bibi.includes('brak wyniku monitoringu w 20 ostatnich uruchomieniach'),'RX BIBI must disclose missing monitoring history');
