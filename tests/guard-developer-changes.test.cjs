@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {inspectLatest}=require('../guard/developer-changes.cjs');
+let saved=null;const patch=['diff --git a/guard-chat.js b/guard-chat.js','--- a/guard-chat.js','+++ b/guard-chat.js','@@ -1 +1 @@','-safe();','+eval(input);'].join('\n');
+const report=inspectLatest({exec:(cmd,args)=>args[0]==='rev-parse'?'0123456789abcdef':patch,write:(path,data)=>{saved={path,data};}});
+assert.equal(report.status,'ok');
+assert.equal(report.readOnly,true);
+assert.equal(report.changedFiles,1);
+assert.equal(report.summary.high,1);
+assert.equal(report.findings[0].file,'guard-chat.js');
+assert.equal(saved.path,'guard-developer-changes.json');
+assert.equal(JSON.parse(saved.data).commit,'0123456789abcdef');
+const skipped=inspectLatest({exec:()=>{const e=new Error('missing parent');e.status=128;throw e;},write:()=>{throw Error('must not write');}});
+assert.equal(skipped.status,'skipped');
+console.log('PASS: Strażak Developer 2.1 automatic read-only commit review');
