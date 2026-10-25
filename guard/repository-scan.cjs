@@ -24,12 +24,14 @@ function listFiles(root){
  }
  return [...new Set(names)].slice(0,MAX_FILES);
 }
+const GENERATED_ASSETS={'guard-plugin-core.js':'guard/plugin-core.cjs','guard-developer-inspector.js':'guard/developer-inspector.cjs'};
 function checkHtmlReferences(root,source){
  const findings=[];
  for(const match of source.matchAll(/<script\b[^>]*\bsrc=["'](\/[-\w./]+(?:\?[^"']*)?)["'][^>]*>/gi)){
   const name=match[1].split('?')[0].slice(1);
   if(name.includes('..'))continue;
-  if(!fs.existsSync(path.join(root,name))){
+  const sourcePath=GENERATED_ASSETS[name]||name;
+  if(!fs.existsSync(path.join(root,sourcePath))){
    findings.push({rule:'missing-script',severity:'high',line:source.slice(0,match.index).split('\n').length,message:'Brak lokalnego pliku skryptu: '+name});
   }
  }
@@ -57,4 +59,4 @@ if(require.main===module){
  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n',{mode:0o600});
  console.log('Strażak Developer: checked '+report.checked+' files; '+report.signals+' signals. Report: guard-developer-report.json (CI artifact only).');
 }
-module.exports={scan,FILES,listFiles,MAX_FILES};
+module.exports={scan,FILES,listFiles,MAX_FILES,checkHtmlReferences,GENERATED_ASSETS};
