@@ -210,6 +210,14 @@ jobs:
           if (checked < 2) throw new Error('Missing expected GitHub incident scripts');
           console.log('Validated ' + checked + ' GitHub incident scripts');
           NODE
+          # Check RX plugin syntax independently.
+          for plugin in guard-plugin-core.js guard-task-analyzer-plugin.js guard-changes-report-plugin.js guard-code-audit-plugin.js guard-rx-orchestrator.js; do
+            echo "RX plugin syntax: $plugin"
+            if ! node --check "$plugin"; then
+              echo "::error file=$plugin::RX plugin syntax failed"
+              exit 1
+            fi
+          done
           node --check guard-chat.js
           node --check guard-rx-categories.js
           node --check guard-rx-monitor-report.js
