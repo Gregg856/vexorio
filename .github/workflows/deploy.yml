@@ -29,6 +29,7 @@ jobs:
           cp guard-lab.html public/guard-lab.html
           cp guard-lab.js public/guard-lab.js
           cp guard-rx-conversation.js public/guard-rx-conversation.js
+          cp guard-rx-orchestrator.js public/guard-rx-orchestrator.js
           cp guard-rx-browser.js public/guard-rx-browser.js
           cp guard-install.js public/guard-install.js
           cp guard-github-panel.js guard-changes-report-plugin.js guard-tabs.js guard-chat.js guard-code-audit-plugin.js guard-commands.js guard-task-queue.js guard-engine-2.js guard-capabilities.js guard-icon.svg public/
@@ -147,6 +148,7 @@ jobs:
           node tests/guard-rx-engine.test.cjs
           node tests/guard-rx-browser.test.cjs
           node tests/guard-rx-conversation.test.cjs
+          node tests/guard-rx-orchestrator.test.cjs
           node --check guard-rx-browser.js
           grep -q 'guardRxForm' guard-lab.html
           node tests/guard-local-integration.test.cjs
