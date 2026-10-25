@@ -153,5 +153,5 @@ async function refresh(){
  }catch(error){freshness.textContent=root.children.length?'Świeżość danych: mogą być nieaktualne (nieudane odświeżenie).':'Świeżość danych: brak połączenia lub danych.';if(!root.children.length){latest.textContent='Ostatnia publikacja: nie można potwierdzić (błąd odczytu).';lastSuccess.textContent='Ostatnia udana publikacja: brak danych.';incidents.textContent='Przegląd błędów: brak danych.';}status.textContent='Nie udało się pobrać nowych danych: '+String(error.message||'nieznany błąd')+'. '+(root.children.length?'Widoczne dane mogą być nieaktualne.':'Otwórz GitHub Actions, aby sprawdzić status.');}
  finally{button.disabled=false;}
 }
-button.addEventListener('click',refresh);refresh();
+button.addEventListener('click',()=>{refresh();checkAvailability();});refresh();checkAvailability();
 </script></body></html>
