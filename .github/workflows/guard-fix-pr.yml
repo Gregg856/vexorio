@@ -270,6 +270,12 @@ jobs:
           else
             test ! -e tests/guard-autofix-smoke.test.cjs
           fi
+      - name: Reject unsupported automatic source repair
+        if: github.event_name == 'workflow_run' && steps.monitor_gate.outputs.skip != 'true' && steps.existing.outputs.skip != 'true'
+        shell: bash
+        run: |
+          echo 'RX monitor incidents are not authorized to modify source code automatically.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only validated, explicitly approved fix rules may later enable Draft PR proposals.' >> "$GITHUB_STEP_SUMMARY"
       - name: Validate deterministic fix report
         if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true && inputs.smoke_test != true
         env:
