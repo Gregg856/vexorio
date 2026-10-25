@@ -40,7 +40,7 @@ console.log('RX verified-fix parser: 5 tests passed');
 const lines = workflow.split('\n');
 let scriptCount = 0;
 for (let i = 0; i < lines.length; i++) {
-  if (!/^          script: \\|\\s*$/.test(lines[i])) continue;
+  if (!/^          script: \|\s*$/.test(lines[i])) continue;
   const block = [];
   for (let j = i + 1; j < lines.length; j++) {
     if (lines[j].trim() && !lines[j].startsWith('            ')) break;
