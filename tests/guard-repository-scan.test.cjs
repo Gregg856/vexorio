@@ -10,6 +10,11 @@ try{
  const report=scan(dir);
  assert.equal(report.readOnly,true);
  assert.equal(report.checked,FILES.length);
+ fs.writeFileSync(path.join(dir,'guard-lab.html'),'<script src="/missing-script.js" defer></script>');
+ const missingScript=scan(dir).files.find(f=>f.path==='guard-lab.html');
+ assert.ok(missingScript.findings.some(f=>f.rule==='missing-script'&&f.severity==='high'));
+ fs.writeFileSync(path.join(dir,'missing-script.js'),'const ok=1;');
+ assert.equal(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.length,0);
  fs.mkdirSync(path.join(dir,'guard'));
  fs.mkdirSync(path.join(dir,'tests'));
  fs.writeFileSync(path.join(dir,'guard','helper.cjs'),'const x=1;');
@@ -30,6 +35,6 @@ try{
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
- assert.equal(fs.readdirSync(dir).length,3,'scanner must not create files');
+ assert.equal(fs.readdirSync(dir).length,5,'scanner must not create files');
  console.log('PASS: read-only repository scanner, allowlist, missing files and detection');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
