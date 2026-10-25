@@ -1,0 +1,46 @@
+name: Strazak GitHub Worker — safe audit
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Audit scope'
+        required: true
+        type: choice
+        options:
+          - guard
+          - site
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check syntax and tests
+        run: |
+          set -eu
+          if [ "${{ inputs.scope }}" = "guard" ]; then
+            node --check guard-chat.js
+            node --check guard-code-ui.js
+            node --check guard-code-fix.js
+            node --check guard-github-panel.js
+            node tests/guard-code-fix.test.cjs
+            node tests/guard-developer-inspector.test.cjs
+          else
+            node --check worker.js
+            node --check guard-chat.js
+            node tests/search-location-regressions.test.cjs
+          fi
+      - name: Save audit report
+        if: always()
+        run: |
+          printf 'Strażak GitHub Worker — audyt tylko do odczytu\nZakres: %s\nCommit: %s\n' "${{ inputs.scope }}" "$GITHUB_SHA" > strazak-audit.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strazak-audit
+          path: strazak-audit.txt
+          retention-days: 7
