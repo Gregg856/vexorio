@@ -14,6 +14,8 @@ const {createRegistry}=require('../guard/plugin-core.cjs');
  const uncertain=registry.recommendForModel({},()=>({label:'general',confidence:0.3,needsReview:true}),'task summary');
  assert.equal(uncertain.candidates.length,0);
  assert.equal(uncertain.needsReview,true);
+ assert.throws(()=>registry.recommendForModel({},()=>({label:'general',confidence:1.5,needsReview:false}),'task summary'),/Invalid model assessment/);
+ assert.throws(()=>registry.recommendForModel({},()=>({label:'',confidence:0.9,needsReview:false}),'task summary'),/Invalid model assessment/);
  assert.equal(registry.list()[0].id,'task-summary');
  assert.equal(registry.list()[0].permissions[0],'read:task');
  assert.throws(()=>registry.register({id:'task-summary',permissions:[],run:()=>({message:'x'})}),/Invalid or duplicate/);
