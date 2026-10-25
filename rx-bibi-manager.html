@@ -115,7 +115,7 @@ async function refresh(){
     copyStatus.setAttribute('role','status');
     copyButton.addEventListener('click',async()=>{
      const lines=Array.from(priorityPanel.querySelectorAll('p')).map(node=>node.innerText.trim()).filter(Boolean);
-     const report=['RX BIBI — raport diagnostyczny',new Date().toISOString(),'Źródło: publiczne GitHub Actions, gałąź main','',...lines].join('\\n');
+     const report=['RX BIBI — raport diagnostyczny',new Date().toISOString(),'Źródło: publiczne GitHub Actions, gałąź main','',...lines].join(String.fromCharCode(10));
      try{await navigator.clipboard.writeText(report);copyStatus.textContent='Skopiowano diagnozę do schowka.';}
      catch(error){copyStatus.textContent='Nie udało się skopiować. Sprawdź uprawnienia schowka przeglądarki.';}
     });
