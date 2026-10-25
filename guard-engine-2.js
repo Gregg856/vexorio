@@ -1,11 +1,11 @@
 'use strict';
 // Guard Engine 2.0: deterministic local task analysis. No network, code execution or credentials.
 const RULES=[
- {intent:'security',risk:'high',terms:/\b(usuń|usun|kasuj|wyczyść|wyczysc|delete|drop|truncate|hasło|haslo|token|sekret|secret|production database|baza danych)\b/i},
- {intent:'deployment',risk:'high',terms:/\b(wdr[oó]ż|publikuj|deploy|release|produkcj[aeę]|cloudflare)\b/i},
- {intent:'testing',risk:'low',terms:/\b(test|testy|sprawdź|sprawdz|audyt|audit|verify)\b/i},
- {intent:'translation',risk:'low',terms:/\b(tłumacz|tlumacz|przetłumacz|przetlumacz|translation|język|jezyk|ukraiński|ukrainski)\b/i},
- {intent:'development',risk:'medium',terms:/\b(popraw|napraw|dodaj|zbuduj|kod|github|funkcj|stron|aplikacj)\w*/i}
+ {intent:'security',risk:'high',terms:/(?<![\p{L}\p{N}])(usuń|usun|kasuj|wyczyść|wyczysc|delete|drop|truncate|hasło|haslo|token|sekret|secret|production database|baza danych)(?<![\p{L}\p{N}])/iu},
+ {intent:'deployment',risk:'high',terms:/(?<![\p{L}\p{N}])(wdr[oó]ż|publikuj|deploy|release|produkcj[aeę]|cloudflare)(?<![\p{L}\p{N}])/iu},
+ {intent:'testing',risk:'low',terms:/(?<![\p{L}\p{N}])(test|testy|sprawdź|sprawdz|audyt|audit|verify)(?<![\p{L}\p{N}])/iu},
+ {intent:'translation',risk:'low',terms:/(?<![\p{L}\p{N}])(tłumacz|tlumacz|przetłumacz|przetlumacz|translation|język|jezyk|ukraiński|ukrainski)(?<![\p{L}\p{N}])/iu},
+ {intent:'development',risk:'medium',terms:/(?<![\p{L}\p{N}])(popraw|napraw|dodaj|zbuduj|kod|github|funkcj|stron|aplikacj)\w*/iu}
 ];
 function analyzeTask(value){
  if(typeof value!=='string'||!value.trim()||value.length>2000)return {ok:false,error:'Nieprawidłowe polecenie (maks. 2000 znaków).'};
