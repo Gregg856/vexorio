@@ -93,8 +93,27 @@ jobs:
           retention-days: 7
       - name: Save audit report
         if: always()
+        env:
+          AUDIT_RESULT: ${{ job.status }}
+          AUDIT_EVENT: ${{ github.event_name }}
+          AUDIT_SCOPE: ${{ inputs.scope }}
         run: |
-          printf 'Strażak GitHub Worker — audyt tylko do odczytu\nTryb: %s\nZakres: %s\nCommit: %s\n' "${{ github.event_name }}" "${{ inputs.scope }}" "$GITHUB_SHA" > strazak-audit.txt
+          set -eu
+          {
+            echo 'Strażak GitHub Worker — raport automatycznego audytu'
+            echo "Wynik: $AUDIT_RESULT"
+            echo "Tryb: $AUDIT_EVENT"
+            echo "Zakres: ${AUDIT_SCOPE:-guard}"
+            echo "Commit: $GITHUB_SHA"
+            echo "Szczegóły: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            if [ "$AUDIT_RESULT" = success ]; then
+              echo 'Rekomendacja: brak nieudanych kroków w tym uruchomieniu; nie oznacza to braku wszystkich błędów.'
+            else
+              echo 'Rekomendacja: sprawdź nieudane kroki w logach GitHub Actions przed przygotowaniem poprawki.'
+            fi
+            echo 'Zmiany w kodzie: brak. Publikacja: brak. Scalanie PR: brak.'
+          } > strazak-audit.txt
+          cat strazak-audit.txt >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
