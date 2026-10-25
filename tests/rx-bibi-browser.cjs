@@ -17,6 +17,16 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     const response = await page.goto(base + '/rx-bibi-manager.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
     record('RX BIBI HTTP', response && response.status() === 200, response && response.status());
     record('Nagłówek RX BIBI', await page.getByRole('heading', { name: /RX BIBI Manager 1\.3/ }).count() > 0);
+    const tester=page.getByRole('region',{name:'RX BIBI Tester'});
+    record('Panel RX BIBI Tester widoczny',await tester.count()===1);
+    try{
+      await tester.getByText('🧪 RX BIBI Tester 1.0').waitFor({state:'visible',timeout:15000});
+      const testerText=await tester.innerText();
+      record('Wynik RX BIBI Tester',/Ostatni test:|Test w toku|Test zakończony:/.test(testerText),testerText.slice(0,300));
+      const reportLink=tester.getByRole('link',{name:'Otwórz test i raporty'});
+      const href=await reportLink.getAttribute('href');
+      record('Link raportu RX BIBI Tester',/^https:\\/\\/github\\.com\\/Gregg856\\/vexorio\\/actions\\/runs\\/\\d+$/.test(href||''),href);
+    }catch(error){record('Odczyt panelu RX BIBI Tester',false,error.message);}
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
