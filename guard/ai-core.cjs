@@ -31,6 +31,7 @@ function predict(model,text){
  const confidence=Number(probabilities[best].toFixed(4));
  const sorted=[...probabilities].sort((a,b)=>b-a);
  const margin=Number((sorted[0]-sorted[1]).toFixed(4));
- return {label:model.labels[best],confidence,needsReview:confidence<0.65||coverage<0.5||margin<0.15,margin,coverage:Number(coverage.toFixed(4)),unknownInput:knownTokens===0};
+ const ranking=probabilities.map((p,i)=>({label:model.labels[i],confidence:Number(p.toFixed(4))})).sort((a,b)=>b.confidence-a.confidence);
+ return {label:model.labels[best],confidence,needsReview:confidence<0.65||coverage<0.5||margin<0.15,margin,coverage:Number(coverage.toFixed(4)),unknownInput:knownTokens===0,knownTokens,alternatives:ranking.slice(1)};
 }
 module.exports={train,predict,LABELS};
