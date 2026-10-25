@@ -98,6 +98,16 @@ jobs:
               fi
             done
           fi
+          # Messaging smoke test: verify inbox, conversation view and reply form.
+          # Read-only checks; never send messages or touch user conversations.
+          if [ -s /tmp/vexorio-home-check ]; then
+            for marker in 'id="accountMessagesSection"' 'id="myConversations"' 'id="chatDialog"' 'id="chatMessages"' 'id="replyForm"' 'id="replySendBtn"'; do
+              if ! grep -Fq "$marker" /tmp/vexorio-home-check; then
+                echo "::error::RX monitor: brak elementu wiadomosci: $marker"
+                failed=1
+              fi
+            done
+          fi
           # Check basic browser-visible page structure, not only HTTP availability.
           if ! curl --fail --silent --show-error --location --retry 2 --max-time 20 -H 'Cache-Control: no-cache' "$base/guard-lab.html" -o /tmp/guard-panel-check; then
             echo "::error::RX monitor: nie mozna pobrac panelu"
