@@ -6,6 +6,12 @@ const {inspectSource}=require('./developer-inspector.cjs');
 const FILES=['guard-chat.js','guard-code-ui.js','guard-commands.js','guard-engine-2.js','guard-task-analyzer-plugin.js','guard-lab.js','worker.js'];
 const DIRECTORIES=['guard','tests'];
 const MAX_FILES=150;
+const {execFileSync}=require('node:child_process');
+function checkSyntax(file){
+ if(!/\.(?:js|cjs|mjs)$/.test(file))return null;
+ try{execFileSync(process.execPath,['--check',file],{stdio:'pipe',timeout:5000,maxBuffer:65536});return null;}
+ catch(error){return {rule:'syntax-error',severity:'high',line:0,message:'Node.js syntax check failed (no execution).'};}
+}
 function listFiles(root){
  const names=[...FILES];
  for(const directory of DIRECTORIES){
@@ -26,6 +32,8 @@ function scan(root=process.cwd()){
   const source=fs.readFileSync(full,'utf8');
   if(source.length>100000){files.push({path:name,error:'too_large'});continue;}
   const result=inspectSource({path:name,source});
+  const syntax=checkSyntax(full);
+  if(syntax)result.findings.push(syntax);
   files.push({path:name,lines:result.lines,findings:result.findings});
   count+=result.findings.length;
  }
