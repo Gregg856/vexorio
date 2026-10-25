@@ -25,6 +25,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Zainstaluj bibliotekę Playwright bez pobierania przeglądarki
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --no-package-lock playwright@1.56.1
       - name: Sprawdź gotowość Chromium
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
       - name: Uruchom testy RX BIBI
