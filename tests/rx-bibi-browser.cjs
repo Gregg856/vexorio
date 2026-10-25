@@ -150,6 +150,21 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const cleared=await page.evaluate(()=>localStorage.getItem('rx-bibi-diagnoses-v1'));
       record('RX BIBI historia — skuteczne usunięcie',cleared===null&&await savedList.locator('details').count()===0&&await savedList.getByText('Usunięto lokalną historię diagnoz.').count()===1);
       record('RX BIBI historia — licznik po usunięciu',(await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).innerText()).includes('0/10'));
+      const importInput=savedList.getByLabel('Wybierz plik historii RX BIBI JSON');
+      record('RX BIBI import — pole pliku',await importInput.count()===1);
+      await importInput.setInputFiles({name:'rx-bibi-test.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exportData))});
+      await savedList.getByText('Zaimportowano historię. Zapisanych diagnoz: 2/10.').waitFor({state:'visible',timeout:10000});
+      const imported=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI import — odtworzenie z eksportu',imported.length===2&&await savedList.locator('details').count()===2);
+      await importInput.setInputFiles({name:'rx-bibi-test.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exportData))});
+      await savedList.getByText('Zaimportowano historię. Zapisanych diagnoz: 2/10.').waitFor({state:'visible',timeout:10000});
+      const deduped=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI import — bez duplikatów',deduped.length===2);
+      await importInput.setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"format":"unknown","records":[]}')});
+      await savedList.getByText(/Import odrzucony:/).waitFor({state:'visible',timeout:10000});
+      const afterInvalid=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI import — odrzuca błędny plik bez utraty historii',afterInvalid.length===2);
+
     }catch(error){record('RX BIBI raport — kopiowanie na telefonie',false,error.message);}
     const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
     const triageText=await triagePanel.innerText();
