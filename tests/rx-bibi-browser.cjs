@@ -131,6 +131,16 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('RX BIBI historia — porównanie raportów',secondHistory.length===2&&historyText.includes('2/10')&&historyText.includes('Poprzedni raport:'),historyText.slice(0,240));
       const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
       record('RX BIBI historia — trwałość zapisu lokalnego',persisted.length===2);
+      const savedList=page.getByRole('region',{name:'Zapisane diagnozy RX BIBI'});
+      record('RX BIBI historia — lista zapisanych diagnoz',await savedList.locator('details').count()===2);
+      const clearButton=savedList.getByRole('button',{name:'🗑️ Wyczyść historię diagnoz'});
+      await clearButton.click();
+      const beforeConfirm=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI historia — wymaga potwierdzenia',beforeConfirm.length===2&&await savedList.getByRole('button',{name:/Potwierdź usunięcie/}).count()===1);
+      await savedList.getByRole('button',{name:/Potwierdź usunięcie/}).click();
+      const cleared=await page.evaluate(()=>localStorage.getItem('rx-bibi-diagnoses-v1'));
+      record('RX BIBI historia — skuteczne usunięcie',cleared===null&&await savedList.locator('details').count()===0&&await savedList.getByText('Usunięto lokalną historię diagnoz.').count()===1);
+      record('RX BIBI historia — licznik po usunięciu',(await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).innerText()).includes('0/10'));
     }catch(error){record('RX BIBI raport — kopiowanie na telefonie',false,error.message);}
     const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
     const triageText=await triagePanel.innerText();
