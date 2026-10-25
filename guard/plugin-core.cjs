@@ -10,7 +10,7 @@ function createRegistry(){
   if(!Array.isArray(definition.permissions)||definition.permissions.some(p=>!ALLOWED_PERMISSIONS.has(p)))throw Error('Permission denied');
   const permissions=[...new Set(definition.permissions)];
   const plugin=Object.freeze({id:definition.id,description:String(definition.description||'').slice(0,200),permissions:Object.freeze(permissions),run:definition.run});
-  plugins.set(plugin.id,plugin);health.set(plugin.id,{checks:0,failures:0,lastError:null});return plugin.id;
+  plugins.set(plugin.id,plugin);health.set(plugin.id,{checks:0,failures:0,lastError:null,requiresVerification:false});return plugin.id;
  }
  function list(){return [...plugins.values()].map(({id,description,permissions})=>({id,description,permissions:[...permissions]}));}
  async function execute(id,request,approved=false){
@@ -24,6 +24,7 @@ function createRegistry(){
    const result=await plugin.run(input);
    if(!result||typeof result!=='object'||typeof result.message!=='string')throw Error('Invalid plugin result');
    stats.lastError=null;
+   stats.requiresVerification=false;
    return Object.freeze({plugin:id,message:result.message.slice(0,4000)});
   }catch(error){
    stats.failures++;
@@ -35,7 +36,7 @@ function createRegistry(){
  function recommend(task,requiredPermission='read:task'){
   if(typeof task!=='string'||task.length>2000||!ALLOWED_PERMISSIONS.has(requiredPermission))throw Error('Invalid recommendation request');
   const tokens=new Set((task.toLocaleLowerCase('pl').match(/[\p{L}\p{N}]+/gu)||[]).filter(word=>word.length>2));
-  return list().filter(plugin=>plugin.permissions.includes(requiredPermission)&&!health.get(plugin.id).lastError).map(plugin=>{
+  return list().filter(plugin=>plugin.permissions.includes(requiredPermission)&&!health.get(plugin.id).lastError&&!health.get(plugin.id).requiresVerification).map(plugin=>{
    const terms=new Set(((plugin.id+' '+plugin.description).toLocaleLowerCase('pl').match(/[\p{L}\p{N}]+/gu)||[]).filter(word=>word.length>2));
    const matches=[...tokens].filter(word=>terms.has(word));
    return {id:plugin.id,score:matches.length,matches,requiresApproval:true};
@@ -53,12 +54,13 @@ function createRegistry(){
   if(approved!==true)throw Error('Explicit approval required');
   const stats=health.get(id);
   stats.lastError=null;
+  stats.requiresVerification=true;
   return Object.freeze({id,status:'not-tested',checks:stats.checks,failures:stats.failures,requiresVerification:true});
  }
  function diagnostics(){
   return list().map(plugin=>{
    const stats=health.get(plugin.id);
-   return {id:plugin.id,status:stats.lastError?'error':stats.checks?'ok':'not-tested',checks:stats.checks,failures:stats.failures,lastError:stats.lastError};
+   return {id:plugin.id,status:stats.lastError?'error':stats.requiresVerification?'not-tested':stats.checks?'ok':'not-tested',checks:stats.checks,failures:stats.failures,lastError:stats.lastError};
   });
  }
  return Object.freeze({register,list,recommend,recommendForModel,execute,resetHealth,diagnostics});
