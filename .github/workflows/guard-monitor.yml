@@ -180,6 +180,7 @@ jobs:
           node tests/guard-rx-empty-result-regression.test.cjs
           node tests/guard-chat.test.cjs
           node tests/guard-rx-orchestrator.test.cjs
+          node tests/guard-rx-verified-fixes.test.cjs
       - name: Raport diagnostyczny RX
         if: always()
         env:
