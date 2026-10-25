@@ -76,7 +76,7 @@
    append('Strażak',installed.length?'Nasze aktywne moduły ('+installed.length+'):\n'+installed.map(p=>'• '+p.id+' — '+p.description+' ['+p.permissions.join(', ')+']').join('\n')+'\nWtyczki działają lokalnie, tylko w zakresie przyznanych uprawnień.':'Nie znaleziono aktywnych modułów.');
    return;
   }
-  if(/^wtyczka\s*:/i.test(command)){
+  if(/^wtyczka\s*:/i.test(command) || command.toLocaleLowerCase('pl').startsWith('wtyczka:')){
    if(!plugins){append('Strażak','Rejestr wtyczek jest niedostępny.');return;}
    const id=command.slice(command.indexOf(':')+1).trim().toLowerCase();
    const plugin=plugins.list().find(p=>p.id===id);
