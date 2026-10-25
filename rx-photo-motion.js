@@ -1,7 +1,7 @@
 /* RX PhotoMotion 1.0 — local slideshow renderer, not generative AI. */
 (function(root){
 'use strict';
-async function render({files,duration=5,ratio='9:16',motion='zoom',onProgress=()=>{}}){
+async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',onProgress=()=>{}}){
  if(!files||!files.length)throw Error('Dodaj zdjęcia, aby utworzyć film.');
  if(!root.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error('Ta przeglądarka nie obsługuje lokalnego nagrywania wideo.');
  const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));
@@ -33,6 +33,17 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',onProgress=()
    const w=img.width*baseScale*factor,h=img.height*baseScale*factor;
    const pan=motion==='pan'?(progress-.5)*Math.max(0,w-width)*0.7:0;
    ctx.drawImage(img,(width-w)/2-pan,(height-h)/2,w,h);
+   if(transition==='fade'&&loaded.length>1){
+    const fade=Math.min(0.35,1/loaded.length);
+    if(progress>1-fade&&index<loaded.length-1){
+     const other=loaded[index+1],alpha=(progress-(1-fade))/fade;
+     const nextScale=Math.max(width/other.width,height/other.height);
+     const nextW=other.width*nextScale,nextH=other.height*nextScale;
+     ctx.globalAlpha=Math.max(0,Math.min(1,alpha));
+     ctx.drawImage(other,(width-nextW)/2,(height-nextH)/2,nextW,nextH);
+     ctx.globalAlpha=1;
+    }
+   }
    onProgress(Math.round(t/duration*100));
   }
   draw(0);recorder.start(250);
