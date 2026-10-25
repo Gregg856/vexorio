@@ -36,6 +36,16 @@
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
+  if(/^diff\s*:/i.test(command)){
+   const patch=command.slice(command.indexOf(':')+1).trim();
+   if(!window.GuardDeveloperDiff){append('Strażak','Analiza zmian jest chwilowo niedostępna.');return;}
+   try{
+    const report=window.GuardDeveloperDiff.reviewDiff(patch);
+    const summary='Sprawdzono '+report.changedFiles+' plik(ów). Sygnały: wysokie '+report.summary.high+', średnie '+report.summary.medium+', niskie '+report.summary.low+'.';
+    append('Strażak Developer 2.0',summary+(report.findings.length?'\n'+report.findings.slice(0,15).map(f=>f.file+':'+f.line+' ['+f.severity+'] '+f.rule+' — '+f.advice).join('\n'):'\nBrak sygnałów według dostępnych reguł. To nie gwarantuje bezpieczeństwa.'));
+   }catch(_){append('Strażak','Nie udało się odczytać diff. Wklej tekst w formacie Git unified diff, maksymalnie 200 KB.');}
+   return;
+  }
   if(/^kod\s*:/i.test(command)){
    const code=command.slice(command.indexOf(':')+1).trim();
    if(!code){append('Strażak','Po „kod:” wklej fragment kodu. Dłuższy kod możesz wkleić w formularzu poniżej.');return;}
