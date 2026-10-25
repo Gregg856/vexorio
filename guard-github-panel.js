@@ -141,6 +141,30 @@
    finally{fixButton.disabled=false;}
   });
  }
+ const prButton=document.getElementById('guardDraftPrStatusButton');
+ const prOutput=document.getElementById('guardDraftPrStatusResult');
+ if(prButton&&prOutput)prButton.addEventListener('click',async()=>{
+  prButton.disabled=true;prOutput.textContent='Sprawdzam robocze PR Strażaka…';
+  try{
+   const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/pulls?state=open&per_page=100',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+   if(!response.ok)throw Error('GitHub unavailable');
+   const data=await response.json();
+   if(!Array.isArray(data))throw Error('Invalid response');
+   const matches=data.filter(pr=>pr&&pr.draft===true&&pr.head&&typeof pr.head.ref==='string'&&pr.head.ref.startsWith('strazak/safe-fix-'));
+   const rows=['Otwarte robocze PR Strażaka: '+matches.length];
+   for(const pr of matches.slice(0,10)){
+    const number=Number.isSafeInteger(pr.number)?pr.number:'?';
+    const title=String(pr.title||'Bez tytułu').slice(0,100);
+    const link=typeof pr.html_url==='string'&&pr.html_url.startsWith('https://github.com/Gregg856/vexorio/pull/')?pr.html_url:'';
+    rows.push('#'+number+' — '+title+'\n'+link);
+   }
+   if(!matches.length)rows.push('Nie ma otwartych roboczych PR z automatycznego generatora.');
+   if(matches.length>10)rows.push('Pozostałe PR sprawdź w GitHub.');
+   rows.push('Stan tylko do odczytu. Żadne PR nie zostały scalone.');
+   prOutput.textContent=rows.join('\n\n');
+  }catch(_){prOutput.textContent='Nie udało się odczytać listy PR. Sprawdź dostęp do GitHub lub limit API.';}
+  finally{prButton.disabled=false;}
+ });
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
