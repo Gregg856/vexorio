@@ -6,8 +6,8 @@ function parseConfirmedFixes(markdown){
  if(typeof markdown!=='string'||markdown.length>200000)throw Error('Invalid fixes document');
  const entries=[];
  const sections=markdown.split(/^### RX-FIX-(\d{4})\s+—\s+/m);
- for(let i=1;i+2<sections.length;i+=3){
-  const id='RX-FIX-'+sections[i],body=sections[i+2];
+ for(let i=1;i+1<sections.length;i+=2){
+  const id='RX-FIX-'+sections[i],body=sections[i+1];
   const title=body.split(/\r?\n/,1)[0].trim();
   const field=(name)=>{const match=body.match(new RegExp('^\\- \\*\\*'+name+'\\*\\*:\\s*(.*)$','m'));return match?match[1].trim():'';};
   const status=field('Status'),fingerprint=field('Odcisk awarii \\(RX-FINGERPRINT\\)');
