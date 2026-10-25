@@ -69,6 +69,14 @@ async function refresh(){
   if(monitorFailed)incidents.append(el('p','bad','Sprawdź ostatni nieudany test monitoringu RX Strażak.'));
   if(priority==='NIEPEŁNE DANE')incidents.append(el('p','wait','Nie wszystkie najnowsze wyniki są widoczne w pobranej historii; brak alarmu nie oznacza potwierdzonego bezpieczeństwa.'));
   if(priority==='BRAK NOWYCH ALARMÓW')incidents.append(el('p','meta','Ostatnie widoczne wyniki są udane; to nie jest potwierdzenie dostępności strony.'));
+  const failedRuns=data.workflow_runs.filter(r=>r.head_branch==='main'&&r.status==='completed'&&r.conclusion==='failure'&&['Deploy VEXORIO','VEXORIO checks','RX Strazak — monitoring 24/7','RX Strażak — monitoring 24/7'].includes(r.name));
+  const groupedFailures=new Map();
+  for(const run of failedRuns){const key=String(run.head_sha||'').trim()||'run-'+String(run.id);if(!groupedFailures.has(key))groupedFailures.set(key,[]);groupedFailures.get(key).push(run);}
+  const recentGroups=[...groupedFailures.entries()].sort((a,b)=>Math.max(...b[1].map(r=>timestamp(r.created_at)))-Math.max(...a[1].map(r=>timestamp(r.created_at)))).slice(0,5);
+  incidents.append(el('p','meta','Wspólny raport: '+failedRuns.length+' nieudanych uruchomień w '+groupedFailures.size+' grupach wg commitu (nie oznacza to liczby niezależnych awarii).'));
+  for(const [sha,group] of recentGroups){const names=[...new Set(group.map(r=>r.name==='Deploy VEXORIO'?'Publikacja':r.name==='VEXORIO checks'?'Testy':'Strażak'))];incidents.append(el('p','meta','Commit '+sha.slice(0,8)+' · '+names.join(' + ')+' · '+group.length+' nieudanych uruchomień'));}
+  if(recentGroups.length===0)incidents.append(el('p','meta','Brak nieudanych uruchomień w aktualnie pobranej historii.'));
+  incidents.append(el('p','meta','Grupowanie po commicie ułatwia przegląd, ale nie potwierdza wspólnej przyczyny błędów.'));
   incidents.append(el('p','meta','Ostatnie testy VEXORIO: '+(!latestCheck?'brak danych':latestCheck.status!=='completed'?'w toku':latestCheck.conclusion==='success'?'udane':latestCheck.conclusion==='failure'?'nieudane':'wymagają sprawdzenia')));
   incidents.append(el('p',unresolved.length?'bad':'ok','Nieudane publikacje po ostatnim sukcesie: '+unresolved.length));
   incidents.append(el('p','meta','Wcześniejsze nieudane publikacje: '+olderFailures+' · Nieudane testy VEXORIO: '+failedChecks.length+' · Publikacje w toku: '+pendingDeploys));
