@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const html=fs.readFileSync('guard-lab.html','utf8');
+for(const id of ['guardCodeForm','guardCodePath','guardCodeSource','guardCodeResult'])assert.ok(html.includes('id="'+id+'"'),id);
+for(const src of ['/guard-developer-inspector.js','/guard-code-ui.js'])assert.ok(html.includes('src="'+src+'"'),src);
+for(const file of ['guard-code-ui.js','guard-chat.js','guard/developer-inspector.cjs'])new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});
+assert.match(fs.readFileSync('guard-chat.js','utf8'),/kod\\s\*:/);
+assert.match(fs.readFileSync('.github/workflows/deploy.yml','utf8'),/public\/guard-developer-inspector\.js/);
+console.log('PASS: Strażak Developer chat and UI assets linked and syntactically valid');
