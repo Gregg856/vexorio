@@ -1,0 +1,57 @@
+name: RX Strazak — kontrolowany test bramek
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/guard-safety-test.yml'
+      - '.github/workflows/guard-fix-pr.yml'
+      - '.github/workflows/guard-monitor.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safety-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test bezpiecznych decyzji RX
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const fix=fs.readFileSync('.github/workflows/guard-fix-pr.yml','utf8');
+          const monitor=fs.readFileSync('.github/workflows/guard-monitor.yml','utf8');
+          const required=[
+            "github.event.workflow_run.conclusion == 'failure'",
+            "github.event.workflow_run.head_branch == 'main'",
+            "github.event.workflow_run.head_repository.full_name == github.repository",
+            "report.automatic_patch_allowed===false",
+            "core.setOutput('skip','true')",
+            "report.monitor_run.endsWith('/actions/runs/'+runId)",
+            "report.failed_stages.every"
+          ];
+          for(const gate of required)assert.ok(fix.includes(gate),'Brak bramki: '+gate);
+          assert.ok(monitor.includes("automatic_patch_allowed: false"),'Monitor nie blokuje patchowania');
+          assert.ok(monitor.includes('rx-classification.json'),'Brak raportu JSON');
+          const knownActions={infrastructure:'retry_checkout',public_availability:'verify_deploy',regression:'inspect_test_logs',unknown:'manual_review'};
+          function valid(r,id){
+            return !!r&&r.schema_version===1&&Object.prototype.hasOwnProperty.call(knownActions,r.category)
+              &&r.recommended_action===knownActions[r.category]&&Array.isArray(r.failed_stages)
+              &&r.failed_stages.length>0&&r.failed_stages.every(x=>['public','checkout','tests'].includes(x))
+              &&r.automatic_patch_allowed===false&&typeof r.monitor_run==='string'
+              &&r.monitor_run.endsWith('/actions/runs/'+id);
+          }
+          const good={schema_version:1,category:'regression',recommended_action:'inspect_test_logs',failed_stages:['tests'],automatic_patch_allowed:false,monitor_run:'https://github.com/Gregg856/vexorio/actions/runs/123'};
+          assert.equal(valid(good,123),true);
+          for(const mutation of [
+            {category:'untrusted'},{recommended_action:'retry_checkout'},{failed_stages:[]},
+            {failed_stages:['untrusted']},{automatic_patch_allowed:true},
+            {monitor_run:'https://example.com/actions/runs/456'},{schema_version:2}
+          ])assert.equal(valid({...good,...mutation},123),false,JSON.stringify(mutation));
+          console.log('RX PASS: bramki, poprawny raport i 7 scenariuszy odmowy');
+          NODE
+          echo '### RX: test kontrolowany zakonczony' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Bez zmian w portalu, bez tworzenia PR, bez symulowania prawdziwej awarii.' >> "$GITHUB_STEP_SUMMARY"
