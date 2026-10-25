@@ -178,6 +178,9 @@ jobs:
           console.log('PASS: RX diagnostics structure, copy formatting and refresh');
           NODE
 
+      - name: Test regresji pustych wynikow RX
+        run: node tests/guard-rx-empty-result-regression.test.cjs
+
       - name: Test trzech wtyczek RX Strażak
         run: node tests/guard-rx-plugin-health.test.cjs
 
