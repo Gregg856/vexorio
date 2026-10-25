@@ -17,7 +17,7 @@ async function refresh(){
   const data=await response.json();
   if(!Array.isArray(data.workflow_runs))throw Error('Nieprawidłowa odpowiedź GitHub API');
   root.replaceChildren();summary.replaceChildren();latest.textContent='Ostatnia publikacja: sprawdzanie…';
-  const runs=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||String(r.name).includes('RX Strazak')).slice(0,12);
+  const runs=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||String(r.name).includes('RX Strazak')).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,12);
   const deployments=(Array.isArray(data.workflow_runs)?data.workflow_runs:[]).filter(r=>r.name==='Deploy VEXORIO'&&r.head_branch==='main').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   const current=deployments[0];latest.replaceChildren();
   if(current){const state=current.status!=='completed'?'w toku':current.conclusion==='success'?'udana':current.conclusion==='failure'?'nieudana':'wymaga sprawdzenia';const cls=state==='udana'?'ok':state==='nieudana'?'bad':'wait';latest.append(el('strong','','Ostatnia publikacja VEXORIO: '),el('strong',cls,state));latest.append(el('p','meta','Commit: '+String(current.head_sha||'brak').slice(0,8)+' · '+(current.created_at?new Date(current.created_at).toLocaleString('pl-PL'):'brak daty')));if(typeof current.html_url==='string'&&current.html_url.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')){const a=el('a','','Szczegóły ostatniej publikacji');a.href=current.html_url;a.rel='noopener noreferrer';a.target='_blank';latest.append(a);}}
