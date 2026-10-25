@@ -45,6 +45,10 @@ assert.ok(bibi.includes('id="alerts"'),'RX BIBI 1.3 must have a dedicated alert 
 assert.ok(bibi.includes('id="availability"'),'RX BIBI must show separate HTTP availability panel');
 assert.ok(bibi.includes('async function checkAvailability()'),'RX BIBI must independently probe HTTP availability');
 assert.ok(bibi.includes('checkId!==availabilityCheckId'),'HTTP availability must ignore stale overlapping probe results');
+assert.ok(bibi.includes('if(availabilityController)availabilityController.abort()'),'New HTTP probe must cancel previous probe');
+assert.ok(bibi.includes('githubTimeout=setTimeout(()=>githubController.abort(),12000)'),'GitHub API must have a 12 second timeout');
+assert.ok(bibi.includes('signal:githubController.signal'),'GitHub fetch must support cancellation');
+assert.ok(bibi.includes('clearTimeout(githubTimeout);button.disabled=false;'),'GitHub timeout and refresh lock must be released');
 assert.ok(bibi.includes("const nonSuccess=[current,latestCheck,monitor].some"),'Cancelled or ambiguous completed checks must not show healthy priority');
 assert.ok(bibi.includes("monitorStale||nonSuccess?'NIEPEŁNE DANE'"),'Incomplete result must have non-green priority');
 assert.ok(bibi.includes("const monitoring=data.workflow_runs.filter(r=>r.head_branch==='main'"),'Monitoring must filter production branch');
