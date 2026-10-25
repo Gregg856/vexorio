@@ -52,6 +52,9 @@ assert.ok(bibi.includes('Bieżące nieudane przebiegi w raporcie:'),'RX BIBI mus
 assert.ok(bibi.includes('Historyczne nieudane przebiegi:'),'RX BIBI must distinguish historical failures');
 assert.ok(bibi.includes('Anulowane publikacje:'),'RX BIBI must report cancellations separately');
 assert.ok(bibi.includes("monitor&&monitor.status!=='completed'"),'RX BIBI must include pending monitoring in in-progress priority');
+assert.ok(bibi.includes('const monitorStale=!monitorUpdated||Date.now()-monitorUpdated>24*3600000'),'RX BIBI must detect stale monitoring before declaring healthy status');
+assert.ok(bibi.includes('monitorStale?\'NIEPEŁNE DANE\''),'RX BIBI must not show healthy status for stale monitoring');
+assert.ok(bibi.includes('monitoring Strażaka ma ponad 24 godziny'),'RX BIBI must explain stale data');
 assert.ok(bibi.includes('Nie potwierdzamy jeszcze wyniku ani usunięcia wcześniejszych problemów'),'RX BIBI must avoid claiming recovery during pending workflows');
 assert.ok(bibi.includes("r.conclusion==='cancelled'"),'RX BIBI must detect cancelled deployments');
 assert.ok(bibi.includes('anulowanie nie oznacza automatycznie błędu'),'RX BIBI must not treat cancellation as failure');
