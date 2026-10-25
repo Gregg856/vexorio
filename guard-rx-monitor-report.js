@@ -63,7 +63,12 @@
    detail.textContent='Uruchomienie #'+run.run_number+' · '+new Date(run.created_at).toLocaleString('pl-PL')+' · commit '+String(run.head_sha||'').slice(0,7);
    latest.href=run.html_url||link;
    latest.textContent='Otwórz raport tego uruchomienia';
-   if(outcome==='success')advice.textContent='Brak błędu w ostatnim przebiegu. To wynik monitoringu, nie pełny audyt zalogowanych funkcji.';
+   const ageHours=(Date.now()-Date.parse(run.created_at||''))/3600000;
+   if(Number.isFinite(ageHours)&&ageHours>2&&outcome==='success'){
+    status.textContent='UWAGA — ostatnia kontrola jest nieaktualna';
+    advice.textContent='Priorytet: ŚREDNI — ostatnia zielona kontrola ma ponad 2 godziny. Sprawdź harmonogram monitoringu i najnowsze uruchomienia GitHub Actions.';
+   }
+   else if(outcome==='success')advice.textContent='Brak błędu w ostatnim przebiegu. To wynik monitoringu, nie pełny audyt zalogowanych funkcji.';
    else if(outcome==='failure')advice.textContent='Priorytet: WYSOKI — otwórz raport i sprawdź pierwszy niezaliczony krok oraz jego log. Jeśli padły testy Node, sprawdź wskazany plik i linię; jeśli kontrola produkcji, sprawdź dostępność zasobów i wdrożenie. Nie wdrażaj poprawek bez potwierdzenia przyczyny.';
    else advice.textContent='Poczekaj na zakończenie lub sprawdź szczegóły w GitHub Actions.';
   }catch(error){
