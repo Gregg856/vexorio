@@ -39,6 +39,13 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const href=await reportLink.getAttribute('href');
       record('Link raportu RX BIBI Tester',typeof href==='string'&&href.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')&&Number.isSafeInteger(Number(href.split('/').pop()))&&Number(href.split('/').pop())>0,href);
     }catch(error){record('Odczyt panelu RX BIBI Tester',false,error.message);}
+    const toolCenter=page.getByRole('region',{name:'Centrum narzędzi RX'});
+    record('Centrum narzędzi RX na telefonie',await toolCenter.count()===1);
+    const incidentPanel=page.getByRole('region',{name:'Automatyczny rejestr awarii'});
+    record('Rejestr awarii na telefonie',await incidentPanel.count()===1);
+    record('Historia napraw na telefonie',await page.getByRole('region',{name:'Historia rozwiązanych problemów'}).count()===1);
+    const mobileLinks=await toolCenter.getByRole('link').count();
+    record('Nawigacja narzędzi RX',mobileLinks>=4,'Liczba linków: '+mobileLinks);
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
