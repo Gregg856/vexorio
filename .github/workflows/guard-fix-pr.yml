@@ -70,7 +70,7 @@ jobs:
             core.setOutput('skip',active?'true':'false');
             if(active)core.notice('Existing RX draft PR: skip duplicate automatic proposal');
       - name: Checkout RX sources
-        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true && inputs.dry_run != true
+        if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && inputs.dry_run != true
         uses: actions/checkout@v4
         with:
           persist-credentials: false
