@@ -60,7 +60,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const downloadPromise=page.waitForEvent('download',{timeout:10000});
       await exportButton.click();
       const download=await downloadPromise;
-      record('RX BIBI 1.7 nazwa pliku JSON',/^rx-bibi-raport-\\d{4}-\\d{2}-\\d{2}\\.json$/.test(download.suggestedFilename()),download.suggestedFilename());
+      record('RX BIBI 1.7 nazwa pliku JSON',/^rx-bibi-raport-\d{4}-\d{2}-\d{2}\.json$/.test(download.suggestedFilename()),download.suggestedFilename());
       const exportShape=await page.evaluate(()=>({format:exportSnapshot?.format,hasSummary:!!exportSnapshot?.summary,hasRuns:Array.isArray(exportSnapshot?.runs),hasSecrets:JSON.stringify(exportSnapshot||{}).includes('access_token')}));
       record('RX BIBI 1.7 format danych',exportShape.format==='RX BIBI 1.7'&&exportShape.hasSummary&&exportShape.hasRuns&&!exportShape.hasSecrets,JSON.stringify(exportShape));
     }catch(error){record('RX BIBI 1.7 pobranie raportu',false,error.message);}
