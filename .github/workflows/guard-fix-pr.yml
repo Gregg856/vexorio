@@ -266,8 +266,23 @@ jobs:
           else
             test ! -e tests/guard-autofix-smoke.test.cjs
           fi
-      - name: Create draft pull request (never merge)
+      - name: Check whether a real patch exists
+        id: patch_ready
         if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.smoke_test }}" = "true" ]; then
+            test -f tests/guard-autofix-smoke.test.cjs
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet -- "$RX_TARGET"; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo 'RX: no source change needed; no empty PR created.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create draft pull request (never merge)
+        if: steps.patch_ready.outputs.ready == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
