@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {assessDeployment}=require('../guard/rx-bibi-manager.cjs');
+const {assessDeployment,summarizeIncidents}=require('../guard/rx-bibi-manager.cjs');
 assert.deepEqual(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'success'}),{status:'healthy',category:'published',retryRecommended:false,requiresApproval:true,action:'none'});
 const failure=assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',errorCode:'10013'});
 assert.equal(failure.action,'propose-retry');
@@ -12,6 +12,17 @@ assert.equal(assessDeployment({provider:'cloudflare',workflowStatus:'in_progress
 assert.equal(assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'cancelled'}).action,'review');
 assert.throws(()=>assessDeployment({provider:'cloudflare',workflowStatus:'completed',conclusion:'failure',attempt:0}),/Invalid deployment/);
 assert.throws(()=>assessDeployment({provider:'cloudflare',workflowStatus:'in_progress',conclusion:'success'}),/Invalid deployment/);
+const incidentSummary=summarizeIncidents([
+ {status:'completed',conclusion:'success'},
+ {status:'completed',conclusion:'failure',html_url:'https://github.com/Gregg856/vexorio/actions/runs/123'},
+ {status:'in_progress'},
+ {status:'completed',conclusion:'cancelled'}
+]);
+assert.equal(incidentSummary.total,4);
+assert.deepEqual(incidentSummary.counts,{success:1,failure:1,pending:1,other:1});
+assert.equal(incidentSummary.failures[0].reason,'unconfirmed');
+assert.equal(incidentSummary.failures[0].url,'https://github.com/Gregg856/vexorio/actions/runs/123');
+assert.throws(()=>summarizeIncidents([null]),/Invalid run/);
 const fs=require('node:fs');
 const strazak=fs.readFileSync('guard-lab.html','utf8');
 const bibi=fs.readFileSync('rx-bibi-manager.html','utf8');
