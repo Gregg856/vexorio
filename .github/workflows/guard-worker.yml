@@ -50,8 +50,10 @@ jobs:
             node --check guard-chat.js
             node --check guard-code-ui.js
             node --check guard-code-fix.js
+            node --check guard-patch-preview.js
             node --check guard-github-panel.js
             node tests/guard-code-fix.test.cjs
+            node tests/guard-patch-preview.test.cjs
             node tests/guard-developer-inspector.test.cjs
           else
             node --check worker.js
