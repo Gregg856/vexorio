@@ -30,7 +30,7 @@ try{
  assert.ok(names.includes('tests/example.test.cjs'));
  assert.ok(!names.includes('guard/ignored.txt'));
  assert.ok(!names.includes('guard/nested/skip.js'));
- assert.equal(scan(dir).checked,FILES.length+2);
+ assert.equal(scan(dir).checked,FILES.length+4);
  fs.writeFileSync(path.join(dir,'guard','broken.js'),'function ( {');
  const syntaxReport=scan(dir);
  assert.ok(syntaxReport.files.find(f=>f.path==='guard/broken.js').findings.some(f=>f.rule==='syntax-error'&&f.severity==='high'));
