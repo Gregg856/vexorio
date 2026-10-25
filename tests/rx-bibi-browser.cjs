@@ -103,6 +103,17 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     const streakMessages=await incidentPanel.locator('p').filter({hasText:'RX BIBI 2.0 ·'}).allTextContents();
     const invalidStreaks=streakMessages.filter(s=>!/RX BIBI 2\\.0 · (ALARM: co najmniej 3 kolejne nieudane przebiegi|UWAGA: 2 kolejne nieudane przebiegi|Ostatni zakończony przebieg nieudany|Brak bieżącej serii kolejnych awarii)/.test(s)||!s.includes('to nie jest dowód wspólnej przyczyny'));
     record('RX BIBI 2.0 komunikaty serii awarii',invalidStreaks.length===0,'Sprawdzone: '+streakMessages.length+', błędne: '+invalidStreaks.length);
+    const priorityPanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
+    record('RX BIBI 2.0 panel alarmów widoczny',await priorityPanel.count()===1);
+    try{
+      await priorityPanel.getByText('🛡️ RX BIBI 2.0 — najważniejsze alarmy').waitFor({state:'visible',timeout:15000});
+      const priorityText=await priorityPanel.innerText();
+      record('RX BIBI 2.0 aktualny stan workflow',/Aktualnie nieudane workflow:|Brak potwierdzonych aktualnych awarii|Brak aktualnych awarii w dostępnej próbce/.test(priorityText),priorityText.slice(0,350));
+      record('RX BIBI 2.0 ograniczenie próbki',priorityText.includes('Dotyczy tylko ostatnich pobranych przebiegów na main.'));
+      const brokenCount=(priorityText.match(/Otwórz wynik/g)||[]).length;
+      const links=await priorityPanel.getByRole('link',{name:'Otwórz wynik'}).count();
+      record('RX BIBI 2.0 linki do awarii',brokenCount===links,'Linki: '+links);
+    }catch(error){record('RX BIBI 2.0 test panelu alarmów',false,error.message);}
     const diagnosticPlans=incidentPanel.locator('p').filter({hasText:'RX BIBI 1.5 · Plan diagnostyczny:'});
     const planCount=await diagnosticPlans.count();
     const incidentPriorities=await incidentPanel.locator('p').filter({hasText:'RX BIBI 1.4 ·'}).count();
