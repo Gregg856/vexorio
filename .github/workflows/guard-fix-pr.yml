@@ -128,7 +128,13 @@ jobs:
                 if(name==='rx-classification.json'&&size>0&&size<65536){
                   const compressed=bytes.subarray(start,start+size);
                   const data=method===8?zlib.inflateRawSync(compressed):method===0?compressed:null;
-                  if(data)report=JSON.parse(data.toString('utf8'));
+                  if(data){
+                    try {
+                      report=JSON.parse(data.toString('utf8'));
+                    } catch(error) {
+                      core.warning('RX: niepoprawny JSON klasyfikacji: '+error.message);
+                    }
+                  }
                   break;
                 }
               }
