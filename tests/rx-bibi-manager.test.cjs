@@ -15,7 +15,7 @@ assert.throws(()=>assessDeployment({provider:'cloudflare',workflowStatus:'in_pro
 const fs=require('node:fs');
 const strazak=fs.readFileSync('guard-lab.html','utf8');
 const bibi=fs.readFileSync('rx-bibi-manager.html','utf8');
-assert.match(strazak,/href="\\/rx-bibi-manager\\.html"/,'Strażak must link to RX BIBI');
-assert.match(bibi,/href="\\/guard-lab\\.html"/,'RX BIBI must link to Strażak');
-assert.match(bibi,/href="https:\\/\\/github\\.com\\/Gregg856\\/vexorio\\/actions"/,'RX BIBI must link to GitHub Actions');
+assert.ok(strazak.includes('href="/rx-bibi-manager.html"'),'Strażak must link to RX BIBI');
+assert.ok(bibi.includes('href="/guard-lab.html"'),'RX BIBI must link to Strażak');
+assert.ok(bibi.includes('https://github.com/Gregg856/vexorio/actions'),'RX BIBI must link to GitHub Actions');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
