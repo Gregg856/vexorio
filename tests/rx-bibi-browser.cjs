@@ -200,13 +200,13 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX Strażak — trzy zakładki',await guardTabs.count()===3);
     const devTab=guard.getByRole('tab',{name:/Developer/});
     await devTab.click();
-    record('RX Strażak — Developer otwiera panel',await devTab.getAttribute('aria-selected')==='true'&&await guard.getByRole('tabpanel',{name:/Strażak Developer/}).isVisible());
+    record('RX Strażak — Developer otwiera panel',await devTab.getAttribute('aria-selected')==='true'&&await guard.locator('#guardPanelDeveloper').isVisible());
     const moderationTab=guard.getByRole('tab',{name:/Moderacja/});
     await moderationTab.click();
     record('RX Strażak — Moderacja otwiera panel',await moderationTab.getAttribute('aria-selected')==='true'&&await guard.locator('#guardPanelModeration').isVisible());
     const chatTab=guard.getByRole('tab',{name:/Czat/});
     await chatTab.click();
-    record('RX Strażak — powrót do czatu',await chatTab.getAttribute('aria-selected')==='true'&&await guard.getByRole('tabpanel',{name:'Czat Strażaka'}).isVisible());
+    record('RX Strażak — powrót do czatu',await chatTab.getAttribute('aria-selected')==='true'&&await guard.locator('#guardPanelChat').isVisible());
     const chatInput=guard.getByRole('textbox',{name:'Wpisz polecenie'});
     await chatInput.fill('pomoc');
     await guard.locator('#guardChatForm').getByRole('button',{name:'Wyślij'}).click();
