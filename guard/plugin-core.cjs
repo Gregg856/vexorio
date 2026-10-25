@@ -41,13 +41,20 @@ function createRegistry(){
    return {id:plugin.id,score:matches.length,matches,requiresApproval:true};
   }).filter(item=>item.score>0).sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
  }
+ function recommendForModel(model,predict,task,requiredPermission='read:task'){
+  if(typeof predict!=='function')throw Error('Invalid model predictor');
+  const assessment=predict(model,task);
+  if(!assessment||typeof assessment!=='object'||typeof assessment.needsReview!=='boolean'||typeof assessment.confidence!=='number'||!Number.isFinite(assessment.confidence))throw Error('Invalid model assessment');
+  const candidates=recommend(task,requiredPermission);
+  return Object.freeze({intent:assessment.label,confidence:assessment.confidence,needsReview:assessment.needsReview,canExecuteAutomatically:false,candidates:assessment.needsReview?[]:candidates});
+ }
  function diagnostics(){
   return list().map(plugin=>{
    const stats=health.get(plugin.id);
    return {id:plugin.id,status:stats.lastError?'error':stats.checks?'ok':'not-tested',checks:stats.checks,failures:stats.failures,lastError:stats.lastError};
   });
  }
- return Object.freeze({register,list,recommend,execute,diagnostics});
+ return Object.freeze({register,list,recommend,recommendForModel,execute,diagnostics});
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={createRegistry};
 if(typeof window!=='undefined')window.GuardPluginCore={createRegistry};
