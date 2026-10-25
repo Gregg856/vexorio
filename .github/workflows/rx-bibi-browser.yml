@@ -15,7 +15,7 @@ concurrency:
 jobs:
   mobile:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
       - name: Pobierz repozytorium
         uses: actions/checkout@v4
