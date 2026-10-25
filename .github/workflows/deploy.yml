@@ -32,7 +32,7 @@ jobs:
           cp guard-task-analyzer-plugin.js public/guard-task-analyzer-plugin.js
           cp guard/developer-inspector.cjs public/guard-developer-inspector.js
           cp guard/developer-diff.cjs public/guard-developer-diff.js
-          cp guard-code-ui.js guard-code-fix.js public/
+          cp guard-code-ui.js guard-code-fix.js guard-patch-preview.js public/
           cp guard-manifest.webmanifest public/guard-manifest.webmanifest
           # Embed the exact GitHub revision in the deployed HTML for release verification.
           sed -i "s#</head>#<meta name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"></head>#" public/index.html
@@ -114,6 +114,7 @@ jobs:
           node tests/guard-task-analyzer-plugin.test.cjs
           node tests/guard-changes-report-plugin.test.cjs
           node tests/guard-code-fix.test.cjs
+          node tests/guard-patch-preview.test.cjs
           node tests/guard-greetings.test.cjs
           node tests/guard-developer-inspector.test.cjs
           node tests/guard-developer-security-rules.test.cjs
