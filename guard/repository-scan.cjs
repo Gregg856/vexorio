@@ -3,7 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const {inspectSource}=require('./developer-inspector.cjs');
-const FILES=['guard-chat.js','guard-code-ui.js','guard-commands.js','guard-engine-2.js','guard-task-analyzer-plugin.js','guard-lab.js','worker.js'];
+const FILES=['guard-chat.js','guard-code-ui.js','guard-commands.js','guard-engine-2.js','guard-task-analyzer-plugin.js','guard-lab.js','guard-lab.html','worker.js'];
 const DIRECTORIES=['guard','tests'];
 const MAX_FILES=150;
 const {execFileSync}=require('node:child_process');
@@ -24,6 +24,17 @@ function listFiles(root){
  }
  return [...new Set(names)].slice(0,MAX_FILES);
 }
+function checkHtmlReferences(root,source){
+ const findings=[];
+ for(const match of source.matchAll(/<script\b[^>]*\bsrc=["'](\/[-\w./]+(?:\?[^"']*)?)["'][^>]*>/gi)){
+  const name=match[1].split('?')[0].slice(1);
+  if(name.includes('..'))continue;
+  if(!fs.existsSync(path.join(root,name))){
+   findings.push({rule:'missing-script',severity:'high',line:source.slice(0,match.index).split('\n').length,message:'Brak lokalnego pliku skryptu: '+name});
+  }
+ }
+ return findings;
+}
 function scan(root=process.cwd()){
  const files=[];let count=0;
  for(const name of listFiles(root)){
@@ -32,6 +43,7 @@ function scan(root=process.cwd()){
   const source=fs.readFileSync(full,'utf8');
   if(source.length>100000){files.push({path:name,error:'too_large'});continue;}
   const result=inspectSource({path:name,source});
+  if(name==='guard-lab.html')result.findings.push(...checkHtmlReferences(root,source));
   const syntax=checkSyntax(full);
   if(syntax)result.findings.push(syntax);
   files.push({path:name,lines:result.lines,findings:result.findings});
