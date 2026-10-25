@@ -19,7 +19,7 @@ jobs:
           set -euo pipefail
           base="https://vexorio.grzegorzbub1985.workers.dev"
           failed=0
-          for path in / /guard-lab.html /guard-chat.js /guard-plugin-core.js /guard-rx-orchestrator.js; do
+          for path in / /guard-lab.html /guard-chat.js /guard-plugin-core.js /guard-rx-orchestrator.js /guard-changes-summary.json; do
             echo "Sprawdzam $path"
             if ! curl --fail --silent --show-error --location --retry 2 --retry-delay 3 --max-time 20 -H 'Cache-Control: no-cache' "$base$path" -o /tmp/guard-check; then
               echo "::error::RX monitor: niedostepny $path"
@@ -53,6 +53,11 @@ jobs:
                     failed=1
                   fi
                   ;;
+                /guard-changes-summary.json)
+                  if ! grep -Eq '"(changes|summary|generatedAt|timestamp|items|commits)"' /tmp/guard-check; then
+                    echo "::warning::RX monitor: raport zmian ma nieoczekiwana strukture"
+                  fi
+                  ;;
                 /)
                   if ! grep -Eiq '<html|<!doctype html' /tmp/guard-check; then
                     echo "::error::RX monitor: brak dokumentu HTML strony glownej"
@@ -67,7 +72,7 @@ jobs:
             echo "RX monitor: AWARIA" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          echo "RX monitor: wszystkie 5 adresow odpowiada" >> "$GITHUB_STEP_SUMMARY"
+          echo "RX monitor: wszystkie 6 adresow odpowiada" >> "$GITHUB_STEP_SUMMARY"
       - name: Testy funkcjonalne RX i trzech wtyczek
         id: functional
         continue-on-error: true
