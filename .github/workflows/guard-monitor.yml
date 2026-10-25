@@ -267,13 +267,32 @@ jobs:
             const existing = incidents.find(i => i.state === 'open');
             const last30 = incidents.filter(i => Date.now() - new Date(i.created_at).getTime() <= 30 * 24 * 60 * 60 * 1000);
             const previousClosed = last30.filter(i => i.state === 'closed');
+            // Stable fingerprint from exact failed resources / UI markers and failed stages.
+            // Never include account data, message contents or other personal information.
+            const fs = require('fs');
+            const crypto = require('crypto');
+            const rawErrors = fs.existsSync('/tmp/rx-monitor-errors')
+              ? fs.readFileSync('/tmp/rx-monitor-errors', 'utf8').split(/\\r?\\n/).filter(Boolean)
+              : [];
+            const stages = [
+              ['production', '${{ steps.check.outcome }}'],
+              ['checkout', '${{ steps.functional.outcome }}'],
+              ['rx-tests', '${{ steps.rx_tests.outcome }}']
+            ].filter(([, status]) => status === 'failure').map(([name]) => name);
+            const signatureItems = [...new Set([...stages.map(x => 'stage:' + x), ...rawErrors.map(x => 'detail:' + x)])].sort();
+            const fingerprint = crypto.createHash('sha256').update(signatureItems.join('\\n')).digest('hex').slice(0, 16);
+            const exactMatches = previousClosed.filter(i => (i.body || '').includes('RX-FINGERPRINT: ' + fingerprint));
+            const matchNote = exactMatches.length
+              ? 'Ten sam zestaw sygnalow wystapil w ' + exactMatches.length + ' zamknietych incydentach z ostatnich 30 dni.'
+              : 'Brak identycznego zestawu sygnalow w zamknietych incydentach z ostatnich 30 dni.';
+
             const recurrence = previousClosed.length > 0
               ? 'Uwaga: w ostatnich 30 dniach wystapilo ' + previousClosed.length + ' wczesniejszych, zamknietych incydentow RX. Nie musi to byc ta sama przyczyna.'
               : 'Brak wczesniejszych zamknietych incydentow RX z ostatnich 30 dni.';
-            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence).write();
+            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence + '\\n\\n' + matchNote + '\\n\\nOdcisk bledu: ' + fingerprint).write();
             const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
-              '). RX nie zmienia automatycznie kodu.\n\n' + recurrence;
+              '). RX nie zmienia automatycznie kodu.\n\n' + recurrence + '\\n\\n' + matchNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
               core.notice('RX incident already open: #' + existing.number);
