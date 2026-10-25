@@ -35,5 +35,7 @@ assert.ok(strazak.includes('href="/rx-bibi-manager.html"'),'Strażak must link t
 assert.ok(bibi.includes('href="/guard-lab.html"'),'RX BIBI must link to Strażak');
 assert.ok(bibi.includes('https://github.com/Gregg856/vexorio/actions'),'RX BIBI must link to GitHub Actions');
 assert.ok(bibi.includes('id="summary"'),'RX BIBI must show incident summary');
+assert.ok(bibi.includes('id="latest"'),'RX BIBI must show latest deployment');
+assert.ok(bibi.includes("r.name==='Deploy VEXORIO'&&r.head_branch==='main'"),'Latest deployment must use production branch');
 assert.ok(bibi.includes("'Data: '+(run.created_at"),'RX BIBI must format run dates correctly');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
