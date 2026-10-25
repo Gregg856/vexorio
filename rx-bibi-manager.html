@@ -84,9 +84,14 @@ async function refresh(){
     const failed=history.filter(r=>r.status==='completed'&&r.conclusion==='failure');
     if(!failed.length)continue;
     const latestRun=history[0],latestFailed=failed[0];
-    const recovered=latestRun.status==='completed'&&latestRun.conclusion==='success';
+    const recovered=latestRun.status==='completed'&&latestRun.conclusion==='success'&&latestRun.id!==latestFailed.id;
+    const pending=latestRun.status!=='completed';
+    const failedNow=latestRun.status==='completed'&&latestRun.conclusion==='failure';
+    const state=recovered?'OSTATNI PRZEBIEG UDANY (wymaga porównania)':pending?'TEST W TOKU — wynik niepotwierdzony':failedNow?'AKTUALNA AWARIA':'WYNIK NIEJEDNOZNACZNY';
     const row=el('div','meta');
-    row.append(el('p',recovered?'ok':'wait',name+': '+failed.length+' błędów · '+(recovered?'najnowsze uruchomienie udane':'wymaga sprawdzenia')));
+    row.append(el('p',recovered?'ok':failedNow?'bad':'wait',name+': '+failed.length+' błędów w próbce · '+state));
+    if(Number.isSafeInteger(latestRun.id)&&latestRun.id>0){const current=el('a','','Sprawdź najnowszy przebieg');current.href='https://github.com/Gregg856/vexorio/actions/runs/'+latestRun.id;current.target='_blank';current.rel='noopener noreferrer';row.append(current);}
+    if(recovered)row.append(el('p','meta','Ostatni test zakończył się sukcesem, ale nie dowodzi samodzielnie usunięcia wszystkich wcześniejszych przyczyn. Porównaj kod, etap i logi.'));
     if(Number.isSafeInteger(latestFailed.id)&&latestFailed.id>0){const a=el('a','','Ostatni błąd i logi');a.href='https://github.com/Gregg856/vexorio/actions/runs/'+latestFailed.id;a.target='_blank';a.rel='noopener noreferrer';row.append(a);}
     incidentPanel.append(row);
     if(Number.isSafeInteger(latestFailed.id)&&latestFailed.id>0){
