@@ -32,6 +32,7 @@ jobs:
           cp guard-rx-orchestrator.js public/guard-rx-orchestrator.js
           cp guard-rx-browser.js public/guard-rx-browser.js
           cp guard-rx-monitor-report.js public/guard-rx-monitor-report.js
+          cp guard-rx-categories.js public/guard-rx-categories.js
           cp guard-install.js public/guard-install.js
           cp guard-github-panel.js guard-changes-report-plugin.js guard-tabs.js guard-chat.js guard-code-audit-plugin.js guard-commands.js guard-task-queue.js guard-engine-2.js guard-capabilities.js guard-icon.svg public/
           cp guard/plugin-core.cjs public/guard-plugin-core.js
