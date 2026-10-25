@@ -33,6 +33,7 @@ jobs:
           test -f "$TARGET"
       - name: Run baseline tests
         run: |
+          node tests/guard-security-diagnostics.test.cjs
           node tests/guard-code-fix.test.cjs
           node tests/guard-patch-preview.test.cjs
           node tests/guard-developer-inspector.test.cjs
