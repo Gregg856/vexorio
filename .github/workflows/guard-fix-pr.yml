@@ -94,14 +94,38 @@ jobs:
             core.setOutput('skip','true');
             core.setOutput('classification_found',artifact?'true':'false');
             core.summary.addHeading('RX: klasyfikacja przed automatyczna naprawa',3);
-            core.summary.addRaw('Monitoring: '+context.payload.workflow_run.html_url+'\n\n');
+            core.summary.addRaw('Monitoring: '+context.payload.workflow_run.html_url+'\\n\\n');
             if(!artifact){
-              core.summary.addRaw('Brak klasyfikacji: bezpieczna blokada automatycznej zmiany.\n');
+              core.summary.addRaw('Brak klasyfikacji: bezpieczna blokada automatycznej zmiany.\\n');
             }else{
-              core.summary.addRaw('Znaleziono raport klasyfikacji: '+artifact.name+'.\n');
-              core.summary.addRaw('Raport wskazuje kategorie awarii, ale nie autoryzuje zmiany pliku.\n');
+              const archive=await github.rest.actions.downloadArtifact({owner,repo,artifact_id:artifact.id,archive_format:'zip'});
+              const bytes=Buffer.from(archive.data);
+              const zlib=require('zlib');
+              const marker=Buffer.from('rx-classification.json');
+              let report=null;
+              for(let i=0;i+30<bytes.length;i++){
+                if(bytes.readUInt32LE(i)!==0x04034b50)continue;
+                const method=bytes.readUInt16LE(i+8),size=bytes.readUInt32LE(i+18);
+                const nameLen=bytes.readUInt16LE(i+26),extraLen=bytes.readUInt16LE(i+28);
+                const name=bytes.subarray(i+30,i+30+nameLen).toString('utf8');
+                const start=i+30+nameLen+extraLen;
+                if(name==='rx-classification.json'&&size>0&&size<65536){
+                  const compressed=bytes.subarray(start,start+size);
+                  const data=method===8?zlib.inflateRawSync(compressed):method===0?compressed:null;
+                  if(data)report=JSON.parse(data.toString('utf8'));
+                  break;
+                }
+              }
+              if(report&&report.schema_version===1&&typeof report.category==='string'&&report.automatic_patch_allowed===false){
+                core.setOutput('category',report.category);
+                core.summary.addRaw('Kategoria: '+report.category+'\\n');
+                core.summary.addRaw('Zalecenie: '+report.recommended_action+'\\n');
+              }else{
+                core.warning('RX classification JSON missing or invalid; no automatic changes.');
+                core.summary.addRaw('Raport niepoprawny lub nieczytelny.\\n');
+              }
             }
-            core.summary.addRaw('Dopiero jednoznaczna, przetestowana regula i wskazany plik moga odblokowac roboczy PR.\n');
+            core.summary.addRaw('Brak autoryzowanej reguly naprawy: kod pozostaje bez zmian.\\n');
             await core.summary.write();
       - name: Summarize autonomous RX response
         if: github.event_name == 'workflow_run' && steps.existing.outputs.skip != 'true'
