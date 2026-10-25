@@ -54,6 +54,10 @@ assert.ok(bibi.includes(".sort((a,b)=>timestamp(b.created_at)-timestamp(a.create
 assert.ok(bibi.includes('function timestamp(value)'),'RX BIBI must handle missing dates in sorting');
 assert.ok(bibi.indexOf('root.append(item);')<bibi.indexOf("if(state==='failure')"),'RX BIBI must render workflow rows before awaiting failure diagnostics');
 assert.ok(bibi.includes('function formatDate(value)'),'RX BIBI must safely format workflow dates');
+assert.ok(bibi.includes('data.workflow_runs.length+\' pobranych'),'RX BIBI must display actual API response count');
+assert.ok(bibi.includes('aria-label="Podsumowanie ostatnich uruchomień"'),'RX BIBI must describe summary accurately');
+assert.ok(bibi.includes('const apiDate=response.headers.get(\'date\')'),'RX BIBI must inspect optional date header');
+assert.ok(bibi.indexOf("item.append(link);}")<bibi.indexOf("if(state==='failure')"),'RX BIBI must display log links before fetching diagnostics');
 assert.ok(bibi.includes('brak poprawnej daty'),'RX BIBI must handle invalid workflow dates');
 assert.ok(bibi.indexOf('root.replaceChildren();summary.replaceChildren();latest.textContent')>bibi.indexOf('if(!response.ok)throw Error'),'RX BIBI must preserve old data until successful API response');
 assert.ok(bibi.includes('Limit GitHub API'),'RX BIBI must identify rate limiting');
