@@ -45,5 +45,14 @@ try{
  assert.match(workflow,/Validate deterministic fix report/);
  assert.match(workflow,/r\.blocked/);
  assert.match(workflow,/steps\.patch_ready\.outputs\.ready == 'true'/);
+ const commentOnly='guard-comment-only.js';
+ const commentSource='// rejectUnauthorized: false\\n';
+ fs.writeFileSync(path.join(dir,commentOnly),commentSource);
+ const commentRun=cp.spawnSync(process.execPath,[generator,commentOnly],{cwd:dir,encoding:'utf8'});
+ assert.equal(commentRun.status,0,commentRun.stderr);
+ assert.equal(fs.readFileSync(path.join(dir,commentOnly),'utf8'),commentSource);
+ const commentReport=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(commentReport.changed,false);
+ assert.equal(commentReport.blocked,'ambiguous-or-commented-tls-setting');
  console.log('PASS: detect → preview → safe fix → tests → draft PR configuration; no PR created');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
