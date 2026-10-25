@@ -71,6 +71,28 @@
   }catch(_){proposalsOutput.textContent='Nie udało się pobrać informacji o propozycjach. Sprawdź GitHub Actions.';}
   finally{proposalsButton.disabled=false;}
  });
+ const previewButton=document.getElementById('guardInlineProposalsButton');
+ const previewOutput=document.getElementById('guardInlineProposalsResult');
+ if(previewButton&&previewOutput)previewButton.addEventListener('click',async()=>{
+  previewButton.disabled=true;previewOutput.textContent='Analizuję aktualne pliki z GitHub…';
+  const files=['guard-chat.js','guard-github-panel.js','guard-code-ui.js','guard-code-fix.js'];
+  const results=[];
+  try{
+   if(!window.GuardPatchPreview||typeof window.GuardPatchPreview.preview!=='function')throw Error('Missing preview');
+   for(const file of files){
+    const url='https://raw.githubusercontent.com/Gregg856/vexorio/main/'+file;
+    const response=await fetch(url,{cache:'no-store'});
+    if(!response.ok)throw Error('HTTP '+response.status+' '+file);
+    const source=await response.text();
+    const report=window.GuardPatchPreview.preview({path:file,source});
+    results.push('PLIK: '+file+' | Propozycje: '+report.changes.length);
+    for(const change of report.changes.slice(0,10))results.push('Linia '+change.line+'\n- '+change.before+'\n+ '+change.after);
+    if(report.changes.length>10)results.push('Dodatkowe propozycje pominięte w podglądzie.');
+   }
+   previewOutput.textContent='Podgląd lokalny aktualnego kodu GitHub (to NIE jest zapisany raport z harmonogramu).\nReguła: weryfikacja TLS.\n\n'+results.join('\n\n')+'\n\nBez zmian w repozytorium. Wymagana ręczna kontrola i zatwierdzenie.';
+  }catch(_){previewOutput.textContent='Nie udało się przeanalizować plików. Sprawdź połączenie, publiczny dostęp do repozytorium i limit rozmiaru plików.';}
+  finally{previewButton.disabled=false;}
+ });
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
