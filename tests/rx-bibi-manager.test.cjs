@@ -40,6 +40,8 @@ assert.ok(bibi.includes("'/jobs?per_page=30'"),'RX BIBI must inspect GitHub jobs
 assert.ok(bibi.includes("s.conclusion==='failure'"),'RX BIBI must only report failed steps');
 assert.ok(bibi.includes('Diagnoza niedostępna'),'RX BIBI must disclose unavailable diagnosis');
 assert.ok(bibi.includes('inspectedFailures>=3'),'RX BIBI must limit failed-run API diagnostics');
+assert.ok(bibi.includes('Limit GitHub API'),'RX BIBI must identify rate limiting');
+assert.ok(bibi.includes('Historia GitHub Actions niedostępna'),'RX BIBI must identify unavailable history');
 assert.ok(bibi.includes("r.name==='Deploy VEXORIO'&&r.head_branch==='main'"),'Latest deployment must use production branch');
 assert.ok(bibi.includes("'Data: '+(run.created_at"),'RX BIBI must format run dates correctly');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
