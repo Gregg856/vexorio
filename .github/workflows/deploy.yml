@@ -98,6 +98,7 @@ jobs:
           node tests/guard-metrics-summary.test.cjs
           node tests/guard-chat.test.cjs
           node tests/guard-task-queue.test.cjs
+          node tests/guard-engine-2.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
