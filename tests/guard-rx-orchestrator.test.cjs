@@ -14,5 +14,6 @@ assert.match(natural.message,/Plan:/);
 assert.equal(natural.requiresApproval,false);
 assert.equal(route('x'.repeat(2001),context).kind,'invalid');
 assert.equal(route('pomoc',context).module,'commands');
-assert.equal(route('usuń bazę danych',context).kind,'legacy');
+assert.equal(route('usuń bazę danych',context).kind,'advisory');
+assert.match(route('usuń bazę danych',context).message,/wysokie/);
 console.log('PASS: RX parent coordinator routes safely and preserves existing commands');
