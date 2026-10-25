@@ -1,7 +1,7 @@
 /* RX PhotoMotion 1.0 — local slideshow renderer, not generative AI. */
 (function(root){
 'use strict';
-async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',onProgress=()=>{}}){
+async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',caption='',onProgress=()=>{}}){
  if(!files||!files.length)throw Error('Dodaj zdjęcia, aby utworzyć film.');
  if(!root.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error('Ta przeglądarka nie obsługuje lokalnego nagrywania wideo.');
  const mime=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9'].find(x=>MediaRecorder.isTypeSupported(x));
@@ -45,6 +45,22 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
      ctx.drawImage(other,(width-nextW)/2,(height-nextH)/2,nextW,nextH);
      ctx.globalAlpha=1;
     }
+   }
+   const subtitle=String(caption||'').trim().slice(0,120);
+   if(subtitle){
+    ctx.save();
+    const fontSize=Math.max(22,Math.round(width/18));
+    ctx.font='bold '+fontSize+'px system-ui,sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const words=subtitle.split(/\s+/),lines=[];let line='';
+    for(const word of words){const candidate=line?line+' '+word:word;if(ctx.measureText(candidate).width>width*.85&&line){lines.push(line);line=word}else line=candidate}
+    if(line)lines.push(line);
+    const visible=lines.slice(0,3),lineHeight=fontSize*1.3;
+    const boxHeight=visible.length*lineHeight+28,top=height-boxHeight-36;
+    ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(0,top,width,boxHeight);
+    ctx.fillStyle='#fff';
+    visible.forEach((text,i)=>ctx.fillText(text,width/2,top+22+lineHeight*(i+.5),width*.9));
+    ctx.restore();
    }
    onProgress(Math.round(t/duration*100));
   }
