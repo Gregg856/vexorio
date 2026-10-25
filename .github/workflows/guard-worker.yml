@@ -32,7 +32,7 @@ jobs:
           else
             node --check worker.js
             node --check guard-chat.js
-            node tests/search-location-regressions.test.cjs
+            node tests/search-location-regression.test.js
           fi
       - name: Save audit report
         if: always()
