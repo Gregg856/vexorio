@@ -13,7 +13,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
   try {
     const page = await browser.newPage({ ...devices['Pixel 7'], locale: 'pl-PL' });
     const jsErrors = [];
-    page.on('pageerror', err => jsErrors.push(err.message));
+    const guardErrors = [];
+    const diagnostics = [];
+    const watch = (target, label, errors) => {
+      target.on('pageerror', err => errors.push(err.message));
+      target.on('console', msg => { if (msg.type() === 'error') diagnostics.push(label + ' console: ' + msg.text()); });
+      target.on('requestfailed', req => diagnostics.push(label + ' sieć: ' + req.method() + ' ' + req.url() + ' — ' + (req.failure()?.errorText || 'nieznany błąd')));
+      target.on('response', res => { if (res.status() >= 500) diagnostics.push(label + ' HTTP ' + res.status() + ': ' + res.url()); });
+    };
+    watch(page, 'RX BIBI', jsErrors);
     const response = await page.goto(base + '/rx-bibi-manager.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
     record('RX BIBI HTTP', response && response.status() === 200, response && response.status());
     record('Nagłówek RX BIBI', await page.getByRole('heading', { name: /RX BIBI Manager 1\.3/ }).count() > 0);
@@ -40,11 +48,18 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     const guardLink = page.getByRole('link', { name: 'RX Strażak', exact: true });
     record('Link RX Strażak', await guardLink.count() > 0);
     const guard = await browser.newPage({ ...devices['Pixel 7'] });
+    watch(guard, 'RX Strażak', guardErrors);
     const guardResponse = await guard.goto(base + '/guard-lab.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
     record('RX Strażak HTTP', guardResponse && guardResponse.status() === 200);
     record('RX Strażak nagłówek', await guard.getByRole('heading', { name: /Strażak/ }).count() > 0);
     await guard.screenshot({ path: path.join(reportDir, 'rx-strazak-mobile.png'), fullPage: true });
     record('Błędy JS RX BIBI', jsErrors.length === 0, jsErrors.join('; '));
+    record('Błędy JS RX Strażak', guardErrors.length === 0, guardErrors.join('; '));
+    for (const [label, target] of [['RX BIBI', page], ['RX Strażak', guard]]) {
+      const width = await target.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: window.innerWidth }));
+      record('Brak poziomego przewijania ' + label, width.content <= width.viewport + 2, JSON.stringify(width));
+    }
+    record('Diagnostyka konsoli i sieci', diagnostics.length === 0, diagnostics.slice(0, 20).join('; ') + (diagnostics.length > 20 ? ' (więcej: ' + diagnostics.length + ')' : ''));
     await guard.close();
     await page.close();
   } catch (error) {
