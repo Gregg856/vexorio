@@ -66,6 +66,16 @@ jobs:
           const unknown={...good,category:'unknown',recommended_action:'manual_review',failed_stages:['tests']};
           assert.equal(valid(unknown,123),true);
           assert.equal(valid({...good,automatic_patch_allowed:true},123),false);
+          // Draft PR pipeline readiness: verify guardrails without creating a PR.
+          for(const gate of [
+            "inputs.smoke_test == true",
+            "Prepare harmless smoke-test fixture",
+            "Verify allowed changed files",
+            "draft: true",
+            "peter-evans/create-pull-request@v7"
+          ])assert.ok(fix.includes(gate),'Missing Draft PR safeguard: '+gate);
+          assert.ok(!fix.includes('auto-merge'),'Unexpected auto-merge in RX proposal workflow');
+          console.log('RX PASS: draft PR smoke-test pipeline gates present; PR not created');
           console.log('RX PASS: 4 simulated incident classifications; no real outage, no PR');
           console.log('RX PASS: bramki, poprawny raport i 7 scenariuszy odmowy');
           NODE
