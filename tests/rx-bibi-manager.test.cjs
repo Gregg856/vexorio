@@ -42,6 +42,11 @@ assert.ok(bibi.includes('id="strażakStatus"'),'RX BIBI must show RX Strażak mo
 assert.ok(bibi.includes('id="incidents"'),'RX BIBI must have incident overview');
 assert.ok(bibi.includes('Priorytet RX BIBI:'),'RX BIBI 1.3 must display priority');
 assert.ok(bibi.includes('id="alerts"'),'RX BIBI 1.3 must have a dedicated alert center');
+assert.ok(bibi.includes('id="availability"'),'RX BIBI must show separate HTTP availability panel');
+assert.ok(bibi.includes('async function checkAvailability()'),'RX BIBI must independently probe HTTP availability');
+assert.ok(bibi.includes("response.ok&&type.includes('text/html')"),'RX BIBI must validate HTTP status and content type');
+assert.ok(bibi.includes('Pojedynczy test HTTP nie potwierdza poprawności wszystkich funkcji'),'RX BIBI must qualify single HTTP probe');
+assert.ok(bibi.includes('refresh();checkAvailability();'),'RX BIBI must probe on manual refresh');
 assert.ok(bibi.includes('Historia napraw: po nieudanej publikacji'),'RX BIBI 1.3 must show recovery timeline');
 assert.ok(bibi.includes('To potwierdza wynik wdrożenia, nie dostępność serwisu'),'RX BIBI must not conflate deployment recovery with uptime');
 assert.ok(bibi.includes('brak późniejszej udanej publikacji'),'RX BIBI must disclose unresolved failed deployment');
