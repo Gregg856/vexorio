@@ -32,4 +32,5 @@ function reviewDiff(diff){
  }
  return {readOnly:true,changedFiles,findings,summary:{high:findings.filter(f=>f.severity==='high').length,medium:findings.filter(f=>f.severity==='medium').length,low:findings.filter(f=>f.severity==='low').length}};
 }
-module.exports={reviewDiff,MAX_DIFF,MAX_FILES,MAX_LINES};
+if(typeof module!=='undefined'&&module.exports)module.exports={reviewDiff,MAX_DIFF,MAX_FILES,MAX_LINES};
+if(typeof window!=='undefined')window.GuardDeveloperDiff={reviewDiff};
