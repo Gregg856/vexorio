@@ -87,6 +87,10 @@ async function refresh(){
         }catch(error){break;}
        }
        diagnosis.textContent+=' Ten sam nieudany etap: '+same+' z '+compared+' porównanych awarii'+(failed.length>compared?' (część historii nieporównana)':'')+'. To nie potwierdza identycznej przyczyny.';
+       const trend=same>=3?'Powtarzalny etap — wysoki priorytet':same===2?'Etap powtórzył się — obserwuj':'Brak potwierdzonego powtórzenia w porównanej próbce';
+       row.append(el('p',same>=3?'bad':same===2?'wait':'ok','RX BIBI 1.4 · '+trend+' ('+same+'/'+compared+').'));
+       if(recovered)row.append(el('p','ok','Najnowsze uruchomienie tego workflow jest udane; wcześniejsze incydenty pozostają w historii.'));
+       else row.append(el('p','wait','Najnowsze uruchomienie nie potwierdza naprawy — sprawdź logi i kolejne testy.'));
        const advice=kind==='Publikacja'?'Sprawdź uprawnienia Cloudflare, token i odpowiedź API w logach. Przy błędzie przejściowym rozważ pojedyncze ponowienie po analizie.':kind==='Testy'?'Otwórz log testu, odtwórz błąd na staging i popraw kod przed ponownym wdrożeniem.':'Sprawdź log nieudanego etapu, wymagane pliki i konfigurację workflow.';
        const tip=el('p','meta','Propozycja działania: '+advice+' Żadna naprawa nie jest uruchamiana automatycznie.');
        row.append(tip);
