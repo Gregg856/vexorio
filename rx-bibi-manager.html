@@ -15,10 +15,12 @@ const filterStatus=document.getElementById('filterStatus');
 function applyFilter(){let visible=0;for(const item of root.children){const matches=activeFilter==='all'||item.dataset.result===activeFilter;item.hidden=!matches;if(matches)visible++;}for(const control of document.querySelectorAll('[data-filter]'))control.setAttribute('aria-pressed',String(control.dataset.filter===activeFilter));filterStatus.textContent='Widoczne: '+visible+' z '+root.children.length+' uruchomień'+(visible===0?' — brak wyników dla tego filtra.':'.');}
 for(const control of document.querySelectorAll('[data-filter]'))control.addEventListener('click',()=>{activeFilter=control.dataset.filter;applyFilter();});
 let availabilityCheckId=0;
+let availabilityController=null;
 async function checkAvailability(){
  const checkId=++availabilityCheckId;
+ if(availabilityController)availabilityController.abort();
  availability.replaceChildren(el('strong','','Dostępność strony VEXORIO'),el('p','wait','Trwa sprawdzanie odpowiedzi HTTP…'));
- const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),8000);
+ const controller=new AbortController();availabilityController=controller;const timeout=setTimeout(()=>controller.abort(),8000);
  try{
   const response=await fetch('/?rx_healthcheck='+Date.now(),{method:'GET',cache:'no-store',signal:controller.signal,redirect:'follow'});
   const type=response.headers.get('content-type')||'';
@@ -26,13 +28,14 @@ async function checkAvailability(){
   if(checkId!==availabilityCheckId)return;
   availability.replaceChildren(el('strong',ok?'ok':'bad','Dostępność HTTP: '+(ok?'strona odpowiada':'nieprawidłowa odpowiedź')),el('p','meta','HTTP '+response.status+' · '+(type||'brak Content-Type')+' · Sprawdzono: '+new Date().toLocaleString('pl-PL')+'. Pojedynczy test HTTP nie potwierdza poprawności wszystkich funkcji.'));
  }catch(error){if(checkId!==availabilityCheckId)return;availability.replaceChildren(el('strong','bad','Dostępność HTTP: nie udało się potwierdzić odpowiedzi'),el('p','meta','Błąd połączenia lub limit 8 sekund. Nie oznacza to automatycznie trwałej awarii.'));}
- finally{clearTimeout(timeout);}
+ finally{clearTimeout(timeout);if(availabilityController===controller)availabilityController=null;}
 }
 async function refresh(){
  if(button.disabled)return;
  button.disabled=true;status.textContent='Pobieram historię z GitHub…';
+ const githubController=new AbortController();const githubTimeout=setTimeout(()=>githubController.abort(),12000);
  try{
-  const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=50',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+  const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=50',{headers:{Accept:'application/vnd.github+json'},cache:'no-store',signal:githubController.signal});
   if(!response.ok)throw Error(response.status===403||response.status===429?'Limit GitHub API — odczekaj przed kolejnym odświeżeniem':response.status===404?'Historia GitHub Actions niedostępna (HTTP 404)':'GitHub API HTTP '+response.status);
   const data=await response.json();
   if(!Array.isArray(data.workflow_runs))throw Error('Nieprawidłowa odpowiedź GitHub API');
@@ -156,7 +159,7 @@ async function refresh(){
   }
   applyFilter();
  }catch(error){freshness.textContent=root.children.length?'Świeżość danych: mogą być nieaktualne (nieudane odświeżenie).':'Świeżość danych: brak połączenia lub danych.';if(!root.children.length){latest.textContent='Ostatnia publikacja: nie można potwierdzić (błąd odczytu).';lastSuccess.textContent='Ostatnia udana publikacja: brak danych.';incidents.textContent='Przegląd błędów: brak danych.';}status.textContent='Nie udało się pobrać nowych danych: '+String(error.message||'nieznany błąd')+'. '+(root.children.length?'Widoczne dane mogą być nieaktualne.':'Otwórz GitHub Actions, aby sprawdzić status.');}
- finally{button.disabled=false;}
+ finally{clearTimeout(githubTimeout);button.disabled=false;}
 }
 button.addEventListener('click',()=>{refresh();checkAvailability();});refresh();checkAvailability();
 </script></body></html>
