@@ -114,6 +114,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const links=await priorityPanel.getByRole('link',{name:'Otwórz wynik'}).count();
       record('RX BIBI 2.0 linki do awarii',brokenCount===links,'Linki: '+links);
     }catch(error){record('RX BIBI 2.0 test panelu alarmów',false,error.message);}
+    const copyDiagnosis=priorityPanel.getByRole('button',{name:'📋 Kopiuj diagnozę RX BIBI'});
+    record('RX BIBI raport — przycisk kopiowania',await copyDiagnosis.count()===1);
+    try{
+      await page.context().grantPermissions(['clipboard-read','clipboard-write']);
+      await copyDiagnosis.click();
+      const copied=await page.evaluate(()=>navigator.clipboard.readText());
+      record('RX BIBI raport — treść w schowku',copied.includes('RX BIBI — raport diagnostyczny')&&copied.includes('Źródło: publiczne GitHub Actions')&&copied.includes('Dotyczy tylko ostatnich pobranych przebiegów na main.')&&copied.includes(String.fromCharCode(10)),copied.slice(0,180));
+      record('RX BIBI raport — komunikat powodzenia',await priorityPanel.getByText('Skopiowano diagnozę do schowka.').count()===1);
+    }catch(error){record('RX BIBI raport — kopiowanie na telefonie',false,error.message);}
     const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
     const triageText=await triagePanel.innerText();
     const hasActiveFailure=triageText.includes('Aktualnie nieudane workflow:');
