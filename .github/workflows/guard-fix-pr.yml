@@ -124,7 +124,22 @@ jobs:
                   break;
                 }
               }
-              if(report&&report.schema_version===1&&typeof report.category==='string'&&report.automatic_patch_allowed===false){
+              const knownActions={
+                infrastructure:'retry_checkout',
+                public_availability:'verify_deploy',
+                regression:'inspect_test_logs',
+                unknown:'manual_review'
+              };
+              const valid=report&&report.schema_version===1
+                && Object.prototype.hasOwnProperty.call(knownActions,report.category)
+                && report.recommended_action===knownActions[report.category]
+                && Array.isArray(report.failed_stages)
+                && report.failed_stages.length>0
+                && report.failed_stages.every(x=>['public','checkout','tests'].includes(x))
+                && report.automatic_patch_allowed===false
+                && typeof report.monitor_run==='string'
+                && report.monitor_run.endsWith('/actions/runs/'+runId);
+              if(valid){
                 core.setOutput('category',report.category);
                 core.summary.addRaw('Kategoria: '+report.category+'\\n');
                 core.summary.addRaw('Zalecenie: '+report.recommended_action+'\\n');
