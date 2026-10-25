@@ -54,6 +54,10 @@ assert.ok(bibi.includes('test monitoringu udany'),'RX BIBI must distinguish moni
 assert.ok(bibi.includes('RX Strazak — monitoring 24/7'),'RX BIBI must recognize the actual Strażak workflow');
 assert.ok(bibi.includes("monitor.conclusion==='cancelled'?'anulowany'"),'RX BIBI must distinguish cancelled monitoring runs');
 assert.ok(bibi.includes("String(monitor.run_attempt||1)"),'RX BIBI must display monitoring retry attempt');
+assert.ok(bibi.includes('ageHours>24'),'RX BIBI must warn about monitoring results older than 24 hours');
+assert.ok(bibi.includes('Wynik może być nieaktualny'),'RX BIBI must disclose stale monitoring');
+assert.ok(bibi.includes('Przejdź do panelu RX Strażak'),'RX BIBI must provide direct navigation to guard');
+assert.ok(bibi.includes('nie potwierdza dostępności serwisu'),'RX BIBI must distinguish CI result from live uptime');
 assert.ok(bibi.includes('brak wyniku monitoringu 24/7 w 20 ostatnich uruchomieniach'),'RX BIBI must disclose missing monitoring history');
 assert.ok(bibi.includes("r.status==='completed'&&r.conclusion==='success'"),'RX BIBI must only treat completed successful deploys as successful');
 assert.ok(bibi.includes('brak potwierdzenia w 20 pobranych uruchomieniach'),'RX BIBI must disclose limited success history');
