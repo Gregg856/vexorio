@@ -41,8 +41,12 @@ assert.ok(bibi.includes('id="lastSuccess"'),'RX BIBI must show latest known succ
 assert.ok(bibi.includes('id="strażakStatus"'),'RX BIBI must show RX Strażak monitoring status');
 assert.ok(bibi.includes('id="incidents"'),'RX BIBI must have incident overview');
 assert.ok(bibi.includes('const unresolved=failedDeploys.filter'),'RX BIBI must compare failures against last successful deploy');
-assert.ok(bibi.includes('Wcześniejsze niż ostatni sukces'),'RX BIBI must avoid claiming resolved root causes');
+assert.ok(bibi.includes('Wcześniejsze nieudane publikacje'),'RX BIBI must distinguish older failures from resolved root causes');
 assert.ok(bibi.includes('Wcześniejszy sukces nie gwarantuje usunięcia przyczyny awarii'),'RX BIBI must distinguish historical success from incident resolution');
+assert.ok(bibi.includes("r.name==='VEXORIO checks'&&r.head_branch==='main'"),'RX BIBI must count failed production checks separately');
+assert.ok(bibi.includes('Publikacje w toku:'),'RX BIBI must show pending deployments');
+assert.ok(bibi.includes('To wyniki CI, nie pomiar dostępności strony'),'RX BIBI must not imply site uptime');
+assert.ok(bibi.includes('nie oznacza to automatycznie tej samej przyczyny'),'RX BIBI must avoid falsely claiming repeated identical failures');
 assert.ok(bibi.includes('test monitoringu udany'),'RX BIBI must distinguish monitoring test success from full service health');
 assert.ok(bibi.includes('brak wyniku monitoringu w 20 ostatnich uruchomieniach'),'RX BIBI must disclose missing monitoring history');
 assert.ok(bibi.includes("r.status==='completed'&&r.conclusion==='success'"),'RX BIBI must only treat completed successful deploys as successful');
