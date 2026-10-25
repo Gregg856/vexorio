@@ -93,6 +93,32 @@
   }catch(_){previewOutput.textContent='Nie udało się przeanalizować plików. Sprawdź połączenie, publiczny dostęp do repozytorium i limit rozmiaru plików.';}
   finally{previewButton.disabled=false;}
  });
+ const findingsButton=document.getElementById('guardSecurityFindingsButton');
+ const findingsOutput=document.getElementById('guardSecurityFindingsResult');
+ if(findingsButton&&findingsOutput)findingsButton.addEventListener('click',async()=>{
+  findingsButton.disabled=true;findingsOutput.textContent='Sprawdzanie reguł bezpieczeństwa…';
+  try{
+   if(!window.GuardDeveloperInspector||typeof window.GuardDeveloperInspector.inspectSource!=='function')throw Error('Missing inspector');
+   const files=['guard-chat.js','guard-github-panel.js','guard-code-ui.js','guard-code-fix.js'];
+   const totals={high:0,medium:0,low:0};
+   const sections=[];
+   for(const file of files){
+    const response=await fetch('https://raw.githubusercontent.com/Gregg856/vexorio/main/'+file,{cache:'no-store'});
+    if(!response.ok)throw Error('Fetch failed');
+    const source=await response.text();
+    const report=window.GuardDeveloperInspector.inspectSource({path:file,source});
+    sections.push('PLIK: '+file+' — sygnały: '+report.findings.length+(report.limited?' (limit 50)':''));
+    for(const finding of report.findings.slice(0,20)){
+     totals[finding.severity]=(totals[finding.severity]||0)+1;
+     sections.push('Linia '+finding.line+' ['+finding.severity+'] '+finding.message);
+    }
+    if(report.findings.length>20)sections.push('Pozostałe sygnały pominięte w podglądzie.');
+    if(!report.findings.length)sections.push('Brak sygnałów w obecnych regułach.');
+   }
+   findingsOutput.textContent='BIEŻĄCA ANALIZA KODU GITHUB (nie zapisany raport Actions)\nWysokie: '+totals.high+' | Średnie: '+totals.medium+' | Niskie: '+totals.low+'\n\n'+sections.join('\n')+'\n\nSygnały wymagają weryfikacji. Nie wykonano żadnych zmian.';
+  }catch(_){findingsOutput.textContent='Analiza jest niedostępna. Sprawdź dostęp do GitHub lub odśwież panel.';}
+  finally{findingsButton.disabled=false;}
+ });
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
