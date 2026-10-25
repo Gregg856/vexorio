@@ -20,6 +20,7 @@ function train(examples,{epochs=120,rate=0.2}={}){
 }
 function predict(model,text){
  if(!model||model.version!=='0.1'||!Array.isArray(model.vocab)||!Array.isArray(model.weights)||typeof text!=='string'||text.length>2000)throw Error('Invalid prediction input');
+ if(model.labels.length!==LABELS.length||model.labels.some((label,i)=>label!==LABELS[i])||model.vocab.length>10000||new Set(model.vocab).size!==model.vocab.length||model.vocab.some(word=>typeof word!=='string'||!word)||model.weights.length!==LABELS.length||model.weights.some(row=>!Array.isArray(row)||row.length!==model.vocab.length+1||row.some(value=>typeof value!=='number'||!Number.isFinite(value))))throw Error('Invalid model structure');
  const words=new Set(tokenize(text));
  const scores=model.weights.map(w=>w[0]+model.vocab.reduce((sum,word,i)=>sum+(words.has(word)?w[i+1]:0),0));
  const max=Math.max(...scores),exps=scores.map(s=>Math.exp(Math.max(-60,s-max))),total=exps.reduce((a,b)=>a+b,0);
