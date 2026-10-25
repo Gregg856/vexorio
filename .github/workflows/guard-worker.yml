@@ -1,5 +1,11 @@
 name: Strazak GitHub Worker — safe audit
 on:
+  pull_request:
+    paths:
+      - 'guard-*.js'
+      - 'guard/**'
+      - 'tests/guard-*'
+      - '.github/workflows/guard-worker.yml'
   workflow_dispatch:
     inputs:
       scope:
@@ -22,7 +28,7 @@ jobs:
       - name: Check syntax and tests
         run: |
           set -eu
-          if [ "${{ inputs.scope }}" = "guard" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ inputs.scope }}" = "guard" ]; then
             node --check guard-chat.js
             node --check guard-code-ui.js
             node --check guard-code-fix.js
@@ -37,7 +43,7 @@ jobs:
       - name: Save audit report
         if: always()
         run: |
-          printf 'Strażak GitHub Worker — audyt tylko do odczytu\nZakres: %s\nCommit: %s\n' "${{ inputs.scope }}" "$GITHUB_SHA" > strazak-audit.txt
+          printf 'Strażak GitHub Worker — audyt tylko do odczytu\nTryb: %s\nZakres: %s\nCommit: %s\n' "${{ github.event_name }}" "${{ inputs.scope }}" "$GITHUB_SHA" > strazak-audit.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
