@@ -164,5 +164,5 @@ assert.ok(strazak.includes('aria-label="Otwórz RX BIBI Manager 1.0"'),'Strażak
 assert.ok(bibi.includes("https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=50"),'RX BIBI must query the correct repository');
 assert.ok(bibi.includes("r.head_branch==='main'"),'RX BIBI must filter production deployments');
 assert.ok(bibi.includes("if(button.disabled)return;"),'RX BIBI must avoid duplicate API refreshes');
-assert.ok(bibi.includes("finally{button.disabled=false;}"),'RX BIBI must reenable refresh after failures');
+assert.ok(bibi.includes("finally{clearTimeout(githubTimeout);button.disabled=false;}"),'RX BIBI must release timeout and reenable refresh after failures');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
