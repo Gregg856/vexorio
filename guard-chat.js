@@ -11,6 +11,7 @@
    return response.json();
   });
  }
+ if(plugins && window.GuardCodeAuditPlugin && window.GuardDeveloperInspector) window.GuardCodeAuditPlugin.installCodeAudit(plugins, window.GuardDeveloperInspector.inspectSource);
  const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
  function renderPlugins(){
   if(!pluginCards)return;
