@@ -10,6 +10,7 @@
  const latest=root.querySelector('[data-rx-latest]');
  const button=root.querySelector('[data-rx-refresh]');
  const history=root.querySelector('[data-rx-history]');
+ const recurring=root.querySelector('[data-rx-recurring]');
  const labels={success:'ZIELONY — kontrole zaliczone',failure:'CZERWONY — wymaga sprawdzenia',cancelled:'ANULOWANY',timed_out:'PRZEKROCZONY CZAS',action_required:'WYMAGA DZIAŁANIA'};
  let loading=false;
  async function refresh(){
@@ -29,6 +30,20 @@
    const runs=Array.isArray(payload.workflow_runs)?payload.workflow_runs:[];
    const run=runs[0];
    if(!run)throw Error('Brak uruchomień');
+   if(recurring){
+    const completed=runs.filter(item=>item.status==='completed');
+    const failed=completed.filter(item=>item.conclusion==='failure');
+    const recent=completed.slice(0,5);
+    const consecutive=recent.findIndex(item=>item.conclusion!=='failure');
+    const streak=consecutive===-1?recent.length:consecutive;
+    if(failed.length>=2){
+     recurring.textContent='⚠️ Powtarzające się nieudane kontrole: '+failed.length+' z '+completed.length+' zakończonych uruchomień (ostatnie 5).'+(streak>=2?' Seria kolejnych niepowodzeń: '+streak+'.':'')+' To powtórzenie wyniku, nie dowód tej samej przyczyny awarii.';
+    }else if(failed.length===1){
+     recurring.textContent='Jedna nieudana kontrola wśród '+completed.length+' zakończonych uruchomień. Za mało danych, aby uznać problem za powracający.';
+    }else if(completed.length){
+     recurring.textContent='Brak nieudanych kontroli wśród '+completed.length+' ostatnich zakończonych uruchomień.';
+    }else recurring.textContent='Brak zakończonych kontroli do analizy.';
+   }
    if(history){
     history.replaceChildren();
     const title=document.createElement('strong');title.textContent='Ostatnie kontrole';history.append(title);
@@ -54,6 +69,7 @@
   }catch(error){
    status.textContent='Nie udało się pobrać statusu';
    if(history)history.replaceChildren();
+   if(recurring)recurring.textContent='Nie można przeanalizować powtarzających się awarii bez wyników GitHub.';
    detail.textContent='GitHub API może być chwilowo niedostępne lub ograniczać liczbę zapytań.';
    advice.textContent='Sprawdź monitoring bezpośrednio w GitHub Actions.';
    latest.href=link;latest.textContent='Otwórz monitoring GitHub';
