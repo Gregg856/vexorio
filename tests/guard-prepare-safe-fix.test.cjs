@@ -41,5 +41,13 @@ try{
  report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
  assert.equal(report.changed,false);
  assert.match(fs.readFileSync(path.join(dir,commented),'utf8'),/rejectUnauthorized: false/);
+ const mixed='guard-mixed.js';
+ fs.writeFileSync(path.join(dir,mixed),'const options={rejectUnauthorized: false}; // example only\\n');
+ result=cp.spawnSync(process.execPath,[script,mixed],{cwd:dir,encoding:'utf8'});
+ assert.equal(result.status,0,result.stderr);
+ report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(report.changed,false);
+ assert.equal(report.blocked,'ambiguous-or-commented-tls-setting');
+ assert.match(fs.readFileSync(path.join(dir,mixed),'utf8'),/rejectUnauthorized: false/);
  console.log('PASS: safe fix generator changes only permitted file and is idempotent');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
