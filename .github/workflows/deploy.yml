@@ -112,6 +112,7 @@ jobs:
           node tests/guard-developer-inspector.test.cjs
           node tests/guard-developer-ui.test.cjs
           node tests/guard-developer-runtime.test.cjs
+          node tests/guard-repository-scan.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
@@ -131,6 +132,17 @@ jobs:
           node tests/guard-dataset-check.test.cjs
           node tests/guard-lab.test.cjs
           node --check worker.js
+
+      - name: Strazak Developer — bezpieczny skan repozytorium
+        run: node guard/repository-scan.cjs
+
+      - name: Zapisz raport Strazaka jako artefakt GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: guard-developer-report
+          path: guard-developer-report.json
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Publikuj w Cloudflare
         id: publish
