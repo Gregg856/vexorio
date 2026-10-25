@@ -1,5 +1,7 @@
 name: Strazak GitHub Worker — safe audit
 on:
+  schedule:
+    - cron: '17 5 * * *'
   pull_request:
     paths:
       - 'guard-*.js'
@@ -47,6 +49,18 @@ jobs:
             const blocked = files.filter(f => !allowed(f.filename)).map(f => f.filename);
             if (blocked.length) core.setFailed('Strażak PR cannot change other files: ' + blocked.join(', '));
             else core.info('PASS: ' + files.length + ' Strażak files only. Review and merge remain manual.');
+      - name: Scheduled guard audit checks
+        if: github.event_name == 'schedule'
+        run: |
+          set -eu
+          node --check guard-chat.js
+          node --check guard-code-audit-plugin.js
+          node --check guard-github-panel.js
+          node tests/guard-chat.test.cjs
+          node tests/guard-plugin-core.test.cjs
+          node tests/guard-developer-inspector.test.cjs
+          node tests/guard-developer-security-rules.test.cjs
+          node tests/guard-developer-runtime.test.cjs
       - name: Check syntax and tests
         run: |
           set -eu
