@@ -1,6 +1,12 @@
 name: RX BIBI Tester — mobile browser
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/rx-bibi-browser.cjs'
+      - 'tests/rx-bibi-studio.cjs'
+      - '.github/workflows/rx-bibi-browser.yml'
   workflow_dispatch:
   schedule:
     - cron: '23 6 * * *'
