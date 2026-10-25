@@ -4,6 +4,10 @@ const {createRegistry}=require('../guard/plugin-core.cjs');
 (async()=>{
  const registry=createRegistry();
  registry.register({id:'task-summary',description:'Local task summary',permissions:['read:task'],run:({task})=>({message:'Zadanie: '+task})});
+ assert.deepEqual(registry.recommend('task summary').map(item=>item.id),['task-summary']);
+ assert.equal(registry.recommend('unrelated words').length,0);
+ assert.throws(()=>registry.recommend('task summary','write:production'),/Invalid recommendation/);
+ assert.equal(registry.recommend('task summary')[0].requiresApproval,true);
  assert.equal(registry.list()[0].id,'task-summary');
  assert.equal(registry.list()[0].permissions[0],'read:task');
  assert.throws(()=>registry.register({id:'task-summary',permissions:[],run:()=>({message:'x'})}),/Invalid or duplicate/);
