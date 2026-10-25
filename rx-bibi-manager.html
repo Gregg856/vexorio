@@ -41,6 +41,8 @@ async function refresh(){
   if(!Array.isArray(data.workflow_runs))throw Error('Nieprawidłowa odpowiedź GitHub API');
   root.replaceChildren();summary.replaceChildren();latest.textContent='Ostatnia publikacja: sprawdzanie…';
   const runs=data.workflow_runs.filter(r=>r.head_branch==='main'&&(r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||r.name==='RX Strazak — monitoring 24/7'||r.name==='RX Strażak — monitoring 24/7')).sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at)).slice(0,12);
+  // Stable signature of a failed workflow step; no raw logs or credentials are stored.
+  const failureSignature=(workflow,step)=>String(workflow||'unknown').trim().toLowerCase()+' / '+String(step||'unknown').trim().toLowerCase();
   const incidentPanel=document.getElementById('autoIncidents');
   if(incidentPanel){
    incidentPanel.replaceChildren(el('strong','','🔎 Automatyczny rejestr awarii'));
@@ -68,7 +70,8 @@ async function refresh(){
       const failedSteps=(Array.isArray(jobs.jobs)?jobs.jobs:[]).flatMap(j=>Array.isArray(j.steps)?j.steps.filter(s=>s.conclusion==='failure').map(s=>String(s.name||'Nieznany etap')):[]);
       if(failedSteps.length){
        const step=failedSteps[0],kind=/cloudflare|wrangler|publikuj/i.test(step)?'Publikacja':/test|lint|check|sprawd|regresj/i.test(step)?'Testy':'Inny etap';
-       diagnosis.textContent='Ostatnia awaria — '+kind+': '+step+(failed.length>1?' · '+failed.length+' nieudanych przebiegów tego workflow (przyczyny mogą się różnić).':'');
+       const signature=failureSignature(name,step);
+       diagnosis.textContent='Ostatnia awaria — '+kind+': '+step+' · sygnatura: '+signature+'.'+(failed.length>1?' W historii są '+failed.length+' awarie tego workflow; nie zakładamy identycznej przyczyny.':'');
       }else diagnosis.textContent='Nie znaleziono nazwy nieudanego etapu; sprawdź logi.';
      }catch(error){diagnosis.textContent='Nie można odczytać przyczyny ('+String(error.message||'błąd')+').';}
     }
