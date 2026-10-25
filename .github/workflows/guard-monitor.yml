@@ -203,7 +203,7 @@ jobs:
               source.push(lines[j].startsWith('            ') ? lines[j].slice(12) : '');
             }
             const code = source.join(String.fromCharCode(10)).replace(/\$\{\{[^}]+\}\}/g, 'success');
-            try { new (require('node:vm').Script)(code); }
+            try { new (require('node:vm').Script)('(async () => {\\n' + code + '\\n})()'); }
             catch (error) { throw new Error('GitHub script at line ' + (i + 1) + ': ' + error.message); }
             checked++;
           }
