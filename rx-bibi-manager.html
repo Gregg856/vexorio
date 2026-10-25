@@ -59,7 +59,9 @@ async function refresh(){
   const checkFailed=latestCheck&&latestCheck.status==='completed'&&latestCheck.conclusion==='failure';
   const monitorFailed=monitor&&monitor.status==='completed'&&monitor.conclusion==='failure';
   const deployFailed=current&&current.status==='completed'&&current.conclusion==='failure';
-  const priority=deployFailed||monitorFailed||checkFailed?'WYSOKI':current&&current.status!=='completed'||checkPending||monitor&&monitor.status!=='completed'?'W TRAKCIE':!current||!latestCheck||!monitor?'NIEPEŁNE DANE':'BRAK NOWYCH ALARMÓW';
+  const monitorUpdated=monitor?(timestamp(monitor.updated_at)||timestamp(monitor.created_at)):0;
+  const monitorStale=!monitorUpdated||Date.now()-monitorUpdated>24*3600000;
+  const priority=deployFailed||monitorFailed||checkFailed?'WYSOKI':current&&current.status!=='completed'||checkPending||monitor&&monitor.status!=='completed'?'W TRAKCIE':!current||!latestCheck||!monitor||monitorStale?'NIEPEŁNE DANE':'BRAK NOWYCH ALARMÓW';
   const priorityClass=priority==='WYSOKI'?'bad':priority==='BRAK NOWYCH ALARMÓW'?'ok':'wait';
   incidents.append(el('p',priorityClass,'Priorytet RX BIBI: '+priority));
   incidents.append(el('p','meta','Kolejne nieudane przebiegi (od najnowszych zakończonych): publikacje '+deployStreak+' · testy '+checkStreak+' · Strażak '+monitorStreak));
@@ -69,7 +71,7 @@ async function refresh(){
   if(deployFailed)incidents.append(el('p','bad','Najpierw sprawdź ostatnią nieudaną publikację Cloudflare.'));
   if(checkFailed)incidents.append(el('p','bad','Sprawdź ostatni nieudany przebieg testów VEXORIO.'));
   if(monitorFailed)incidents.append(el('p','bad','Sprawdź ostatni nieudany test monitoringu RX Strażak.'));
-  if(priority==='NIEPEŁNE DANE')incidents.append(el('p','wait','Nie wszystkie najnowsze wyniki są widoczne w pobranej historii; brak alarmu nie oznacza potwierdzonego bezpieczeństwa.'));
+  if(priority==='NIEPEŁNE DANE')incidents.append(el('p','wait','Brakuje części aktualnych wyników lub monitoring Strażaka ma ponad 24 godziny. Brak alarmu nie oznacza potwierdzonego bezpieczeństwa.'));
   if(priority==='BRAK NOWYCH ALARMÓW')incidents.append(el('p','meta','Ostatnie widoczne wyniki są udane; to nie jest potwierdzenie dostępności strony.'));
   if(priority==='W TRAKCIE')incidents.append(el('p','wait','Trwa publikacja, test lub monitoring. Nie potwierdzamy jeszcze wyniku ani usunięcia wcześniejszych problemów.'));
   const failedRuns=data.workflow_runs.filter(r=>r.head_branch==='main'&&r.status==='completed'&&r.conclusion==='failure'&&['Deploy VEXORIO','VEXORIO checks','RX Strazak — monitoring 24/7','RX Strażak — monitoring 24/7'].includes(r.name));
