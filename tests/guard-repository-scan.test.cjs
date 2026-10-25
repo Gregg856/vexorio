@@ -16,9 +16,9 @@ try{
  fs.writeFileSync(path.join(dir,'missing-script.js'),'const ok=1;');
  assert.equal(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.length,0);
  fs.writeFileSync(path.join(dir,'guard-lab.html'),'<script src="/guard-developer-inspector.js"></script>');
+ fs.mkdirSync(path.join(dir,'guard'));
  fs.writeFileSync(path.join(dir,'guard','developer-inspector.cjs'),'const inspect=1;');
  assert.equal(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.length,0,'generated browser asset should resolve to its source');
- fs.mkdirSync(path.join(dir,'guard'));
  fs.mkdirSync(path.join(dir,'tests'));
  fs.writeFileSync(path.join(dir,'guard','helper.cjs'),'const x=1;');
  fs.writeFileSync(path.join(dir,'tests','example.test.cjs'),'const x=1;');
