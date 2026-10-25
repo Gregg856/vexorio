@@ -106,8 +106,16 @@ jobs:
             if(!artifact){
               core.summary.addRaw('Brak klasyfikacji: bezpieczna blokada automatycznej zmiany.\\n');
             }else{
-              const archive=await github.rest.actions.downloadArtifact({owner,repo,artifact_id:artifact.id,archive_format:'zip'});
-              const bytes=Buffer.isBuffer(archive.data) ? archive.data : Buffer.from(archive.data);
+              let bytes;
+              try {
+                const archive=await github.rest.actions.downloadArtifact({owner,repo,artifact_id:artifact.id,archive_format:'zip'});
+                bytes=Buffer.isBuffer(archive.data) ? archive.data : Buffer.from(archive.data);
+              } catch(error) {
+                core.warning('Nie mozna pobrac raportu RX: '+error.message);
+                core.summary.addRaw('Pobranie raportu nie powiodlo sie. Brak zmian kodu.\\n');
+                await core.summary.write();
+                return;
+              }
               const zlib=require('zlib');
               let report=null;
               for(let i=0;i+30<bytes.length;i++){
