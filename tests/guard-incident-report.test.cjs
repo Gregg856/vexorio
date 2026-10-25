@@ -6,6 +6,6 @@ for(const label of ['### Ocena diagnozy RX','Objawy: ','Przyczyna: NIEPOTWIERDZO
  assert.ok(workflow.includes(label),'Missing RX report section: '+label);
 }
 assert.ok(workflow.includes("const diagnosticNote = ["),'Missing RX diagnostic report');
-assert.ok(workflow.includes("priorNote + '\\n\\n' + diagnosticNote"),'RX diagnostic must be included in incident reports');
+assert.ok(workflow.includes("priorNote + '\\\\n\\\\n' + diagnosticNote"),'RX diagnostic must be included in incident reports');
 assert.ok(workflow.includes("automatic_patch_allowed: false"),'RX must remain read-only');
 console.log('PASS: RX incident report separates evidence, hypotheses and verified fixes');
