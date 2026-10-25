@@ -9,6 +9,7 @@
 const latest=document.getElementById('latest'),summary=document.getElementById('summary'),root=document.getElementById('runs'),status=document.getElementById('status'),button=document.getElementById('refresh');
 function el(tag,cls,content){const node=document.createElement(tag);if(cls)node.className=cls;if(content!==undefined)node.textContent=content;return node;}
 async function refresh(){
+ if(button.disabled)return;
  button.disabled=true;latest.textContent='Ostatnia publikacja: sprawdzanie…';status.textContent='Pobieram historię z GitHub…';root.replaceChildren();summary.replaceChildren();
  try{
   const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=20',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
