@@ -1,7 +1,7 @@
 /* RX PhotoMotion 1.0 — local slideshow renderer, not generative AI. */
 (function(root){
 'use strict';
-async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',caption='',captionPosition='bottom',audioFile=null,audioVolume=0.7,onProgress=()=>{}}){
+async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',caption='',captionPosition='bottom',audioFile=null,audioVolume=0.7,audioStart=0,onProgress=()=>{}}){
  if(!files||!files.length)throw Error('Dodaj zdjęcia, aby utworzyć film.');
  if(!root.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error('Ta przeglądarka nie obsługuje lokalnego nagrywania wideo.');
  const mime=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9'].find(x=>MediaRecorder.isTypeSupported(x));
@@ -32,7 +32,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
     const decoded=await audioContext.decodeAudioData(await audioFile.arrayBuffer());
     const destination=audioContext.createMediaStreamDestination(),gain=audioContext.createGain();
     gain.gain.value=Math.min(1,Math.max(0,Number(audioVolume)||0));
-    audioSource=audioContext.createBufferSource();audioSource.buffer=decoded;audioSource.loop=true;
+    audioSource=audioContext.createBufferSource();audioSource.buffer=decoded;audioSource.loop=true;audioSource.loopStart=0;audioSource.loopEnd=decoded.duration;
     audioSource.connect(gain);gain.connect(destination);
     destination.stream.getAudioTracks().forEach(track=>stream.addTrack(track));
    }catch(error){await audioContext.close();stream.getTracks().forEach(track=>track.stop());throw Error('Nie można odczytać muzyki: '+error.message)}
@@ -82,7 +82,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   }
   draw(0);
   try{recorder.start(250)}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
-  if(audioSource)audioSource.start();
+  if(audioSource){const offset=Math.max(0,Number(audioStart)||0)%audioSource.buffer.duration;audioSource.start(0,offset)}
   const start=performance.now();
   function frame(now){if(recorder.state==='inactive'){stopped=true;stream.getTracks().forEach(track=>track.stop());return}const t=Math.min(duration,(now-start)/1000);try{draw(t)}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;recorder.stop();stream.getTracks().forEach(track=>track.stop())}else frameId=requestAnimationFrame(frame)}
   frameId=requestAnimationFrame(frame);
