@@ -18,18 +18,21 @@
   if(!healthBox)return;
   healthBox.replaceChildren();
   let reports=[];
+  let diagnosticsUnavailable=!plugins?.diagnostics;
   try{
    const raw=plugins?.diagnostics?.()||[];
+   if(!Array.isArray(raw))diagnosticsUnavailable=true;
    if(Array.isArray(raw))reports=raw.filter(r=>r&&typeof r.id==='string'&&['ok','error','not-tested'].includes(r.status)).map(r=>({
     id:r.id.slice(0,80),status:r.status,
     checks:Number.isSafeInteger(r.checks)&&r.checks>=0?r.checks:0,
     failures:Number.isSafeInteger(r.failures)&&r.failures>=0?r.failures:0
    }));
-  }catch(_){reports=[];}
+  }catch(_){reports=[];diagnosticsUnavailable=true;}
 
   const title=document.createElement('strong');title.textContent='Centrum błędów RX — lokalna sesja';
   const summary=document.createElement('p');
   summary.textContent='Moduły: '+reports.length+' · OK: '+reports.filter(r=>r.status==='ok').length+' · Aktualne błędy: '+reports.filter(r=>r.status==='error').length+' · Nietestowane: '+reports.filter(r=>r.status==='not-tested').length+' · Łącznie błędnych prób: '+reports.reduce((n,r)=>n+r.failures,0);
+  if(diagnosticsUnavailable)summary.textContent='UWAGA: Diagnostyka RX jest niedostępna. Nie można potwierdzić stanu wtyczek.';
   const list=document.createElement('ul');
   for(const report of reports){
    const item=document.createElement('li');
