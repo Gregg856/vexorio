@@ -398,6 +398,22 @@ jobs:
               '). RX nie zmienia automatycznie kodu.\n\n' + recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\n' + fixNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
+              // Keep one open issue, but record a new signature once if the failure changes.
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner,repo,issue_number:existing.number,per_page:100
+              });
+              const marker = 'RX-FINGERPRINT: ' + fingerprint;
+              const alreadyRecorded = (existing.body || '').includes(marker) ||
+                comments.some(c => (c.body || '').includes(marker));
+              if (!alreadyRecorded) {
+                await github.rest.issues.createComment({
+                  owner,repo,issue_number:existing.number,
+                  body:'RX wykrył nowy zestaw sygnałów podczas trwającego incydentu. ' +
+                    '[Logi uruchomienia](' + context.serverUrl + '/' + owner + '/' + repo +
+                    '/actions/runs/' + context.runId + ').\\n\\n' + matchNote +
+                    priorNote + '\\n\\n' + fixNote + '\\n\\n' + marker
+                });
+              }
               core.notice('RX incident already open: #' + existing.number);
             } else {
               await github.rest.issues.create({owner,repo,title,body,assignees:[owner]});
