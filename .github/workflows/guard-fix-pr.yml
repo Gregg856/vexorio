@@ -55,6 +55,17 @@ jobs:
           mkdir -p tests
           printf "'use strict';\\nconst assert = require('node:assert/strict');\\nassert.ok(true);\\n" > tests/guard-autofix-smoke.test.cjs
           node tests/guard-autofix-smoke.test.cjs
+      - name: Recheck proposed code and regression suite
+        run: |
+          set -euo pipefail
+          node --check "${{ inputs.target }}"
+          node tests/guard-security-diagnostics.test.cjs
+          node tests/guard-code-fix.test.cjs
+          node tests/guard-patch-preview.test.cjs
+          node tests/guard-developer-inspector.test.cjs
+          node tests/guard-prepare-safe-fix.test.cjs
+          node tests/guard-fix-pipeline.test.cjs
+          git diff --check
       - name: Verify allowed changed files
         env:
           TARGET: ${{ inputs.target }}
