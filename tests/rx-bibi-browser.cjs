@@ -122,6 +122,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const copied=await page.evaluate(()=>navigator.clipboard.readText());
       record('RX BIBI raport — treść w schowku',copied.includes('RX BIBI — raport diagnostyczny')&&copied.includes('Źródło: publiczne GitHub Actions')&&copied.includes('Dotyczy tylko ostatnich pobranych przebiegów na main.')&&copied.includes(String.fromCharCode(10)),copied.slice(0,180));
       record('RX BIBI raport — komunikat powodzenia',await priorityPanel.getByText('Skopiowano diagnozę do schowka.').count()===1);
+      const firstHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI historia — pierwszy zapis',firstHistory.length===1&&typeof firstHistory[0].summary==='string',JSON.stringify(firstHistory));
+      await copyDiagnosis.click();
+      const secondHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      const historyText=await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).innerText();
+      record('RX BIBI historia — porównanie raportów',secondHistory.length===2&&historyText.includes('2/10')&&historyText.includes('Poprzedni raport:'),historyText.slice(0,240));
+      await page.reload();
+      const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI historia — trwałość po odświeżeniu',persisted.length===2);
     }catch(error){record('RX BIBI raport — kopiowanie na telefonie',false,error.message);}
     const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
     const triageText=await triagePanel.innerText();
