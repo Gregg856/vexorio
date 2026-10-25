@@ -41,10 +41,14 @@ jobs:
             const {owner,repo}=context.repo;
             const number=Number(process.env.PR_NUMBER);
             const files=await github.paginate(github.rest.pulls.listFiles,{owner,repo,pull_number:number});
-            const safe=files.length===1&&files[0].filename==='tests/guard-autofix-smoke.test.cjs';
+            const pr=await github.rest.pulls.get({owner,repo,pull_number:number});
+            const safe=pr.data.draft===true
+              && pr.data.merged===false
+              && files.length===1
+              && files[0].filename==='tests/guard-autofix-smoke.test.cjs';
             await github.rest.pulls.update({owner,repo,pull_number:number,state:'closed'});
             core.summary.addRaw('RX smoke PR #'+number+' zamkniety bez scalania. Pliki: '+files.map(x=>x.filename).join(', ')+'\\n');
-            if(!safe)core.setFailed('Unexpected files in RX smoke PR');
+            if(!safe)core.setFailed('RX smoke PR is not a safe draft or has unexpected files');
       - name: Require created PR
         if: always()
         env:
