@@ -40,9 +40,12 @@ const {chromium,devices}=require('playwright');
    await page.locator('#transition').selectOption('fade');
    await page.locator('#duration').selectOption('5');
    await page.locator('#prepare').click();
+   const beforeFade=await page.locator('#videoDownload').getAttribute('href');
    await page.locator('#render').click();
-   await page.locator('#videoResult').waitFor({state:'visible',timeout:45000});
-   check('Dwa zdjecia i fade',await page.locator('#videoDownload').getAttribute('href')!==null);
+   await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.href&&a.getAttribute('href')!==old},beforeFade,{timeout:45000});
+   await page.locator('#render').waitFor({state:'visible'});
+   await page.waitForFunction(()=>!document.getElementById('render').disabled);
+   check('Dwa zdjecia i fade',await page.locator('#videoDownload').getAttribute('href')!==beforeFade);
    // Verify 30-second storyboard, but do not encode 30 seconds on every daily run.
    await page.locator('#duration').selectOption('30');
    await page.locator('#prepare').click();
