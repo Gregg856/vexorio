@@ -79,6 +79,26 @@ jobs:
             node --check guard-chat.js
             node tests/search-location-regression.test.js
           fi
+      - name: Generate scheduled read-only patch suggestions
+        if: github.event_name == 'schedule'
+        run: |
+          set -eu
+          mkdir -p strazak-proposals
+          for target in guard-chat.js guard-github-panel.js guard-code-ui.js guard-code-fix.js; do
+            node guard/patch-proposal.cjs "$target"
+            mv strazak-patch-proposal.txt "strazak-proposals/${target}.txt"
+          done
+          echo 'Propozycje zmian (bez zapisu do repozytorium):' >> "$GITHUB_STEP_SUMMARY"
+          for report in strazak-proposals/*.txt; do
+            head -n 3 "$report" >> "$GITHUB_STEP_SUMMARY"
+          done
+      - name: Upload scheduled patch suggestions
+        if: github.event_name == 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: strazak-daily-proposals
+          path: strazak-proposals/
+          retention-days: 7
       - name: Prepare patch proposal artifact
         if: github.event_name == 'workflow_dispatch' && inputs.scope == 'guard' && inputs.proposal_file != ''
         env:
