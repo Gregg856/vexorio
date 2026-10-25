@@ -9,7 +9,7 @@ function parseConfirmedFixes(markdown){
  for(let i=1;i+1<sections.length;i+=2){
   const id='RX-FIX-'+sections[i],body=sections[i+1];
   const title=body.split(/\r?\n/,1)[0].trim();
-  const field=(name)=>{const line=body.split(/\r?\n/).find(value=>value.startsWith('- **'+name+'**:'));return line?line.slice(('- **'+name+'**:').length).trim():'';};
+  const field=(name)=>{const prefix='- **'+name+':**';const line=body.split(/\r?\n/).find(value=>value.startsWith(prefix));return line?line.slice(prefix.length).trim():'';};
   const status=field('Status'),fingerprint=field('Odcisk awarii (RX-FINGERPRINT)');
   const commit=field('Commit lub PR'),test=field('Test regresyjny');
   if(status!=='potwierdzone'||!FINGERPRINT.test(fingerprint))continue;
