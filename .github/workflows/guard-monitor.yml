@@ -282,6 +282,12 @@ jobs:
             const signatureItems = [...new Set([...stages.map(x => 'stage:' + x), ...rawErrors.map(x => 'detail:' + x)])].sort();
             const fingerprint = crypto.createHash('sha256').update(signatureItems.join('\\n')).digest('hex').slice(0, 16);
             const exactMatches = previousClosed.filter(i => (i.body || '').includes('RX-FINGERPRINT: ' + fingerprint));
+            const priorReferences = exactMatches.slice(0, 3).map(i =>
+              '- [Poprzedni incydent #' + i.number + '](' + i.html_url + ') — zamkniety ' + (i.closed_at || 'brak daty')
+            );
+            const priorNote = priorReferences.length
+              ? '\\n\\nPowiazane poprzednie incydenty:\\n' + priorReferences.join('\\n')
+              : '';
             const matchNote = exactMatches.length
               ? 'Ten sam zestaw sygnalow wystapil w ' + exactMatches.length + ' zamknietych incydentach z ostatnich 30 dni.'
               : 'Brak identycznego zestawu sygnalow w zamknietych incydentach z ostatnich 30 dni.';
@@ -289,10 +295,10 @@ jobs:
             const recurrence = previousClosed.length > 0
               ? 'Uwaga: w ostatnich 30 dniach wystapilo ' + previousClosed.length + ' wczesniejszych, zamknietych incydentow RX. Nie musi to byc ta sama przyczyna.'
               : 'Brak wczesniejszych zamknietych incydentow RX z ostatnich 30 dni.';
-            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence + '\\n\\n' + matchNote + '\\n\\nOdcisk bledu: ' + fingerprint).write();
+            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\nOdcisk bledu: ' + fingerprint).write();
             const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
-              '). RX nie zmienia automatycznie kodu.\n\n' + recurrence + '\\n\\n' + matchNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
+              '). RX nie zmienia automatycznie kodu.\n\n' + recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
               core.notice('RX incident already open: #' + existing.number);
