@@ -42,6 +42,9 @@ assert.ok(bibi.includes('id="strażakStatus"'),'RX BIBI must show RX Strażak mo
 assert.ok(bibi.includes('id="incidents"'),'RX BIBI must have incident overview');
 assert.ok(bibi.includes('Priorytet RX BIBI:'),'RX BIBI 1.3 must display priority');
 assert.ok(bibi.includes('id="alerts"'),'RX BIBI 1.3 must have a dedicated alert center');
+assert.ok(bibi.includes('Historia napraw: po nieudanej publikacji'),'RX BIBI 1.3 must show recovery timeline');
+assert.ok(bibi.includes('To potwierdza wynik wdrożenia, nie dostępność serwisu'),'RX BIBI must not conflate deployment recovery with uptime');
+assert.ok(bibi.includes('brak późniejszej udanej publikacji'),'RX BIBI must disclose unresolved failed deployment');
 assert.ok(bibi.includes('Centrum alarmów — RX BIBI 1.3'),'RX BIBI 1.3 must render alert center heading');
 assert.ok(bibi.includes('Pilne: ostatnia publikacja nieudana'),'RX BIBI 1.3 must prioritize failed deployments');
 assert.ok(bibi.includes('Pilne: ostatnie testy nieudane'),'RX BIBI 1.3 must prioritize failed tests');
