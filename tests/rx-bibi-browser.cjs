@@ -50,6 +50,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('Odnośniki do sekcji RX działają',navigation.length>0&&navigation.every(link=>link.exists),JSON.stringify(navigation));
     const tapTargets=await toolCenter.locator('nav a').evaluateAll(links=>links.map(link=>({text:link.textContent.trim(),width:Math.round(link.getBoundingClientRect().width),height:Math.round(link.getBoundingClientRect().height)})));
     record('Przyciski narzędzi RX mieszczą się na telefonie',tapTargets.length>=3&&tapTargets.every(item=>item.width>=44&&item.height>=24),JSON.stringify(tapTargets));
+    try {
+      await incidentPanel.getByText('🔎 Automatyczny rejestr awarii').waitFor({state:'visible',timeout:15000});
+      const incidentText=await incidentPanel.innerText();
+      record('RX BIBI 1.4 rejestr załadowany',/ostatnich|powiązanych uruchomieniach/i.test(incidentText),incidentText.slice(0,350));
+      const priorityLabels=incidentPanel.locator('p').filter({hasText:/RX BIBI 1\.4 ·/});
+      const priorityCount=await priorityLabels.count();
+      const invalidLabels=await priorityLabels.filter({hasText:/undefined|NaN|\[object Object\]/}).count();
+      record('RX BIBI 1.4 priorytety poprawne',invalidLabels===0,'Oznaczenia: '+priorityCount+', błędne: '+invalidLabels);
+    } catch(error) {record('RX BIBI 1.4 diagnostyka rejestru',false,error.message);}
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
