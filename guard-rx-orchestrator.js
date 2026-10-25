@@ -20,6 +20,28 @@
   if(typeof natural==='string')return {kind:'advisory',module:'rx-conversation',message:natural,requiresApproval:false};
   return {kind:'legacy',module:'commands',requiresApproval:false};
  }
+ function createSession(){
+  let last=null;
+  function isFollowUp(value){return /^(dalej|kontynuuj|rób|rob|sprawdź to|sprawdz to|popraw to|co dalej)[?!. ]*$/iu.test(value.trim());}
+  return Object.freeze({
+   remember(command){
+    if(typeof command!=='string'||command.length>500)return false;
+    const value=command.trim();
+    if(!/^(sprawdź|sprawdz|przeanalizuj|oceń|ocen|napraw|popraw|dodaj|zbuduj|przetestuj|testuj|zoptymalizuj|przetłumacz|przetlumacz)\b/iu.test(value))return false;
+    last=value;return true;
+   },
+   lastTask(){return last;},
+   clear(){last=null;},
+   followUp(value,context={}){
+    if(typeof value!=='string'||!isFollowUp(value))return null;
+    if(!last)return 'Nie mam jeszcze zadania w pamięci tej sesji. Napisz np. „sprawdź wyszukiwarkę VEXORIO”.';
+    const task=last;
+    const analysis=typeof context.analyzeTask==='function'?context.analyzeTask(task):null;
+    const risk=analysis?.risk||'unknown';
+    return 'Ostatnie zadanie: '+task+String.fromCharCode(10)+'Ocena ryzyka: '+risk+String.fromCharCode(10)+'Następny krok: sprawdź aktualny stan i przygotuj testy. Aby dodać je do kolejki, wpisz „plan: '+task+'”. Niczego nie uruchomiłem.';
+   }
+  });
+ }
  function capabilities(){
   return Object.freeze([
    {id:'rx-conversation',role:'Rozmowa i analiza intencji',mode:'advisory'},
@@ -31,7 +53,7 @@
    {id:'task-queue',role:'Lokalna kolejka zadań',mode:'approval-required'}
   ]);
  }
- const api={route,capabilities,version:'1.1.0'};
+ const api={route,capabilities,createSession,version:'1.2.0'};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  if(root)root.GuardRXOrchestrator=api;
 })(typeof window!=='undefined'?window:null);
