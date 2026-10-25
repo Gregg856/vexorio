@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {reviewDiff}=require('../guard/developer-diff.cjs');
+const patch=['diff --git a/a.js b/a.js','--- a/a.js','+++ b/a.js','@@ -1,2 +1,4 @@',' const safe=1;','+eval(userInput);','+console.log("debug");','+const password="verysecret123";','-old();'].join('\n');
+const r=reviewDiff(patch);
+assert.equal(r.readOnly,true);
+assert.equal(r.changedFiles,1);
+assert.deepEqual(r.findings.map(f=>[f.rule,f.line]),[['eval',2],['debug-log',3],['secret',4]]);
+assert.equal(r.summary.high,2);
+assert.equal(r.summary.low,1);
+assert.equal(reviewDiff('diff --git a/x b/x\n--- a/x\n+++ b/x\n@@ -1 +1 @@\n-eval(a)\n+safe()').findings.length,0);
+assert.throws(()=>reviewDiff('x'.repeat(200001)),/too large/);
+console.log('PASS: Strażak Developer 2.0 read-only diff review');
