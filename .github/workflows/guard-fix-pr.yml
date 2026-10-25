@@ -1,0 +1,76 @@
+name: Strażak — propozycja poprawki PR
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Dozwolony plik Strażaka, np. guard-chat.js'
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: strazak-fix-proposal
+  cancel-in-progress: false
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate target
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          node -e "if (!/^guard-[a-z0-9-]+\\.js$/.test(process.env.TARGET)) process.exit(1)"
+          test -f "$TARGET"
+      - name: Run baseline tests
+        run: |
+          node tests/guard-code-fix.test.cjs
+          node tests/guard-patch-preview.test.cjs
+          node tests/guard-developer-inspector.test.cjs
+      - name: Prepare deterministic patch and audit
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          node guard/prepare-safe-fix.cjs "$TARGET"
+          node --check "$TARGET"
+          node tests/guard-patch-preview.test.cjs
+          node tests/guard-code-fix.test.cjs
+          node tests/guard-developer-inspector.test.cjs
+      - name: Verify exactly one allowed changed file
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          git diff --check
+          git diff --name-only > /tmp/strazak-changed-files
+          if test -s /tmp/strazak-changed-files; then
+            test "$(wc -l < /tmp/strazak-changed-files | tr -d ' ')" = 1
+            test "$(cat /tmp/strazak-changed-files)" = "$TARGET"
+          fi
+      - name: Create draft pull request (never merge)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: ${{ inputs.target }}
+          branch: strazak/safe-fix-${{ github.run_id }}
+          delete-branch: true
+          draft: true
+          title: 'Strażak: propozycja bezpiecznej poprawki ${{ inputs.target }}'
+          commit-message: 'Strażak: reviewed deterministic TLS fix proposal'
+          body: |
+            Automatycznie przygotowana propozycja, **bez automatycznego scalania**.
+            Zakres: tylko wskazany plik Strażaka.
+            Reguła: włączenie weryfikacji TLS (rejectUnauthorized: false → true).
+            Przed zatwierdzeniem sprawdź diff, testy i wpływ na działanie.
+            Nie zmieniono strony głównej VEXORIO.
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strazak-fix-audit
+          path: strazak-fix-report.json
+          if-no-files-found: ignore
+          retention-days: 7
