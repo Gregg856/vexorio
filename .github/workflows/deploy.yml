@@ -106,6 +106,7 @@ jobs:
           node tests/guard-ai-core.test.cjs
           node tests/guard-plugin-core.test.cjs
           node tests/guard-task-analyzer-plugin.test.cjs
+          node tests/guard-greetings.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
