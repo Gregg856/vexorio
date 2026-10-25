@@ -100,6 +100,9 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX BIBI 1.9 statusy bez fałszywego potwierdzenia',incidentStates.every(s=>!s.includes('undefined')&&!s.includes('NaN')),JSON.stringify(incidentStates.slice(0,5)));
     const incidentLinks=await incidentPanel.getByRole('link',{name:'Sprawdź najnowszy przebieg'}).count();
     record('RX BIBI 1.9 linki do aktualnego przebiegu',incidentStates.length===0||incidentLinks>=incidentStates.length,'Statusy: '+incidentStates.length+', linki: '+incidentLinks);
+    const streakMessages=await incidentPanel.locator('p').filter({hasText:'RX BIBI 2.0 ·'}).allTextContents();
+    const invalidStreaks=streakMessages.filter(s=>!/RX BIBI 2\\.0 · (ALARM: co najmniej 3 kolejne nieudane przebiegi|UWAGA: 2 kolejne nieudane przebiegi|Ostatni zakończony przebieg nieudany|Brak bieżącej serii kolejnych awarii)/.test(s)||!s.includes('to nie jest dowód wspólnej przyczyny'));
+    record('RX BIBI 2.0 komunikaty serii awarii',invalidStreaks.length===0,'Sprawdzone: '+streakMessages.length+', błędne: '+invalidStreaks.length);
     const diagnosticPlans=incidentPanel.locator('p').filter({hasText:'RX BIBI 1.5 · Plan diagnostyczny:'});
     const planCount=await diagnosticPlans.count();
     const incidentPriorities=await incidentPanel.locator('p').filter({hasText:'RX BIBI 1.4 ·'}).count();
