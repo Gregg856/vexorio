@@ -113,6 +113,7 @@ jobs:
           node tests/guard-developer-ui.test.cjs
           node tests/guard-developer-runtime.test.cjs
           node tests/guard-repository-scan.test.cjs
+          node tests/guard-repository-summary.test.cjs
           node tests/guard-engine.test.cjs
           node tests/guard-duplicates.test.cjs
           node tests/guard-images.test.cjs
@@ -134,13 +135,17 @@ jobs:
           node --check worker.js
 
       - name: Strazak Developer — bezpieczny skan repozytorium
-        run: node guard/repository-scan.cjs
+        run: |
+          node guard/repository-scan.cjs
+          node guard/repository-summary.cjs
 
       - name: Zapisz raport Strazaka jako artefakt GitHub Actions
         uses: actions/upload-artifact@v4
         with:
           name: guard-developer-report
-          path: guard-developer-report.json
+          path: |
+            guard-developer-report.json
+            guard-developer-summary.json
           retention-days: 7
           if-no-files-found: error
 
