@@ -2,6 +2,8 @@
 (()=>{
  const form=document.getElementById('guardChatForm'),input=document.getElementById('guardChatInput'),messages=document.getElementById('guardChatMessages'),tasksBox=document.getElementById('guardTasks');
  if(!form||!input||!messages||!window.GuardCommands||!window.GuardTaskQueue)return;
+ const plugins=window.GuardPluginCore?.createRegistry();
+ if(plugins&&window.GuardTaskAnalyzerPlugin&&window.GuardEngine2)window.GuardTaskAnalyzerPlugin.installTaskAnalyzer(plugins,window.GuardEngine2.analyzeTask);
  const storageKey='vexorio-guard-local-tasks-v1';
  let saved=[];
  try{const parsed=JSON.parse(localStorage.getItem(storageKey)||'[]');if(Array.isArray(parsed))saved=parsed;}catch(_){}
@@ -31,7 +33,7 @@
    tasksBox.append(item);
   }
  }
- form.addEventListener('submit',event=>{
+ form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
   const answer=window.GuardCommands.respond(command);
@@ -39,6 +41,7 @@
    const task=queue.add(command.slice(command.indexOf(':')+1).trim());
    append('Strażak','Zadanie #'+task.id+' dodane do lokalnej kolejki. Zatwierdzenie nie uruchamia zmian w GitHubie.');
    persist();renderTasks();
+   if(plugins){try{const report=await plugins.execute('task-analyzer',{task:task.title},true);append('Analiza Strażaka',report.message);}catch(_){append('Strażak','Analiza jest chwilowo niedostępna.');}}
   }else append('Strażak',answer.message);
  });
  renderTasks();
