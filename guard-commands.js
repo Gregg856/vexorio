@@ -4,6 +4,8 @@ const HELP='Polecenia: pomoc, status, test, plan: [opis], możliwości. Wykonywa
 function respond(command){
  if(typeof command!=='string'||!command.trim()||command.length>2000)return {kind:'error',message:'Wpisz polecenie do 2000 znaków.'};
  const c=command.trim(),lower=c.toLocaleLowerCase('pl');
+ if(/^(cześć|czesc|hej|hejka|witaj|siema|dzień dobry|dzien dobry|hello|hi|hallo)[!. ]*$/.test(lower))return {kind:'greeting',message:'Cześć! 🛡️ Jestem Strażak AI. Uczę się rozumieć Twoje polecenia. Mogę przygotować analizę zadania — wpisz np. „plan: sprawdź wyszukiwarkę VEXORIO”. Nie wykonuję jeszcze zmian samodzielnie.'};
+ if(/^(dzięki|dzieki|dziękuję|dziekuje|super|ok|okej)[!. ]*$/.test(lower))return {kind:'conversation',message:'Jasne! 😊 Napisz, co chcesz zrobić. Jeśli mam przeanalizować zadanie, zacznij od „plan:”.'};
  if(/^(pomoc|help|co potrafisz|możliwości)\??$/.test(lower))return {kind:'help',message:HELP};
  if(/^(status|stan)\??$/.test(lower))return {kind:'status',message:'Strażak: czat lokalny działa. Repozytorium, testy i wdrożenia nie są połączone z czatem.'};
  if(/^(test|testy)\??$/.test(lower))return {kind:'test',message:'Tryb testowy czatu działa. To nie uruchamia testów GitHub.'};
