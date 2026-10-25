@@ -135,6 +135,13 @@
    catch(_){append('Strażak','Nie udało się przeanalizować kodu.');}
    return;
   }
+  if(/^(?:rx status|status rx|moduły rx|moduly rx)$/iu.test(command)){
+   const registry=window.GuardRXOrchestrator?.capabilities?.();
+   append('RX Strażak',registry
+    ?'RX — centrum koordynacji ('+registry.length+' funkcji):'+String.fromCharCode(10)+registry.map(item=>'• '+item.role+' ['+item.mode+']').join(String.fromCharCode(10))+String.fromCharCode(10)+'Wszystkie operacje mają ograniczone uprawnienia. RX nie publikuje samodzielnie.'
+    :'Koordynator RX jest niedostępny. Odśwież panel.');
+   return;
+  }
   if(window.GuardRXOrchestrator){
    const routing=window.GuardRXOrchestrator.route(command,{
     conversation:window.GuardRXConversation,
