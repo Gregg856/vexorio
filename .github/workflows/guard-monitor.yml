@@ -273,7 +273,7 @@ jobs:
             await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence).write();
             const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
-              '). RX nie zmienia automatycznie kodu.\\n\\n' + recurrence;
+              '). RX nie zmienia automatycznie kodu.\n\n' + recurrence;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
               core.notice('RX incident already open: #' + existing.number);
