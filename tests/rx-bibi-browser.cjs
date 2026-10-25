@@ -114,6 +114,12 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const links=await priorityPanel.getByRole('link',{name:'Otwórz wynik'}).count();
       record('RX BIBI 2.0 linki do awarii',brokenCount===links,'Linki: '+links);
     }catch(error){record('RX BIBI 2.0 test panelu alarmów',false,error.message);}
+    const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
+    const triageText=await triagePanel.innerText();
+    const hasActiveFailure=triageText.includes('Aktualnie nieudane workflow:');
+    const hasTriage=triageText.includes('RX BIBI — proponowana kolejność: 1.');
+    record('RX BIBI 2.0 diagnostyka przy aktywnej awarii',!hasActiveFailure||hasTriage,'Awaria: '+hasActiveFailure+', zalecenia: '+hasTriage);
+    record('RX BIBI 2.0 brak automatycznych napraw',!hasTriage||triageText.includes('Żadna naprawa nie uruchamia się automatycznie.'));
     const diagnosticPlans=incidentPanel.locator('p').filter({hasText:'RX BIBI 1.5 · Plan diagnostyczny:'});
     const planCount=await diagnosticPlans.count();
     const incidentPriorities=await incidentPanel.locator('p').filter({hasText:'RX BIBI 1.4 ·'}).count();
