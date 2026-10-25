@@ -1,0 +1,28 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const cp=require('node:child_process');
+const root=path.resolve(__dirname,'..');
+const script=path.join(root,'guard/prepare-safe-fix.cjs');
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'strazak-fix-test-'));
+try{
+ const target='guard-example.js';
+ const file=path.join(dir,target);
+ fs.writeFileSync(file,'const options = {rejectUnauthorized: false};\n');
+ let result=cp.spawnSync(process.execPath,[script,target],{cwd:dir,encoding:'utf8'});
+ assert.equal(result.status,0,result.stderr);
+ assert.match(fs.readFileSync(file,'utf8'),/rejectUnauthorized: true/);
+ let report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(report.changed,true);
+ assert.equal(report.findings.length,1);
+ result=cp.spawnSync(process.execPath,[script,target],{cwd:dir,encoding:'utf8'});
+ assert.equal(result.status,0,result.stderr);
+ report=JSON.parse(fs.readFileSync(path.join(dir,'strazak-fix-report.json'),'utf8'));
+ assert.equal(report.changed,false);
+ result=cp.spawnSync(process.execPath,[script,'../index.html'],{cwd:dir,encoding:'utf8'});
+ assert.notEqual(result.status,0);
+ assert.equal(fs.existsSync(path.join(dir,'index.html')),false);
+ console.log('PASS: safe fix generator changes only permitted file and is idempotent');
+}finally{fs.rmSync(dir,{recursive:true,force:true});}
