@@ -46,6 +46,10 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('Historia napraw na telefonie',await page.getByRole('region',{name:'Historia rozwiązanych problemów'}).count()===1);
     const mobileLinks=await toolCenter.getByRole('link').count();
     record('Nawigacja narzędzi RX',mobileLinks>=4,'Liczba linków: '+mobileLinks);
+    const navigation=await toolCenter.locator('a[href^="#"]').evaluateAll(links=>links.map(link=>({href:link.getAttribute('href'),exists:!!document.getElementById(decodeURIComponent(link.getAttribute('href').slice(1)))})));
+    record('Odnośniki do sekcji RX działają',navigation.length>0&&navigation.every(link=>link.exists),JSON.stringify(navigation));
+    const tapTargets=await toolCenter.locator('nav a').evaluateAll(links=>links.map(link=>({text:link.textContent.trim(),width:Math.round(link.getBoundingClientRect().width),height:Math.round(link.getBoundingClientRect().height)})));
+    record('Przyciski narzędzi RX mieszczą się na telefonie',tapTargets.length>=3&&tapTargets.every(item=>item.width>=44&&item.height>=24),JSON.stringify(tapTargets));
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
