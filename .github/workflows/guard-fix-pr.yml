@@ -37,7 +37,8 @@ jobs:
             const active=prs.some(pr=>pr.draft&&pr.head.ref.startsWith('strazak/safe-fix-'));
             core.setOutput('skip',active?'true':'false');
             if(active)core.notice('Existing RX draft PR: skip duplicate automatic proposal');
-      - uses: actions/checkout@v4
+      - name: Checkout RX sources
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Validate target
@@ -99,7 +100,7 @@ jobs:
               fi
             done < /tmp/strazak-changed-files
           fi
-          if [ "${{ inputs.smoke_test }}" = "true" ]; then
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.smoke_test || false }}" = "true" ]; then
             test -f tests/guard-autofix-smoke.test.cjs
           else
             test ! -e tests/guard-autofix-smoke.test.cjs
