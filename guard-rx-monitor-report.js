@@ -36,12 +36,16 @@
     const recent=completed.slice(0,5);
     const consecutive=recent.findIndex(item=>item.conclusion!=='failure');
     const streak=consecutive===-1?recent.length:consecutive;
+    const groups={failure:0,timed_out:0,action_required:0,cancelled:0,success:0};
+    for(const item of completed){if(Object.hasOwn(groups,item.conclusion))groups[item.conclusion]++;}
+    const kinds=Object.entries(groups).filter(([kind,count])=>kind!=='success'&&count>0).map(([kind,count])=>(labels[kind]||kind)+': '+count);
+    const categorySummary=kinds.length?' Kategorie wyników: '+kinds.join(' · ')+'.':'';
     if(failed.length>=2){
-     recurring.textContent='⚠️ Powtarzające się nieudane kontrole: '+failed.length+' z '+completed.length+' zakończonych uruchomień (ostatnie 5).'+(streak>=2?' Seria kolejnych niepowodzeń: '+streak+'.':'')+' To powtórzenie wyniku, nie dowód tej samej przyczyny awarii.';
+     recurring.textContent='⚠️ Powtarzające się nieudane kontrole: '+failed.length+' z '+completed.length+' zakończonych uruchomień (ostatnie 5).'+(streak>=2?' Seria kolejnych niepowodzeń: '+streak+'.':'')+' To powtórzenie wyniku, nie dowód tej samej przyczyny awarii.'+categorySummary;
     }else if(failed.length===1){
-     recurring.textContent='Jedna nieudana kontrola wśród '+completed.length+' zakończonych uruchomień. Za mało danych, aby uznać problem za powracający.';
+     recurring.textContent='Jedna nieudana kontrola wśród '+completed.length+' zakończonych uruchomień. Za mało danych, aby uznać problem za powracający.'+categorySummary;
     }else if(completed.length){
-     recurring.textContent='Brak nieudanych kontroli wśród '+completed.length+' ostatnich zakończonych uruchomień.';
+     recurring.textContent='Brak nieudanych kontroli wśród '+completed.length+' ostatnich zakończonych uruchomień.'+categorySummary;
     }else recurring.textContent='Brak zakończonych kontroli do analizy.';
    }
    if(history){
