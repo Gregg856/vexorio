@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {inspectSource}=require('../guard/developer-inspector.cjs');
+const source=['const a=eval(userInput);','el.innerHTML = html;','console.log(token);'].join('\n');
+const result=inspectSource({path:'src/main.js',source});
+assert.equal(result.readOnly,true);
+assert.deepEqual(result.findings.map(f=>[f.rule,f.line]),[['eval',1],['inner-html',2],['console-log',3]]);
+assert.equal(inspectSource({path:'ok.js',source:'const x = 1;'}).findings.length,0);
+assert.throws(()=>inspectSource({path:'../secret.js',source:'x'}),/Invalid source input/);
+assert.throws(()=>inspectSource({path:'test.js',source:'x'.repeat(100001)}),/Invalid source input/);
+console.log('PASS: Strażak Developer read-only source inspection');
