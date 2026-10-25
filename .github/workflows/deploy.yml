@@ -70,6 +70,7 @@ jobs:
 
           [vars]
           VIEW_COUNT_ENABLED = "false"
+          SUPABASE_URL = "https://lfytoxcnutduahshbsko.supabase.co"
           EOF
 
       - name: Sprawdz skladnie JavaScript
