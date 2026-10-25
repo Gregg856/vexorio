@@ -156,7 +156,9 @@
    if(!Array.isArray(open)||!Array.isArray(closed))throw Error('Invalid PR data');
    const isGuard=pr=>pr&&pr.head&&typeof pr.head.ref==='string'&&pr.head.ref.startsWith('strazak/safe-fix-');
    const drafts=open.filter(pr=>isGuard(pr)&&pr.draft===true);
+   const reviewReady=open.filter(pr=>isGuard(pr)&&pr.draft!==true);
    const finished=closed.filter(pr=>isGuard(pr)&&pr.merged_at);
+   const rejected=closed.filter(pr=>isGuard(pr)&&!pr.merged_at);
    const files=['guard-chat.js','guard-github-panel.js','guard-code-ui.js','guard-code-fix.js'];
    let detected=0,proposals=0,checked=0;
    if(window.GuardDeveloperInspector&&window.GuardPatchPreview){
@@ -176,11 +178,13 @@
    const lines=[
     'WYKRYTE: '+(checked?detected+' sygnałów w '+checked+'/4 plikach':'brak danych — inspektor lub pliki niedostępne'),
     'PROPOZYCJE: '+(checked?proposals+' bezpiecznych zmian TLS':'brak danych'),
-    'DO ZATWIERDZENIA: '+drafts.length+' otwartych roboczych PR',
-    'ZAKOŃCZONE: '+finished.length+' scalonych PR Strażaka (ostatnich 100 zamkniętych)',
+    'DO ZATWIERDZENIA: '+drafts.length+' roboczych PR, '+reviewReady.length+' otwartych gotowych do przeglądu',
+    'ZAKOŃCZONE: '+finished.length+' scalonych PR; '+rejected.length+' zamkniętych bez scalenia (wśród ostatnich 100 zamkniętych PR repozytorium)',
     'Stan z GitHub, tylko do odczytu. Propozycje nie oznaczają wykonanych poprawek.'
    ];
-   if(drafts.length)lines.push('Do przeglądu: '+drafts.slice(0,5).map(pr=>'#'+pr.number).join(', '));
+   if(drafts.length)lines.push('Robocze PR: '+drafts.slice(0,5).map(pr=>'#'+pr.number).join(', '));
+   if(reviewReady.length)lines.push('Gotowe do przeglądu: '+reviewReady.slice(0,5).map(pr=>'#'+pr.number).join(', '));
+   if(open.length===100||closed.length===100)lines.push('Uwaga: GitHub zwrócił limit 100 PR; liczby mogą być niepełne.');
    boardOutput.textContent=lines.join('\n\n');
   }catch(_){boardOutput.textContent='Nie udało się odczytać statusu PR z GitHub. Spróbuj później; nic nie zmieniono.';}
   finally{boardButton.disabled=false;}
