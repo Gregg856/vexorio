@@ -75,6 +75,7 @@
    }
    else if(outcome==='success')advice.textContent='Brak błędu w ostatnim przebiegu. To wynik monitoringu, nie pełny audyt zalogowanych funkcji.';
    else if(outcome==='failure')advice.textContent='Priorytet: WYSOKI — otwórz raport i sprawdź pierwszy niezaliczony krok oraz jego log. Jeśli padły testy Node, sprawdź wskazany plik i linię; jeśli kontrola produkcji, sprawdź dostępność zasobów i wdrożenie. Następny krok: przygotuj roboczą propozycję poprawki do zatwierdzenia, bez automatycznego wdrożenia.';
+   else if(!done&&Number.isFinite(ageHours)&&ageHours>0.5)advice.textContent='Priorytet: ŚREDNI — monitoring trwa ponad 30 minut. Sprawdź, czy zadanie nie utknęło w GitHub Actions.';
    else advice.textContent='Poczekaj na zakończenie lub sprawdź szczegóły w GitHub Actions.';
   }catch(error){
    status.textContent='Nie udało się pobrać statusu';
