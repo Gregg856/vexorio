@@ -5,12 +5,15 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  issues: write
 jobs:
   monitor:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Sprawdz strone i modul RX
+        id: check
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -33,3 +36,35 @@ jobs:
             exit 1
           fi
           echo "RX monitor: wszystkie 5 adresow odpowiada" >> "$GITHUB_STEP_SUMMARY"
+      - name: Powiadom przez jedno zgloszenie GitHub o awarii
+        if: steps.check.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[RX MONITOR] Awaria VEXORIO';
+            const {owner, repo} = context.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {owner,repo,state:'open',per_page:100});
+            const existing = issues.find(i => !i.pull_request && i.title === title);
+            const body = 'Monitoring wykrył niedostępny lub pusty zasób. Sprawdź [logi uruchomienia](' +
+              context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
+              '). RX nie zmienia automatycznie kodu.';
+            if (existing) {
+              await github.rest.issues.createComment({owner,repo,issue_number:existing.number,body});
+            } else {
+              await github.rest.issues.create({owner,repo,title,body});
+            }
+      - name: Zamknij alarm po odzyskaniu dostepnosci
+        if: steps.check.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner,repo} = context.repo;
+            const title = '[RX MONITOR] Awaria VEXORIO';
+            const issues = await github.paginate(github.rest.issues.listForRepo, {owner,repo,state:'open',per_page:100});
+            for (const issue of issues.filter(i => !i.pull_request && i.title === title)) {
+              await github.rest.issues.createComment({owner,repo,issue_number:issue.number,body:'Monitoring ponownie potwierdził dostępność wszystkich pięciu zasobów. Alarm zamknięty automatycznie.'});
+              await github.rest.issues.update({owner,repo,issue_number:issue.number,state:'closed',state_reason:'completed'});
+            }
+      - name: Zakoncz czerwonym statusem przy awarii
+        if: steps.check.outcome == 'failure'
+        run: exit 1
