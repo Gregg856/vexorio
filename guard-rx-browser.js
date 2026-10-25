@@ -143,6 +143,17 @@ module.exports={VERSION,evaluateRX};
   const description=document.getElementById('guardRxDescription').value;
   const result=modules.rx.evaluateRX({title,description},{model});
   const p=result.prediction;
-  output.textContent='RX STRAŻAK 1.0 — ANALIZA LOKALNA\\nPriorytet: '+result.priority+'\\nReguły: '+result.ruleScore+'/100 ('+result.ruleStatus+')\\nModel: '+result.modelStatus+(p?' | '+p.label+' | pewność '+Math.round(p.confidence*100)+'% | pokrycie '+Math.round(p.coverage*100)+'%':'')+'\\nSygnały: '+(result.flags.join(', ')||'brak')+'\\n\\n'+result.explanation+'\\n\\nModel demonstracyjny uczony na 8 przykładach; wyniki nie są zweryfikowaną oceną bezpieczeństwa. Bez wysyłania danych i bez automatycznych decyzji.'.replaceAll('\\n','\n');
+  const lines=[
+   'RX STRAŻAK 1.0 — ANALIZA LOKALNA',
+   'Priorytet: '+result.priority,
+   'Reguły: '+result.ruleScore+'/100 ('+result.ruleStatus+')',
+   'Model: '+result.modelStatus+(p?' | '+p.label+' | pewność '+Math.round(p.confidence*100)+'% | pokrycie '+Math.round(p.coverage*100)+'%':''),
+   'Sygnały: '+(result.flags.join(', ')||'brak'),
+   '',
+   result.explanation,
+   '',
+   'Model demonstracyjny uczony na 8 przykładach; wyniki nie są zweryfikowaną oceną bezpieczeństwa. Bez wysyłania danych i bez automatycznych decyzji.'
+  ];
+  output.textContent=lines.join(String.fromCharCode(10));
  });
 })();
