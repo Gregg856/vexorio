@@ -14,15 +14,18 @@ let activeFilter='all';
 const filterStatus=document.getElementById('filterStatus');
 function applyFilter(){let visible=0;for(const item of root.children){const matches=activeFilter==='all'||item.dataset.result===activeFilter;item.hidden=!matches;if(matches)visible++;}for(const control of document.querySelectorAll('[data-filter]'))control.setAttribute('aria-pressed',String(control.dataset.filter===activeFilter));filterStatus.textContent='Widoczne: '+visible+' z '+root.children.length+' uruchomień'+(visible===0?' — brak wyników dla tego filtra.':'.');}
 for(const control of document.querySelectorAll('[data-filter]'))control.addEventListener('click',()=>{activeFilter=control.dataset.filter;applyFilter();});
+let availabilityCheckId=0;
 async function checkAvailability(){
+ const checkId=++availabilityCheckId;
  availability.replaceChildren(el('strong','','Dostępność strony VEXORIO'),el('p','wait','Trwa sprawdzanie odpowiedzi HTTP…'));
  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),8000);
  try{
   const response=await fetch('/?rx_healthcheck='+Date.now(),{method:'GET',cache:'no-store',signal:controller.signal,redirect:'follow'});
   const type=response.headers.get('content-type')||'';
   const ok=response.ok&&type.includes('text/html');
+  if(checkId!==availabilityCheckId)return;
   availability.replaceChildren(el('strong',ok?'ok':'bad','Dostępność HTTP: '+(ok?'strona odpowiada':'nieprawidłowa odpowiedź')),el('p','meta','HTTP '+response.status+' · '+(type||'brak Content-Type')+' · Sprawdzono: '+new Date().toLocaleString('pl-PL')+'. Pojedynczy test HTTP nie potwierdza poprawności wszystkich funkcji.'));
- }catch(error){availability.replaceChildren(el('strong','bad','Dostępność HTTP: nie udało się potwierdzić odpowiedzi'),el('p','meta','Błąd połączenia lub limit 8 sekund. Nie oznacza to automatycznie trwałej awarii.'));}
+ }catch(error){if(checkId!==availabilityCheckId)return;availability.replaceChildren(el('strong','bad','Dostępność HTTP: nie udało się potwierdzić odpowiedzi'),el('p','meta','Błąd połączenia lub limit 8 sekund. Nie oznacza to automatycznie trwałej awarii.'));}
  finally{clearTimeout(timeout);}
 }
 async function refresh(){
@@ -34,13 +37,13 @@ async function refresh(){
   const data=await response.json();
   if(!Array.isArray(data.workflow_runs))throw Error('Nieprawidłowa odpowiedź GitHub API');
   root.replaceChildren();summary.replaceChildren();latest.textContent='Ostatnia publikacja: sprawdzanie…';
-  const runs=data.workflow_runs.filter(r=>r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||r.name==='RX Strazak — monitoring 24/7'||r.name==='RX Strażak — monitoring 24/7').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at)).slice(0,12);
+  const runs=data.workflow_runs.filter(r=>r.head_branch==='main'&&(r.name==='Deploy VEXORIO'||r.name==='VEXORIO checks'||r.name==='RX Strazak — monitoring 24/7'||r.name==='RX Strażak — monitoring 24/7')).sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at)).slice(0,12);
   const deployments=data.workflow_runs.filter(r=>r.name==='Deploy VEXORIO'&&r.head_branch==='main').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at));
   const successful=deployments.find(r=>r.status==='completed'&&r.conclusion==='success');
   lastSuccess.replaceChildren();
   if(successful){lastSuccess.append(el('strong','ok','Ostatnia udana publikacja (wg GitHub Actions)'));lastSuccess.append(el('p','meta','Commit: '+String(successful.head_sha||'brak').slice(0,8)+' · '+formatDate(successful.created_at)));if(typeof successful.html_url==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(successful.html_url)){const a=el('a','','Zobacz udaną publikację');a.href=successful.html_url;a.rel='noopener noreferrer';a.target='_blank';lastSuccess.append(a);}}
   else lastSuccess.textContent='Ostatnia udana publikacja: brak potwierdzenia w 50 pobranych uruchomieniach.';
-  const monitoring=data.workflow_runs.filter(r=>r.name==='RX Strazak — monitoring 24/7'||r.name==='RX Strażak — monitoring 24/7'||r.name==='RX Strazak - monitoring 24/7').sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at));
+  const monitoring=data.workflow_runs.filter(r=>r.head_branch==='main'&&(r.name==='RX Strazak — monitoring 24/7'||r.name==='RX Strażak — monitoring 24/7'||r.name==='RX Strazak - monitoring 24/7')).sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at));
   const monitor=monitoring[0];strazakStatus.replaceChildren();
   if(monitor){const state=monitor.status!=='completed'?'w toku':monitor.conclusion==='success'?'test monitoringu udany':monitor.conclusion==='failure'?'test monitoringu nieudany':monitor.conclusion==='cancelled'?'anulowany':'wymaga sprawdzenia';const monitorTime=timestamp(monitor.updated_at)||timestamp(monitor.created_at);const ageHours=(Date.now()-monitorTime)/3600000;const monitoringStale=!monitorTime||ageHours>24;strazakStatus.append(el('strong',monitor.conclusion==='success'&&monitor.status==='completed'?'ok':monitor.conclusion==='failure'?'bad':'wait','RX Strażak: '+state),el('p','meta','Ostatnie uruchomienie: '+formatDate(monitor.created_at)+' · Commit: '+String(monitor.head_sha||'brak').slice(0,8)+' · Próba: '+String(monitor.run_attempt||1)));if(monitoringStale)strazakStatus.append(el('p','wait','Uwaga: ostatni wynik monitoringu ma ponad 24 godziny lub nie ma poprawnej daty. Wynik może być nieaktualny.'));if(typeof monitor.html_url==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(monitor.html_url)){const a=el('a','','Otwórz wynik monitoringu');a.href=monitor.html_url;a.target='_blank';a.rel='noopener noreferrer';strazakStatus.append(a);}}
   else strazakStatus.textContent='RX Strażak: brak wyniku monitoringu 24/7 w 50 ostatnich uruchomieniach GitHub Actions. Otwórz RX Strażaka lub historię GitHub Actions.';
@@ -74,7 +77,8 @@ async function refresh(){
   const deployFailed=current&&current.status==='completed'&&current.conclusion==='failure';
   const monitorUpdated=monitor?(timestamp(monitor.updated_at)||timestamp(monitor.created_at)):0;
   const monitorStale=!monitorUpdated||Date.now()-monitorUpdated>24*3600000;
-  const priority=deployFailed||monitorFailed||checkFailed?'WYSOKI':current&&current.status!=='completed'||checkPending||monitor&&monitor.status!=='completed'?'W TRAKCIE':!current||!latestCheck||!monitor||monitorStale?'NIEPEŁNE DANE':'BRAK NOWYCH ALARMÓW';
+  const nonSuccess=[current,latestCheck,monitor].some(run=>run&&run.status==='completed'&&run.conclusion!=='success'&&run.conclusion!=='failure');
+  const priority=deployFailed||monitorFailed||checkFailed?'WYSOKI':current&&current.status!=='completed'||checkPending||monitor&&monitor.status!=='completed'?'W TRAKCIE':!current||!latestCheck||!monitor||monitorStale||nonSuccess?'NIEPEŁNE DANE':'BRAK NOWYCH ALARMÓW';
   const priorityClass=priority==='WYSOKI'?'bad':priority==='BRAK NOWYCH ALARMÓW'?'ok':'wait';
   alerts.replaceChildren();
   alerts.append(el('strong','','Centrum alarmów — RX BIBI 1.3'));
@@ -87,6 +91,7 @@ async function refresh(){
   if(monitor&&monitor.status!=='completed')alertItems.push(['wait','Monitoring Strażaka w toku',monitor]);
   if(monitorStale&&!(monitor&&monitor.status!=='completed'))alertItems.push(['wait','Monitoring Strażaka: brak aktualnego wyniku',monitor]);
   if(!current||!latestCheck||!monitor)alertItems.push(['wait','Niepełne dane z GitHub Actions',null]);
+  if(nonSuccess)alertItems.push(['wait','Ostatni zakończony wynik jest anulowany lub niejednoznaczny',null]);
   const uniqueAlerts=[...new Map(alertItems.map(item=>[item[1],item])).values()].sort((a,b)=>(a[0]==='bad'?0:1)-(b[0]==='bad'?0:1));
   alerts.append(el('p','meta','Aktywne ostrzeżenia: '+uniqueAlerts.length+' (bez powtórzeń).'));
   if(!uniqueAlerts.length)alerts.append(el('p','ok','Brak aktywnych alarmów w ostatnich pobranych wynikach. Nie jest to test dostępności strony.'));
@@ -100,7 +105,7 @@ async function refresh(){
   if(deployFailed)incidents.append(el('p','bad','Najpierw sprawdź ostatnią nieudaną publikację Cloudflare.'));
   if(checkFailed)incidents.append(el('p','bad','Sprawdź ostatni nieudany przebieg testów VEXORIO.'));
   if(monitorFailed)incidents.append(el('p','bad','Sprawdź ostatni nieudany test monitoringu RX Strażak.'));
-  if(priority==='NIEPEŁNE DANE')incidents.append(el('p','wait','Brakuje części aktualnych wyników lub monitoring Strażaka ma ponad 24 godziny. Brak alarmu nie oznacza potwierdzonego bezpieczeństwa.'));
+  if(priority==='NIEPEŁNE DANE')incidents.append(el('p','wait','Brakuje części aktualnych wyników, monitoring Strażaka ma ponad 24 godziny lub ostatni wynik jest niejednoznaczny. Brak alarmu nie oznacza potwierdzonego bezpieczeństwa.'));
   if(priority==='BRAK NOWYCH ALARMÓW')incidents.append(el('p','meta','Ostatnie widoczne wyniki są udane; to nie jest potwierdzenie dostępności strony.'));
   if(priority==='W TRAKCIE')incidents.append(el('p','wait','Trwa publikacja, test lub monitoring. Nie potwierdzamy jeszcze wyniku ani usunięcia wcześniejszych problemów.'));
   const failedRuns=data.workflow_runs.filter(r=>r.head_branch==='main'&&r.status==='completed'&&r.conclusion==='failure'&&['Deploy VEXORIO','VEXORIO checks','RX Strazak — monitoring 24/7','RX Strażak — monitoring 24/7'].includes(r.name));
