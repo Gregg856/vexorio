@@ -20,7 +20,7 @@
   const reports=plugins?.diagnostics?.()||[];
   const title=document.createElement('strong');title.textContent='Centrum błędów RX — lokalna sesja';
   const summary=document.createElement('p');
-  summary.textContent='Moduły: '+reports.length+' · Błędy: '+reports.reduce((n,r)=>n+r.failures,0)+' · Nietestowane: '+reports.filter(r=>r.status==='not-tested').length;
+  summary.textContent='Moduły: '+reports.length+' · OK: '+reports.filter(r=>r.status==='ok').length+' · Aktualne błędy: '+reports.filter(r=>r.status==='error').length+' · Nietestowane: '+reports.filter(r=>r.status==='not-tested').length+' · Łącznie błędnych prób: '+reports.reduce((n,r)=>n+r.failures,0);
   const list=document.createElement('ul');
   for(const report of reports){
    const item=document.createElement('li');
