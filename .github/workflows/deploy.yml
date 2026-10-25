@@ -30,6 +30,7 @@ jobs:
           cp rx-bibi-manager.html public/rx-bibi-manager.html
           cp rx-bibi-studio.html public/rx-bibi-studio.html
           cp rx-ai-director.js public/rx-ai-director.js
+          cp rx-photo-motion.js public/rx-photo-motion.js
           test -s public/rx-bibi-studio.html
           cp rx-bibi-tester-status.js public/rx-bibi-tester-status.js
           test -s public/rx-bibi-manager.html
