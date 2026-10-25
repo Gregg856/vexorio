@@ -68,7 +68,7 @@ assert.ok(bibi.includes("r.name==='Deploy VEXORIO'&&r.head_branch==='main'"),'La
 assert.ok(bibi.includes("'Data: '+(run.created_at"),'RX BIBI must format run dates correctly');
 // Cross-panel integration audit: links, production endpoints and inline JavaScript syntax.
 const vm=require('node:vm');
-const bibiScripts=[...bibi.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]).filter(Boolean);
+const bibiScripts=[...bibi.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(Boolean);
 assert.ok(bibiScripts.length>0,'RX BIBI must contain its dashboard script');
 for(const [i,script] of bibiScripts.entries())new vm.Script(script,{filename:'rx-bibi-inline-'+i+'.js'});
 assert.ok(strazak.includes('aria-label="Otwórz RX BIBI Manager 1.0"'),'Strażak must identify BIBI navigation');
