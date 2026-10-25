@@ -100,14 +100,14 @@ jobs:
             const artifact=result.data.artifacts.find(a=>a.name==='rx-classification-'+runId&&!a.expired);
             core.setOutput('skip','true');
             core.summary.addHeading('RX: klasyfikacja przed automatyczna naprawa',3);
-            core.summary.addRaw('Monitoring: '+context.payload.workflow_run.html_url+'\\n\\n');
+            core.summary.addRaw('Monitoring: '+context.payload.workflow_run.html_url+'\n\n');
             if(!artifact){
-              core.summary.addRaw('Brak klasyfikacji: bezpieczna blokada automatycznej zmiany.\\n');
+              core.summary.addRaw('Brak klasyfikacji: bezpieczna blokada automatycznej zmiany.\n');
             }else{
-              core.summary.addRaw('Znaleziono raport klasyfikacji: '+artifact.name+'.\\n');
-              core.summary.addRaw('Raport wskazuje kategorie awarii, ale nie autoryzuje zmiany pliku.\\n');
+              core.summary.addRaw('Znaleziono raport klasyfikacji: '+artifact.name+'.\n');
+              core.summary.addRaw('Raport wskazuje kategorie awarii, ale nie autoryzuje zmiany pliku.\n');
             }
-            core.summary.addRaw('Dopiero jednoznaczna, przetestowana regula i wskazany plik moga odblokowac roboczy PR.\\n');
+            core.summary.addRaw('Dopiero jednoznaczna, przetestowana regula i wskazany plik moga odblokowac roboczy PR.\n');
             await core.summary.write();
       - name: Validate target
         if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true
@@ -140,7 +140,7 @@ jobs:
         if: steps.existing.outputs.skip != 'true' && steps.monitor_gate.outputs.skip != 'true' && steps.scope.outputs.skip != 'true' && inputs.dry_run != true && inputs.smoke_test == true
         run: |
           mkdir -p tests
-          printf "'use strict';\\nconst assert = require('node:assert/strict');\\nassert.ok(true);\\n" > tests/guard-autofix-smoke.test.cjs
+          printf "'use strict';\nconst assert = require('node:assert/strict');\nassert.ok(true);\n" > tests/guard-autofix-smoke.test.cjs
           node tests/guard-autofix-smoke.test.cjs
           echo 'RX smoke: only a harmless test fixture may be proposed; never merge this PR.' >> "$GITHUB_STEP_SUMMARY"
       - name: Recheck proposed code and regression suite
