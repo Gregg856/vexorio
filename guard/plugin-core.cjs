@@ -23,4 +23,5 @@ function createRegistry(){
  }
  return Object.freeze({register,list,execute});
 }
-module.exports={createRegistry};
+if(typeof module!=='undefined'&&module.exports)module.exports={createRegistry};
+if(typeof window!=='undefined')window.GuardPluginCore={createRegistry};
