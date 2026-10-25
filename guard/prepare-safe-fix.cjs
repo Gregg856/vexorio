@@ -15,7 +15,7 @@ const report={file,readOnly:false,changed:false,rule:'tls-verification-disabled'
 if(findings.length){
  // Only one unambiguous TLS setting may be proposed at a time.
  // Reject comment-only matches and mixed lines; never silently rewrite prose.
- if(findings.length!==1||findings.some(({before})=>/^\\s*(?:\\/\\/|\\*|\\/\\*)/.test(before)||before.includes('//')||before.includes('/*'))){
+ if(findings.length!==1||findings.some(({before})=>before.trimStart().startsWith('//')||before.trimStart().startsWith('*')||before.trimStart().startsWith('/*')||before.includes('//')||before.includes('/*'))){
   report.blocked='ambiguous-or-commented-tls-setting';
  }else{
   fs.writeFileSync(absolute,proposal.proposedSource);
