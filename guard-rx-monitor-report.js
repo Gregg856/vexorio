@@ -63,6 +63,11 @@
    detail.textContent='Uruchomienie #'+run.run_number+' · '+new Date(run.created_at).toLocaleString('pl-PL')+' · commit '+String(run.head_sha||'').slice(0,7);
    latest.href=run.html_url||link;
    latest.textContent='Otwórz raport tego uruchomienia';
+   const lastCompleted=runs.find(item=>item.status==='completed');
+   const lastCompletedAge=lastCompleted?(Date.now()-Date.parse(lastCompleted.created_at||''))/3600000:Infinity;
+   if(!done&&lastCompleted&&Number.isFinite(lastCompletedAge)){
+    detail.textContent+=' · Ostatni zakończony: '+(labels[lastCompleted.conclusion]||lastCompleted.conclusion||'nieznany')+' ('+Math.round(lastCompletedAge*10)/10+' godz. temu)';
+   }
    const ageHours=(Date.now()-Date.parse(run.created_at||''))/3600000;
    if(Number.isFinite(ageHours)&&ageHours>2&&outcome==='success'){
     status.textContent='UWAGA — ostatnia kontrola jest nieaktualna';
