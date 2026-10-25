@@ -519,14 +519,22 @@ jobs:
               core.warning('Nie udalo sie odczytac bazy RX: ' + error.message);
               fixNote = 'Baza rozwiazan niedostepna; sprawdz dokumentacje recznie.';
             }
+            const diagnosticNote = [
+              '### Ocena diagnozy RX',
+              'Objawy: ' + (rawErrors.length ? rawErrors.slice(0, 10).join('; ') : 'Nieudany etap: ' + stages.join(', ')),
+              'Przyczyna: NIEPOTWIERDZONA — wymaga sprawdzenia logow i testu odtwarzajacego.',
+              'Powtarzalnosc: ' + (exactMatches.length ? exactMatches.length + ' zgodnych odciskow w zamknietych incydentach.' : 'Brak zgodnego odcisku w historii.'),
+              'Rozwiazanie: ' + fixNote,
+              'Dzialanie: tylko rekomendacja do przegladu; brak automatycznej zmiany produkcji.'
+            ].join('\\n');
             const recurrence = previousClosed.length > 0
               ? 'Uwaga: w ostatnich 30 dniach wystapilo ' + previousClosed.length + ' wczesniejszych, zamknietych incydentow RX. Nie musi to byc ta sama przyczyna.'
               : 'Brak wczesniejszych zamknietych incydentow RX z ostatnich 30 dni.';
-            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\n' + fixNote + '\\n\\nOdcisk bledu: ' + fingerprint).write();
+            await core.summary.addHeading('Historia incydentow RX', 3).addRaw(recurrence + '\\n\\n' + matchNote + priorNote + '\\n\\n' + diagnosticNote + '\\n\\nOdcisk bledu: ' + fingerprint).write();
             const body = 'Monitoring wykrył niedostępny zasób lub nieudany test funkcjonalny RX. Sprawdź [logi uruchomienia](' +
               context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId +
               '). RX nie zmienia automatycznie kodu.' + '\\n\\n' + recurrence + '\\n\\n' + matchNote +
-              priorNote + '\\n\\n' + fixNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
+              priorNote + '\\n\\n' + diagnosticNote + '\\n\\nRX-FINGERPRINT: ' + fingerprint;
             if (existing) {
               // One open incident is enough: avoid waking the owner every 30 minutes.
               // Keep one open issue, but record a new signature once if the failure changes.
