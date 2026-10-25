@@ -35,11 +35,16 @@ async function refresh(){
   const failedDeploys=deployments.filter(r=>r.status==='completed'&&r.conclusion==='failure');
   const lastSuccessfulTime=successful?timestamp(successful.created_at):0;
   const unresolved=failedDeploys.filter(r=>!lastSuccessfulTime||timestamp(r.created_at)>lastSuccessfulTime);
-  const resolved=failedDeploys.length-unresolved.length;
+  const olderFailures=failedDeploys.length-unresolved.length;
+  const failedChecks=data.workflow_runs.filter(r=>r.name==='VEXORIO checks'&&r.head_branch==='main'&&r.status==='completed'&&r.conclusion==='failure');
+  const pendingDeploys=deployments.filter(r=>r.status!=='completed').length;
   incidents.replaceChildren();
-  incidents.append(el('strong','','Przegląd błędów publikacji'));
-  incidents.append(el('p','meta','Nowe / po ostatnim sukcesie: '+unresolved.length+' · Powtarzające się próby błędne: '+Math.max(0,unresolved.length-1)+' · Wcześniejsze niż ostatni sukces: '+resolved));
-  incidents.append(el('p','meta','Na podstawie '+deployments.length+' publikacji w ostatnich 20 uruchomieniach. Wcześniejszy sukces nie gwarantuje usunięcia przyczyny awarii.'));
+  incidents.append(el('strong','','Przegląd błędów i testów'));
+  incidents.append(el('p',unresolved.length?'bad':'ok','Nieudane publikacje po ostatnim sukcesie: '+unresolved.length));
+  incidents.append(el('p','meta','Wcześniejsze nieudane publikacje: '+olderFailures+' · Nieudane testy VEXORIO: '+failedChecks.length+' · Publikacje w toku: '+pendingDeploys));
+  if(unresolved.length>1)incidents.append(el('p','meta','Kilka nieudanych prób po ostatnim sukcesie — nie oznacza to automatycznie tej samej przyczyny.'));
+  if(!successful)incidents.append(el('p','wait','Brak potwierdzonego udanego wdrożenia w pobranej historii; nie można ustalić, czy awarie są nowsze od ostatniego sukcesu.'));
+  incidents.append(el('p','meta','Zakres: ostatnie '+data.workflow_runs.length+' uruchomień GitHub Actions. To wyniki CI, nie pomiar dostępności strony. Wcześniejszy sukces nie gwarantuje usunięcia przyczyny awarii.'));
   const counts={success:0,failure:0,pending:0,other:0};for(const run of runs){if(run.status!=='completed')counts.pending++;else if(run.conclusion==='success')counts.success++;else if(run.conclusion==='failure')counts.failure++;else counts.other++;}for(const [key,label] of [['success','Udane'],['failure','Nieudane'],['pending','W toku'],['other','Pozostałe']]){const card=el('div','item');card.append(el('strong',key==='success'?'ok':key==='failure'?'bad':'wait',String(counts[key])),el('small','',label));summary.append(card);}const apiDate=response.headers.get('date');const apiAge=apiDate?Date.parse(apiDate):NaN;const rawAge=response.headers.get('age');const ageSeconds=rawAge!==null?Number(rawAge):0;const ageMinutes=Number.isFinite(apiAge)?Math.max(0,(Date.now()-apiAge)/60000):0;const stale=(Number.isFinite(ageSeconds)&&ageSeconds>300)||ageMinutes>5;freshness.textContent=!data.workflow_runs.length?'Świeżość danych: brak uruchomień w odpowiedzi GitHub API.':stale?'Świeżość danych: mogą być nieaktualne (opóźniona odpowiedź API).':'Świeżość danych: aktualne (ostatni udany odczyt).';status.textContent=(runs.length?'Ostatnie '+runs.length+' uruchomień (z '+data.workflow_runs.length+' pobranych)':'Brak dostępnych uruchomień.')+' · Odczyt: '+new Date().toLocaleString('pl-PL')+' (czas urządzenia).';
   let inspectedFailures=0;
   for(const run of runs){
