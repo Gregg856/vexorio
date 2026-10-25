@@ -71,6 +71,7 @@ jobs:
           [vars]
           VIEW_COUNT_ENABLED = "false"
           SUPABASE_URL = "https://lfytoxcnutduahshbsko.supabase.co"
+          SUPABASE_ANON_KEY = "sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz"
           EOF
 
       - name: Sprawdz skladnie JavaScript
