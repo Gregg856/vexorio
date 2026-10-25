@@ -194,6 +194,7 @@
   if(!rxAutomationStatus)return;
   rxAutomationStatus.textContent='Sprawdzam harmonogramy RX…';
   const workflows=[['Monitoring','guard-monitor.yml'],['Generator poprawek','guard-fix-pr.yml']];
+  // Read-only diagnostics: never trigger a repair from a transient failed run.
   const results=await Promise.all(workflows.map(async([label,file])=>{
    try{
     const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+file+'/runs?per_page=1',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
@@ -203,7 +204,8 @@
     if(!run)return label+': brak uruchomień';
     const state=run.status!=='completed'?'W TOKU':run.conclusion==='success'?'ZIELONY':run.conclusion==='failure'?'CZERWONY':String(run.conclusion||'nieznany').toUpperCase();
     const age=Date.now()-Date.parse(run.created_at||'');
-    const stale=Number.isFinite(age)&&age>2*60*60*1000?' · UWAGA: wynik starszy niż 2 godziny':'';
+    const threshold=file==='guard-monitor.yml'?2*60*60*1000:26*60*60*1000;
+    const stale=Number.isFinite(age)&&age>threshold?' · UWAGA: wynik starszy niż '+(file==='guard-monitor.yml'?'2':'26')+' godzin':'';
     return label+': '+state+stale+' · '+String(run.head_sha||'').slice(0,8)+' · '+String(run.event||'')+'\\n'+String(run.html_url||'');
    }catch(_){return label+': nie udało się pobrać stanu';}
   }));
