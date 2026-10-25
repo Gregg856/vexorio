@@ -20,11 +20,12 @@ jobs:
     timeout-minutes: 8
     steps:
       - name: Pobierz repozytorium
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '24'
+          package-manager-cache: false
       - name: Zainstaluj bibliotekę Playwright bez pobierania przeglądarki
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
@@ -35,7 +36,7 @@ jobs:
         run: node tests/rx-bibi-browser.cjs
       - name: Zachowaj raporty i zrzuty
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: rx-bibi-mobile-report
           path: rx-bibi-reports/
