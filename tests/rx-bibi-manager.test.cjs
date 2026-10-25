@@ -52,6 +52,7 @@ assert.ok(bibi.includes('ageSeconds>300'),'RX BIBI must warn for old API respons
 assert.ok(bibi.includes('!data.workflow_runs.length'),'RX BIBI must not report empty history as current');
 assert.ok(bibi.includes(".sort((a,b)=>timestamp(b.created_at)-timestamp(a.created_at)).slice(0,12)"),'RX BIBI must sort history newest first before limiting results');
 assert.ok(bibi.includes('function timestamp(value)'),'RX BIBI must handle missing dates in sorting');
+assert.ok(bibi.indexOf('root.append(item);')<bibi.indexOf("if(state==='failure')"),'RX BIBI must render workflow rows before awaiting failure diagnostics');
 assert.ok(bibi.includes('function formatDate(value)'),'RX BIBI must safely format workflow dates');
 assert.ok(bibi.includes('brak poprawnej daty'),'RX BIBI must handle invalid workflow dates');
 assert.ok(bibi.indexOf('root.replaceChildren();summary.replaceChildren();latest.textContent')>bibi.indexOf('if(!response.ok)throw Error'),'RX BIBI must preserve old data until successful API response');
