@@ -50,6 +50,27 @@
   }catch(_){auditOutput.textContent='Nie udało się odczytać audytu z GitHub. Sprawdź GitHub Actions lub limit publicznego API.';}
   finally{auditButton.disabled=false;}
  });
+ const proposalsButton=document.getElementById('guardDailyProposalsButton');
+ const proposalsOutput=document.getElementById('guardDailyProposalsResult');
+ if(proposalsButton&&proposalsOutput)proposalsButton.addEventListener('click',async()=>{
+  proposalsButton.disabled=true;proposalsOutput.textContent='Szukam ostatnich propozycji…';
+  try{
+   const url='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/guard-worker.yml/runs?event=schedule&per_page=10';
+   const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+   if(!response.ok)throw Error('Unavailable');
+   const data=await response.json();
+   const runs=Array.isArray(data.workflow_runs)?data.workflow_runs:[];
+   const run=runs.find(r=>r.status==='completed'&&r.conclusion==='success');
+   if(!run){proposalsOutput.textContent='Nie ma jeszcze zakończonego zielonego audytu automatycznego. Raporty pojawią się po pierwszym udanym uruchomieniu.';return;}
+   if(!Number.isSafeInteger(run.id)||run.id<=0)throw Error('Invalid run');
+   const artifacts=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/artifacts',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+   if(!artifacts.ok)throw Error('Artifacts unavailable');
+   const info=await artifacts.json();
+   const found=Array.isArray(info.artifacts)&&info.artifacts.some(a=>a.name==='strazak-daily-proposals'&&!a.expired);
+   proposalsOutput.textContent=(found?'✓ Raport propozycji jest gotowy.':'Raport propozycji nie jest dostępny dla tego uruchomienia.')+'\nData UTC: '+String(run.created_at||'').slice(0,16).replace('T',' ')+'\nPliki: guard-chat.js, guard-github-panel.js, guard-code-ui.js, guard-code-fix.js\nOtwórz audyt w GitHub Actions i pobierz artefakt „strazak-daily-proposals”.\n'+ 'https://github.com/Gregg856/vexorio/actions/runs/'+run.id+'\nTylko propozycje — bez automatycznego zapisu zmian.';
+  }catch(_){proposalsOutput.textContent='Nie udało się pobrać informacji o propozycjach. Sprawdź GitHub Actions.';}
+  finally{proposalsButton.disabled=false;}
+ });
  if(!button||!output)return;
  button.addEventListener('click',async()=>{
   button.disabled=true;output.textContent='Pobieranie raportu…';
