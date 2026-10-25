@@ -188,6 +188,20 @@
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
+  // Read-only live monitoring: never claim a check was executed by this chat.
+  if(/^(?:sprawdź|sprawdz|sprawdź błędy|sprawdz bledy|monitoring|status monitoringu|status)$/iu.test(command)){
+   append('RX Strażak','Pobieram ostatni wynik monitoringu GitHub Actions…');
+   try{
+    const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/guard-monitor.yml/runs?per_page=1',{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const data=await response.json();
+    const run=Array.isArray(data.workflow_runs)?data.workflow_runs[0]:null;
+    if(!run){append('RX Strażak','Brak dotychczasowych uruchomień monitoringu. Nie można potwierdzić stanu strony.');return;}
+    const state=run.status!=='completed'?'TRWA / OCZEKUJE':run.conclusion==='success'?'OK — testy zakończone pomyślnie':run.conclusion==='failure'?'BŁĄD — sprawdź logi':'NIEPOTWIERDZONY ('+String(run.conclusion||'brak wyniku')+')';
+    append('RX Strażak','Ostatni monitoring: '+state+'\\nCzas: '+String(run.created_at||'brak')+'\\nŹródło: GitHub Actions, uruchomienie #'+String(run.run_number||'?')+'\\n'+String(run.html_url||'')+'\\nTo odczyt ostatniego raportu, nie nowy test na żądanie.');
+   }catch(_){append('RX Strażak','Nie udało się odczytać wyniku monitoringu. Stan NIEZNANY — nie oznacza to, że strona działa poprawnie.');}
+   return;
+  }
   if(/^historia$/i.test(command)){
    append('Strażak',history.length?'Ostatnie bezpieczne polecenia (także po odświeżeniu):\\n'+history.map((c,i)=>(i+1)+'. '+c).join('\\n'):'Nie ma jeszcze zapisanych poleceń. Pamięć działa w tej karcie i po odświeżeniu.');
    return;
