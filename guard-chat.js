@@ -224,6 +224,22 @@
   }
   const followUp=rxSession?.followUp(command,{analyzeTask:window.GuardEngine2?.analyzeTask});
   if(followUp){append('RX Strażak',followUp);return;}
+  if(/^(?:test wtyczek|testuj wtyczki|przetestuj wtyczki|sprawdź wtyczki|sprawdz wtyczki)$/iu.test(command)){
+   if(!plugins){append('RX Strażak','Rejestr wtyczek jest niedostępny.');return;}
+   const checks=[['task-analyzer','Sprawdź poprawność analizy'],['code-audit','const bezpiecznyTest = true;'],['changes-report','status']];
+   const outcomes=[];
+   for(const [id,task] of checks){
+    try{
+     const result=await plugins.execute(id,{task},true);
+     const message=typeof result?.message==='string'?result.message:'';
+     const unavailable=id==='changes-report'&&message.includes('nie jest jeszcze dostępny');
+     outcomes.push('• '+id+': '+(unavailable?'BRAK RAPORTU':!message?'BRAK WYNIKU':'OK'));
+    }catch(_){outcomes.push('• '+id+': BŁĄD');}
+   }
+   renderHealth();
+   append('RX Strażak','Wynik rzeczywistego lokalnego testu wtyczek:'+String.fromCharCode(10)+outcomes.join(String.fromCharCode(10))+String.fromCharCode(10)+'Testy wykonano tylko w tej karcie. Nie zmieniono strony ani GitHuba.');
+   return;
+  }
   if(/^(?:błędy wtyczek|bledy wtyczek|diagnostyka wtyczek|rx błędy|rx bledy)$/iu.test(command)){
    const reports=plugins?.diagnostics?.();
    append('RX Strażak',reports?.length
