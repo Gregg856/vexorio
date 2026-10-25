@@ -79,6 +79,16 @@ jobs:
             node --check guard-chat.js
             node tests/search-location-regression.test.js
           fi
+      - name: Generate scheduled security findings
+        if: github.event_name == 'schedule'
+        run: node guard/scheduled-findings.cjs
+      - name: Upload security findings
+        if: github.event_name == 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: strazak-security-findings
+          path: strazak-security-findings.txt
+          retention-days: 7
       - name: Generate scheduled read-only patch suggestions
         if: github.event_name == 'schedule'
         run: |
