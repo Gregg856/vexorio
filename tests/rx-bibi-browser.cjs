@@ -211,6 +211,8 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     await chatInput.fill('pomoc');
     await guard.locator('#guardChatForm').getByRole('button',{name:'Wyślij'}).click();
     record('RX Strażak — czat odpowiada na pomoc',await guard.locator('#guardChatMessages').getByText('Strażak:',{exact:false}).count()>0&&await guard.locator('#guardChatMessages .guard-chat-message').count()>1);
+    const exitFullscreen=guard.getByRole('button',{name:'Zamknij pełnoekranowy czat'});
+    if(await exitFullscreen.isVisible())await exitFullscreen.click();
     await moderationTab.click();
     await guard.locator('#t').fill('Sprzedam rower');
     await guard.locator('#d').fill('Rower używany, odbiór osobisty.');
