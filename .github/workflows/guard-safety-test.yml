@@ -51,7 +51,23 @@ jobs:
             {failed_stages:['untrusted']},{automatic_patch_allowed:true},
             {monitor_run:'https://example.com/actions/runs/456'},{schema_version:2}
           ])assert.equal(valid({...good,...mutation},123),false,JSON.stringify(mutation));
+          // Controlled incident simulation: exercise the decision matrix without a failed production run.
+          const incidents=[
+            {stage:'checkout',category:'infrastructure',action:'retry_checkout'},
+            {stage:'public',category:'public_availability',action:'verify_deploy'},
+            {stage:'tests',category:'regression',action:'inspect_test_logs'}
+          ];
+          for(const incident of incidents){
+            const simulated={...good,category:incident.category,recommended_action:incident.action,failed_stages:[incident.stage]};
+            assert.equal(valid(simulated,123),true,'RX simulation failed: '+incident.category);
+            assert.equal(simulated.automatic_patch_allowed,false,'Simulation must not authorize patch');
+            console.log('RX SIMULATED INCIDENT: '+incident.category+' -> '+incident.action+' -> patch blocked');
+          }
+          const unknown={...good,category:'unknown',recommended_action:'manual_review',failed_stages:['tests']};
+          assert.equal(valid(unknown,123),true);
+          assert.equal(valid({...good,automatic_patch_allowed:true},123),false);
+          console.log('RX PASS: 4 simulated incident classifications; no real outage, no PR');
           console.log('RX PASS: bramki, poprawny raport i 7 scenariuszy odmowy');
           NODE
           echo '### RX: test kontrolowany zakonczony' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Bez zmian w portalu, bez tworzenia PR, bez symulowania prawdziwej awarii.' >> "$GITHUB_STEP_SUMMARY"
+          echo '4 symulowane incydenty; bez zmian w portalu, bez tworzenia PR i bez prawdziwej awarii.' >> "$GITHUB_STEP_SUMMARY"
