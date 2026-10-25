@@ -80,6 +80,33 @@
    tasksBox.append(item);
   }
  }
+ // Android keyboard: resize the active chat to the visible viewport.
+ const viewport=window.visualViewport;
+ function resizeComposer(){
+  if(!document.body.classList.contains('guard-rx-typing'))return;
+  const height=viewport?.height||window.innerHeight;
+  document.body.style.setProperty('--rx-viewport-height',Math.max(220,Math.round(height))+'px');
+  if(viewport)document.getElementById('guardPanelChat').style.top=Math.max(0,Math.round(viewport.offsetTop))+'px';
+ }
+ function openComposer(){
+  document.body.classList.add('guard-rx-typing');
+  resizeComposer();
+  messages.scrollTop=messages.scrollHeight;
+ }
+ function closeComposer(){
+  document.body.classList.remove('guard-rx-typing');
+  document.body.style.removeProperty('--rx-viewport-height');
+  const panel=document.getElementById('guardPanelChat');
+  if(panel)panel.style.top='';
+ }
+ input.addEventListener('focus',openComposer);
+ input.addEventListener('blur',()=>{
+  // Avoid hiding the composer when tapping Send while keyboard is open.
+  if(document.activeElement!==input)closeComposer();
+ });
+ viewport?.addEventListener('resize',resizeComposer);
+ viewport?.addEventListener('scroll',resizeComposer);
+ window.addEventListener('resize',resizeComposer);
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
