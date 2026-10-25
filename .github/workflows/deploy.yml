@@ -28,6 +28,7 @@ jobs:
           cp guard/plugin-core.cjs public/guard-plugin-core.js
           cp guard-task-analyzer-plugin.js public/guard-task-analyzer-plugin.js
           cp guard/developer-inspector.cjs public/guard-developer-inspector.js
+          cp guard/developer-diff.cjs public/guard-developer-diff.js
           cp guard-code-ui.js public/guard-code-ui.js
           cp guard-manifest.webmanifest public/guard-manifest.webmanifest
           # Embed the exact GitHub revision in the deployed HTML for release verification.
