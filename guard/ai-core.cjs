@@ -25,6 +25,9 @@ function predict(model,text){
  const scores=model.weights.map(w=>w[0]+model.vocab.reduce((sum,word,i)=>sum+(words.has(word)?w[i+1]:0),0));
  const max=Math.max(...scores),exps=scores.map(s=>Math.exp(Math.max(-60,s-max))),total=exps.reduce((a,b)=>a+b,0);
  const probabilities=exps.map(x=>x/total),best=probabilities.indexOf(Math.max(...probabilities));
- return {label:model.labels[best],confidence:Number(probabilities[best].toFixed(4)),needsReview:probabilities[best]<0.65};
+ const knownTokens=[...words].filter(word=>model.vocab.includes(word)).length;
+ const coverage=words.size?knownTokens/words.size:0;
+ const confidence=Number(probabilities[best].toFixed(4));
+ return {label:model.labels[best],confidence,needsReview:confidence<0.65||coverage<0.5,coverage:Number(coverage.toFixed(4)),unknownInput:knownTokens===0};
 }
 module.exports={train,predict,LABELS};
