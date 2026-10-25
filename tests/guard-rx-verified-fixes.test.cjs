@@ -9,7 +9,8 @@ const patterns = {};
 for (const name of names) {
   const line = workflow.split('\n').find(line => line.includes('const ' + name + ' = entry.match('));
   assert.ok(line, 'Missing RX parser expression: ' + name);
-  const source = line.slice(line.indexOf('entry.match(') + 'entry.match('.length, line.lastIndexOf(')'));
+  const source = line.match(/entry\.match\((\/.*\/m)\)/)?.[1];
+  assert.ok(source, 'Cannot extract RX regex: ' + name);
   patterns[name] = vm.runInNewContext(source);
 }
 const fingerprint = 'abcdef0123456789';
