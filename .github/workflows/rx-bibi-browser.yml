@@ -15,6 +15,8 @@ concurrency:
 jobs:
   mobile:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 8
     steps:
       - name: Pobierz repozytorium
@@ -23,22 +25,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Cache przeglądarki Chromium
-        id: chromium-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-rx-bibi-playwright-1.56.1-chromium-v1
-      - name: Instaluj Playwright
-        run: npm install --no-save --no-package-lock playwright@1.56.1
-      - name: Instaluj biblioteki systemowe Chromium
-        timeout-minutes: 3
-        run: |
-          echo 'Instalacja zależności Chromium (maksymalnie 3 minuty)'
-          npx playwright install-deps chromium
-      - name: Pobierz Chromium tylko gdy brak cache
-        if: steps.chromium-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium
+      - name: Sprawdź gotowość Chromium
+        run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
       - name: Uruchom testy RX BIBI
         run: node tests/rx-bibi-browser.cjs
       - name: Zachowaj raporty i zrzuty
