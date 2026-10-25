@@ -36,6 +36,10 @@ assert.ok(bibi.includes('href="/guard-lab.html"'),'RX BIBI must link to Strażak
 assert.ok(bibi.includes('https://github.com/Gregg856/vexorio/actions'),'RX BIBI must link to GitHub Actions');
 assert.ok(bibi.includes('id="summary"'),'RX BIBI must show incident summary');
 assert.ok(bibi.includes('id="latest"'),'RX BIBI must show latest deployment');
+assert.ok(bibi.includes('RX BIBI Manager 1.1'),'RX BIBI must show version 1.1');
+assert.ok(bibi.includes('id="lastSuccess"'),'RX BIBI must show latest known successful deployment');
+assert.ok(bibi.includes("r.status==='completed'&&r.conclusion==='success'"),'RX BIBI must only treat completed successful deploys as successful');
+assert.ok(bibi.includes('brak potwierdzenia w 20 pobranych uruchomieniach'),'RX BIBI must disclose limited success history');
 assert.ok(bibi.includes("'/jobs?per_page=30'"),'RX BIBI must inspect GitHub jobs for failed runs');
 assert.ok(bibi.includes("s.conclusion==='failure'"),'RX BIBI must only report failed steps');
 assert.ok(bibi.includes('Diagnoza niedostępna'),'RX BIBI must disclose unavailable diagnosis');
