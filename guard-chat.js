@@ -11,6 +11,13 @@
    return response.json();
   });
  }
+ // Session-only conversation context. Never store pasted code, diffs or secrets.
+ const history=[];
+ const historyLimit=12;
+ function remember(command){
+  if(command.length>160||/^(kod|diff|plan)\s*:/i.test(command)||/(?:password|token|secret|api[_-]?key|hasło)\s*[:=]/i.test(command))return;
+  history.push(command);if(history.length>historyLimit)history.shift();
+ }
  const storageKey='vexorio-guard-local-tasks-v1';
  let saved=[];
  try{const parsed=JSON.parse(localStorage.getItem(storageKey)||'[]');if(Array.isArray(parsed))saved=parsed;}catch(_){}
@@ -43,6 +50,14 @@
  form.addEventListener('submit',async event=>{
   event.preventDefault();const command=input.value.trim();if(!command)return;
   append('Ty',command);input.value='';
+  if(/^historia$/i.test(command)){
+   append('Strażak',history.length?'Ostatnie polecenia w tej karcie:\\n'+history.map((c,i)=>(i+1)+'. '+c).join('\\n'):'Nie ma jeszcze zapisanych poleceń. Pamięć działa tylko w otwartej karcie.');
+   return;
+  }
+  if(/^wyczyść historię$/i.test(command)){
+   history.length=0;append('Strażak','Historia poleceń w tej karcie została wyczyszczona.');return;
+  }
+  remember(command);
   if(/^(github|zmiany|raport github)$/i.test(command)){
    if(!plugins){append('Strażak','Wtyczki są chwilowo niedostępne.');return;}
    try{const result=await plugins.execute('changes-report',{task:command},true);append('Strażak GitHub',result.message);}
