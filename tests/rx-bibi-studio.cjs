@@ -46,8 +46,8 @@ const {chromium,devices}=require('playwright');
    // Verify 30-second storyboard, but do not encode 30 seconds on every daily run.
    await page.locator('#duration').selectOption('30');
    await page.locator('#prepare').click();
-   const plan=await page.evaluate(()=>window.RXDirector.plan({prompt:'Test 30 sekund',type:'image-video',ratio:'9:16',duration:30,photos:['a.png','b.png']}));
-   check('Plan 30 sekund',plan&&Array.isArray(plan.scenes)&&Math.abs(plan.scenes.reduce((a,x)=>a+x.duration,0)-30)<0.01);
+   const plan=await page.evaluate(()=>window.RXDirector.plan({prompt:'Test 30 sekund',type:'image-video',aspect_ratio:'9:16',duration_seconds:30,input_files:[{name:'a.png'},{name:'b.png'}]}));
+   check('Plan 30 sekund',plan&&Array.isArray(plan.scenes)&&Math.abs(plan.scenes.reduce((a,x)=>a+x.duration_seconds,0)-30)<0.01);
 
   }else{check('Graceful unsupported-browser state',await page.locator('#render').isDisabled(),'No MediaRecorder MIME types supported')}
  }catch(error){check('Test execution',false,error.message)}
