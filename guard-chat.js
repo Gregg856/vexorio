@@ -56,7 +56,13 @@
    const result=document.createElement('p');result.textContent='Wynik testu: '+outcomes.join(' · ');
    healthBox.append(result);
   });
-  healthBox.append(title,summary,list,issueTitle,issueList,note,refresh,run);
+  const copy=document.createElement('button');copy.type='button';copy.textContent='Kopiuj raport błędów';
+  copy.addEventListener('click',async()=>{
+   const lines=['RX Strażak — raport lokalny',summary.textContent,...reports.map(r=>r.id+': '+r.status+'; próby '+r.checks+'; błędne próby '+r.failures),...issues.map(i=>i.priority+' · '+i.id+': '+i.detail),'Uwaga: tylko bieżąca karta, bez monitoringu GitHub Actions.'];
+   try{await navigator.clipboard.writeText(lines.join('\\n'));copy.textContent='Skopiowano';}
+   catch(_){copy.textContent='Nie udało się skopiować';}
+  });
+  healthBox.append(title,summary,list,issueTitle,issueList,note,refresh,run,copy);
  }
  const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
  function renderPlugins(){
