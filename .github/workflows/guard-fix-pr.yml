@@ -1,5 +1,7 @@
 name: Strażak — propozycja poprawki PR
 on:
+  schedule:
+    - cron: '19 5 * * *'
   workflow_dispatch:
     inputs:
       target:
@@ -21,17 +23,32 @@ jobs:
   propose:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      RX_TARGET: ${{ github.event_name == 'schedule' && 'guard-chat.js' || inputs.target }}
     steps:
+      - name: Avoid duplicate automatic draft PR
+        id: existing
+        if: github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner,repo}=context.repo;
+            const prs=await github.paginate(github.rest.pulls.list,{owner,repo,state:'open',per_page:100});
+            const active=prs.some(pr=>pr.draft&&pr.head.ref.startsWith('strazak/safe-fix-'));
+            core.setOutput('skip',active?'true':'false');
+            if(active)core.notice('Existing RX draft PR: skip duplicate automatic proposal');
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Validate target
+        if: steps.existing.outputs.skip != 'true'
         env:
-          TARGET: ${{ inputs.target }}
+          TARGET: ${{ env.RX_TARGET }}
         run: |
           node -e "if (!/^guard-[a-z0-9-]+\\.js$/.test(process.env.TARGET)) process.exit(1)"
           test -f "$TARGET"
       - name: Run baseline tests
+        if: steps.existing.outputs.skip != 'true'
         run: |
           node tests/guard-security-diagnostics.test.cjs
           node tests/guard-code-fix.test.cjs
@@ -40,6 +57,7 @@ jobs:
           node tests/guard-prepare-safe-fix.test.cjs
           node tests/guard-fix-pipeline.test.cjs
       - name: Prepare deterministic patch and audit
+        if: steps.existing.outputs.skip != 'true'
         env:
           TARGET: ${{ inputs.target }}
         run: |
@@ -50,15 +68,17 @@ jobs:
           node tests/guard-developer-inspector.test.cjs
           node tests/guard-prepare-safe-fix.test.cjs
       - name: Prepare harmless smoke-test fixture
-        if: inputs.smoke_test == true
+        if: steps.existing.outputs.skip != 'true'
+        if: steps.existing.outputs.skip != 'true' && inputs.smoke_test == true
         run: |
           mkdir -p tests
           printf "'use strict';\\nconst assert = require('node:assert/strict');\\nassert.ok(true);\\n" > tests/guard-autofix-smoke.test.cjs
           node tests/guard-autofix-smoke.test.cjs
       - name: Recheck proposed code and regression suite
+        if: steps.existing.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          node --check "${{ inputs.target }}"
+          node --check "$RX_TARGET"
           node tests/guard-security-diagnostics.test.cjs
           node tests/guard-code-fix.test.cjs
           node tests/guard-patch-preview.test.cjs
@@ -67,6 +87,7 @@ jobs:
           node tests/guard-fix-pipeline.test.cjs
           git diff --check
       - name: Verify allowed changed files
+        if: steps.existing.outputs.skip != 'true'
         env:
           TARGET: ${{ inputs.target }}
         run: |
@@ -85,11 +106,12 @@ jobs:
             test ! -e tests/guard-autofix-smoke.test.cjs
           fi
       - name: Create draft pull request (never merge)
+        if: steps.existing.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
-            ${{ inputs.target }}
+            ${{ env.RX_TARGET }}
             tests/guard-autofix-smoke.test.cjs
           branch: strazak/safe-fix-${{ github.run_id }}
           delete-branch: true
