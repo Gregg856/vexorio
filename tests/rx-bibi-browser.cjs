@@ -133,6 +133,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('RX BIBI historia — trwałość zapisu lokalnego',persisted.length===2);
       const savedList=page.getByRole('region',{name:'Zapisane diagnozy RX BIBI'});
       record('RX BIBI historia — lista zapisanych diagnoz',await savedList.locator('details').count()===2);
+      const exportButton=savedList.getByRole('button',{name:'⬇️ Eksportuj historię JSON'});
+      record('RX BIBI eksport historii — przycisk',await exportButton.count()===1);
+      const [download]=await Promise.all([page.waitForEvent('download',{timeout:15000}),exportButton.click()]);
+      const downloadPath=await download.path();
+      const exportData=JSON.parse(fs.readFileSync(downloadPath,'utf8'));
+      record('RX BIBI eksport historii — nazwa pliku',/^rx-bibi-diagnozy-\d{4}-\d{2}-\d{2}\.json$/.test(download.suggestedFilename()),download.suggestedFilename());
+      record('RX BIBI eksport historii — poprawny JSON',exportData.format==='rx-bibi-diagnoses'&&exportData.version===1&&exportData.source==='local-browser'&&Array.isArray(exportData.records)&&exportData.records.length===2&&exportData.records.every(item=>typeof item.date==='string'&&typeof item.summary==='string'));
+      const afterExport=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
+      record('RX BIBI eksport historii — nie usuwa wpisów',afterExport.length===2);
       const clearButton=savedList.getByRole('button',{name:'🗑️ Wyczyść historię diagnoz'});
       await clearButton.click();
       const beforeConfirm=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
