@@ -15,6 +15,13 @@ const fs=require('node:fs');
  assert.equal(r.status,503,'Missing secrets must fail closed');
  r=await call('POST',{'Origin':origin},{RX_GITHUB_DISPATCH_TOKEN:'fake',RX_ADMIN_USER_ID:'admin',SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public'});
  assert.equal(r.status,401,'Missing bearer token must be rejected');
+ r=await worker.fetch(new Request(origin+'/api/rx/health'),env);
+ assert.equal(r.status,200,'Health endpoint should respond');
+ assert.equal((await r.json()).ready,false,'Health should show unconfigured state');
+ r=await worker.fetch(new Request(origin+'/api/rx/health'),{...env,RX_GITHUB_DISPATCH_TOKEN:'fake',RX_ADMIN_USER_ID:'admin',SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public'});
+ assert.equal((await r.json()).ready,true,'Health should show configured state');
+ r=await worker.fetch(new Request(origin+'/api/rx/health',{method:'POST'}),env);
+ assert.equal(r.status,405,'Health endpoint must be read-only');
  const originalFetch=globalThis.fetch;
  const settings={RX_GITHUB_DISPATCH_TOKEN:'fake',RX_ADMIN_USER_ID:'admin',SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public'};
  try{
