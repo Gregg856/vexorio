@@ -1,10 +1,10 @@
 'use strict';
 // Deliberately limited offline command interpreter. Never executes code, shell, network or writes.
-const HELP='Polecenia: pomoc, status, test, plan: [opis]. Wykonywanie zmian w GitHubie nie jest jeszcze podłączone.';
+const HELP='Polecenia: pomoc, status, test, plan: [opis], możliwości. Wykonywanie zmian w GitHubie nie jest jeszcze podłączone.';
 function respond(command){
  if(typeof command!=='string'||!command.trim()||command.length>2000)return {kind:'error',message:'Wpisz polecenie do 2000 znaków.'};
  const c=command.trim(),lower=c.toLocaleLowerCase('pl');
- if(/^(pomoc|help|co potrafisz)\??$/.test(lower))return {kind:'help',message:HELP};
+ if(/^(pomoc|help|co potrafisz|możliwości)\??$/.test(lower))return {kind:'help',message:HELP};
  if(/^(status|stan)\??$/.test(lower))return {kind:'status',message:'Strażak: czat lokalny działa. Repozytorium, testy i wdrożenia nie są połączone z czatem.'};
  if(/^(test|testy)\??$/.test(lower))return {kind:'test',message:'Tryb testowy czatu działa. To nie uruchamia testów GitHub.'};
  if(/^plan\s*:/i.test(c)){
