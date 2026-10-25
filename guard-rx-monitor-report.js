@@ -69,7 +69,7 @@
     advice.textContent='Priorytet: ŚREDNI — ostatnia zielona kontrola ma ponad 2 godziny. Sprawdź harmonogram monitoringu i najnowsze uruchomienia GitHub Actions.';
    }
    else if(outcome==='success')advice.textContent='Brak błędu w ostatnim przebiegu. To wynik monitoringu, nie pełny audyt zalogowanych funkcji.';
-   else if(outcome==='failure')advice.textContent='Priorytet: WYSOKI — otwórz raport i sprawdź pierwszy niezaliczony krok oraz jego log. Jeśli padły testy Node, sprawdź wskazany plik i linię; jeśli kontrola produkcji, sprawdź dostępność zasobów i wdrożenie. Nie wdrażaj poprawek bez potwierdzenia przyczyny.';
+   else if(outcome==='failure')advice.textContent='Priorytet: WYSOKI — otwórz raport i sprawdź pierwszy niezaliczony krok oraz jego log. Jeśli padły testy Node, sprawdź wskazany plik i linię; jeśli kontrola produkcji, sprawdź dostępność zasobów i wdrożenie. Następny krok: przygotuj roboczą propozycję poprawki do zatwierdzenia, bez automatycznego wdrożenia.';
    else advice.textContent='Poczekaj na zakończenie lub sprawdź szczegóły w GitHub Actions.';
   }catch(error){
    status.textContent='Nie udało się pobrać statusu';
