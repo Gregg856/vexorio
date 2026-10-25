@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {respondNatural}=require('../guard-rx-conversation.js');
+const {analyzeTask}=require('../guard-engine-2.js');
+assert.match(respondNatural('Co potrafisz?',analyzeTask),/Nie jestem jeszcze generatywnym/);
+assert.match(respondNatural('Sprawdź wyszukiwarkę VEXORIO',analyzeTask),/Plan:/);
+assert.match(respondNatural('Usuń bazę danych',analyzeTask),/wysokie/);
+assert.match(respondNatural('Dalej',analyzeTask),/nie wykonuję zmian/i);
+assert.equal(respondNatural('github',analyzeTask),null);
+assert.equal(respondNatural('plan: napraw',analyzeTask),null);
+assert.equal(respondNatural('audyt: eval(1)',analyzeTask),null);
+assert.equal(respondNatural('x'.repeat(2001),analyzeTask),null);
+assert.ok(!respondNatural('Sprawdź kod',analyzeTask).includes('wykonałem'));
+console.log('PASS: RX natural chat routes only advisory intents and preserves existing commands');
