@@ -77,9 +77,16 @@ const {chromium,devices}=require('playwright');
    await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeAudio,{timeout:45000});
    const audioTrack=await page.locator('#videoPreview').evaluate(async v=>{
      v.load();await new Promise((resolve,reject)=>{v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('audio video decode error')),{once:true});setTimeout(()=>reject(Error('audio metadata timeout')),15000)});
-     return {duration:v.duration,audioTracks:v.audioTracks?.length??null,blobType:(await fetch(v.src)).headers.get('content-type')};
+     v.muted=true;
+     await v.play();
+     await new Promise(resolve=>setTimeout(resolve,350));
+     const stream=typeof v.captureStream==='function'?v.captureStream():null;
+     const audioTracks=stream?.getAudioTracks().length??null;
+     v.pause();
+     stream?.getTracks().forEach(t=>t.stop());
+     return {duration:v.duration,audioTracks,blobType:(await fetch(v.src)).headers.get('content-type')};
    });
-   check('Film z muzyka',audioTrack.duration>0&&audioTrack.audioTracks!==0,JSON.stringify(audioTrack));
+   check('Film z muzyka — rzeczywista sciezka audio',audioTrack.duration>0&&audioTrack.audioTracks>0,JSON.stringify(audioTrack));
    await page.locator('#music').setInputFiles([]);
    // A second, shorter transition test with two different frames.
    const green=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=320;c.height=320;const x=c.getContext('2d');x.fillStyle='#29b46c';x.fillRect(0,0,320,320);return c.toDataURL('image/png').split(',')[1]});
