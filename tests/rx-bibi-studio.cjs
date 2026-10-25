@@ -48,6 +48,19 @@ const {chromium,devices}=require('playwright');
    await page.locator('#prepare').click();
    const plan=await page.evaluate(()=>window.RXDirector.plan({prompt:'Test 30 sekund',type:'image-video',aspect_ratio:'9:16',duration_seconds:30,input_files:[{name:'a.png'},{name:'b.png'}]}));
    check('Plan 30 sekund',plan&&Array.isArray(plan.scenes)&&Math.abs(plan.scenes.reduce((a,x)=>a+x.duration_seconds,0)-30)<0.01);
+   const previousHref=await page.locator('#videoDownload').getAttribute('href');
+   await page.locator('#render').click();
+   await page.waitForFunction(oldHref=>{const el=document.getElementById('videoDownload');const href=el?.getAttribute('href');return !!href&&href!==oldHref},previousHref,{timeout:75000});
+   const full=await page.locator('#videoPreview').evaluate(async v=>{
+     await new Promise((resolve,reject)=>{
+       if(v.readyState>=1)return resolve();
+       v.addEventListener('loadedmetadata',resolve,{once:true});
+       v.addEventListener('error',()=>reject(Error('30s video decode error')),{once:true});
+       setTimeout(()=>reject(Error('30s metadata timeout')),15000);
+     });
+     return {duration:v.duration,src:!!v.currentSrc};
+   });
+   check('Film 30 sekund — odtwarzalny',full.src&&Number.isFinite(full.duration)&&full.duration>=28&&full.duration<=32,JSON.stringify(full));
 
   }else{check('Graceful unsupported-browser state',await page.locator('#render').isDisabled(),'No MediaRecorder MIME types supported')}
  }catch(error){check('Test execution',false,error.message)}
