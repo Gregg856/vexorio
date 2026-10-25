@@ -506,7 +506,9 @@ jobs:
                   const match = entry.match(/^- \*\*Odcisk awarii \(RX-FINGERPRINT\):\*\*\s*([a-f0-9]{16})\s*$/m);
                   const commit = entry.match(/^- \*\*Commit lub PR:\*\*\s*(https:\/\/\S+)/m);
                   const test = entry.match(/^- \*\*Test regresyjny:\*\*\s*(https:\/\/\S+)/m);
-                  if (status === 'potwierdzone' && match?.[1] === fingerprint && commit && test) {
+                  if (status === 'potwierdzone' && match?.[1] === fingerprint &&
+                    /^https:\/\/github\.com\/Gregg856\/vexorio\/(?:commit|pull)\/\S+$/.test(commit?.[1] || '') &&
+                    /^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(test?.[1] || '')) {
                     const id = entry.split(' — ')[0].trim();
                     fixNote = 'Potwierdzona poprawka RX-FIX-' + id + ': ' + commit[1] + ' | test: ' + test[1];
                     break;
