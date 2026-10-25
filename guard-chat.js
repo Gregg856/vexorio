@@ -13,6 +13,24 @@
   });
  }
  if(plugins && window.GuardCodeAuditPlugin && window.GuardDeveloperInspector) window.GuardCodeAuditPlugin.installCodeAudit(plugins, window.GuardDeveloperInspector.inspectSource);
+ const healthBox=document.getElementById('guardRxHealth');
+ function renderHealth(){
+  if(!healthBox)return;
+  healthBox.replaceChildren();
+  const reports=plugins?.diagnostics?.()||[];
+  const title=document.createElement('strong');title.textContent='Centrum błędów RX — lokalna sesja';
+  const summary=document.createElement('p');
+  summary.textContent='Moduły: '+reports.length+' · Błędy: '+reports.reduce((n,r)=>n+r.failures,0)+' · Nietestowane: '+reports.filter(r=>r.status==='not-tested').length;
+  const list=document.createElement('ul');
+  for(const report of reports){
+   const item=document.createElement('li');
+   item.textContent=report.id+' — '+(report.status==='error'?'BŁĄD':report.status==='ok'?'OK':'nie testowano')+' ('+report.checks+' prób, '+report.failures+' błędów)';
+   list.append(item);
+  }
+  const note=document.createElement('small');note.textContent='Wyniki tylko z tej karty. To nie jest monitoring GitHub Actions.';
+  const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Odśwież stan';refresh.addEventListener('click',renderHealth);
+  healthBox.append(title,summary,list,note,refresh);
+ }
  const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
  function renderPlugins(){
   if(!pluginCards)return;
@@ -203,4 +221,5 @@
  });
  renderTasks();
  renderPlugins();
+ renderHealth();
 })();
