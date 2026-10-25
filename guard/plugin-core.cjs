@@ -34,9 +34,9 @@ function createRegistry(){
  }
  function recommend(task,requiredPermission='read:task'){
   if(typeof task!=='string'||task.length>2000||!ALLOWED_PERMISSIONS.has(requiredPermission))throw Error('Invalid recommendation request');
-  const tokens=new Set((task.toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[]).filter(word=>word.length>2));
+  const tokens=new Set((task.toLocaleLowerCase('pl').match(/[\p{L}\p{N}]+/gu)||[]).filter(word=>word.length>2));
   return list().filter(plugin=>plugin.permissions.includes(requiredPermission)).map(plugin=>{
-   const terms=new Set(((plugin.id+' '+plugin.description).toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[]).filter(word=>word.length>2));
+   const terms=new Set(((plugin.id+' '+plugin.description).toLocaleLowerCase('pl').match(/[\p{L}\p{N}]+/gu)||[]).filter(word=>word.length>2));
    const matches=[...tokens].filter(word=>terms.has(word));
    return {id:plugin.id,score:matches.length,matches,requiresApproval:true};
   }).filter(item=>item.score>0).sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
