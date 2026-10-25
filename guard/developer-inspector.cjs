@@ -8,7 +8,10 @@ function inspectSource({path,source}={}){
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
   {id:'inner-html',severity:'medium',pattern:/\.innerHTML\s*=/g,message:'Sprawdź, czy HTML nie zawiera niezaufanych danych.'},
-  {id:'console-log',severity:'low',pattern:/\bconsole\.log\s*\(/g,message:'Sprawdź, czy logi nie ujawniają danych.'}
+  {id:'console-log',severity:'low',pattern:/\bconsole\.log\s*\(/g,message:'Sprawdź, czy logi nie ujawniają danych.'},
+  {id:'document-write',severity:'medium',pattern:/\bdocument\.write\s*\(/g,message:'document.write może wprowadzić niebezpieczny HTML.'},
+  {id:'insecure-http',severity:'medium',pattern:/\bfetch\s*\(\s*['"]http:\/\//g,message:'Żądanie HTTP bez szyfrowania. Sprawdź, czy wymagane jest HTTPS.'},
+  {id:'hardcoded-secret',severity:'high',pattern:/\b(?:api[_-]?key|secret|access[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_-]{24,}['"]/gi,message:'Możliwy sekret wpisany bezpośrednio w kodzie. Nie umieszczaj go w publicznym repozytorium.'}
  ];
  for(const rule of rules){
   for(const match of source.matchAll(rule.pattern)){
