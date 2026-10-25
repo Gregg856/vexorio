@@ -21,4 +21,5 @@ function inspectSource({path,source}={}){
  findings.sort((a,b)=>a.line-b.line);
  return {path,lines:source.split('\n').length,findings,limited:findings.length>=50,readOnly:true};
 }
-module.exports={inspectSource};
+if(typeof module!=='undefined'&&module.exports)module.exports={inspectSource};
+if(typeof window!=='undefined')window.GuardDeveloperInspector={inspectSource};
