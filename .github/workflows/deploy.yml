@@ -27,6 +27,8 @@ jobs:
           cp guard-chat.js guard-commands.js guard-task-queue.js guard-engine-2.js guard-capabilities.js guard-icon.svg public/
           cp guard/plugin-core.cjs public/guard-plugin-core.js
           cp guard-task-analyzer-plugin.js public/guard-task-analyzer-plugin.js
+          cp guard/developer-inspector.cjs public/guard-developer-inspector.js
+          cp guard-code-ui.js public/guard-code-ui.js
           cp guard-manifest.webmanifest public/guard-manifest.webmanifest
           # Embed the exact GitHub revision in the deployed HTML for release verification.
           sed -i "s#</head>#<meta name=\"vexorio-deploy-sha\" content=\"${GITHUB_SHA}\"></head>#" public/index.html
