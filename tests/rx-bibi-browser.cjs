@@ -48,7 +48,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     try {
       await reportPanel.getByText('📊 RX BIBI 1.6 — raport historii').waitFor({state:'visible',timeout:15000});
       const reportText=await reportPanel.innerText();
-      record('RX BIBI 1.6 podsumowanie uruchomień',/Udane:\\s*\\d+.*Błędy:\\s*\\d+.*W toku:\\s*\\d+.*Pominięte:\\s*\\d+/.test(reportText),reportText.slice(0,450));
+      record('RX BIBI 1.6 podsumowanie uruchomień',/Udane:\s*\d+.*Błędy:\s*\d+.*W toku:\s*\d+.*Pominięte:\s*\d+/.test(reportText),reportText.slice(0,450));
       record('RX BIBI 1.6 zakres historii',/maksymalnie 50 ostatnich rekordów/.test(reportText));
     } catch(error){record('RX BIBI 1.6 odczyt raportu',false,error.message);}
 
