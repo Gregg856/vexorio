@@ -10,16 +10,18 @@ const results = [];
 const record = (name, passed, detail) => results.push({ name, passed, detail: String(detail || '') });
 (async () => {
   const browser = await chromium.launch({ headless: true });
+  const incidentLog = [];
+  const logIncident = (source, type, detail) => incidentLog.push({ time: new Date().toISOString(), source, type, detail: String(detail).slice(0, 1200) });
   try {
     const page = await browser.newPage({ ...devices['Pixel 7'], locale: 'pl-PL' });
     const jsErrors = [];
     const guardErrors = [];
     const diagnostics = [];
     const watch = (target, label, errors) => {
-      target.on('pageerror', err => errors.push(err.message));
-      target.on('console', msg => { if (msg.type() === 'error') diagnostics.push(label + ' console: ' + msg.text()); });
-      target.on('requestfailed', req => diagnostics.push(label + ' sieć: ' + req.method() + ' ' + req.url() + ' — ' + (req.failure()?.errorText || 'nieznany błąd')));
-      target.on('response', res => { if (res.status() >= 500) diagnostics.push(label + ' HTTP ' + res.status() + ': ' + res.url()); });
+      target.on('pageerror', err => { errors.push(err.message); logIncident(label, 'javascript', err.stack || err.message); });
+      target.on('console', msg => { if (msg.type() === 'error') { diagnostics.push(label + ' console: ' + msg.text()); logIncident(label, 'console', msg.text()); } });
+      target.on('requestfailed', req => { const detail = req.method() + ' ' + new URL(req.url()).origin + new URL(req.url()).pathname + ' — ' + (req.failure()?.errorText || 'nieznany błąd'); diagnostics.push(label + ' sieć: ' + detail); logIncident(label, 'network', detail); });
+      target.on('response', res => { if (res.status() >= 500) { const detail = res.status() + ': ' + new URL(res.url()).origin + new URL(res.url()).pathname; diagnostics.push(label + ' HTTP ' + detail); logIncident(label, 'http', detail); } });
     };
     watch(page, 'RX BIBI', jsErrors);
     const response = await page.goto(base + '/rx-bibi-manager.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -68,6 +70,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     await browser.close();
   }
   const output = { timestamp: new Date().toISOString(), base, results, passed: results.every(x => x.passed) };
+  fs.writeFileSync(path.join(reportDir, 'incidents.json'), JSON.stringify({ timestamp: output.timestamp, count: incidentLog.length, incidents: incidentLog }, null, 2));
   fs.writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify(output, null, 2));
   const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const rows=results.map(item=>'<tr><td>'+escapeHtml(item.name)+'</td><td>'+(item.passed?'OK':'BŁĄD')+'</td><td>'+escapeHtml(item.detail)+'</td></tr>').join('');
