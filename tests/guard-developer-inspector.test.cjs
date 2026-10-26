@@ -100,3 +100,19 @@ assert.equal(capped.summary.total,50);
 assert.equal(capped.summary.high,50);
 assert.ok(!JSON.stringify(severityReport.summary).includes('abcdefghijklmnopqrstuvwxyz123456'));
 console.log('PASS: RX Developer 2.3 severity summary and finding cap');
+
+const priorityReport=inspectSource({path:'src/priorities.js',source:[
+ 'console.log(value);',
+ 'el.innerHTML = html;',
+ 'eval(userInput);',
+ 'const secret = "abcdefghijklmnopqrstuvwxyz123456";',
+ 'document.write(html);',
+ 'console.log(again);'
+].join('\n')});
+assert.deepEqual(priorityReport.findings.map(({rule,line})=>[rule,line]),[
+ ['eval',3],['hardcoded-secret',4],
+ ['inner-html',2],['document-write',5],
+ ['console-log',1],['console-log',6]
+]);
+assert.deepEqual(priorityReport.summary,{high:2,medium:2,low:2,total:6});
+console.log('PASS: RX Developer 2.4 priority sorting and stable line order');
