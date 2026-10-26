@@ -42,6 +42,7 @@ try{
   const symlinkResult=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
   assert.equal(symlinkResult.error,'unsafe_file_type');
   assert.equal(symlinkResult.findings,undefined);
+  fs.unlinkSync(path.join(dir,'guard-code-ui.js'));
  }finally{fs.rmSync(external,{recursive:true,force:true});}
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
