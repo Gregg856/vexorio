@@ -234,3 +234,7 @@ assert.ok(bibi.includes('id="rxCollapseAll"'),'RX Developer 8.6 must expose coll
 assert.ok(bibi.includes("querySelectorAll('details').forEach(x=>x.open=true)"),'RX Developer 8.6 must expand all file groups');
 assert.ok(bibi.includes("querySelectorAll('details').forEach(x=>x.open=false)"),'RX Developer 8.6 must collapse all file groups');
 console.log('PASS: RX Developer 8.6 expand/collapse controls');
+assert.ok(bibi.includes("copy.textContent='Kopiuj wskazówki pliku'"),'RX Developer 8.8 must show copy button');
+assert.ok(bibi.includes('navigator.clipboard.writeText(value)'),'RX Developer 8.8 must copy guidance');
+assert.ok(bibi.includes("items.map(x=>x.rule+': '+x.action)"),'RX Developer 8.8 must include each remediation');
+console.log('PASS: RX Developer 8.9 clipboard guidance regression');
