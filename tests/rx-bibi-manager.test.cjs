@@ -165,4 +165,14 @@ assert.ok(bibi.includes("https://api.github.com/repos/Gregg856/vexorio/actions/r
 assert.ok(bibi.includes("r.head_branch==='main'"),'RX BIBI must filter production deployments');
 assert.ok(bibi.includes("if(button.disabled)return;"),'RX BIBI must avoid duplicate API refreshes');
 assert.ok(bibi.includes("finally{clearTimeout(githubTimeout);button.disabled=false;}"),'RX BIBI must release timeout and reenable refresh after failures');
+
+// RX Developer 1.3 regression: preview, line-level diff and discard without source mutation.
+assert.ok(bibi.includes("developerDiff.textContent='RÓŻNICE (numery linii):"),'RX Developer must render numbered differences');
+assert.ok(bibi.includes("developerReset.textContent='↩️ Cofnij propozycję'"),'RX Developer must offer discard action');
+assert.ok(bibi.includes("developerReset.addEventListener('click'"),'RX Developer discard must have a handler');
+assert.ok(bibi.includes("developerInput.value!==developerPreviewSource"),'RX Developer must reject stale preview copies');
+assert.ok(bibi.includes("developerCopyPatch.disabled=true;developerReset.disabled=true;"),'RX Developer must invalidate preview after input changes');
+assert.ok(bibi.includes("developerPreviewStatus.textContent='Propozycja cofnięta. Oryginalny kod pozostaje bez zmian.'"),'RX Developer must explain discard semantics');
+assert.ok(!bibi.includes("developerInput.value=developerSuggestedCode"),'RX Developer must not silently apply proposed code');
+console.log('PASS: RX Developer 1.3 preview safety and discard regression');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
