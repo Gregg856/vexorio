@@ -9,6 +9,7 @@ const report={signals:3,files:[
 const s=summarize(report);
 assert.equal(s.filesScanned,2);
 assert.equal(s.filesSkipped,1);
+assert.equal(s.coveragePercent,67);
 assert.deepEqual(s.skippedByReason,{too_large:1});
 assert.equal(s.signals,3);
 assert.deepEqual(s.byScope.application,{high:1,medium:1,low:0});
@@ -40,5 +41,9 @@ const skipped=summarize({signals:0,files:[
 assert.deepEqual(skipped.skippedByReason,{missing:2,unreadable:1,unsafe_file_type:1});
 assert.equal(skipped.filesSkipped,4);
 console.log('PASS: RX Developer 5.2 skipped-file reasons');
+assert.equal(skipped.coveragePercent,20);
+assert.equal(summarize({signals:0,files:[]}).coveragePercent,0);
+assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]}]}).coveragePercent,100);
+console.log('PASS: RX Developer 5.3 scan coverage percentage');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
