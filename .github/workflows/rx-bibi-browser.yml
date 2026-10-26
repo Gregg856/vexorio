@@ -64,6 +64,7 @@ jobs:
         run: |
           node tests/rx-dna-store.cjs
           node tests/rx-dna-cloud-gateway.cjs
+          node tests/rx-dna-cloud-transport.cjs
       - name: Sprawdź silnik RX MILION SERC
         run: node tests/rx-million-hearts.cjs
       - name: Sprawdź RX COMMAND BRIDGE
