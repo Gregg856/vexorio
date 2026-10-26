@@ -41,15 +41,15 @@ function inspectSource({path,source}={}){
   for(const match of target.matchAll(rule.pattern)){
    const line=source.slice(0,match.index).split('\n').length;
    findings.push({rule:rule.id,severity:rule.severity,line,message:rule.message});
-   if(findings.length>=50)break;
   }
-  if(findings.length>=50)break;
  }
  const severityRank={high:0,medium:1,low:2};
  findings.sort((a,b)=>severityRank[a.severity]-severityRank[b.severity]||a.line-b.line);
- const summary={high:0,medium:0,low:0,total:findings.length};
- for(const finding of findings)summary[finding.severity]++;
- return {path,lines:source.split('\n').length,findings,summary,limited:findings.length>=50,readOnly:true};
+ const limited=findings.length>50;
+ const visibleFindings=findings.slice(0,50);
+ const summary={high:0,medium:0,low:0,total:visibleFindings.length};
+ for(const finding of visibleFindings)summary[finding.severity]++;
+ return {path,lines:source.split('\n').length,findings:visibleFindings,summary,limited,readOnly:true};
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={inspectSource};
 if(typeof window!=='undefined')window.GuardDeveloperInspector={inspectSource};
