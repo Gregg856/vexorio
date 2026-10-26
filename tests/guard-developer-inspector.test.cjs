@@ -291,3 +291,16 @@ assert.deepEqual(arrowReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['outer-html','medium',7]
 ]);
 console.log('PASS: RX Developer 3.8 arrow syntax is not HTML/domain assignment');
+
+const spacedWriteReport=inspectSource({path:'src/write.js',source:[
+ 'document . write(userHtml);',
+ 'document\n  .write(otherHtml);',
+ 'const example = "document . write(x)";',
+ '// document . write(x);',
+ 'document.writer(safeText);'
+].join('\n')});
+assert.deepEqual(spacedWriteReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['document-write','medium',1],
+ ['document-write','medium',2]
+]);
+console.log('PASS: RX Developer 3.9 spaced document.write calls');
