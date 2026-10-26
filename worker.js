@@ -99,8 +99,8 @@ export default {
               if(contentLength>1024*1024)throw Error('Log za duży');
               const raw=await download.text();
               if(raw.length>1024*1024)throw Error('Log za duży');
-              const messages=raw.split(/\\r?\\n/).filter(line=>/\\b(error|failed|exception|fatal|timed out|timeout)\\b/i.test(line)).slice(-8).map(line=>{
-                let safe=line.replace(/\\x1b\\[[0-9;]*m/g,'').replace(/https?:\\/\\/\\S+/gi,'[URL]').replace(/[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}/g,'[email]').replace(/(?:gh[pousr]_|github_pat_|sb_secret_|eyJ)[A-Za-z0-9_.-]+/gi,'[sekret]').replace(/(authorization|token|password|secret|apikey|api_key|cookie|bearer)\\s*[:=]\\s*\\S+/gi,'$1=[ukryte]');
+              const messages=raw.split(/\r?\n/).filter(line=>/\b(error|failed|exception|fatal|timed out|timeout)\b/i.test(line)).slice(-8).map(line=>{
+                let safe=line.replace(/\x1b\[[0-9;]*m/g,'').replace(/https?:\/\/\S+/gi,'[URL]').replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g,'[email]').replace(/(?:gh[pousr]_|github_pat_|sb_secret_|eyJ)[A-Za-z0-9_.-]+/gi,'[sekret]').replace(/(authorization|token|password|secret|apikey|api_key|cookie|bearer)\s*[:=]\s*\S+/gi,'$1=[ukryte]');
                 return safe.slice(0,240);
               }).filter(line=>!/(?:authorization|token|password|secret|apikey|api_key|cookie|bearer)/i.test(line));
               job.messages=messages.slice(0,5);
