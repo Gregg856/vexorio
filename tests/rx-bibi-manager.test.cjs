@@ -378,3 +378,18 @@ for(const [label,line,expectedSuppressed] of [
  assert.equal(suppressed,expectedSuppressed,'RX window.open warning: '+label);
 }
 console.log('PASS: RX Developer window.open comment regression');
+
+const {maskJavaScript:rxCoreMask}=require('../guard/rx-developer-core.cjs');
+for(const [label,input,needle,expected] of [
+ ['executable call',"eval('1')",'eval',true],
+ ['comment',"// eval('1')",'eval',false],
+ ['plain template',"const a = \x60eval('1')\x60",'eval',false],
+ ['nested template expression',"const a = \x60outer \${\x60inner \${eval('1')}\x60}\x60",'eval',true],
+ ['nested template text',"const a = \x60outer \${\x60inner eval('1')\x60}\x60",'eval',false],
+ ['interpolation braces',"const a = \x60\${({a:eval('1')}).a}\x60",'eval',true]
+]){
+ const output=rxCoreMask(input);
+ assert.equal(output.length,input.length,'RX Core preserves offsets: '+label);
+ assert.equal(output.includes(needle),expected,'RX Core lexical behavior: '+label);
+}
+console.log('PASS: RX Developer Core independent lexical scanner');
