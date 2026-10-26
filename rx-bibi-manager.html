@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded',()=>{
      if(!found)continue;
     }
     if(rule.label.includes('fetch()')&&(/\.catch\s*\(/.test(codeLines[i])||/\btry\s*\{/.test(codeLines.slice(Math.max(0,i-2),i+1).join(' '))))continue;
-   if(rule.label.includes('otwieranie nowych okien')&&/noopener|noreferrer/.test(lines[i]))continue;
+   if(rule.label.includes('otwieranie nowych okien')&&/\b(?:noopener|noreferrer)\b/.test(lines[i].replace(/\/\/.*$/,'')))continue;
     issues.push({line:i+1,label:rule.label,fix:rule.fix});
    }
   }
