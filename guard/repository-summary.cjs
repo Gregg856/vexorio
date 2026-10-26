@@ -5,6 +5,7 @@ const {scan}=require('./repository-scan.cjs');
 function summarize(report){
  const severity={high:0,medium:0,low:0};
  const files=[];
+ const ruleCounts=new Map();
  const byScope={application:{high:0,medium:0,low:0},tests:{high:0,medium:0,low:0}};
  for(const file of report.files){
   if(file.error){files.push({path:file.path,status:file.error});continue;}
@@ -13,10 +14,16 @@ function summarize(report){
    severity[finding.severity]++;
    byScope[scope][finding.severity]++;
   }
+  for(const finding of file.findings){
+   if(typeof finding.rule==='string'&&/^[a-z][a-z0-9-]{0,63}$/.test(finding.rule)){
+    ruleCounts.set(finding.rule,(ruleCounts.get(finding.rule)||0)+1);
+   }
+  }
   const counts={high:0,medium:0,low:0};
   for(const finding of file.findings)if(Object.hasOwn(counts,finding.severity))counts[finding.severity]++;
   files.push({path:file.path,status:'scanned',signals:file.findings.length,severity:counts});
  }
+ const topRules=[...ruleCounts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).map(([rule,count])=>({rule,count}));
  const priorityFiles=files.filter(f=>f.status==='scanned'&&f.signals>0)
   .sort((a,b)=>b.severity.high-a.severity.high||b.severity.medium-a.severity.medium||b.severity.low-a.severity.low||a.path.localeCompare(b.path))
   .slice(0,10).map(f=>({path:f.path,signals:f.signals,severity:f.severity}));
@@ -35,7 +42,7 @@ function summarize(report){
  if(severity.low>0)recommendations.push({priority:'low',action:'Ogranicz zbędne logowanie i pozostałe ostrzeżenia niskiego ryzyka.'});
  if(skippedByReason.empty_file)recommendations.push({priority:'review',action:'Sprawdź puste pliki źródłowe — mogą oznaczać nieukończony moduł.'});
  if(files.some(f=>f.status!=='scanned'))recommendations.push({priority:'review',action:'Sprawdź pominięte pliki — skanowanie nie objęło całego zakresu.'});
- return {version:1,filesScanned,filesSkipped,coveragePercent,signals:report.signals,severity,byScope,priorityFiles,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
+ return {version:1,filesScanned,filesSkipped,coveragePercent,signals:report.signals,severity,byScope,priorityFiles,topRules,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
 }
 if(require.main===module){
  const summary=summarize(scan());
