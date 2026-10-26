@@ -137,5 +137,9 @@ const moreFixes=summarize({signals:3,files:[{path:'network.js',findings:[
 assert.deepEqual(moreFixes.suggestedFixes.map(x=>x.rule),['tls-verification-disabled','document-write','postmessage-wildcard']);
 assert.ok(moreFixes.suggestedFixes.some(x=>x.action.includes('TLS')));
 console.log('PASS: RX Developer 7.4 expanded safe suggestions');
+const fileFixes=summarize({signals:3,files:[{path:'one.js',findings:[{rule:'eval',severity:'high'},{rule:'eval',severity:'high'}]},{path:'two.js',findings:[{rule:'inner-html',severity:'medium'}]},{path:'skipped.js',error:'missing'}]});
+assert.deepEqual(fileFixes.fileFixSuggestions.map(x=>[x.path,x.rule]),[['one.js','eval'],['two.js','inner-html']]);
+assert.deepEqual(summarize({signals:0,files:[]}).fileFixSuggestions,[]);
+console.log('PASS: RX Developer 7.5 per-file remediation suggestions');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
