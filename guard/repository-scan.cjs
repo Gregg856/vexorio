@@ -47,7 +47,9 @@ function scan(root=process.cwd()){
   const stat=fs.lstatSync(full);
   if(!stat.isFile()||stat.isSymbolicLink()){files.push({path:name,error:'unsafe_file_type'});continue;}
   if(stat.size>400000){files.push({path:name,error:'too_large'});continue;}
-  const source=fs.readFileSync(full,'utf8');
+  let source;
+  try{source=fs.readFileSync(full,'utf8');}
+  catch(error){files.push({path:name,error:'unreadable'});continue;}
   if(source.length>100000){files.push({path:name,error:'too_large'});continue;}
   const result=inspectSource({path:name,source});
   if(name==='guard-lab.html')result.findings.push(...checkHtmlReferences(root,source));
