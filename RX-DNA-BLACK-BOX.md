@@ -104,3 +104,7 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `rx-stellar-lab.cjs`: bounded, in-memory validated relative brightness observations, deduplication and basic statistics by star ID.
 - `tests/rx-stellar-lab.cjs`: synthetic-data tests in RX CI.
 - No real astronomy feed, telescope integration, AI training, electricity generation, or revenue. Future: permission-compliant public dataset import, provenance checks, persistence, actual model evaluation and a validated product concept.
+
+## RX STELLAR SIGNAL 2.0
+- `rx-stellar-signal.cjs`: robust median/MAD anomaly screening for bounded light curves; tests in `tests/rx-stellar-signal.cjs` and RX CI.
+- Zero-MAD baseline returns `flat_baseline`, not a discovery. No real data feed, astrophysical calibration, uncertainty modeling or trained AI. Flags require independent scientific review.
