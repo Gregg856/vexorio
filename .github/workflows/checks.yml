@@ -21,3 +21,4 @@ jobs:
           node tests/smoke.cjs
           node tests/push-service-worker.test.cjs
           node tests/rx-direct.cjs
+          node tests/rx-ai-builder.cjs
