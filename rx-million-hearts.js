@@ -78,6 +78,28 @@ class RXMillionHearts {
     this.failurePatterns.set(key,{...pattern,verifiedFix:fixId});
     return {...this.failurePatterns.get(key)};
   }
+  // Portable, bounded pattern memory; excludes raw jobs, payloads and secrets.
+  exportFailureMemory(){
+    return {version:1,patterns:[...this.failurePatterns.values()].map(({cell,code,count,verifiedFix})=>({
+      cell,code,count,...(verifiedFix?{verifiedFix}:{})
+    }))};
+  }
+  importFailureMemory(data){
+    if(!data||data.version!==1||!Array.isArray(data.patterns)||data.patterns.length>this.memoryLimit)
+      throw new TypeError('Invalid RX memory format');
+    const next=new Map();
+    for(const item of data.patterns){
+      if(!item||!this.handlers.has(item.cell)||typeof item.code!=='string'||!/^[a-z0-9_-]{1,48}$/i.test(item.code)||
+         !Number.isSafeInteger(item.count)||item.count<1||
+         (item.verifiedFix!==undefined&&(typeof item.verifiedFix!=='string'||!/^[a-z0-9_-]{1,64}$/i.test(item.verifiedFix)))
+        throw new TypeError('Invalid RX memory pattern');
+      const key=item.cell+':'+item.code;
+      if(next.has(key))throw new TypeError('Duplicate RX memory pattern');
+      next.set(key,{cell:item.cell,code:item.code,count:item.count,...(item.verifiedFix?{verifiedFix:item.verifiedFix}:{})});
+    }
+    this.failurePatterns=next;
+    return next.size;
+  }
   suggestKnownFix(cell,code){
     const pattern=this.failurePatterns.get(cell+':'+code);
     return pattern?.verifiedFix?{cell,code,fixId:pattern.verifiedFix,requiresApproval:true}:null;
