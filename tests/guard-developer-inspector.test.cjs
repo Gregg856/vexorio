@@ -246,3 +246,16 @@ assert.deepEqual(parserReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['domparser-html','medium',5]
 ]);
 console.log('PASS: RX Developer 3.5 DOMParser HTML detection and safe XML/text exclusions');
+
+const domainReport=inspectSource({path:'src/domain.js',source:[
+ 'document.domain = "example.org";',
+ 'const example = "document.domain = example.org";',
+ '// document.domain = "bad.example.org";',
+ 'if (document.domain === expectedDomain) {}',
+ 'document . domain = host;'
+].join('\n')});
+assert.deepEqual(domainReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['dangerous-document-domain','high',1],
+ ['dangerous-document-domain','high',5]
+]);
+console.log('PASS: RX Developer 3.6 document.domain assignment detection');
