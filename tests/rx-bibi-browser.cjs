@@ -84,9 +84,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     try {
       await page.getByText(/RX BIBI 1.7 · Raport gotowy:/).waitFor({state:'visible',timeout:15000});
       record('RX BIBI 1.7 eksport gotowy',await exportButton.isEnabled());
-      const downloadPromise=page.waitForEvent('download',{timeout:10000});
-      await exportButton.click();
-      const download=await downloadPromise;
+      const download=await Promise.all([page.waitForEvent('download',{timeout:15000}),exportButton.click()]).then(([file])=>file);
       record('RX BIBI 1.7 nazwa pliku JSON',/^rx-bibi-raport-\d{4}-\d{2}-\d{2}\.json$/.test(download.suggestedFilename()),download.suggestedFilename());
       const exportShape=await page.evaluate(()=>({format:exportSnapshot?.format,hasSummary:!!exportSnapshot?.summary,hasRuns:Array.isArray(exportSnapshot?.runs),hasSecrets:JSON.stringify(exportSnapshot||{}).includes('access_token')}));
       record('RX BIBI 1.7 format danych',exportShape.format==='RX BIBI 1.7'&&exportShape.hasSummary&&exportShape.hasRuns&&!exportShape.hasSecrets,JSON.stringify(exportShape));
@@ -97,9 +95,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
         filter:activeFilter,
         expected:exportSnapshot.runs.filter(r=>r.status==='completed'&&r.conclusion==='failure').length
       }));
-      const filteredDownloadPromise=page.waitForEvent('download',{timeout:10000});
-      await exportButton.click();
-      const filteredDownload=await filteredDownloadPromise;
+      const filteredDownload=await Promise.all([page.waitForEvent('download',{timeout:15000}),exportButton.click()]).then(([file])=>file);
       const filteredPath=await filteredDownload.path();
       const fs=require('node:fs');
       const payload=JSON.parse(fs.readFileSync(filteredPath,'utf8'));
