@@ -365,6 +365,8 @@
  renderHealth();
  void autoCheckPlugins();
  void checkRXAlerts();
- const rxAlertTimer=setInterval(()=>{if(!document.hidden)void checkRXAlerts();},120000);
- window.addEventListener('pagehide',()=>clearInterval(rxAlertTimer),{once:true});
+ if(typeof setInterval==='function'){
+  const rxAlertTimer=setInterval(()=>{if(!document.hidden)void checkRXAlerts();},120000);
+  window.addEventListener('pagehide',()=>clearInterval(rxAlertTimer),{once:true});
+ }
 })();
