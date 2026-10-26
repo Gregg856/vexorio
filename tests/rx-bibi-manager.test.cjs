@@ -238,3 +238,7 @@ assert.ok(bibi.includes("copy.textContent='Kopiuj wskazówki pliku'"),'RX Develo
 assert.ok(bibi.includes('navigator.clipboard.writeText(value)'),'RX Developer 8.8 must copy guidance');
 assert.ok(bibi.includes("items.map(x=>x.rule+': '+x.action)"),'RX Developer 8.8 must include each remediation');
 console.log('PASS: RX Developer 8.9 clipboard guidance regression');
+assert.ok(bibi.includes("proposal.textContent='Przygotuj propozycję do przeglądu'"),'RX Developer 9.0 must offer manual proposal export');
+assert.ok(bibi.includes("link.download='rx-proposal-'"),'RX Developer 9.0 must download proposal locally');
+assert.ok(bibi.includes('Nie wykonano żadnych zmian.'),'RX Developer 9.0 must disclose read-only mode');
+console.log('PASS: RX Developer 9.0 read-only proposal export');
