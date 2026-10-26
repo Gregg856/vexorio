@@ -21,3 +21,13 @@ assert.deepEqual(capped.findings.map(f=>f.line),Array.from({length:50},(_,i)=>i+
 assert.throws(()=>inspectSource({path:'/absolute.js',source:'x'}),/Invalid source input/);
 assert.throws(()=>inspectSource({path:'safe.js',source:42}),/Invalid source input/);
 console.log('PASS: RX Developer 2.0 boundary and finding limit tests');
+
+const commentCases=inspectSource({path:'src/comments.js',source:[
+ '// eval(userInput);',
+ '  // console.log(secret);',
+ '// const api_key = "abcdefghijklmnopqrstuvwxyz123456";',
+ 'const real=eval(userInput);',
+ 'console.log(real);'
+].join('\n')});
+assert.deepEqual(commentCases.findings.map(f=>[f.rule,f.line]),[['eval',4],['console-log',5]]);
+console.log('PASS: RX Developer 2.0 full-line comment false-positive regression');
