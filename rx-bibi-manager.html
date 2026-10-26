@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  });
  const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
  const developerPreview=document.createElement('section');
- const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.3 — podgląd i różnice';
+ const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.4 — podgląd i historia';
  const developerPreviewInfo=document.createElement('p');developerPreviewInfo.className='meta';developerPreviewInfo.textContent='Tylko prosta, jawna zamiana console.log → console.debug. Podgląd nie zapisuje zmian ani nie uruchamia kodu. Pozostałe ostrzeżenia wymagają ręcznej oceny.';
  const developerSuggest=document.createElement('button');developerSuggest.type='button';developerSuggest.textContent='👀 Przygotuj podgląd';
  const developerBefore=document.createElement('pre');developerBefore.style.whiteSpace='pre-wrap';developerBefore.style.overflowWrap='anywhere';
@@ -712,6 +712,35 @@ document.addEventListener('DOMContentLoaded',()=>{
   developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
   developerPreviewStatus.textContent='Propozycja cofnięta. Oryginalny kod pozostaje bez zmian.';
  });
+ const developerHistoryKey='rx-developer-preview-history-v1';
+ const developerHistory=[];
+ try{const saved=JSON.parse(localStorage.getItem(developerHistoryKey)||'[]');if(Array.isArray(saved))for(const item of saved.slice(0,10))if(item&&typeof item.before==='string'&&typeof item.after==='string'&&item.before.length<=12000&&item.after.length<=12000)developerHistory.push({before:item.before,after:item.after,date:String(item.date||'')});}catch(_){}
+ const developerHistoryTitle=document.createElement('h3');developerHistoryTitle.textContent='🕘 RX Developer 1.4 — historia podglądów';
+ const developerHistoryList=document.createElement('div');
+ const developerHistoryClear=document.createElement('button');developerHistoryClear.type='button';developerHistoryClear.textContent='🗑️ Wyczyść historię';
+ const saveDeveloperHistory=()=>{try{localStorage.setItem(developerHistoryKey,JSON.stringify(developerHistory));}catch(_){}};
+ const renderDeveloperHistory=()=>{
+  developerHistoryList.replaceChildren();
+  if(!developerHistory.length){const p=document.createElement('p');p.className='meta';p.textContent='Brak zapisanych podglądów.';developerHistoryList.append(p);return;}
+  developerHistory.forEach((item,index)=>{
+   const row=document.createElement('div');row.className='card';row.style.padding='8px';row.style.margin='8px 0';
+   const label=document.createElement('span');label.textContent=(index+1)+'. '+(item.date?new Date(item.date).toLocaleString('pl-PL'):'Bez daty')+' · '+item.before.split(/\r?\n/).length+' linii';
+   const restore=document.createElement('button');restore.type='button';restore.textContent='👀 Przywróć podgląd';
+   restore.addEventListener('click',()=>{
+    developerInput.value=item.before;developerPreviewSource=item.before;developerSuggestedCode=item.after;
+    developerBefore.textContent='PRZED:\n'+item.before;
+    developerAfter.textContent='PO (propozycja, nie zastosowano):\n'+item.after;
+    const a=item.before.split(/\r?\n/),b=item.after.split(/\r?\n/);
+    developerDiff.textContent='RÓŻNICE (numery linii):\n'+a.map((line,i)=>line===b[i]?'  '+(i+1)+'  '+line:'- '+(i+1)+'  '+line+'\n+ '+(i+1)+'  '+(b[i]||'')).join('\n');
+    developerCopyPatch.disabled=false;developerReset.disabled=false;
+    developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
+    developerPreviewStatus.textContent='Przywrócono tylko podgląd. Oryginalne pliki nie zostały zmienione.';
+   });
+   row.append(label,restore);developerHistoryList.append(row);
+  });
+ };
+ developerHistoryClear.addEventListener('click',()=>{developerHistory.length=0;saveDeveloperHistory();renderDeveloperHistory();});
+ renderDeveloperHistory();
  let developerSuggestedCode='';
  let developerPreviewSource='';
  const developerPreviewStatus=document.createElement('p');developerPreviewStatus.className='meta';developerPreviewStatus.setAttribute('aria-live','polite');
@@ -730,6 +759,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   developerBefore.textContent='PRZED:\n'+original;
   if(updated===original){developerAfter.textContent='Brak obsługiwanych propozycji. RX nie zmienia kodu.';developerPreviewStatus.textContent='';return;}
   developerSuggestedCode=updated;developerPreviewSource=original;
+  developerHistory.unshift({before:original,after:updated,date:new Date().toISOString()});if(developerHistory.length>10)developerHistory.length=10;saveDeveloperHistory();renderDeveloperHistory();
   const beforeLines=original.split(/\r?\n/),afterLines=updated.split(/\r?\n/);
   developerDiff.textContent='RÓŻNICE (numery linii):\n'+beforeLines.map((line,i)=>line===afterLines[i]?'  '+(i+1)+'  '+line:'- '+(i+1)+'  '+line+'\n+ '+(i+1)+'  '+afterLines[i]).join('\n');
   developerReset.disabled=false;
@@ -747,7 +777,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    developerPreviewStatus.textContent='Zaznaczony kod — skopiuj ręcznie.';
   }
  });
- developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerDiff,developerPreviewStatus,developerCopyPatch,developerReset);
+ developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerDiff,developerPreviewStatus,developerCopyPatch,developerReset,developerHistoryTitle,developerHistoryList,developerHistoryClear);
  developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy,developerPreview);
  views.set('developer',developerView);pane.append(developerView);
  const developerNav=document.createElement('button');developerNav.type='button';developerNav.textContent='💻 RX Developer';developerNav.addEventListener('click',()=>activate('developer'));side.append(developerNav);buttons.set('developer',developerNav);
