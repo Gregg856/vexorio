@@ -4,6 +4,9 @@ const MAX_SOURCE=100000;
 function inspectSource({path,source}={}){
  if(typeof path!=='string'||!/^[-\w./]+\.(?:js|cjs|mjs|html|css)$/.test(path)||path.includes('..')||path.startsWith('/')||typeof source!=='string'||source.length>MAX_SOURCE)throw Error('Invalid source input');
  const findings=[];
+ // Mask comments without changing offsets or line numbers. String literals remain
+ // intact so hardcoded-secret and insecure-http checks still work.
+ const scanSource=source.replace(/\\/\\*[\\s\\S]*?\\*\\/|(^|\\n)[ \\t]*\\/\\/[^\\n]*/g,match=>match.replace(/[^\\n]/g,' '));
  const rules=[
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
@@ -16,7 +19,7 @@ function inspectSource({path,source}={}){
   {id:'hardcoded-secret',severity:'high',pattern:/\b(?:api[_-]?key|secret|access[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_-]{24,}['"]/gi,message:'Możliwy sekret wpisany bezpośrednio w kodzie. Nie umieszczaj go w publicznym repozytorium.'}
  ];
  for(const rule of rules){
-  for(const match of source.matchAll(rule.pattern)){
+  for(const match of scanSource.matchAll(rule.pattern)){
    const lineStart=source.lastIndexOf('\n',match.index-1)+1;
    // Ignore matches in full-line JavaScript comments; keep executable lines unchanged.
    if(/^\s*\/\//.test(source.slice(lineStart,match.index)))continue;
