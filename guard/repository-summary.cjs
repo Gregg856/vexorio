@@ -44,6 +44,7 @@ function summarize(report){
  const reviewFiles=files.filter(f=>f.status==='scanned'&&f.severity.high>0).length;
  const mediumReviewFiles=files.filter(f=>f.status==='scanned'&&f.severity.high===0&&f.severity.medium>0).length;
  const lowReviewFiles=files.filter(f=>f.status==='scanned'&&f.severity.high===0&&f.severity.medium===0&&f.severity.low>0).length;
+ const reviewQueue=files.filter(f=>f.status==='scanned'&&f.signals>0).map(f=>({path:f.path,priority:f.severity.high>0?'high':f.severity.medium>0?'medium':f.severity.low>0?'low':'unknown',signals:f.signals})).sort((a,b)=>({high:0,medium:1,low:2,unknown:3}[a.priority]-{high:0,medium:1,low:2,unknown:3}[b.priority])||b.signals-a.signals||a.path.localeCompare(b.path)).slice(0,20);
  const filesScanned=files.filter(f=>f.status==='scanned').length;
  const filesSkipped=files.length-filesScanned;
  const coveragePercent=files.length?Math.round(filesScanned/files.length*100):0;
@@ -59,7 +60,7 @@ function summarize(report){
  if(severity.low>0)recommendations.push({priority:'low',action:'Ogranicz zbędne logowanie i pozostałe ostrzeżenia niskiego ryzyka.'});
  if(skippedByReason.empty_file)recommendations.push({priority:'review',action:'Sprawdź puste pliki źródłowe — mogą oznaczać nieukończony moduł.'});
  if(files.some(f=>f.status!=='scanned'))recommendations.push({priority:'review',action:'Sprawdź pominięte pliki — skanowanie nie objęło całego zakresu.'});
- return {version:1,filesScanned,filesSkipped,filesWithSignals,cleanFiles,cleanPercent,scanStatus,scanComplete,coveragePercent,signals:report.signals,severity,byScope,affectedFiles,reviewFiles,mediumReviewFiles,lowReviewFiles,priorityFiles,topRules,priorityRules,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
+ return {version:1,filesScanned,filesSkipped,filesWithSignals,cleanFiles,cleanPercent,scanStatus,scanComplete,coveragePercent,signals:report.signals,severity,byScope,affectedFiles,reviewFiles,mediumReviewFiles,lowReviewFiles,reviewQueue,priorityFiles,topRules,priorityRules,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
 }
 if(require.main===module){
  const summary=summarize(scan());
