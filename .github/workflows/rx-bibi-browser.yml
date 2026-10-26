@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'rx-bibi-manager.html'
+      - 'guard-lab.html'
+      - 'guard-rx-queen-panel.js'
+      - 'worker.js'
       - 'rx-million-hearts.js'
       - 'rx-command-bridge.js'
       - 'tests/rx-command-bridge.cjs'
