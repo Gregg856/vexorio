@@ -249,3 +249,10 @@ console.log('PASS: RX Developer 9.2 proposal priority and review checklist');
 assert.ok(!/RX Developer 1\.\d+/.test(bibi),'RX Developer UI must not expose stale 1.x version labels');
 assert.ok(bibi.includes('RX Developer — historia i ochrona danych'),'RX Developer history heading must be consistent');
 console.log('PASS: RX Developer consistent headings');
+
+// Security contract: pasted snippets may be parsed for syntax but never executed.
+assert.ok(bibi.includes('try{new Function(code);}catch(error)'), 'RX Developer must compile only for syntax validation');
+assert.ok(!bibi.includes('new Function(code)()'), 'RX Developer must not execute pasted snippets');
+assert.ok(bibi.includes("developerOutput.textContent="), 'RX Developer must display results as text');
+assert.ok(bibi.includes("developerInput.maxLength=12000"), 'RX Developer must cap pasted code size');
+console.log('PASS: RX Developer read-only pasted-code analysis security contract');
