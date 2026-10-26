@@ -60,3 +60,9 @@ assert.deepEqual(multiline.findings.map(f=>[f.rule,f.line]),[['eval',4]]);
 const httpSecret=inspectSource({path:'src/valid.js',source:'const secret = "abcdefghijklmnopqrstuvwxyz123456";\nfetch("http://example.org");'});
 assert.deepEqual(httpSecret.findings.map(f=>[f.rule,f.line]),[['hardcoded-secret',1],['insecure-http',2]]);
 console.log('PASS: RX Developer 2.1 literal, multiline and active security checks');
+
+const inlineBlock=inspectSource({path:'src/inline.js',source:'const a=1; /* eval(fake); */ eval(real);'});
+assert.deepEqual(inlineBlock.findings.map(f=>[f.rule,f.line]),[['eval',1]]);
+const multiInline=inspectSource({path:'src/inline-block.js',source:'const a=1; /* console.log(fake);\n eval(fake); */ console.log(real);'});
+assert.deepEqual(multiInline.findings.map(f=>[f.rule,f.line]),[['console-log',2]]);
+console.log('PASS: RX Developer 2.1 inline block comments preserve real code');
