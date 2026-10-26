@@ -74,6 +74,8 @@ jobs:
         run: node tests/rx-ant-lab.cjs
       - name: RX ANT LAB — eksperyment i raport
         run: node rx-ant-lab.cjs
+      - name: Sprawdź RX DNA LINEAGE STAGING
+        run: node tests/rx-dna-lineage-staging.cjs
       - name: Sprawdź RX DNA CLOUD MEMORY
         run: node tests/rx-dna-cloud-memory.cjs
       - name: Sprawdź RX DNA MEMORY
