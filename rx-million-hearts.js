@@ -21,14 +21,18 @@ class RXMillionHearts {
     if(!Number.isSafeInteger(index)||index<0||index>=this.logicalHeads)throw new RangeError('Invalid logical head index');
     return 'RX-'+String(index+1).padStart(6,'0');
   }
-  dispatch(name,payload,{signal}={}){
+  dispatch(name,payload,{signal,priority=0}={}){
+    if(!Number.isSafeInteger(priority)||priority<0||priority>9)return Promise.reject(new RangeError('Priority must be 0..9'));
     if(!this.handlers.has(name))return Promise.reject(new Error('Unknown cell: '+name));
     if(signal?.aborted)return Promise.reject(signal.reason||new Error('Aborted'));
     if(this.queue.length>=this.maxQueue){this.stats.rejected++;return Promise.reject(new Error('RX hearts queue full'));}
     this.stats.accepted++;
     return new Promise((resolve,reject)=>{
-      const job={name,payload,signal,resolve,reject};
-      this.queue.push(job);this._drain();
+      const job={name,payload,signal,priority,resolve,reject};
+      // Stable priority order: urgent jobs first, FIFO within the same priority.
+      const next=this.queue.findIndex(queued=>queued.priority<priority);
+      if(next<0)this.queue.push(job);else this.queue.splice(next,0,job);
+      this._drain();
     });
   }
   _drain(){
@@ -76,7 +80,7 @@ class RXMillionHearts {
     if(this.memory.length>this.memoryLimit)this.memory.shift();
   }
   snapshot(){
-    return {registeredCells:this.handlers.size,logicalHeads:this.logicalHeads,active:this.active,queued:this.queue.length,
+    return {registeredCells:this.handlers.size,logicalHeads:this.logicalHeads,active:this.active,queued:this.queue.length,urgentQueued:this.queue.filter(job=>job.priority>=7).length,
       stats:{...this.stats},recurringFailures:this.recurringFailures(),recent:this.memory.slice(-10)};
   }
 }
