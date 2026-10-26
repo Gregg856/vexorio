@@ -318,7 +318,7 @@
     if(!response.ok)throw new Error('Status HTTP '+response.status);
     const report=await response.json();
     if(!report.ok||!Array.isArray(report.runs))throw new Error('Nieprawidłowy raport');
-    append('RX NEURON',report.runs.map(run=>'• '+run.name+': '+(run.result==='success'?'ZIELONY':run.result==='failure'?'BŁĄD':run.status==='completed'?'ZAKOŃCZONY ('+(run.result||'brak wyniku')+')':run.status==='unknown'?'BRAK DANYCH':'W TOKU')+(run.number?' #'+run.number:'')).join('\\n')+'\\nŹródło: GitHub Actions. Tylko odczyt.');
+    append('RX NEURON',report.runs.map(run=>'• '+run.name+': '+(run.result==='success'?'ZIELONY':run.result==='failure'?'BŁĄD':run.status==='completed'?'ZAKOŃCZONY ('+(run.result||'brak wyniku')+')':run.status==='unknown'?'BRAK DANYCH':'W TOKU')+(run.number?' #'+run.number:'')).join(String.fromCharCode(10))+String.fromCharCode(10)+'Źródło: GitHub Actions. Tylko odczyt.');
    }catch(_){append('RX DIRECT','Nie udało się pobrać statusu. Spróbuj ponownie za chwilę.');}
    return;
   }
