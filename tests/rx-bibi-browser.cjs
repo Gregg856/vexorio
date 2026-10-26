@@ -44,6 +44,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     watch(page, 'RX BIBI', jsErrors);
     const response = await page.goto(base + '/rx-bibi-manager.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
     record('RX BIBI HTTP', response && response.status() === 200, response && response.status());
+    // New RX workspace hides inactive sections. Open the relevant tab before asserting visibility.
+    const openRxTab=async label=>{
+      const nav=page.locator('.rx-side');
+      const button=nav.getByRole('button',{name:label});
+      if(await button.count()!==1)throw Error('Brak zakładki RX: '+label);
+      await button.evaluate(el=>el.click());
+      await page.waitForTimeout(100);
+    };
+    await openRxTab('🧪 Tester');
     record('Nagłówek RX BIBI', await page.getByRole('heading', { name: /RX BIBI Manager 1\.3/ }).count() > 0);
     const tester=page.getByRole('region',{name:'RX BIBI Tester'});
     record('Panel RX BIBI Tester widoczny',await tester.count()===1);
@@ -55,6 +64,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const href=await reportLink.getAttribute('href');
       record('Link raportu RX BIBI Tester',typeof href==='string'&&href.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')&&Number.isSafeInteger(Number(href.split('/').pop()))&&Number(href.split('/').pop())>0,href);
     }catch(error){record('Odczyt panelu RX BIBI Tester',false,error.message);}
+    await openRxTab('🔎 Diagnostyka');
     const toolCenter=page.getByRole('region',{name:'Centrum narzędzi RX'});
     record('Centrum narzędzi RX na telefonie',await toolCenter.count()===1);
     const incidentPanel=page.getByRole('region',{name:'Automatyczny rejestr awarii'});
@@ -68,6 +78,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('RX BIBI 1.6 zakres historii',/maksymalnie 50 ostatnich rekordów/.test(reportText));
     } catch(error){record('RX BIBI 1.6 odczyt raportu',false,error.message);}
 
+    await openRxTab('📚 Historia');
     const exportButton=page.getByRole('button',{name:/Pobierz raport JSON/});
     record('RX BIBI 1.7 przycisk eksportu',await exportButton.count()===1);
     try {
@@ -103,6 +114,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('Odnośniki do sekcji RX działają',navigation.length>0&&navigation.every(link=>link.exists),JSON.stringify(navigation));
     const tapTargets=await toolCenter.locator('nav a').evaluateAll(links=>links.map(link=>({text:link.textContent.trim(),width:Math.round(link.getBoundingClientRect().width),height:Math.round(link.getBoundingClientRect().height)})));
     record('Przyciski narzędzi RX mieszczą się na telefonie',tapTargets.length>=3&&tapTargets.every(item=>item.width>=44&&item.height>=24),JSON.stringify(tapTargets));
+    await openRxTab('🔎 Diagnostyka');
     try {
       await incidentPanel.getByText('🔎 Automatyczny rejestr awarii').waitFor({state:'visible',timeout:15000});
       const incidentText=await incidentPanel.innerText();
