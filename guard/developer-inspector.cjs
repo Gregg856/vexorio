@@ -45,11 +45,12 @@ function inspectSource({path,source}={}){
  }
  const severityRank={high:0,medium:1,low:2};
  findings.sort((a,b)=>severityRank[a.severity]-severityRank[b.severity]||a.line-b.line);
- const limited=findings.length>50;
+ const omitted=Math.max(0,findings.length-50);
+ const limited=omitted>0;
  const visibleFindings=findings.slice(0,50);
  const summary={high:0,medium:0,low:0,total:visibleFindings.length};
  for(const finding of visibleFindings)summary[finding.severity]++;
- return {path,lines:source.split('\n').length,findings:visibleFindings,summary,limited,readOnly:true};
+ return {path,lines:source.split('\n').length,findings:visibleFindings,summary,limited,omitted,readOnly:true};
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={inspectSource};
 if(typeof window!=='undefined')window.GuardDeveloperInspector={inspectSource};
