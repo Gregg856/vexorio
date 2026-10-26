@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  views.set('plugins',pluginView);pane.append(pluginView);
  const pluginNav=document.createElement('button');pluginNav.type='button';pluginNav.textContent='🧩 RX Plugins';pluginNav.addEventListener('click',()=>activate('plugins'));side.append(pluginNav);buttons.set('plugins',pluginNav);
  const developerView=document.createElement('section');developerView.className='rx-developer';
- const developerTitle=document.createElement('h2');developerTitle.textContent='💻 RX Developer — analiza kodu';
+ const developerTitle=document.createElement('h2');developerTitle.textContent='💻 RX Developer 9.4 — analiza kodu';
  const developerInfo=document.createElement('p');developerInfo.className='meta';developerInfo.textContent='Własny lokalny analizator fragmentów JavaScript. Nie wysyła kodu do zewnętrznych usług, nie modyfikuje repozytorium ani nie wykonuje wklejonego kodu.';
  const developerInput=document.createElement('textarea');developerInput.rows=9;developerInput.maxLength=12000;developerInput.placeholder='Wklej fragment JavaScript do sprawdzenia…';developerInput.setAttribute('aria-label','Kod do analizy RX Developer');developerInput.style.width='100%';
  const developerRun=document.createElement('button');developerRun.type='button';developerRun.textContent='🔎 Analizuj kod';
