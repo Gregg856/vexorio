@@ -17,7 +17,9 @@ function listFiles(root){
  for(const directory of DIRECTORIES){
   const base=path.join(root,directory);
   if(!fs.existsSync(base))continue;
-  const dirStat=fs.lstatSync(base);
+  let dirStat;
+  try{dirStat=fs.lstatSync(base);}
+  catch(error){continue;}
   if(!dirStat.isDirectory()||dirStat.isSymbolicLink())continue;
   for(const entry of fs.readdirSync(base,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){
    if(!entry.isFile()||!/^[-\w.]+\.(?:js|cjs|mjs)$/.test(entry.name))continue;
