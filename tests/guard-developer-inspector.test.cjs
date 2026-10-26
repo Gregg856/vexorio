@@ -269,7 +269,7 @@ const equalityReport=inspectSource({path:'src/equality.js',source:[
  '// frame.srcdoc = userHtml;'
 ].join('\n')});
 assert.deepEqual(equalityReport.findings.map(f=>[f.rule,f.severity,f.line]),[
- ['unsafe-iframe-srcdoc','medium',4],
- ['inner-html','medium',3]
+ ['inner-html','medium',3],
+ ['unsafe-iframe-srcdoc','medium',4]
 ]);
 console.log('PASS: RX Developer 3.7 HTML assignment versus equality');
