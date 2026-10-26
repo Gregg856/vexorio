@@ -12,3 +12,8 @@ for(const file of ['guard-code-ui.js','guard-chat.js','guard/developer-inspector
 assert.match(fs.readFileSync('guard-chat.js','utf8'),/kod\\s\*:/);
 assert.match(fs.readFileSync('.github/workflows/deploy.yml','utf8'),/public\/guard-developer-inspector\.js/);
 console.log('PASS: Strażak Developer chat and UI assets linked and syntactically valid');
+
+const uiSource=fs.readFileSync('guard-code-ui.js','utf8');
+for(const token of ['report.summary','summary.high','summary.medium','summary.low','summary.total','Podsumowanie zagrożeń'])assert.ok(uiSource.includes(token),'Missing severity UI token: '+token);
+assert.match(uiSource,/out\.textContent=lines\.join/);
+console.log('PASS: RX Developer 2.3 summary visible in local report UI');
