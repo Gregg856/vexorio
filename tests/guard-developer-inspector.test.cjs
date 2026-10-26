@@ -147,7 +147,7 @@ const indexedLines=inspectSource({path:'src/indexed-lines.js',source:[
 ].join('\r\n')});
 assert.equal(indexedLines.lines,5);
 assert.deepEqual(indexedLines.findings.map(f=>[f.rule,f.line]),[['eval',4],['console-log',3]]);
-const manyLines=inspectSource({path:'src/many-lines.js',source:'const x = 1;\n'.repeat(10000)+'eval(x);'});
+const manyLines=inspectSource({path:'src/many-lines.js',source:'x;\n'.repeat(10000)+'eval(x);'});
 assert.equal(manyLines.lines,10001);
 assert.equal(manyLines.findings[0].line,10001);
 console.log('PASS: RX Developer 2.8 indexed line lookup with CRLF and large files');
