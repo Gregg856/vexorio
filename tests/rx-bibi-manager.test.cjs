@@ -214,4 +214,6 @@ assert.ok(bibi.includes("fetch('/rx-fix-guidance.json'"),'RX Manager must fetch 
 assert.ok(bibi.includes('document.createTextNode(\': \'+item.action)'), 'RX Manager must render suggestions as text');
 assert.ok(bibi.includes('rxSummaryFile'),'RX Manager must retain manual report import');
 console.log('PASS: RX Developer 7.7 automatic report viewer regression');
+for(const field of ['data.severity?.high','data.severity?.medium','data.severity?.low','data.filesScanned','data.filesSkipped'])assert.ok(bibi.includes(field),'RX Manager must display CI summary field '+field);
+console.log('PASS: RX Developer 7.9 risk counters in manager');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
