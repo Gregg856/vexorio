@@ -680,6 +680,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const rules=[
    {re:/\beval\s*\(/g,label:'eval() może uruchamiać niebezpieczny kod.',fix:'Zastąp eval() bezpiecznym parserem lub jawnie wywoływaną funkcją.'},
    {re:/\binnerHTML\s*=/g,label:'Sprawdź przypisanie do innerHTML.',fix:'Dla zwykłego tekstu użyj textContent; HTML z zewnątrz wymaga sanitizacji.'},
+   {re:/\bouterHTML\s*=/g,label:'Sprawdź przypisanie do outerHTML.',fix:'Unikaj wstawiania niesprawdzonego HTML; dla tekstu użyj textContent.'},
+   {re:/\binsertAdjacentHTML\s*\(/g,label:'Sprawdź insertAdjacentHTML() pod kątem wstrzyknięcia HTML.',fix:'Nie przekazuj niezaufanego HTML bez sanitizacji; dla tekstu użyj bezpiecznych metod DOM.'},
    {re:/(?:api[_-]?key|secret|token|password)\s*[:=]\s*['"][^'"]{8,}['"]/gi,label:'Możliwy sekret zapisany w kodzie.',fix:'Usuń sekret z kodu i przechowuj go po stronie serwera; w razie ujawnienia zmień klucz.'},
    {re:/console\.log\s*\(/g,label:'console.log() może ujawniać dane.',fix:'Usuń logowanie danych wrażliwych przed publikacją.'},
    {re:/\bfetch\s*\(/g,label:'Sprawdź obsługę błędów fetch().',fix:'Dodaj try/catch i sprawdzanie response.ok.'},
