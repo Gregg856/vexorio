@@ -15,6 +15,15 @@ const {RXMillionHearts,createRXHearts}=require('../rx-million-hearts.js');
  assert.deepEqual(rx.suggestKnownFix('tests','mobile_overflow'),{cell:'tests',code:'mobile_overflow',fixId:'fix_001',requiresApproval:true});
  assert.throws(()=>rx.rememberVerifiedFix('tests','mobile_overflow','../unsafe',{testsPassed:true}),/Invalid fix ID/);
 
+ const saved=rx.exportFailureMemory();
+ assert.deepEqual(saved,{version:1,patterns:[{cell:'tests',code:'mobile_overflow',count:2,verifiedFix:'fix_001'}]});
+ const restored=createRXHearts();
+ assert.equal(restored.importFailureMemory(saved),1);
+ assert.deepEqual(restored.suggestKnownFix('tests','mobile_overflow'),{cell:'tests',code:'mobile_overflow',fixId:'fix_001',requiresApproval:true});
+ assert.throws(()=>restored.importFailureMemory({version:1,patterns:[{cell:'tests',code:'secret=abc',count:1}]}),/Invalid RX memory pattern/);
+ assert.deepEqual(restored.exportFailureMemory(),saved);
+ assert.throws(()=>restored.importFailureMemory({version:1,patterns:[saved.patterns[0],saved.patterns[0]]}),/Duplicate RX memory pattern/);
+ assert.throws(()=>restored.importFailureMemory({version:1,patterns:[{cell:'tests',code:'ok',count:1,verifiedFix:'../bad'}]}),/Invalid RX memory pattern/);
  const limitedMemory=new RXMillionHearts({memoryLimit:1});
  limitedMemory.register('tests',async()=>true);
  limitedMemory.rememberFailure('tests','first');
