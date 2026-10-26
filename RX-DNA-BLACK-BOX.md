@@ -34,3 +34,11 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Before each task: inspect actual current code, recent commits and CI; do not redo completed fixes.
 - After each change: test, inspect run statuses, report exact commit and pending failures.
 - After verified milestone: update this file with factual state and next step.
+
+## RX DNA CLOUD 1.1 — staging milestone (2026-10-26)
+- Staging Supabase only (`owkjdlpawczrnwyszduj`): private schema `rx_private` and table `rx_private.ant_memory` created by migration `rx_dna_cloud_private_staging_memory`.
+- Columns: `ant_id`, `dna_version`, bounded `snapshot` JSONB (16 KiB), `revision`, `updated_at`.
+- RLS enabled; schema/table privileges revoked from `anon` and `authenticated`. Verified access checks returned false.
+- Verified server-side SQL round-trip for synthetic ant `RX-000001`; no real user data stored.
+- **Not yet connected** to RX handlers, Queen, or browser; no public REST API and no cross-device synchronization claimed.
+- Next: build authenticated server-side write/read path with audit trail, optimistic revision control, backup and restore tests on staging. Keep credentials off client.
