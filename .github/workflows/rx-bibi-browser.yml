@@ -51,6 +51,8 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.56.1
       - name: Sprawdź gotowość Chromium
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
+      - name: Sprawdź składnię panelu Królowej RX
+        run: node --check guard-rx-queen-panel.js
       - name: Sprawdź silnik RX MILION SERC
         run: node tests/rx-million-hearts.cjs
       - name: Sprawdź RX COMMAND BRIDGE
