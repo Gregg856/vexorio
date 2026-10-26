@@ -242,3 +242,6 @@ assert.ok(bibi.includes("proposal.textContent='Przygotuj propozycję do przeglą
 assert.ok(bibi.includes("link.download='rx-proposal-'"),'RX Developer 9.0 must download proposal locally');
 assert.ok(bibi.includes('Nie wykonano żadnych zmian.'),'RX Developer 9.0 must disclose read-only mode');
 console.log('PASS: RX Developer 9.0 read-only proposal export');
+for(const term of ['Priorytet przeglądu:', 'Lista kontrolna przed zatwierdzeniem:', 'Uruchom odpowiednie testy', 'Zatwierdź zmiany dopiero po przeglądzie'])assert.ok(bibi.includes(term),'RX Developer 9.2 proposal must contain '+term);
+assert.ok(bibi.includes("?'pilny':items.some"),'RX Developer 9.2 must calculate review priority');
+console.log('PASS: RX Developer 9.2 proposal priority and review checklist');
