@@ -94,3 +94,8 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `rx-ant-academy.cjs`: bounded in-memory reputation and deterministic rank/leaderboard with non-monetary rewards only.
 - `tests/rx-ant-academy.cjs`: promotion, invalid metrics, capacity, leaderboard.
 - Important: performance metrics are caller-provided, not yet independently verified; priorities are informational, not connected to scheduler. No payments, automatic actions or persistence. Future work: authenticated measured outcomes and durable storage.
+
+## RX ANT ACADEMY 2.0 — proof receipts
+- `rx-ant-academy-proof.cjs`: bounded in-memory receipt deduplication, collision detection, passed-only score accounting and leaderboard. `tests/rx-ant-academy-proof.cjs` added to CI.
+- Critical trust boundary: `source:'trusted_ci'` is a plain caller-provided string, NOT authentication or a verified CI attestation. This is only a local adapter; it must not be exposed as an untrusted public endpoint or used for automatic production privileges.
+- Next: verified GitHub run identity and immutable receipts, durable storage, actual measured performance. No financial rewards or autonomous actions.
