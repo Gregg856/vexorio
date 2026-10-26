@@ -414,7 +414,7 @@ async function refresh(){
           const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
           const {data,error}=await client.auth.getSession();
           if(error||!data?.session?.access_token)throw Error('Zaloguj się jako administrator VEXORIO.');
-          const response=await fetch('/api/rx/failed-steps?run_id='+encodeURIComponent(run.id),{
+          const response=await fetch('/api/rx/failed-steps?include_logs=1&run_id='+encodeURIComponent(run.id),{
             headers:{Authorization:'Bearer '+data.session.access_token,'Accept':'application/json'},cache:'no-store'
           });
           const payload=await response.json().catch(()=>({message:'Nieprawidłowa odpowiedź serwera.'}));
@@ -424,6 +424,8 @@ async function refresh(){
           if(!failures.length)secureOutput.append(document.createTextNode('Brak nieudanych zadań w odpowiedzi serwera.'));
           for(const job of failures){
             secureOutput.append(document.createTextNode('Zadanie: '+String(job.name||'brak nazwy')+' — '+(Array.isArray(job.steps)?job.steps.map(st=>String(st.name||'etap')).join(' · '):'brak etapów')+'; '));
+            for(const message of (Array.isArray(job.messages)?job.messages:[])){secureOutput.append(document.createElement('br'),document.createTextNode('Błąd: '+String(message).slice(0,240)));}
+            if(job.log_notice)secureOutput.append(document.createElement('br'),document.createTextNode(String(job.log_notice)));
           }
           secureOutput.append(document.createTextNode(' '+String(payload.notice||'')));
         }catch(error){secureOutput.textContent='Nie udało się pobrać: '+String(error.message||error);}
