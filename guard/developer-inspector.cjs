@@ -4,9 +4,27 @@ const MAX_SOURCE=100000;
 function inspectSource({path,source}={}){
  if(typeof path!=='string'||!/^[-\w./]+\.(?:js|cjs|mjs|html|css)$/.test(path)||path.includes('..')||path.startsWith('/')||typeof source!=='string'||source.length>MAX_SOURCE)throw Error('Invalid source input');
  const findings=[];
- // Mask comments without changing offsets or line numbers. String literals remain
- // intact so hardcoded-secret and insecure-http checks still work.
- const scanSource=source.replace(/\/\*[\s\S]*?\*\/|(^|\n)[ \t]*\/\/[^\n]*/g,match=>match.replace(/[^\n]/g,' '));
+ // Mask comments and quoted text in executable-code rules, preserving offsets.
+ const code=source.split(''),literals=source.split('');
+ let mode='code';
+ for(let i=0;i<source.length;i++){
+  const ch=source[i],next=source[i+1];
+  if(mode==='code'){
+   if(ch==='/'&&next==='/'){code[i]=code[i+1]=' ';literals[i]=literals[i+1]=' ';i++;mode='line';continue;}
+   if(ch==='/'&&next==='*'){code[i]=code[i+1]=' ';literals[i]=literals[i+1]=' ';i++;mode='block';continue;}
+   if(ch==='"'||ch==="'"||ch===String.fromCharCode(96)){code[i]=' ';mode=ch;continue;}
+  }else if(mode==='line'){
+   if(ch==='\n'){mode='code';continue;}code[i]=' ';literals[i]=' ';
+  }else if(mode==='block'){
+   if(ch==='*'&&next==='/'){code[i]=code[i+1]=' ';literals[i]=literals[i+1]=' ';i++;mode='code';continue;}
+   if(ch!=='\n'){code[i]=' ';literals[i]=' ';}
+  }else{
+   if(ch==='\\'){code[i]=' ';if(i+1<source.length){i++;if(source[i]!=='\n')code[i]=' ';}continue;}
+   if(ch===mode){code[i]=' ';mode='code';continue;}
+   if(ch!=='\n')code[i]=' ';
+  }
+ }
+ const codeSource=code.join(''),scanSource=literals.join('');
  const rules=[
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
@@ -19,10 +37,8 @@ function inspectSource({path,source}={}){
   {id:'hardcoded-secret',severity:'high',pattern:/\b(?:api[_-]?key|secret|access[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_-]{24,}['"]/gi,message:'Możliwy sekret wpisany bezpośrednio w kodzie. Nie umieszczaj go w publicznym repozytorium.'}
  ];
  for(const rule of rules){
-  for(const match of scanSource.matchAll(rule.pattern)){
-   const lineStart=source.lastIndexOf('\n',match.index-1)+1;
-   // Ignore matches in full-line JavaScript comments; keep executable lines unchanged.
-   if(/^\s*\/\//.test(source.slice(lineStart,match.index)))continue;
+  const target=['insecure-http','postmessage-wildcard','hardcoded-secret'].includes(rule.id)?scanSource:codeSource;
+  for(const match of target.matchAll(rule.pattern)){
    const line=source.slice(0,match.index).split('\n').length;
    findings.push({rule:rule.id,severity:rule.severity,line,message:rule.message});
    if(findings.length>=50)break;
