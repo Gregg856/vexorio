@@ -260,3 +260,6 @@ console.log('PASS: RX Developer read-only pasted-code analysis security contract
 assert.ok(!bibi.includes("/\\.catch\\s*\\(|\\btry\\s*\\{/.test(code)"), 'RX Developer must not suppress all fetch findings due to unrelated try/catch');
 assert.ok(bibi.includes('lines.slice(Math.max(0,i-2),i+1)'), 'RX Developer fetch heuristics must be scoped near the call');
 console.log('PASS: RX Developer fetch warning scope regression');
+
+assert.ok(bibi.includes('if(/^\\s*(?:\\/\\/|\\*|\\/\\*)/.test(lines[i]))continue;'),'RX Developer should skip standalone comment lines');
+console.log('PASS: RX Developer standalone comment false-positive guard');
