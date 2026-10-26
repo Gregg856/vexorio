@@ -62,6 +62,7 @@ function scan(root=process.cwd()){
   if(name==='guard-lab.html')result.findings.push(...checkHtmlReferences(root,source));
   const syntax=checkSyntax(full);
   if(syntax)result.findings.push(syntax);
+  result.findings.sort((a,b)=>({high:0,medium:1,low:2}[a.severity]??3)-({high:0,medium:1,low:2}[b.severity]??3)||a.line-b.line||a.rule.localeCompare(b.rule));
   files.push({path:name,lines:result.lines,findings:result.findings});
   count+=result.findings.length;
  }
