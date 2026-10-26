@@ -216,4 +216,8 @@ assert.ok(bibi.includes('rxSummaryFile'),'RX Manager must retain manual report i
 console.log('PASS: RX Developer 7.7 automatic report viewer regression');
 for(const field of ['data.severity?.high','data.severity?.medium','data.severity?.low','data.filesScanned','data.filesSkipped'])assert.ok(bibi.includes(field),'RX Manager must display CI summary field '+field);
 console.log('PASS: RX Developer 7.9 risk counters in manager');
+assert.ok(bibi.includes('id="rxRuleFilter"'),'RX Developer 8.1 must have a rule filter');
+assert.ok(bibi.includes('filter.onchange=render'),'RX Developer 8.1 must update guidance when rule changes');
+assert.ok(bibi.includes('x.rule===filter.value'),'RX Developer 8.1 must filter guidance by rule');
+console.log('PASS: RX Developer 8.1 rule filter regression');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
