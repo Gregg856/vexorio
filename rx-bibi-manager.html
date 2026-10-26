@@ -708,8 +708,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    }
    // A slash following an expression starter can begin a regular-expression literal.
    if(c==='/'&&next!=='/'&&next!=='*'){
-    const prefix=masked.join('').replace(/\s+$/,'');
-    const previous=prefix.slice(-1);
+    let previous='';
+    for(let k=masked.length-1;k>=0;k--){if(!/\s/.test(masked[k])){previous=masked[k];break;}}
     if(!previous||/[=(:,!&|?;{\[+*%-]/.test(previous)){
      let j=i+1,inClass=false,escapeRegex=false,closed=false;
      for(;j<code.length;j++){
