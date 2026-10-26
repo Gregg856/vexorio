@@ -116,3 +116,19 @@ assert.deepEqual(priorityReport.findings.map(({rule,line})=>[rule,line]),[
 ]);
 assert.deepEqual(priorityReport.summary,{high:2,medium:2,low:2,total:6});
 console.log('PASS: RX Developer 2.4 priority sorting and stable line order');
+
+const capPriority=inspectSource({path:'src/cap-priority.js',source:[
+ ...Array.from({length:60},(_,i)=>'console.log(value'+i+');'),
+ 'eval(untrusted);',
+ 'const secret = "abcdefghijklmnopqrstuvwxyz123456";'
+].join('\n')});
+assert.equal(capPriority.findings.length,50);
+assert.equal(capPriority.limited,true);
+assert.deepEqual(capPriority.findings.slice(0,2).map(f=>[f.rule,f.line]),[
+ ['eval',61],['hardcoded-secret',62]
+]);
+assert.deepEqual(capPriority.summary,{high:2,medium:0,low:48,total:50});
+const exactCap=inspectSource({path:'src/exact-cap.js',source:'console.log(x);\n'.repeat(50)});
+assert.equal(exactCap.findings.length,50);
+assert.equal(exactCap.limited,false);
+console.log('PASS: RX Developer 2.5 high-risk findings survive cap and exact cap is not truncated');
