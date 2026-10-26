@@ -25,6 +25,13 @@ function inspectSource({path,source}={}){
   }
  }
  const codeSource=code.join(''),scanSource=literals.join('');
+ const newlinePositions=[];
+ for(let i=0;i<source.length;i++)if(source[i]==='\n')newlinePositions.push(i);
+ function lineAt(offset){
+  let lo=0,hi=newlinePositions.length;
+  while(lo<hi){const mid=(lo+hi)>>>1;if(newlinePositions[mid]<offset)lo=mid+1;else hi=mid;}
+  return lo+1;
+ }
  const rules=[
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
@@ -39,7 +46,7 @@ function inspectSource({path,source}={}){
  for(const rule of rules){
   const target=['insecure-http','postmessage-wildcard','hardcoded-secret'].includes(rule.id)?scanSource:codeSource;
   for(const match of target.matchAll(rule.pattern)){
-   const line=source.slice(0,match.index).split('\n').length;
+   const line=lineAt(match.index);
    findings.push({rule:rule.id,severity:rule.severity,line,message:rule.message});
   }
  }
@@ -50,7 +57,7 @@ function inspectSource({path,source}={}){
  const visibleFindings=findings.slice(0,50);
  const summary={high:0,medium:0,low:0,total:visibleFindings.length};
  for(const finding of visibleFindings)summary[finding.severity]++;
- return {path,lines:source.split('\n').length,findings:visibleFindings,summary,limited,omitted,readOnly:true};
+ return {path,lines:newlinePositions.length+1,findings:visibleFindings,summary,limited,omitted,readOnly:true};
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={inspectSource};
 if(typeof window!=='undefined')window.GuardDeveloperInspector={inspectSource};
