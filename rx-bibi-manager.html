@@ -711,7 +711,19 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(key){const action=document.createElement('button');action.type='button';action.textContent='Otwórz: '+buttons.get(key).textContent;action.addEventListener('click',()=>activate(key));log.append(action);}
    log.scrollTop=log.scrollHeight;
   };
-  if(/^(cześć|czesc|hej|witaj|halo|dzień dobry|dzien dobry|siema)[!. ]*$/.test(value)){
+  const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\\s+zadani[ea]\\s*[:,-]?\\s*(.+)$/i);
+  if(taskMatch){
+   const title=taskMatch[1].trim().slice(0,180);
+   if(!title){explain('Podaj treść zadania, np. „Dodaj zadanie: sprawdź VEXORIO”.');return;}
+   const module=/film|wideo|montaż|montaz|tiktok|youtube/.test(value)?'rx-studio':/grafik|obraz|miniatur|plakat/.test(value)?'rx-grafika':/muzyk|piosen|dźwięk|dzwiek/.test(value)?'rx-muzyka':/kod|napraw|program|develop/.test(value)?'rx-developer':/test|sprawdź|sprawdz/.test(value)?'rx-tester':'rx-strazak';
+   rxTasks.unshift({id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),title,module,status:'oczekuje'});
+   if(rxTasks.length>50)rxTasks.length=50;
+   persistTasks();renderTasks();
+   explain('Dodałem zadanie „'+title+'” do kolejki '+module+'. To zapis planu, nie automatyczne wykonanie.','zadania');
+  }else if(/^(pokaż|pokaz|otwórz|otworz)\\s+(moje\\s+)?zadania|lista zadań|lista zadan/.test(value)){
+   const pending=rxTasks.filter(t=>t.status==='oczekuje').length;
+   explain('Masz '+pending+' oczekujących zadań. Otwieram listę.','zadania');
+  }else if(/^(cześć|czesc|hej|witaj|halo|dzień dobry|dzien dobry|siema)[!. ]*$/.test(value)){
    explain('Cześć! Jestem RX Strażak — asystentem do odczytu stanu VEXORIO i nawigacji. Mogę pokazać ostatnie błędy, status strony, testy i publikacje. Co sprawdzamy?');
   }else if(/(co|czy|jak).*(działa|dziala|stan|status|stron)|stan strony|monitor|straż|straz/.test(value)){
    explain('Aktualny odczyt panelu: '+(snapshot('availability')||'Brak wyniku kontroli dostępności.')+' '+(snapshot('strażakStatus')||'Brak danych Strażaka.')+' Dane mogą być opóźnione; odśwież monitoring, aby je zweryfikować.','strażak');
