@@ -81,5 +81,9 @@ const affected=summarize({signals:4,files:[
 assert.deepEqual(affected.affectedFiles,{high:2,medium:0,low:1});
 assert.equal(affected.severity.high,3);
 console.log('PASS: RX Developer 6.3 affected-file counts');
+assert.equal(affected.filesWithSignals,2);
+assert.equal(affected.cleanFiles,1);
+assert.equal(affected.filesWithSignals+affected.cleanFiles,affected.filesScanned);
+console.log('PASS: RX Developer 6.4 clean-file counts');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
