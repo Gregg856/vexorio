@@ -47,7 +47,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     // New RX workspace hides inactive sections. Open the relevant tab before asserting visibility.
     const openRxTab=async label=>{
       const nav=page.locator('.rx-side');
-      const button=nav.getByRole('button',{name:label});
+      const button=nav.locator('button').filter({hasText:label});
       if(await button.count()!==1)throw Error('Brak zakładki RX: '+label);
       await button.evaluate(el=>el.click());
       await page.waitForTimeout(100);
@@ -90,6 +90,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('RX BIBI 1.7 format danych',exportShape.format==='RX BIBI 1.7'&&exportShape.hasSummary&&exportShape.hasRuns&&!exportShape.hasSecrets,JSON.stringify(exportShape));
     }catch(error){record('RX BIBI 1.7 pobranie raportu',false,error.message);}
     try {
+      await openRxTab('📚 Historia');
       await page.locator('[data-filter="failure"]').click();
       const filtered=await page.evaluate(()=>({
         filter:activeFilter,
@@ -149,6 +150,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       const firstHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
       record('RX BIBI historia — pierwszy zapis',firstHistory.length===1&&typeof firstHistory[0].summary==='string',JSON.stringify(firstHistory));
       await copyDiagnosis.click();
+      await openRxTab('📚 Historia');
       await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).getByText(/2\/10.*Poprzedni raport:/).waitFor({state:'visible',timeout:10000});
       const secondHistory=await page.evaluate(()=>JSON.parse(localStorage.getItem('rx-bibi-diagnoses-v1')||'[]'));
       const historyText=await page.getByRole('region',{name:'Historia diagnoz RX BIBI'}).innerText();
