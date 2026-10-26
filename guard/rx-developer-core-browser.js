@@ -73,21 +73,27 @@ const RULES=Object.freeze([
 function analyzeJavaScript(source){
  const masked=maskJavaScript(source);
  const findings=[];
+ const lineStarts=[0];
+ for(let i=0;i<source.length;i++)if(source[i]==='\n')lineStarts.push(i+1);
+ const locate=offset=>{
+  let low=0,high=lineStarts.length;
+  while(low<high){const mid=(low+high)>>>1;if(lineStarts[mid]<=offset)low=mid+1;else high=mid;}
+  const index=low-1;
+  return {line:index+1,column:offset-lineStarts[index]+1};
+ };
  for(const rule of RULES){
   rule.pattern.lastIndex=0;
   let match;
   while((match=rule.pattern.exec(masked))!==null){
    const offset=match.index;
-   const line=source.slice(0,offset).split('\n').length;
-   const lineStart=source.lastIndexOf('\n',offset-1)+1;
-   const column=offset-lineStart+1;
+   const {line,column}=locate(offset);
    findings.push({id:rule.id,severity:rule.severity,line,column,message:rule.message,advice:rule.advice});
    if(match[0].length===0)rule.pattern.lastIndex++;
   }
  }
  const rank={high:0,medium:1,low:2};
  findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
- return {engine:'RX Developer Core',version:'0.3.0',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
+ return {engine:'RX Developer Core',version:'0.3.1',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
 }
 if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});
 
