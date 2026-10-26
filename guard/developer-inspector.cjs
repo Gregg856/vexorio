@@ -6,7 +6,7 @@ function inspectSource({path,source}={}){
  const findings=[];
  // Mask comments without changing offsets or line numbers. String literals remain
  // intact so hardcoded-secret and insecure-http checks still work.
- const scanSource=source.replace(/\\/\\*[\\s\\S]*?\\*\\/|(^|\\n)[ \\t]*\\/\\/[^\\n]*/g,match=>match.replace(/[^\\n]/g,' '));
+ const scanSource=source.replace(/\/\*[\s\S]*?\*\/|(^|\n)[ \t]*\/\/[^\n]*/g,match=>match.replace(/[^\n]/g,' '));
  const rules=[
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
