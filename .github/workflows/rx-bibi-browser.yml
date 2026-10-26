@@ -12,6 +12,8 @@ on:
       - 'guard-rx-queen-panel.js'
       - 'worker.js'
       - 'rx-million-hearts.js'
+      - 'rx-dna-core.js'
+      - 'tests/rx-dna-core.cjs'
       - 'rx-command-bridge.js'
       - 'tests/rx-command-bridge.cjs'
       - 'tests/rx-million-hearts.cjs'
@@ -53,6 +55,8 @@ jobs:
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
       - name: Sprawdź składnię panelu Królowej RX
         run: node --check guard-rx-queen-panel.js
+      - name: Sprawdź RX DNA CLOUD
+        run: node tests/rx-dna-core.cjs
       - name: Sprawdź silnik RX MILION SERC
         run: node tests/rx-million-hearts.cjs
       - name: Sprawdź RX COMMAND BRIDGE
