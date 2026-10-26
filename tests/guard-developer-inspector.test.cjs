@@ -259,3 +259,17 @@ assert.deepEqual(domainReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['dangerous-document-domain','high',5]
 ]);
 console.log('PASS: RX Developer 3.6 document.domain assignment detection');
+
+const equalityReport=inspectSource({path:'src/equality.js',source:[
+ 'if (node.innerHTML === expectedHtml) {}',
+ 'if (frame.srcdoc == expectedDoc) {}',
+ 'node.innerHTML = userHtml;',
+ 'frame.srcdoc = userHtml;',
+ 'const sample = "node.innerHTML = userHtml";',
+ '// frame.srcdoc = userHtml;'
+].join('\n')});
+assert.deepEqual(equalityReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['unsafe-iframe-srcdoc','medium',4],
+ ['inner-html','medium',3]
+]);
+console.log('PASS: RX Developer 3.7 HTML assignment versus equality');
