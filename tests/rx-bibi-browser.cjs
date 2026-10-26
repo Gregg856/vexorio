@@ -314,6 +314,33 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     await browser.close();
   }
   const output = { timestamp: new Date().toISOString(), base, results, passed: results.every(x => x.passed) };
+  // Group failed checks into actionable areas and compare with an optional previous report.
+  const classify = name => /przewijania|szeroko|mieści|menu kategorii|RX UI:/.test(name) ? 'Panel mobilny' :
+    /eksport|download|kopiowanie/.test(name) ? 'Eksport i pobieranie' :
+    /Filtr |histori|Odśwież/.test(name) ? 'Historia i filtry' :
+    /PhotoMotion|Studio/.test(name) ? 'AI Studio' :
+    /Strażak|Developer|Nawigacja|Odnośniki|Link RX/.test(name) ? 'Nawigacja RX' : 'Pozostałe';
+  const failures = results.filter(item => !item.passed);
+  const grouped = Object.entries(Object.groupBy ? Object.groupBy(failures, item => classify(item.name)) :
+    failures.reduce((groups,item)=>{(groups[classify(item.name)] ||= []).push(item);return groups;},{}))
+    .map(([area,items])=>({area,count:items.length,tests:items.map(item=>({name:item.name,detail:item.detail}))}))
+    .sort((a,b)=>b.count-a.count);
+  let comparison = {available:false,reason:'Brak raportu poprzedniego przebiegu'};
+  const previousPath = process.env.RX_PREVIOUS_REPORT;
+  if(previousPath && fs.existsSync(previousPath)){
+    try {
+      const previous = JSON.parse(fs.readFileSync(previousPath,'utf8'));
+      const oldFailed = new Set((previous.results||[]).filter(item=>!item.passed).map(item=>item.name));
+      const nowFailed = new Set(failures.map(item=>item.name));
+      comparison = {available:true, fixed:[...oldFailed].filter(name=>!nowFailed.has(name)),
+        newFailures:[...nowFailed].filter(name=>!oldFailed.has(name)),
+        recurring:[...nowFailed].filter(name=>oldFailed.has(name))};
+    } catch(error){comparison={available:false,reason:'Nie można odczytać poprzedniego raportu: '+error.message};}
+  }
+  fs.writeFileSync(path.join(reportDir,'failure-groups.json'),JSON.stringify({
+    timestamp:new Date().toISOString(),total:results.length,failed:failures.length,groups:grouped,comparison
+  },null,2));
+  console.log('RX FAILURE GROUPS:',JSON.stringify({groups:grouped.map(g=>({area:g.area,count:g.count,names:g.tests.map(t=>t.name)})),comparison}));
   fs.writeFileSync(path.join(reportDir, 'incidents.json'), JSON.stringify({ timestamp: output.timestamp, count: incidentLog.length, incidents: incidentLog }, null, 2));
   fs.writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify(output, null, 2));
   const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
