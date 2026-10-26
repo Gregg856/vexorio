@@ -57,6 +57,20 @@ class RXMillionHearts {
     if(!Number.isSafeInteger(minCount)||minCount<1)throw new RangeError('Invalid minimum count');
     return [...this.failurePatterns.values()].filter(x=>x.count>=minCount).map(x=>({...x}));
   }
+  // RX 2076: record only validated, named repair references (not executable code).
+  rememberVerifiedFix(cell,code,fixId,{testsPassed=false}={}){
+    if(!testsPassed)throw new Error('Verified tests required');
+    if(typeof fixId!=='string'||!/^[a-z0-9_-]{1,64}$/i.test(fixId))throw new TypeError('Invalid fix ID');
+    const key=cell+':'+code;
+    if(!this.failurePatterns.has(key))throw new Error('Unknown failure pattern');
+    const pattern=this.failurePatterns.get(key);
+    this.failurePatterns.set(key,{...pattern,verifiedFix:fixId});
+    return {...this.failurePatterns.get(key)};
+  }
+  suggestKnownFix(cell,code){
+    const pattern=this.failurePatterns.get(cell+':'+code);
+    return pattern?.verifiedFix?{cell,code,fixId:pattern.verifiedFix,requiresApproval:true}:null;
+  }
   _remember(cell,status){
     this.memory.push({cell,status,time:new Date().toISOString()});
     if(this.memory.length>this.memoryLimit)this.memory.shift();
