@@ -458,3 +458,9 @@ assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.0'));
 assert.ok(bibi.includes('/guard/rx-developer-core-browser.js'));
 assert.ok(bibi.includes('window.RXDeveloperCore.analyzeJavaScript(source)'));
 console.log('PASS: RX Developer Core opt-in browser integration');
+
+const rxCoreSource=require('fs').readFileSync(require('path').join(__dirname,'../guard/rx-developer-core.cjs'),'utf8');
+const rxBrowserExpected="// Browser adapter for RX Developer Core; do not edit independently.\n"+
+ rxCoreSource.replace("module.exports={maskJavaScript,analyzeJavaScript};","if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});");
+assert.equal(rxBrowserAdapter,rxBrowserExpected,'RX Core browser adapter must stay synchronized with the source engine');
+console.log('PASS: RX Developer Core browser adapter synchronized with source');
