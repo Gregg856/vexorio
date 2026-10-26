@@ -29,6 +29,7 @@ function summarize(report){
  if(severity.high>0)recommendations.push({priority:'high',action:'Najpierw przejrzyj problemy wysokiego ryzyka w plikach z listy priorityFiles.'});
  if(severity.medium>0)recommendations.push({priority:'medium',action:'Zweryfikuj miejsca użycia niebezpiecznych operacji DOM i innych ostrzeżeń średniego ryzyka.'});
  if(severity.low>0)recommendations.push({priority:'low',action:'Ogranicz zbędne logowanie i pozostałe ostrzeżenia niskiego ryzyka.'});
+ if(skippedByReason.empty_file)recommendations.push({priority:'review',action:'Sprawdź puste pliki źródłowe — mogą oznaczać nieukończony moduł.'});
  if(files.some(f=>f.status!=='scanned'))recommendations.push({priority:'review',action:'Sprawdź pominięte pliki — skanowanie nie objęło całego zakresu.'});
  return {version:1,filesScanned,filesSkipped,coveragePercent,signals:report.signals,severity,byScope,priorityFiles,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
 }
