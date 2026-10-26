@@ -53,4 +53,31 @@ function maskJavaScript(source) {
  }
  return out.join('');
 }
-module.exports={maskJavaScript};
+
+const RULES=Object.freeze([
+ {id:'RX001',severity:'high',pattern:/\beval\s*\(/g,message:'eval() wykonuje dynamiczny kod.',advice:'Zastąp eval() bezpieczną funkcją lub parserem.'},
+ {id:'RX002',severity:'medium',pattern:/\binnerHTML\s*=/g,message:'Przypisanie innerHTML wymaga kontroli danych.',advice:'Dla tekstu użyj textContent; HTML poddaj sanitizacji.'},
+ {id:'RX003',severity:'medium',pattern:/\bouterHTML\s*=/g,message:'Przypisanie outerHTML wymaga kontroli danych.',advice:'Nie wstawiaj niezaufanego HTML.'},
+ {id:'RX004',severity:'medium',pattern:/\binsertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML() może wstrzyknąć HTML.',advice:'Waliduj i sanitizuj dane wejściowe.'},
+ {id:'RX005',severity:'low',pattern:/\bconsole\.(?:log|debug|info)\s*\(/g,message:'Logowanie może ujawnić dane.',advice:'Sprawdź, czy log nie zawiera sekretów.'},
+ {id:'RX006',severity:'medium',pattern:/\bdocument\.write\s*\(/g,message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'}
+]);
+function analyzeJavaScript(source){
+ const masked=maskJavaScript(source);
+ const findings=[];
+ for(const rule of RULES){
+  rule.pattern.lastIndex=0;
+  let match;
+  while((match=rule.pattern.exec(masked))!==null){
+   const offset=match.index;
+   const line=source.slice(0,offset).split('\n').length;
+   findings.push({id:rule.id,severity:rule.severity,line,column:offset-source.lastIndexOf('\n',offset-1),message:rule.message,advice:rule.advice});
+   if(match[0].length===0)rule.pattern.lastIndex++;
+  }
+ }
+ const rank={high:0,medium:1,low:2};
+ findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
+ return {engine:'RX Developer Core',version:'0.1.0',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
+}
+module.exports={maskJavaScript,analyzeJavaScript};
+
