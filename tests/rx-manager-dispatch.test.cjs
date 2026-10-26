@@ -76,6 +76,28 @@ const fs=require('node:fs');
   assert.equal(result.failed.length,1);
   assert.equal(result.failed[0].steps.length,1,'Only failed steps are returned');
   assert.equal(githubReads,1,'Admin reads GitHub once');
+  // An admin endpoint must not leak job data when session or permission checks fail.
+  globalThis.fetch=async url=>{
+   if(String(url).endsWith('/auth/v1/user'))return new Response('expired',{status:401});
+   throw Error('GitHub must not be called with an expired session');
+  };
+  r=await diag({'Authorization':'Bearer expired-token'});
+  assert.equal(r.status,401,'Expired session must be rejected');
+  globalThis.fetch=async url=>{
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'anonymous-user',is_anonymous:true});
+   throw Error('No permission or GitHub call for anonymous identity');
+  };
+  r=await diag({'Authorization':'Bearer valid-token'});
+  assert.equal(r.status,403,'Anonymous identity must be denied');
+  globalThis.fetch=async url=>{
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'authorized-admin'});
+   if(String(url).endsWith('/rest/v1/rpc/is_vexorio_admin'))return new Response('failure',{status:500});
+   throw Error('GitHub must not be called if permission check fails');
+  };
+  r=await diag({'Authorization':'Bearer valid-token'});
+  assert.equal(r.status,502,'Permission verification errors must fail closed');
+  r=await diag({'Authorization':'Bearer valid-token','Sec-Fetch-Site':'same-site'});
+  assert.equal(r.status,403,'Same-site but cross-origin diagnostic requests must be denied');
   // Exercise filtered log extraction without exposing raw tokens or credentials.
   let logRequests=0;
   globalThis.fetch=async url=>{
