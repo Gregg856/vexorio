@@ -65,7 +65,7 @@ const RULES=Object.freeze([
  {id:'RX007',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczne tworzenie funkcji może wykonać niezaufany kod.',advice:'Unikaj new Function() dla danych z zewnątrz.'},
  {id:'RX008',severity:'medium',pattern:/\bdocument\.cookie\s*=/g,message:'Zapis cookie w JavaScript wymaga przeglądu zabezpieczeń.',advice:'Dla sesji rozważ ciasteczka HttpOnly ustawiane przez serwer.'},
  {id:'RX009',severity:'medium',pattern:/\bpostMessage\s*\(/g,message:'Sprawdź targetOrigin wywołania postMessage().',advice:'Wskaż konkretny targetOrigin.'},
- {id:'RX010',severity:'medium',pattern:/\b(?:window\.)?location\.href\s*=/g,message:'Przekierowanie wymaga sprawdzenia źródła adresu.',advice:'Waliduj docelowy adres i dozwolone domeny.'},
+ {id:'RX010',severity:'medium',pattern:/(?<![\w$.])(?:window\.)?location\.href\s*=/g,message:'Przekierowanie wymaga sprawdzenia źródła adresu.',advice:'Waliduj docelowy adres i dozwolone domeny.'},
  {id:'RX011',severity:'medium',pattern:/\blocalStorage\.setItem\s*\(/g,message:'Dane w localStorage są dostępne dla JavaScript.',advice:'Nie przechowuj tokenów sesji ani sekretów w localStorage.'},
  {id:'RX012',severity:'medium',pattern:/\bwindow\.open\s*\(/g,message:'Nowe okno wymaga sprawdzenia ochrony przed dostępem do opener.',advice:'Stosuj noopener/noreferrer lub sprawdź ustawienia otwierania.'},
  {id:'RX013',severity:'medium',pattern:/\bsetInterval\s*\(/g,message:'Powtarzany timer wymaga kontroli cyklu życia.',advice:'Sprawdź clearInterval i ogranicz niepotrzebne wykonywanie.'}
@@ -93,7 +93,7 @@ function analyzeJavaScript(source){
  }
  const rank={high:0,medium:1,low:2};
  findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
- return {engine:'RX Developer Core',version:'0.3.2',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
+ return {engine:'RX Developer Core',version:'0.3.3',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
 }
 if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});
 
