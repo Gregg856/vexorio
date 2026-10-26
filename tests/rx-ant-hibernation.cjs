@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createAntHibernation}=require('../rx-ant-hibernation.cjs');
+const h=createAntHibernation({dailyCredits:3,maxActive:1});
+assert.deepEqual(h.wake('RX-000001',2),{status:'active',credits:1});
+assert.deepEqual(h.wake('RX-000002',1),{status:'sleeping',credits:1});
+assert.equal(h.sleep('RX-000001'),true);
+assert.deepEqual(h.wake('RX-000002',1),{status:'active',credits:0});
+assert.equal(h.sleep('RX-000002'),true);
+assert.deepEqual(h.wake('RX-000003',1),{status:'sleeping',credits:0});
+assert.throws(()=>h.wake('bad',1),/Invalid wake/);
+console.log('PASS RX ant hibernation bounded credit and sleep');
