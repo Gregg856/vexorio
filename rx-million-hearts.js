@@ -7,7 +7,7 @@ class RXMillionHearts {
       if(!Number.isSafeInteger(value)||value<1)throw new RangeError(key+' must be a positive integer');
     }
     this.maxConcurrent=maxConcurrent;this.maxQueue=maxQueue;this.memoryLimit=memoryLimit;this.logicalHeads=logicalHeads;
-    this.handlers=new Map();this.queue=[];this.active=0;this.memory=[];this.failurePatterns=new Map();
+    this.handlers=new Map();this.queue=[];this.active=0;this.running=new Map();this.nextJobId=0;this.memory=[];this.failurePatterns=new Map();
     this.stats={accepted:0,completed:0,failed:0,rejected:0};
   }
   register(name,handler){
@@ -28,7 +28,7 @@ class RXMillionHearts {
     if(this.queue.length>=this.maxQueue){this.stats.rejected++;return Promise.reject(new Error('RX hearts queue full'));}
     this.stats.accepted++;
     return new Promise((resolve,reject)=>{
-      const job={name,payload,signal,priority,resolve,reject};
+      const job={id:++this.nextJobId,name,payload,signal,priority,resolve,reject};
       // Stable priority order: urgent jobs first, FIFO within the same priority.
       const next=this.queue.findIndex(queued=>queued.priority<priority);
       if(next<0)this.queue.push(job);else this.queue.splice(next,0,job);
@@ -40,11 +40,18 @@ class RXMillionHearts {
       const job=this.queue.shift();
       if(job.signal?.aborted){job.reject(job.signal.reason||new Error('Aborted'));continue;}
       this.active++;
+      this.running.set(job.id,{cell:job.name,startedAt:Date.now()});
       Promise.resolve().then(()=>this.handlers.get(job.name)(job.payload,{signal:job.signal}))
         .then(result=>{this.stats.completed++;this._remember(job.name,'ok');job.resolve(result);},
           error=>{this.stats.failed++;this._remember(job.name,'error');job.reject(error);})
-        .finally(()=>{this.active--;this._drain();});
+        .finally(()=>{this.running.delete(job.id);this.active--;this._drain();});
     }
+  }
+  stalledJobs(thresholdMs=30000){
+    if(!Number.isSafeInteger(thresholdMs)||thresholdMs<1)throw new RangeError('Invalid stall threshold');
+    const now=Date.now();
+    return [...this.running].filter(([,job])=>now-job.startedAt>=thresholdMs)
+      .map(([id,job])=>({id,cell:job.cell,elapsedMs:now-job.startedAt}));
   }
   // Aggregate only bounded, sanitized error categories; never store raw payloads or secrets.
   rememberFailure(cell,code){
@@ -80,7 +87,7 @@ class RXMillionHearts {
     if(this.memory.length>this.memoryLimit)this.memory.shift();
   }
   snapshot(){
-    return {registeredCells:this.handlers.size,logicalHeads:this.logicalHeads,active:this.active,queued:this.queue.length,urgentQueued:this.queue.filter(job=>job.priority>=7).length,
+    return {registeredCells:this.handlers.size,logicalHeads:this.logicalHeads,active:this.active,queued:this.queue.length,urgentQueued:this.queue.filter(job=>job.priority>=7).length,stalled:this.stalledJobs().length,
       stats:{...this.stats},recurringFailures:this.recurringFailures(),recent:this.memory.slice(-10)};
   }
 }
