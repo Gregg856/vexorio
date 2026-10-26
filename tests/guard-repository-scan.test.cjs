@@ -70,6 +70,11 @@ try{
   const linkedScan=scan(linkedRoot);
   assert.ok(!linkedScan.files.some(f=>f.path.startsWith('guard/')),'symlinked directories must not be scanned');
  }finally{fs.rmSync(linkedRoot,{recursive:true,force:true});}
+ fs.writeFileSync(path.join(dir,'guard-code-ui.js'),'');
+ const emptyReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
+ assert.equal(emptyReport.error,'empty_file');
+ assert.equal(emptyReport.findings,undefined);
+ fs.unlinkSync(path.join(dir,'guard-code-ui.js'));
  const huge=path.join(dir,'guard-code-ui.js');
  fs.writeFileSync(huge,'x'.repeat(400001));
  const hugeReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
