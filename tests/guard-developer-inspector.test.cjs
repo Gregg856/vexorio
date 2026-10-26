@@ -207,3 +207,16 @@ assert.deepEqual(srcdocReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['unsafe-iframe-srcdoc','medium',4]
 ]);
 console.log('PASS: RX Developer 3.2 iframe srcdoc assignment detection');
+
+const adjacentReport=inspectSource({path:'src/adjacent.js',source:[
+ 'panel.insertAdjacentHTML("beforeend", userHtml);',
+ 'const example = "panel.insertAdjacentHTML(\'beforeend\', userHtml)";',
+ '// panel.insertAdjacentHTML("beforeend", maliciousHtml);',
+ 'panel.insertAdjacentText("beforeend", safeText);',
+ 'panel.insertAdjacentHTML("afterbegin", "<b>Static</b>");'
+].join('\n')});
+assert.deepEqual(adjacentReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['insert-adjacent-html','medium',1],
+ ['insert-adjacent-html','medium',5]
+]);
+console.log('PASS: RX Developer 3.3 insertAdjacentHTML detection and text/comment exclusions');
