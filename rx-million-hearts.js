@@ -91,7 +91,7 @@ class RXMillionHearts {
     for(const item of data.patterns){
       if(!item||!this.handlers.has(item.cell)||typeof item.code!=='string'||!/^[a-z0-9_-]{1,48}$/i.test(item.code)||
          !Number.isSafeInteger(item.count)||item.count<1||
-         (item.verifiedFix!==undefined&&(typeof item.verifiedFix!=='string'||!/^[a-z0-9_-]{1,64}$/i.test(item.verifiedFix)))
+         (item.verifiedFix!==undefined&&(typeof item.verifiedFix!=='string'||!/^[a-z0-9_-]{1,64}$/i.test(item.verifiedFix))))
         throw new TypeError('Invalid RX memory pattern');
       const key=item.cell+':'+item.code;
       if(next.has(key))throw new TypeError('Duplicate RX memory pattern');
