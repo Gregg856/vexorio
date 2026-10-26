@@ -192,6 +192,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('RX BIBI import — odrzuca błędny plik bez utraty historii',afterInvalid.length===2);
 
     }catch(error){record('RX BIBI raport — kopiowanie na telefonie',false,error.message);}
+    await openRxTab('🔎 Diagnostyka');
     const triagePanel=page.getByRole('region',{name:'RX BIBI 2.0 najważniejsze alarmy'});
     const triageText=await triagePanel.innerText();
     const hasActiveFailure=triageText.includes('Aktualnie nieudane workflow:');
