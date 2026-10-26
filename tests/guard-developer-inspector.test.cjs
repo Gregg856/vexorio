@@ -40,3 +40,15 @@ const blockCases=inspectSource({path:'src/blocks.js',source:[
 ].join('\n')});
 assert.deepEqual(blockCases.findings.map(f=>[f.rule,f.line]),[['eval',3]]);
 console.log('PASS: RX Developer 2.1 multiline comment regression');
+
+const crlfCases=inspectSource({path:'src/windows.js',source:[
+ '/* eval(fake); */',
+ 'const api_key = "abcdefghijklmnopqrstuvwxyz123456";',
+ 'fetch("http://example.org/data");',
+ 'console.log("real");'
+].join('\r\n')});
+assert.deepEqual(crlfCases.findings.map(f=>[f.rule,f.line]),[
+ ['hardcoded-secret',2],['insecure-http',3],['console-log',4]
+]);
+assert.ok(!JSON.stringify(crlfCases).includes('abcdefghijklmnopqrstuvwxyz123456'));
+console.log('PASS: RX Developer 2.1 CRLF, real findings and secret redaction');
