@@ -303,6 +303,9 @@ jobs:
               if ! curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL/robots.txt" | grep -Fq 'User-agent: *'; then
                 echo 'robots.txt is missing on the deployed website'; sleep 5; continue
               fi
+              if ! curl --fail --silent --show-error --location --max-time 15 "$DEPLOY_URL/guard/rx-developer-core-browser.js" | grep -Fq 'window.RXDeveloperCore'; then
+                echo 'RX Developer Core browser adapter missing from deployed assets'; sleep 5; continue
+              fi
               # Five public SEO / delivery regression checks before announcing a successful release.
               if curl --fail --silent --show-error --location --max-time 15 "$DEPLOY_URL/robots.txt" | grep -Eiq 'sitemap:|grzegorzbub1985|workers\\.dev'; then
                 echo 'robots.txt must not publish a temporary domain or sitemap'; sleep 5; continue
