@@ -104,5 +104,16 @@ assert.equal(affected.reviewFiles,2);
 assert.equal(summarize({signals:1,files:[{path:'low.js',findings:[{rule:'log',severity:'low'}]}]}).reviewFiles,0);
 assert.equal(summarize({signals:0,files:[]}).reviewFiles,0);
 console.log('PASS: RX Developer 6.9 high-priority file count');
+const tiers=summarize({signals:5,files:[
+ {path:'a.js',findings:[{rule:'a',severity:'high'},{rule:'b',severity:'medium'}]},
+ {path:'b.js',findings:[{rule:'b',severity:'medium'}]},
+ {path:'c.js',findings:[{rule:'c',severity:'low'}]},
+ {path:'d.js',findings:[]}
+]});
+assert.equal(tiers.reviewFiles,1);
+assert.equal(tiers.mediumReviewFiles,1);
+assert.equal(tiers.lowReviewFiles,1);
+assert.equal(tiers.reviewFiles+tiers.mediumReviewFiles+tiers.lowReviewFiles,tiers.filesWithSignals);
+console.log('PASS: RX Developer 7.0 non-overlapping review tiers');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
