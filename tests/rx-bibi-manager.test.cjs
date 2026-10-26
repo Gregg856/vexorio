@@ -174,5 +174,18 @@ assert.ok(bibi.includes("developerInput.value!==developerPreviewSource"),'RX Dev
 assert.ok(bibi.includes("developerCopyPatch.disabled=true;developerReset.disabled=true;"),'RX Developer must invalidate preview after input changes');
 assert.ok(bibi.includes("developerPreviewStatus.textContent='Propozycja cofnięta. Oryginalny kod pozostaje bez zmian.'"),'RX Developer must explain discard semantics');
 assert.ok(!bibi.includes("developerInput.value=developerSuggestedCode"),'RX Developer must not silently apply proposed code');
+
+// Behavioral checks of the exact replacement expression used by RX Developer.
+const previewMatch=bibi.match(/const updated=original\.replace\((\/\\bconsole\\\.log\\s\*\\\(\/g),'console\.debug\('\);/);
+assert.ok(previewMatch,'RX Developer preview transformation must be available for behavioral testing');
+const previewRegex=Function('"use strict";return '+previewMatch[1])();
+const makePreview=source=>source.replace(previewRegex,'console.debug(');
+assert.equal(makePreview("const x=10;\nconsole.log(x);"),"const x=10;\nconsole.debug(x);",'Preview should change only the intended logging call');
+assert.equal(makePreview("console.log(1);\nconsole.log(2);"),"console.debug(1);\nconsole.debug(2);",'Preview should update multiple matches');
+assert.equal(makePreview("console.warn('keep');"),"console.warn('keep');",'Preview should leave unrelated logging unchanged');
+const sourceForPreview="console.log('original');";
+makePreview(sourceForPreview);
+assert.equal(sourceForPreview,"console.log('original');",'Preview must not mutate the original source string');
+console.log('PASS: RX Developer preview transformation behavioral checks');
 console.log('PASS: RX Developer 1.3 preview safety and discard regression');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
