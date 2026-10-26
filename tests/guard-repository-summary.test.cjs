@@ -119,5 +119,10 @@ assert.deepEqual(tiers.reviewQueue.map(f=>[f.path,f.priority]),[['a.js','high'],
 assert.equal(tiers.reviewQueue[0].signals,2);
 assert.equal(summarize({signals:0,files:[]}).reviewQueue.length,0);
 console.log('PASS: RX Developer 7.1 prioritized review queue');
+const backlog=summarize({signals:25,files:Array.from({length:25},(_,i)=>({path:'file'+i+'.js',findings:[{rule:'eval',severity:'high'}]}))});
+assert.equal(backlog.reviewQueueTotal,25);
+assert.equal(backlog.reviewQueue.length,20);
+assert.equal(backlog.filesWithSignals,25);
+console.log('PASS: RX Developer 7.2 review queue backlog total');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
