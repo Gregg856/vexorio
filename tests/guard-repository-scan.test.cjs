@@ -72,6 +72,16 @@ try{
  const brokenReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
  assert.equal(brokenReport.error,'missing','broken links must be reported without crashing');
  fs.unlinkSync(brokenLink);
+ const blockedRoot=fs.mkdtempSync(path.join(os.tmpdir(),'guard-blocked-root-'));
+ try{
+  fs.mkdirSync(path.join(blockedRoot,'guard'));
+  fs.chmodSync(path.join(blockedRoot,'guard'),0o000);
+  try{
+   if(process.getuid&&process.getuid()!==0){
+    assert.doesNotThrow(()=>listFiles(blockedRoot),'unreadable directory should not crash scan');
+   }
+  }finally{fs.chmodSync(path.join(blockedRoot,'guard'),0o700);}
+ }finally{fs.rmSync(blockedRoot,{recursive:true,force:true});}
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
