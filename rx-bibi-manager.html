@@ -614,16 +614,30 @@ document.addEventListener('DOMContentLoaded',()=>{
   {id:'rx-bibi-ai',name:'RX BIBI AI',category:'Asystent',state:'planowany',description:'Swobodna rozmowa po podłączeniu modelu'}
  ]);
  const rxPluginRuntime=(()=>{
-  const registry=new Map();
+  const registry=new Map(),history=[];
+  const publish=entry=>{history.unshift(Object.freeze(entry));if(history.length>30)history.length=30;document.dispatchEvent(new CustomEvent('rx-plugin-history'));};
   return Object.freeze({
    register(plugin){
     if(!plugin||typeof plugin.id!=='string'||!/^rx-[a-z-]+$/.test(plugin.id)||registry.has(plugin.id)||typeof plugin.run!=='function')throw Error('Nieprawidłowa lub powtórzona wtyczka RX');
-    registry.set(plugin.id,Object.freeze({id:plugin.id,run:plugin.run}));
+    registry.set(plugin.id,Object.freeze({id:plugin.id,run:plugin.run,permission:plugin.permission||'read'}));
    },
    list(){return Array.from(registry.keys());},
+   history(){return history.map(entry=>({...entry}));},
    async run(id,context={}){
     const plugin=registry.get(id);if(!plugin)throw Error('Nieznana wtyczka RX');
-    return plugin.run(Object.freeze({...context}));
+    const start=Date.now();
+    if(plugin.permission!=='read'){
+     publish({id,time:new Date().toISOString(),status:'odmowa',durationMs:0});
+     throw Error('Operacja wymaga osobnego zatwierdzenia administratora');
+    }
+    try{
+     const result=await plugin.run(Object.freeze({...context}));
+     publish({id,time:new Date().toISOString(),status:'sukces',durationMs:Date.now()-start});
+     return result;
+    }catch(error){
+     publish({id,time:new Date().toISOString(),status:'błąd',durationMs:Date.now()-start});
+     throw error;
+    }
    }
   });
  })();
@@ -636,6 +650,11 @@ document.addEventListener('DOMContentLoaded',()=>{
  const pluginTitle=document.createElement('h2');pluginTitle.textContent='🧩 RX Plugins — nasze moduły';
  const pluginNote=document.createElement('p');pluginNote.className='meta';pluginNote.textContent='Katalog własnych modułów RX. „Planowany” oznacza, że funkcja nie jest jeszcze uruchomiona. Zewnętrzne integracje pozostają pomocnicze.';
  pluginView.append(pluginTitle,pluginNote);
+ const historyTitle=document.createElement('h3');historyTitle.textContent='Ostatnie uruchomienia RX Plugins';
+ const historyList=document.createElement('div');historyList.className='meta';historyList.setAttribute('aria-live','polite');
+ const refreshPluginHistory=()=>{historyList.replaceChildren();const records=rxPluginRuntime.history();if(!records.length){historyList.textContent='Brak uruchomień w tej sesji.';return;}for(const entry of records.slice(0,10)){const line=document.createElement('p');line.textContent=new Date(entry.time).toLocaleTimeString('pl-PL')+' · '+entry.id+' · '+entry.status+' · '+entry.durationMs+' ms';historyList.append(line);}};
+ document.addEventListener('rx-plugin-history',refreshPluginHistory);refreshPluginHistory();pluginView.append(historyTitle,historyList);
+
  for(const item of rxPluginCatalog){
   const card=document.createElement('div');card.className='card';card.style.margin='10px 0';card.style.padding='12px';
   const heading=document.createElement('strong');heading.textContent=item.name+' — '+item.state;
