@@ -164,3 +164,19 @@ assert.deepEqual(quotedSecurityText.findings.map(f=>[f.rule,f.line]),[
  ['hardcoded-secret',6],['insecure-http',4],['postmessage-wildcard',5]
 ]);
 console.log('PASS: RX Developer 2.9 quoted security examples do not trigger false positives');
+
+const timerReport=inspectSource({path:'src/timers.js',source:[
+ 'setTimeout("alert(1)", 100);',
+ "setInterval('runTask()', 1000);",
+ 'setTimeout(() => runTask(), 100);',
+ 'const example = "setTimeout(\'alert(1)\', 100)";',
+ '// setInterval("unsafe()", 100);',
+ 'setInterval(`runTask()`, 1000);'
+].join('\n')});
+assert.deepEqual(timerReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['timer-string-code','high',1],
+ ['timer-string-code','high',2],
+ ['timer-string-code','high',6]
+]);
+assert.equal(timerReport.summary.high,3);
+console.log('PASS: RX Developer 3.0 string-based timer execution and false-positive checks');
