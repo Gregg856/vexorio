@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createAntAcademy}=require('../rx-ant-academy.cjs');
+const a=createAntAcademy({maxAnts:2});
+assert.equal(a.award({antId:'RX-000001'}).rank,'Robotnica');
+assert.equal(a.award({antId:'RX-000001',passedTests:5}).rank,'Specjalistka');
+assert.equal(a.award({antId:'RX-000002',passedTests:10,verifiedImprovements:2}).rank,'Inzynier RX');
+assert.equal(a.leaderboard()[0].antId,'RX-000002');
+assert.throws(()=>a.award({antId:'RX-000003'}),/Academy full/);
+assert.throws(()=>a.award({antId:'RX-000001',passedTests:-1}),/Invalid award/);
+assert.equal(a.award({antId:'RX-000002',passedTests:100,verifiedImprovements:10}).rank,'Legenda RX');
+console.log('PASS RX Ant Academy ranks, capacity and leaderboard');
