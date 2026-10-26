@@ -266,3 +266,12 @@ assert.ok(bibi.includes("if(c==='/'&&next==='/')"),'RX Developer must recognize 
 assert.ok(bibi.includes("if(c==='/'&&next==='*')"),'RX Developer must recognize block comments');
 assert.ok(bibi.includes("const candidate=needsLiterals?lines[i]:codeLines[i]"),'RX Developer must inspect executable code separately from literals');
 console.log('PASS: RX Developer standalone comment false-positive guard');
+
+assert.ok(bibi.includes("const templateDepth=[]"),'RX Developer must track template interpolation depth');
+assert.ok(bibi.includes("templateDepth.push(0);mode='code'"),'RX Developer must inspect executable template expressions');
+assert.ok(bibi.includes("templateDepth.pop();mode='string'"),'RX Developer must return to template text');
+assert.ok(bibi.includes("if(ch==='/'&&!inClass)"),'RX Developer regex lexer must respect character classes');
+assert.ok(bibi.includes("if(escapeRegex){escapeRegex=false;continue;}"),'RX Developer regex lexer must respect escaped slashes');
+assert.ok(bibi.includes("💻 RX Developer 9.4 — analiza kodu"),'RX Developer must retain visible version label');
+console.log('PASS: RX Developer 9.4 lexical and version guards');
+
