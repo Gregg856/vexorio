@@ -705,7 +705,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const severity=issue=>issue.label.startsWith('Błąd składni')||/sekret|PRIVATE KEY|eval\(\)|HTTP bez szyfrowania|targetOrigin \*/i.test(issue.label)?'WYSOKI':/innerHTML|document\.write|Timer z kodem|localStorage|przekierowanie/i.test(issue.label)?'ŚREDNI':'NISKI';
   const counts={WYSOKI:0,ŚREDNI:0,NISKI:0};
   issues.forEach(issue=>{counts[severity(issue)]++;});
-  const summary='RX Developer 1.9 — raport\nLiczba ostrzeżeń: '+issues.length+' | Wysoki: '+counts.WYSOKI+' | Średni: '+counts.ŚREDNI+' | Niski: '+counts.NISKI+'\nOcena heurystyczna — wymaga weryfikacji przez człowieka.\n\n';
+  const summary='RX Developer — raport analizy\nLiczba ostrzeżeń: '+issues.length+' | Wysoki: '+counts.WYSOKI+' | Średni: '+counts.ŚREDNI+' | Niski: '+counts.NISKI+'\nOcena heurystyczna — wymaga weryfikacji przez człowieka.\n\n';
   developerOutput.textContent=summary+(issues.length?issues.map((issue,i)=>(i+1)+'. ['+severity(issue)+'] '+(issue.line?'Linia '+issue.line+': ':'')+issue.label+'\n   Sugestia: '+issue.fix).join('\n\n'):'Nie wykryto problemów przez podstawowe reguły RX. To nie jest pełny audyt bezpieczeństwa.');
  });
  const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const developerHistoryWarning=document.createElement('p');developerHistoryWarning.className='meta';developerHistoryWarning.textContent='Historia jest lokalna. Fragmenty z podejrzeniem sekretów nie są zapisywane; nie wklejaj prawdziwych kluczy ani haseł.';
  const developerHistory=[];
  try{const saved=JSON.parse(localStorage.getItem(developerHistoryKey)||'[]');if(Array.isArray(saved))for(const item of saved.slice(0,10))if(item&&typeof item.before==='string'&&typeof item.after==='string'&&item.before.length<=12000&&item.after.length<=12000&&!developerContainsSecret(item.before)&&!developerContainsSecret(item.after))developerHistory.push({before:item.before,after:item.after,date:String(item.date||'')});}catch(_){}
- const developerHistoryTitle=document.createElement('h3');developerHistoryTitle.textContent='🕘 RX Developer 1.5 — historia i ochrona danych';
+ const developerHistoryTitle=document.createElement('h3');developerHistoryTitle.textContent='🕘 RX Developer — historia i ochrona danych';
  const developerHistoryList=document.createElement('div');
  const developerHistoryClear=document.createElement('button');developerHistoryClear.type='button';developerHistoryClear.textContent='🗑️ Wyczyść historię';
  const saveDeveloperHistory=()=>{try{localStorage.setItem(developerHistoryKey,JSON.stringify(developerHistory));}catch(_){}};
