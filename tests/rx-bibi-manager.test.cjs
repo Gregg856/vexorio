@@ -419,3 +419,16 @@ assert.equal(rxCoreAnalyze("const text = \x60eval(1)\x60;").summary.total,0);
 assert.equal(rxCoreAnalyze("const text = \x60\${eval('1')}\x60;").summary.high,1);
 assert.equal(rxCoreAnalyze("const re = /eval/;").summary.total,0);
 console.log('PASS: RX Developer Core structured rule engine and false-positive guards');
+
+for(const [label,code,ruleId] of [
+ ['dynamic function',"new Function('return 1')",'RX007'],
+ ['cookie assignment',"document.cookie = 'theme=dark'",'RX008'],
+ ['message target review',"window.postMessage(data, '*')",'RX009'],
+ ['location redirect',"window.location.href = nextUrl",'RX010']
+]){
+ const report=rxCoreAnalyze(code);
+ assert.ok(report.findings.some(x=>x.id===ruleId),'RX Core security rule: '+label);
+}
+assert.equal(rxCoreAnalyze("// document.cookie = 'x'\nconst s = 'new Function()';").summary.total,0);
+assert.equal(rxCoreAnalyze("const x = 1;").version,'0.2.0');
+console.log('PASS: RX Developer Core ten security rules');
