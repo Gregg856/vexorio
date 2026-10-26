@@ -123,3 +123,9 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `rx-dna-cloud-memory.cjs`: bounded, validated cloud-lineage adapter with required authorization, load/save and optimistic revision checks.
 - `tests/rx-dna-cloud-memory.cjs`: mocked backend tests for access denial, roundtrip and conflict.
 - NOT connected to live Supabase staging or production; no actual durable cloud persistence until an authenticated compare-and-swap backend is configured and tested. No new database tables, credentials or spending. Caller-provided authorization callback must be backed by trusted identity verification.
+
+## RX ANT LAB — hourly bounded experiments
+- `rx-ant-lab.cjs` runs a deterministic three-variant synthetic stellar signal benchmark, generates `rx-bibi-reports/rx-ant-lab.json` with DNA metadata.
+- Hourly existing GitHub Actions workflow executes it and uploads a 7-day artifact; no ongoing process between runs, no model weights trained, no automatic code edits, no production DB changes or costs beyond existing CI quotas.
+- `tests/rx-ant-lab.cjs` checks expected experiment outcome.
+- RX DNA CLOUD MEMORY 4.0 adapter remains unconnected to live staging. Existing staging `rx_private.ant_memory` is for different ant snapshots and must not be reused without a validated schema and auth migration.
