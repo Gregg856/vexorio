@@ -462,7 +462,21 @@ async function refresh(){
           copyButton.type='button';copyButton.textContent='Kopiuj diagnozę RX';
           copyButton.addEventListener('click',async()=>{
             const report='RX BIBI — diagnostyka uruchomienia '+String(run.id)+'\n'+secureOutput.innerText+'\nGitHub: https://github.com/Gregg856/vexorio/actions/runs/'+String(run.id);
-            try{await navigator.clipboard.writeText(report);copyButton.textContent='Skopiowano';}
+            try{
+              await navigator.clipboard.writeText(report);
+              copyButton.textContent='Skopiowano';
+              try{
+                const key='rx-bibi-diagnoses-v1';
+                const current=JSON.parse(localStorage.getItem(key)||'[]');
+                const entries=Array.isArray(current)?current.filter(x=>x&&typeof x.date==='string'&&typeof x.summary==='string'):[];
+                const summary='Uruchomienie #'+String(run.id)+' — '+String(secureOutput.textContent||'').slice(0,900);
+                const filtered=entries.filter(x=>!x.summary.startsWith('Uruchomienie #'+String(run.id)+' — '));
+                filtered.push({date:new Date().toISOString(),summary});
+                localStorage.setItem(key,JSON.stringify(filtered.slice(-10)));
+                const historyStatus=document.getElementById('diagnosisHistory');
+                if(historyStatus)historyStatus.textContent='🗂️ Historia diagnoz na tym urządzeniu: '+Math.min(filtered.length,10)+'/10. Zapisano ostatni raport; odśwież, aby zobaczyć wpis.';
+              }catch{copyButton.textContent='Skopiowano (bez zapisu historii)';}
+            }
             catch{copyButton.textContent='Kopiowanie niedostępne';}
           });
           secureDetails.append(copyButton);
