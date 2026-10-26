@@ -23,3 +23,4 @@ jobs:
           node tests/rx-direct.cjs
           node tests/rx-ai-builder.cjs
           node tests/rx-verified-dataset.cjs
+          node tests/rx-evaluator.cjs
