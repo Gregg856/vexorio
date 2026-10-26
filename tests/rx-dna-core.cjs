@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {createAntDNA,validateAntDNA,createDNABackup}=require('../rx-dna-core');
+const {createAntDNA,validateAntDNA,createDNABackup,sealDNABackup,verifyDNABackup}=require('../rx-dna-core');
 const dna=createAntDNA(0,{role:'tests'});
 assert.equal(dna.id,'RX-000001');
 assert.equal(dna.dna,'RX-DNA-ANT-000001-V1');
@@ -12,4 +12,8 @@ assert.throws(()=>createAntDNA(0,{memorySlots:100}),/memory slots/);
 const backup=createDNABackup(dna,{version:1,ants:[{head:dna.id,entries:[{code:'audio_timeout',fixId:'fix_001'}]}]});
 assert.equal(backup.memory.ants[0].entries[0].fixId,'fix_001');
 assert.throws(()=>createDNABackup(dna,{version:1,ants:[{head:dna.id,entries:[{code:'bad',fixId:'secret value'}]}]}),/Invalid memory entry/);
+const sealed=sealDNABackup(dna,{version:1,ants:[{head:dna.id,entries:[{code:'audio_timeout',fixId:'fix_001'}]}]});
+assert.deepEqual(verifyDNABackup(sealed),backup);
+assert.throws(()=>verifyDNABackup({...sealed,checksum:'00000000'}),/checksum mismatch/);
+assert.throws(()=>verifyDNABackup({...sealed,backup:{...backup,dna:{...dna,canDeploy:true}},checksum:sealed.checksum}),/checksum mismatch/);
 console.log('PASS RX DNA CLOUD manifest, validation, bounded backup');
