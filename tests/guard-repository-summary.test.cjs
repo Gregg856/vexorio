@@ -95,5 +95,10 @@ assert.equal(summarize({signals:0,files:[{path:'missing.js',error:'missing'}]}).
 assert.equal(summarize({signals:0,files:[]}).scanStatus,'no_files_scanned');
 assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]},{path:'missing.js',error:'missing'}]}).scanStatus,'incomplete');
 console.log('PASS: RX Developer 6.6 scan status');
+assert.equal(affected.scanComplete,false);
+assert.equal(summarize({signals:1,files:[{path:'flagged.js',findings:[{rule:'eval',severity:'high'}]}]}).scanComplete,true);
+assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]}]}).scanComplete,true);
+assert.equal(summarize({signals:0,files:[]}).scanComplete,false);
+console.log('PASS: RX Developer 6.8 scan completeness');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
