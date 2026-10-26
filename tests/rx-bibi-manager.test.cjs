@@ -195,4 +195,9 @@ assert.ok(bibi.includes('if(!developerContainsSecret(original)&&!developerContai
 assert.ok(bibi.includes("developerHistory.length>10"),'RX Developer history must remain bounded');
 assert.ok(bibi.includes('developerHistoryClear.addEventListener'),'RX Developer must allow local history clearing');
 console.log('PASS: RX Developer 1.5 history privacy regression checks');
+assert.ok(bibi.includes('document.write() może nadpisać stronę'),'RX Developer 1.6 should warn on document.write');
+assert.ok(bibi.includes('Timer z kodem jako tekst jest ryzykowny'),'RX Developer 1.6 should warn on string timers');
+assert.ok(bibi.includes('Połączenie HTTP bez szyfrowania'),'RX Developer 1.6 should warn on HTTP');
+assert.ok(bibi.includes('Logowanie może ujawniać dane również w trybie debug/info'),'RX Developer 1.6 should warn on debug/info logs');
+console.log('PASS: RX Developer 1.6 security rules');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
