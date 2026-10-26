@@ -615,7 +615,9 @@ document.addEventListener('DOMContentLoaded',()=>{
  ]);
  const rxPluginRuntime=(()=>{
   const registry=new Map(),history=[];
-  const publish=entry=>{history.unshift(Object.freeze(entry));if(history.length>30)history.length=30;document.dispatchEvent(new CustomEvent('rx-plugin-history'));};
+  const storageKey='rx-bibi-plugin-history-v1';
+  try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||'[]');if(Array.isArray(saved))for(const item of saved.slice(0,30)){if(item&&typeof item.id==='string'&&typeof item.time==='string'&&['sukces','błąd','odmowa'].includes(item.status))history.push(Object.freeze({id:item.id.slice(0,50),time:item.time,status:item.status,durationMs:Number(item.durationMs)||0}));}}catch(_){}
+  const publish=entry=>{history.unshift(Object.freeze(entry));if(history.length>30)history.length=30;try{sessionStorage.setItem(storageKey,JSON.stringify(history));}catch(_){}document.dispatchEvent(new CustomEvent('rx-plugin-history'));};
   return Object.freeze({
    register(plugin){
     if(!plugin||typeof plugin.id!=='string'||!/^rx-[a-z-]+$/.test(plugin.id)||registry.has(plugin.id)||typeof plugin.run!=='function')throw Error('Nieprawidłowa lub powtórzona wtyczka RX');
@@ -652,7 +654,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  pluginView.append(pluginTitle,pluginNote);
  const historyTitle=document.createElement('h3');historyTitle.textContent='Ostatnie uruchomienia RX Plugins';
  const historyList=document.createElement('div');historyList.className='meta';historyList.setAttribute('aria-live','polite');
- const refreshPluginHistory=()=>{historyList.replaceChildren();const records=rxPluginRuntime.history();if(!records.length){historyList.textContent='Brak uruchomień w tej sesji.';return;}for(const entry of records.slice(0,10)){const line=document.createElement('p');line.textContent=new Date(entry.time).toLocaleTimeString('pl-PL')+' · '+entry.id+' · '+entry.status+' · '+entry.durationMs+' ms';historyList.append(line);}};
+ const refreshPluginHistory=()=>{historyList.replaceChildren();const records=rxPluginRuntime.history();if(!records.length){historyList.textContent='Brak zapisanych uruchomień w tej karcie przeglądarki.';return;}for(const entry of records.slice(0,10)){const line=document.createElement('p');line.textContent=new Date(entry.time).toLocaleTimeString('pl-PL')+' · '+entry.id+' · '+entry.status+' · '+entry.durationMs+' ms';historyList.append(line);}};
  document.addEventListener('rx-plugin-history',refreshPluginHistory);refreshPluginHistory();pluginView.append(historyTitle,historyList);
 
  for(const item of rxPluginCatalog){
