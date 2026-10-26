@@ -304,3 +304,16 @@ assert.deepEqual(spacedWriteReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['document-write','medium',2]
 ]);
 console.log('PASS: RX Developer 3.9 spaced document.write calls');
+
+const spacedLogReport=inspectSource({path:'src/log.js',source:[
+ 'console . log(secretValue);',
+ 'console\n  .log(debugValue);',
+ 'const example = "console . log(secretValue)";',
+ '// console . log(secretValue);',
+ 'console.logger(safeValue);'
+].join('\n')});
+assert.deepEqual(spacedLogReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['console-log','low',1],
+ ['console-log','low',2]
+]);
+console.log('PASS: RX Developer 4.0 spaced console.log calls');
