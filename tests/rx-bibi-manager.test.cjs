@@ -430,7 +430,7 @@ for(const [label,code,ruleId] of [
  assert.ok(report.findings.some(x=>x.id===ruleId),'RX Core security rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// document.cookie = 'x'\nconst s = 'new Function()';").summary.total,0);
-assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.4');
+assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.5');
 console.log('PASS: RX Developer Core ten security rules');
 
 const rxColumnReport=rxCoreAnalyze("  eval('x');\n    document.write('ok');");
@@ -447,14 +447,14 @@ for(const [label,code,ruleId] of [
  assert.ok(rxCoreAnalyze(code).findings.some(x=>x.id===ruleId),'RX Core added rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// window.open(url)\nconst text = 'setInterval()';").summary.total,0);
-assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.4');
+assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.5');
 console.log('PASS: RX Developer Core thirteen review rules');
 
 const rxBrowserAdapter=require('fs').readFileSync(require('path').join(__dirname,'../guard/rx-developer-core-browser.js'),'utf8');
 const rxBrowserContext={window:{}};
 require('vm').runInNewContext(rxBrowserAdapter,rxBrowserContext);
 assert.equal(rxBrowserContext.window.RXDeveloperCore.analyzeJavaScript("eval('1')").summary.high,1);
-assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.4'));
+assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.5'));
 assert.ok(bibi.includes('/guard/rx-developer-core-browser.js'));
 assert.ok(bibi.includes('window.RXDeveloperCore.analyzeJavaScript(source)'));
 console.log('PASS: RX Developer Core opt-in browser integration');
@@ -472,7 +472,7 @@ const rxLongResult=rxCoreAnalyze(rxLongSource);
 assert.equal(rxLongResult.findings.length,1);
 assert.equal(rxLongResult.findings[0].line,3000);
 assert.equal(rxLongResult.findings[0].column,1);
-assert.equal(rxLongResult.version,'0.3.4');
+assert.equal(rxLongResult.version,'0.3.5');
 console.log('PASS: RX Core indexed line location for large files');
 
 const rxEvalFalsePositive=rxCoreAnalyze('object.eval("safe");\nobj?.eval("safe");\neval("unsafe");');
@@ -509,3 +509,17 @@ assert.equal(rxCoreAnalyze("setInterval(()=>{},100)").findings.filter(f=>f.id===
 assert.equal(rxCoreAnalyze("`eval('x')`").findings.filter(f=>f.id==="RX001").length,0,'RX batch 19: RX001');
 assert.equal(rxCoreAnalyze("/eval\\(/.test(input)").findings.filter(f=>f.id==="RX001").length,0,'RX batch 20: RX001');
 console.log('PASS: RX Core 20-case batch regression suite');
+
+assert.equal(rxCoreAnalyze("other.console.log(1)").findings.filter(f=>f.id==="RX005").length,0,'Core 0.3.5 boundary 1');
+assert.equal(rxCoreAnalyze("console.log(1)").findings.filter(f=>f.id==="RX005").length,1,'Core 0.3.5 boundary 2');
+assert.equal(rxCoreAnalyze("other.document.write(1)").findings.filter(f=>f.id==="RX006").length,0,'Core 0.3.5 boundary 3');
+assert.equal(rxCoreAnalyze("document.write(1)").findings.filter(f=>f.id==="RX006").length,1,'Core 0.3.5 boundary 4');
+assert.equal(rxCoreAnalyze("other.document.cookie = 'x'").findings.filter(f=>f.id==="RX008").length,0,'Core 0.3.5 boundary 5');
+assert.equal(rxCoreAnalyze("document.cookie = 'x'").findings.filter(f=>f.id==="RX008").length,1,'Core 0.3.5 boundary 6');
+assert.equal(rxCoreAnalyze("other.localStorage.setItem('a','b')").findings.filter(f=>f.id==="RX011").length,0,'Core 0.3.5 boundary 7');
+assert.equal(rxCoreAnalyze("localStorage.setItem('a','b')").findings.filter(f=>f.id==="RX011").length,1,'Core 0.3.5 boundary 8');
+assert.equal(rxCoreAnalyze("other.window.open('x')").findings.filter(f=>f.id==="RX012").length,0,'Core 0.3.5 boundary 9');
+assert.equal(rxCoreAnalyze("window.open('x')").findings.filter(f=>f.id==="RX012").length,1,'Core 0.3.5 boundary 10');
+assert.equal(rxCoreAnalyze("obj.setInterval(1)").findings.filter(f=>f.id==="RX013").length,0,'Core 0.3.5 boundary 11');
+assert.equal(rxCoreAnalyze("setInterval(1)").findings.filter(f=>f.id==="RX013").length,1,'Core 0.3.5 boundary 12');
+console.log('PASS: RX Core 0.3.5 boundary regressions');
