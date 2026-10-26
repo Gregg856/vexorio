@@ -311,7 +311,18 @@
    catch(_){append('Strażak','Nie udało się przeanalizować kodu.');}
    return;
   }
-  if(/^(?:rx status|status rx|moduły rx|moduly rx)$/iu.test(command)){
+  if(/^rx status$/iu.test(command)){
+   append('RX DIRECT','Pobieram rzeczywisty stan testów z serwera…');
+   try{
+    const response=await fetch('/api/rx/direct?command=RX%20STATUS',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw new Error('Status HTTP '+response.status);
+    const report=await response.json();
+    if(!report.ok||!Array.isArray(report.runs))throw new Error('Nieprawidłowy raport');
+    append('RX NEURON',report.runs.map(run=>'• '+run.name+': '+(run.result==='success'?'ZIELONY':run.result==='failure'?'BŁĄD':run.status==='completed'?'ZAKOŃCZONY ('+(run.result||'brak wyniku')+')':run.status==='unknown'?'BRAK DANYCH':'W TOKU')+(run.number?' #'+run.number:'')).join('\\n')+'\\nŹródło: GitHub Actions. Tylko odczyt.');
+   }catch(_){append('RX DIRECT','Nie udało się pobrać statusu. Spróbuj ponownie za chwilę.');}
+   return;
+  }
+  if(/^(?:status rx|moduły rx|moduly rx)$/iu.test(command)){
    const registry=window.GuardRXOrchestrator?.capabilities?.();
    append('RX Strażak',registry
     ?'RX — centrum koordynacji ('+registry.length+' funkcji):'+String.fromCharCode(10)+registry.map(item=>'• '+item.role+' ['+item.mode+']').join(String.fromCharCode(10))+String.fromCharCode(10)+'Wszystkie operacje mają ograniczone uprawnienia. RX nie publikuje samodzielnie.'
