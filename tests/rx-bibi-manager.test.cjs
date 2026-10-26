@@ -210,4 +210,8 @@ assert.ok(bibi.includes('const severity=issue=>'),'RX Developer must assign heur
 assert.ok(bibi.includes('counts[severity(issue)]++'),'RX Developer must count severity levels');
 assert.ok(bibi.includes('Ocena heurystyczna — wymaga weryfikacji'),'RX Developer must disclose limitations');
 console.log('PASS: RX Developer 1.9 severity report checks');
+assert.ok(bibi.includes("fetch('/rx-fix-guidance.json'"),'RX Manager must fetch automatic CI guidance');
+assert.ok(bibi.includes('document.createTextNode(\': \'+item.action)'), 'RX Manager must render suggestions as text');
+assert.ok(bibi.includes('rxSummaryFile'),'RX Manager must retain manual report import');
+console.log('PASS: RX Developer 7.7 automatic report viewer regression');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
