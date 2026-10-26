@@ -67,6 +67,11 @@ try{
    assert.equal(unreadableReport.error,'unreadable');
   }
  }finally{fs.chmodSync(unreadable,0o600);fs.unlinkSync(unreadable);}
+ const brokenLink=path.join(dir,'guard-code-ui.js');
+ fs.symlinkSync(path.join(dir,'not-present.js'),brokenLink);
+ const brokenReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
+ assert.equal(brokenReport.error,'missing','broken links must be reported without crashing');
+ fs.unlinkSync(brokenLink);
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
