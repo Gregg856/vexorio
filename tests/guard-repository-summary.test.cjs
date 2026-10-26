@@ -55,5 +55,13 @@ const unknownStatuses=summarize({signals:0,files:[{path:'a.js',error:'__proto__'
 assert.deepEqual(unknownStatuses.skippedByReason,{other:2,missing:1});
 assert.equal(Object.prototype.polluted,undefined);
 console.log('PASS: RX Developer 6.0 safe skipped-file aggregation');
+const ruleSummary=summarize({signals:5,files:[
+ {path:'a.js',findings:[{rule:'eval',severity:'high'},{rule:'console-log',severity:'low'},{rule:'unsafe secret',severity:'high'}]},
+ {path:'b.js',findings:[{rule:'eval',severity:'high'},{rule:'inner-html',severity:'medium'}]}
+]});
+assert.deepEqual(ruleSummary.topRules,[{rule:'eval',count:2},{rule:'console-log',count:1},{rule:'inner-html',count:1}]);
+assert.equal(JSON.stringify(ruleSummary.topRules).includes('unsafe secret'),false);
+assert.deepEqual(summarize({signals:0,files:[]}).topRules,[]);
+console.log('PASS: RX Developer 6.1 top detection rules');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
