@@ -317,3 +317,12 @@ assert.deepEqual(spacedLogReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['console-log','low',2]
 ]);
 console.log('PASS: RX Developer 4.0 spaced console.log calls');
+
+const indirectEvalReport=inspectSource({path:'src/eval.js',source:[
+ '(0, eval)(userCode);',
+ 'const example = "(0, eval)(userCode)";',
+ '// (0, eval)(unsafeCode);',
+ '(0 , eval ) (anotherCode);'
+].join('\n')});
+assert.deepEqual(indirectEvalReport.findings.filter(f=>f.rule==='indirect-eval').map(f=>f.line),[1,4]);
+console.log('PASS: RX Developer 4.1 indirect eval detection');
