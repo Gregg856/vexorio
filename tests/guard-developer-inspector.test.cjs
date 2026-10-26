@@ -326,3 +326,14 @@ const indirectEvalReport=inspectSource({path:'src/eval.js',source:[
 ].join('\n')});
 assert.deepEqual(indirectEvalReport.findings.filter(f=>f.rule==='indirect-eval').map(f=>f.line),[1,4]);
 console.log('PASS: RX Developer 4.1 indirect eval detection');
+
+const writelnReport=inspectSource({path:'src/writeln.js',source:[
+ 'document.writeln(userHtml);',
+ 'document . writeln(otherHtml);',
+ 'const example = "document.writeln(fakeHtml)";',
+ '// document.writeln(fakeHtml);',
+ 'document.write(userHtml);',
+ 'document.writer(safeText);'
+].join('\n')});
+assert.deepEqual(writelnReport.findings.filter(f=>f.rule==='document-write').map(f=>f.line),[1,2,5]);
+console.log('PASS: RX Developer 4.2 document.writeln and write HTML sinks');
