@@ -65,7 +65,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       record('Link raportu RX BIBI Tester',typeof href==='string'&&href.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')&&Number.isSafeInteger(Number(href.split('/').pop()))&&Number(href.split('/').pop())>0,href);
     }catch(error){record('Odczyt panelu RX BIBI Tester',false,error.message);}
     await openRxTab('🔎 Diagnostyka');
-    const toolCenter=page.getByRole('region',{name:'Centrum narzędzi RX'});
+    const toolCenter=page.locator('[aria-label="Centrum narzędzi RX"]');
     record('Centrum narzędzi RX na telefonie',await toolCenter.count()===1);
     const incidentPanel=page.getByRole('region',{name:'Automatyczny rejestr awarii'});
     record('Rejestr awarii na telefonie',await incidentPanel.count()===1);
@@ -105,7 +105,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       await page.locator('[data-filter="all"]').click();
     }catch(error){record('RX BIBI 1.8 test filtrowanego eksportu',false,error.message);}
     record('Historia napraw na telefonie',await page.getByRole('region',{name:'Historia rozwiązanych problemów'}).count()===1);
-    const mobileLinks=await toolCenter.getByRole('link').count();
+    const mobileLinks=await toolCenter.locator('a').count();
     record('Nawigacja narzędzi RX',mobileLinks>=4,'Liczba linków: '+mobileLinks);
     const navigation=await toolCenter.locator('a[href^="#"]').evaluateAll(links=>links.map(link=>({href:link.getAttribute('href'),exists:!!document.getElementById(decodeURIComponent(link.getAttribute('href').slice(1)))})));
     record('Odnośniki do sekcji RX działają',navigation.length>0&&navigation.every(link=>link.exists),JSON.stringify(navigation));
@@ -231,7 +231,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     await openRxTab('📚 Historia');
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
-      const button = page.getByRole('button', { name: label, exact: true });
+      const button = page.locator('nav[aria-label="Filtr historii"] button').filter({hasText:label});
       const exists = await button.count() > 0;
       if (exists) await button.evaluate(el=>el.click());
       record('Filtr ' + label, exists && await button.getAttribute('aria-pressed') === 'true');
@@ -239,7 +239,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     const refresh = page.getByRole('button', { name: 'Odśwież historię' });
     await refresh.evaluate(el=>el.click());
     record('Odśwież historię', await refresh.count() === 1);
-    const guardLink = page.getByRole('link', { name: 'RX Strażak', exact: true });
+    const guardLink = page.locator('a[href="/guard-lab.html"]').filter({hasText:'RX Strażak'});
     record('Link RX Strażak', await guardLink.count() > 0);
     const guard = await browser.newPage({ ...devices['Pixel 7'] });
     // The guard page also reads GitHub's public API; use the same short-lived
