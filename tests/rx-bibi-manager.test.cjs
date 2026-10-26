@@ -430,7 +430,7 @@ for(const [label,code,ruleId] of [
  assert.ok(report.findings.some(x=>x.id===ruleId),'RX Core security rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// document.cookie = 'x'\nconst s = 'new Function()';").summary.total,0);
-assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.2');
+assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.3');
 console.log('PASS: RX Developer Core ten security rules');
 
 const rxColumnReport=rxCoreAnalyze("  eval('x');\n    document.write('ok');");
@@ -447,14 +447,14 @@ for(const [label,code,ruleId] of [
  assert.ok(rxCoreAnalyze(code).findings.some(x=>x.id===ruleId),'RX Core added rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// window.open(url)\nconst text = 'setInterval()';").summary.total,0);
-assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.2');
+assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.3');
 console.log('PASS: RX Developer Core thirteen review rules');
 
 const rxBrowserAdapter=require('fs').readFileSync(require('path').join(__dirname,'../guard/rx-developer-core-browser.js'),'utf8');
 const rxBrowserContext={window:{}};
 require('vm').runInNewContext(rxBrowserAdapter,rxBrowserContext);
 assert.equal(rxBrowserContext.window.RXDeveloperCore.analyzeJavaScript("eval('1')").summary.high,1);
-assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.2'));
+assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.3'));
 assert.ok(bibi.includes('/guard/rx-developer-core-browser.js'));
 assert.ok(bibi.includes('window.RXDeveloperCore.analyzeJavaScript(source)'));
 console.log('PASS: RX Developer Core opt-in browser integration');
@@ -470,9 +470,13 @@ const rxLongResult=rxCoreAnalyze(rxLongSource);
 assert.equal(rxLongResult.findings.length,1);
 assert.equal(rxLongResult.findings[0].line,3000);
 assert.equal(rxLongResult.findings[0].column,1);
-assert.equal(rxLongResult.version,'0.3.2');
+assert.equal(rxLongResult.version,'0.3.3');
 console.log('PASS: RX Core indexed line location for large files');
 
 const rxEvalFalsePositive=rxCoreAnalyze('object.eval("safe");\nobj?.eval("safe");\neval("unsafe");');
 assert.deepEqual(rxEvalFalsePositive.findings.filter(x=>x.id==='RX001').map(x=>x.line),[3]);
 console.log('PASS: RX Core distinguishes global eval from object eval methods');
+
+const rxLocationResult=rxCoreAnalyze('router.location.href = "/internal";\nwindow.location.href = "/home";\nlocation.href = "/login";\nother.window.location.href = "/ignore";');
+assert.deepEqual(rxLocationResult.findings.filter(x=>x.id==='RX010').map(x=>x.line),[2,3]);
+console.log('PASS: RX Core ignores nested location property false positives');
