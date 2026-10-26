@@ -23,7 +23,20 @@ export default {
         if(!response.ok)return reply(401,'Sesja administratora jest nieważna.');
         identity=await response.json();
       }catch{return reply(502,'Nie udało się sprawdzić sesji.');}
-      if(!identity?.id||identity.id!==env.RX_ADMIN_USER_ID||identity.is_anonymous===true)return reply(403,'Brak uprawnień administratora.');
+      if(!identity?.id||identity.is_anonymous===true)return reply(403,'Brak uprawnień administratora.');
+      // Check the authoritative admin_members list via a server-verified Supabase session.
+      // Never trust a client-supplied user id or editable user metadata.
+      let isAdmin=false;
+      try{
+        const adminResponse=await fetch(new URL('/rest/v1/rpc/is_vexorio_admin',base),{
+          method:'POST',
+          headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth,'Content-Type':'application/json'},
+          body:'{}',signal:AbortSignal.timeout(8000)
+        });
+        if(!adminResponse.ok)return reply(502,'Nie udało się sprawdzić uprawnień administratora.');
+        isAdmin=(await adminResponse.json())===true;
+      }catch{return reply(502,'Nie udało się sprawdzić uprawnień administratora.');}
+      if(!isAdmin)return reply(403,'Brak uprawnień administratora.');
       let github;
       try{
         github=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-bibi-browser.yml/dispatches',{
