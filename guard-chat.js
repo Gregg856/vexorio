@@ -157,6 +157,22 @@
   const strong=document.createElement('strong');strong.textContent=role+': ';
   p.append(strong,document.createTextNode(message));messages.append(p);messages.scrollTop=messages.scrollHeight;
  }
+ // RX alert watch runs only while this page is open; no hidden background monitoring.
+ let lastAlertKey='';
+ async function checkRXAlerts(){
+  try{
+   const response=await fetch('/api/rx/direct?command=RX%20STATUS',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+   if(!response.ok)throw Error('status_unavailable');
+   const report=await response.json();
+   if(!report.ok||!Array.isArray(report.runs))throw Error('invalid_status');
+   const failed=report.runs.filter(run=>run.result==='failure');
+   const key=failed.map(run=>run.name+':'+run.number).sort().join('|');
+   if(key&&key!==lastAlertKey){
+    lastAlertKey=key;
+    append('⚠️ RX ALARM','Wykryto nieudane testy GitHub Actions:'+String.fromCharCode(10)+failed.map(run=>'• '+run.name+' #'+(run.number||'?')+' — BŁĄD').join(String.fromCharCode(10))+String.fromCharCode(10)+'Sprawdź szczegóły w GitHub Actions. RX nie wprowadza zmian automatycznie.');
+   }else if(!key){lastAlertKey='';}
+  }catch(_){/* Temporary network failure is not proof of a failing workflow. */}
+ }
  function renderTasks(){
   if(!tasksBox)return;
   tasksBox.replaceChildren();
@@ -348,4 +364,7 @@
  renderPlugins();
  renderHealth();
  void autoCheckPlugins();
+ void checkRXAlerts();
+ const rxAlertTimer=setInterval(()=>{if(!document.hidden)void checkRXAlerts();},120000);
+ window.addEventListener('pagehide',()=>clearInterval(rxAlertTimer),{once:true});
 })();
