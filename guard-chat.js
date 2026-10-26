@@ -170,7 +170,10 @@
    if(key&&key!==lastAlertKey){
     lastAlertKey=key;
     append('⚠️ RX ALARM','Wykryto nieudane testy GitHub Actions:'+String.fromCharCode(10)+failed.map(run=>'• '+run.name+' #'+(run.number||'?')+' — BŁĄD').join(String.fromCharCode(10))+String.fromCharCode(10)+'Sprawdź szczegóły w GitHub Actions. RX nie wprowadza zmian automatycznie.');
-   }else if(!key){lastAlertKey='';}
+   }else if(!key&&lastAlertKey){
+    lastAlertKey='';
+    append('RX ALARM','Ostatnie uruchomienia monitorowanych testów są bez błędów. Wcześniejsze nieudane uruchomienia pozostają w historii GitHub Actions.');
+   }
   }catch(_){/* Temporary network failure is not proof of a failing workflow. */}
  }
  function renderTasks(){
