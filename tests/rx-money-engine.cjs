@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createMoneyEngine,ALLOCATION}=require('../rx-money-engine.cjs');
+const rx=createMoneyEngine();
+assert.deepEqual(ALLOCATION,{development:70,reserve:30});
+const task=rx.addTask({role:'TESTER',title:'Prepare consent-based QA sample'});
+assert.equal(task.status,'queued');
+assert.throws(()=>rx.transition(task.id,'done'),/not allowed/);
+rx.transition(task.id,'in_progress');rx.transition(task.id,'review');
+assert.throws(()=>rx.transition(task.id,'approved'),/Human approval/);
+rx.transition(task.id,'approved',{approvedBy:'owner'});rx.transition(task.id,'done');
+assert.throws(()=>rx.record({kind:'income',amountCents:10000,reference:'invoice'}),/Human approval/);
+rx.record({kind:'income',amountCents:10000,reference:'invoice-1',approvedBy:'owner'});
+rx.record({kind:'expense',amountCents:1000,reference:'cost-1',approvedBy:'owner'});
+assert.deepEqual([rx.summary().developmentCents,rx.summary().reserveCents],[6300,2700]);
+assert.throws(()=>rx.record({kind:'expense',amountCents:-1,reference:'x',approvedBy:'owner'}),/Invalid cents/);
+assert.equal(rx.ledger().length,2);
+console.log('PASS RX MONEY ENGINE tasks, approval, ledger and 70/30 allocation');
