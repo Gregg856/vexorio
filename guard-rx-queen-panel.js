@@ -6,6 +6,61 @@
  const save=document.getElementById('rxQueenSaveMemory');
  const clear=document.getElementById('rxQueenClearMemory');
  const key='rx_queen_verified_memory_v1';
+ // RX NEURON 2.4: opt-in, local-only transfer of approved fixes.
+ const exportButton=document.getElementById('rxQueenExportMemory');
+ const importButton=document.getElementById('rxQueenImportPreview');
+ const confirmButton=document.getElementById('rxQueenImportConfirm');
+ let pendingImport=null;
+ const resetPending=()=>{pendingImport=null;if(confirmButton)confirmButton.disabled=true;};
+ const parsed=x=>JSON.parse(sanitize(x));
+ const id=p=>p.cell+':'+p.code;
+ exportButton?.addEventListener('click',()=>{
+  try{
+   const saved=localStorage.getItem(key);
+   if(!saved)throw Error('No approved memory');
+   const blob=new Blob([sanitize(saved)],{type:'application/json'});
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');a.href=url;a.download='rx-approved-memory-v1.json';a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+   result.textContent='Eksport zatwierdzonej pamięci przygotowany. Plik pozostaje na Twoim urządzeniu.';
+  }catch(_){result.textContent='Brak poprawnej zatwierdzonej pamięci do eksportu.';}
+ });
+ importButton?.addEventListener('click',()=>{
+  resetPending();
+  try{
+   const incoming=parsed(snapshotField.value);
+   const current=localStorage.getItem(key);
+   const existing=current?parsed(current):{version:1,patterns:[]};
+   const byId=new Map(existing.patterns.map(p=>[id(p),p]));
+   let additions=0,agreements=0;const conflicts=[];
+   for(const p of incoming.patterns){
+    const old=byId.get(id(p));
+    if(!old){byId.set(id(p),p);additions++;}
+    else if(old.verifiedFix===p.verifiedFix)agreements++;
+    else conflicts.push(id(p));
+   }
+   if(byId.size>200)throw Error('Too many patterns');
+   if(conflicts.length){
+    result.textContent='RX NEURON 2.4 — KONFLIKT. Brak zapisu. Konfliktujące wpisy: '+conflicts.slice(0,15).join(', ')+(conflicts.length>15?'…':'');
+    return;
+   }
+   const merged=JSON.stringify({version:1,patterns:[...byId.values()]});
+   pendingImport=merged;
+   if(confirmButton)confirmButton.disabled=false;
+   result.textContent='RX NEURON 2.4 — PODGLĄD: nowe '+additions+', zgodne '+agreements+', konflikty 0. Nic nie zapisano. Naciśnij Potwierdź import, aby zachować zatwierdzone wpisy lokalnie.';
+  }catch(_){result.textContent='Import odrzucony. Sprawdź wersję, poprawność i limit pamięci JSON.';}
+ });
+ confirmButton?.addEventListener('click',()=>{
+  if(!pendingImport)return;
+  try{
+   localStorage.setItem(key,pendingImport);
+   snapshotField.value=pendingImport;
+   result.textContent='RX NEURON 2.4 — zatwierdzona pamięć połączona i zapisana lokalnie.';
+  }catch(_){result.textContent='Nie udało się zapisać pamięci lokalnie.';}
+  resetPending();
+ });
+ snapshotField?.addEventListener('input',resetPending);
+
  const safe=x=>typeof x==='string'&&/^[a-z0-9_-]{1,64}$/i.test(x);
  function sanitize(raw){
   const data=JSON.parse(raw);
