@@ -79,7 +79,12 @@ const {chromium,devices}=require('playwright');
    await page.locator('#musicStart').fill('1');
    const beforeAudio=await page.locator('#videoDownload').getAttribute('href');
    await page.locator('#render').click();
-   await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeAudio,{timeout:45000});
+   try {
+     await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeAudio,{timeout:45000});
+   } catch (error) {
+     const diagnostic=await page.evaluate(()=>({status:document.getElementById('status')?.textContent,renderDisabled:document.getElementById('render')?.disabled,videoHref:document.getElementById('videoDownload')?.getAttribute('href'),audioName:document.getElementById('music')?.files?.[0]?.name}));
+     throw new Error('Eksport filmu z muzyką: '+JSON.stringify(diagnostic)+'; '+error.message);
+   }
    const audioTrack=await page.locator('#videoPreview').evaluate(async v=>{
      v.load();await new Promise((resolve,reject)=>{v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('audio video decode error')),{once:true});setTimeout(()=>reject(Error('audio metadata timeout')),15000)});
      v.muted=true;
