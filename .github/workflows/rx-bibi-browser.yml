@@ -72,6 +72,8 @@ jobs:
         run: node tests/rx-evolution-radar.cjs
       - name: Sprawdź RX ANT ACADEMY
         run: node tests/rx-ant-academy.cjs
+      - name: Sprawdź dowody RX ANT ACADEMY
+        run: node tests/rx-ant-academy-proof.cjs
       - name: Sprawdź RX GENESIS
         run: node tests/rx-genesis.cjs
       - name: Sprawdź RX ANT HIBERNATION
