@@ -78,7 +78,36 @@ export default {
         if(!github.ok)return reply(502,'GitHub nie udostępnił danych (HTTP '+github.status+').');
         const data=await github.json();
         const failed=(Array.isArray(data.jobs)?data.jobs:[]).filter(job=>job.conclusion==='failure').slice(0,10).map(job=>({name:String(job.name||'Zadanie').slice(0,180),id:job.id,steps:(Array.isArray(job.steps)?job.steps:[]).filter(step=>step.conclusion==='failure').map(step=>({name:String(step.name||'Etap').slice(0,180),started_at:step.started_at,completed_at:step.completed_at}))}));
-        return new Response(JSON.stringify({ok:true,run_id:runId,failed,notice:'GitHub API udostępnia etapy i czasy, ale nie treść komunikatów z logów.'}),{status:200,headers});
+        // The log download is opt-in and admin-only. Do not proxy raw logs to the browser.
+        let notice='Nazwy i czasy etapów; komunikaty z logów nie zostały pobrane.';
+        if(url.searchParams.get('include_logs')==='1'){
+          notice='Wybrane komunikaty błędów z logów (automatycznie filtrowane; możliwe pominięcia).';
+          for(const job of failed.slice(0,2)){
+            if(!Number.isSafeInteger(job.id)||job.id<=0)continue;
+            try{
+              const logResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/jobs/'+job.id+'/logs',{
+                redirect:'manual',headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-BIBI-Manager'},signal:AbortSignal.timeout(8000)
+              });
+              let download=logResponse;
+              if(logResponse.status===302||logResponse.status===301){
+                const destination=new URL(logResponse.headers.get('Location')||'');
+                if(destination.protocol!=='https:'||!(/(^|\\.)blob\\.core\\.windows\\.net$|(^|\\.)actions\\.githubusercontent\\.com$|(^|\\.)githubusercontent\\.com$/.test(destination.hostname)))throw Error('Niedozwolony host logów');
+                download=await fetch(destination.toString(),{redirect:'error',signal:AbortSignal.timeout(8000)});
+              }
+              if(!download.ok)throw Error('HTTP '+download.status);
+              const contentLength=Number(download.headers.get('content-length')||0);
+              if(contentLength>1024*1024)throw Error('Log za duży');
+              const raw=await download.text();
+              if(raw.length>1024*1024)throw Error('Log za duży');
+              const messages=raw.split(/\\r?\\n/).filter(line=>/\\b(error|failed|exception|fatal|timed out|timeout)\\b/i.test(line)).slice(-8).map(line=>{
+                let safe=line.replace(/\\x1b\\[[0-9;]*m/g,'').replace(/https?:\\/\\/\\S+/gi,'[URL]').replace(/[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}/g,'[email]').replace(/(?:gh[pousr]_|github_pat_|sb_secret_|eyJ)[A-Za-z0-9_.-]+/gi,'[sekret]').replace(/(authorization|token|password|secret|apikey|api_key|cookie|bearer)\\s*[:=]\\s*\\S+/gi,'$1=[ukryte]');
+                return safe.slice(0,240);
+              }).filter(line=>!/(?:authorization|token|password|secret|apikey|api_key|cookie|bearer)/i.test(line));
+              job.messages=messages.slice(0,5);
+            }catch{job.messages=[];job.log_notice='Nie udało się bezpiecznie odczytać logu. Otwórz zadanie w GitHub.';}
+          }
+        }
+        return new Response(JSON.stringify({ok:true,run_id:runId,failed,notice}),{status:200,headers});
       }catch{return reply(502,'Nie udało się pobrać diagnostyki GitHub.');}
     }
     if (url.pathname === '/api/listing-view') {
