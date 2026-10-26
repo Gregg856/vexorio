@@ -261,5 +261,8 @@ assert.ok(!bibi.includes("/\\.catch\\s*\\(|\\btry\\s*\\{/.test(code)"), 'RX Deve
 assert.ok(bibi.includes('lines.slice(Math.max(0,i-2),i+1)'), 'RX Developer fetch heuristics must be scoped near the call');
 console.log('PASS: RX Developer fetch warning scope regression');
 
-assert.ok(bibi.includes('if(/^\\s*(?:\\/\\/|\\*|\\/\\*)/.test(lines[i]))continue;'),'RX Developer should skip standalone comment lines');
+assert.ok(bibi.includes("const codeLines=masked.join('').split("),'RX Developer must lexically mask comments and strings');
+assert.ok(bibi.includes("if(c==='/'&&next==='/')"),'RX Developer must recognize line comments');
+assert.ok(bibi.includes("if(c==='/'&&next==='*')"),'RX Developer must recognize block comments');
+assert.ok(bibi.includes("const candidate=needsLiterals?lines[i]:codeLines[i]"),'RX Developer must inspect executable code separately from literals');
 console.log('PASS: RX Developer standalone comment false-positive guard');
