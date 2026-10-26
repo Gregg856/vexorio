@@ -723,7 +723,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(key){const action=document.createElement('button');action.type='button';action.textContent='Otwórz: '+buttons.get(key).textContent;action.addEventListener('click',()=>activate(key));log.append(action);}
    log.scrollTop=log.scrollHeight;
   };
-  const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\\s+zadani[ea]\\s*[:,-]?\\s*(.+)$/i);
+  const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\s+zadani[ea]\s*[:,-]?\s*(.+)$/i);
   if(taskMatch){
    const title=taskMatch[1].trim().slice(0,180);
    if(!title){explain('Podaj treść zadania, np. „Dodaj zadanie: sprawdź VEXORIO”.');return;}
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(rxTasks.length>50)rxTasks.length=50;
    persistTasks();renderTasks();
    explain('Dodałem zadanie „'+title+'” do kolejki '+module+'. To zapis planu, nie automatyczne wykonanie.','zadania');
-  }else if(/^(pokaż|pokaz|otwórz|otworz)\\s+(moje\\s+)?zadania|lista zadań|lista zadan/.test(value)){
+  }else if(/^(pokaż|pokaz|otwórz|otworz)\s+(moje\s+)?zadania|lista zadań|lista zadan/.test(value)){
    const pending=rxTasks.filter(t=>t.status==='oczekuje').length;
    explain('Masz '+pending+' oczekujących zadań. Otwieram listę.','zadania');
   }else if(/^(cześć|czesc|hej|witaj|halo|dzień dobry|dzien dobry|siema)[!. ]*$/.test(value)){
