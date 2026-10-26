@@ -91,7 +91,7 @@ export default {
               let download=logResponse;
               if(logResponse.status===302||logResponse.status===301){
                 const destination=new URL(logResponse.headers.get('Location')||'');
-                if(destination.protocol!=='https:'||!(/(^|\\.)blob\\.core\\.windows\\.net$|(^|\\.)actions\\.githubusercontent\\.com$|(^|\\.)githubusercontent\\.com$/.test(destination.hostname)))throw Error('Niedozwolony host logów');
+                if(destination.protocol!=='https:'||!(/(^|\.)blob\.core\.windows\.net$|(^|\.)actions\.githubusercontent\.com$|(^|\.)githubusercontent\.com$/.test(destination.hostname)))throw Error('Niedozwolony host logów');
                 download=await fetch(destination.toString(),{redirect:'error',signal:AbortSignal.timeout(8000)});
               }
               if(!download.ok)throw Error('HTTP '+download.status);
