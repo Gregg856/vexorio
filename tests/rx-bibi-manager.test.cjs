@@ -367,3 +367,14 @@ for(const [label,input,expectedWarning] of fetchCases){
  assert.equal(!handled,expectedWarning,'RX fetch handling: '+label);
 }
 console.log('PASS: RX Developer fetch error handling ignores comments');
+
+assert.ok(bibi.includes("lines[i].replace(/\\/\\/.*$/,'')"),'RX Developer window.open warning must ignore trailing comments');
+for(const [label,line,expectedSuppressed] of [
+ ['trailing comment',"window.open(url); // noopener",false],
+ ['real feature',"window.open(url, '_blank', 'noopener');",true],
+ ['missing protection',"window.open(url, '_blank');",false]
+]){
+ const suppressed=/\b(?:noopener|noreferrer)\b/.test(line.replace(/\/\/.*$/,''));
+ assert.equal(suppressed,expectedSuppressed,'RX window.open warning: '+label);
+}
+console.log('PASS: RX Developer window.open comment regression');
