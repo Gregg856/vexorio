@@ -24,7 +24,11 @@ function summarize(report){
  const filesSkipped=files.length-filesScanned;
  const coveragePercent=files.length?Math.round(filesScanned/files.length*100):0;
  const skippedByReason={};
- for(const file of files)if(file.status!=='scanned')skippedByReason[file.status]=(skippedByReason[file.status]||0)+1;
+ const knownSkipReasons=new Set(['missing','unreadable','unsafe_file_type','too_large','empty_file']);
+ for(const file of files)if(file.status!=='scanned'){
+  const reason=knownSkipReasons.has(file.status)?file.status:'other';
+  skippedByReason[reason]=(skippedByReason[reason]||0)+1;
+ }
  const recommendations=[];
  if(severity.high>0)recommendations.push({priority:'high',action:'Najpierw przejrzyj problemy wysokiego ryzyka w plikach z listy priorityFiles.'});
  if(severity.medium>0)recommendations.push({priority:'medium',action:'Zweryfikuj miejsca użycia niebezpiecznych operacji DOM i innych ostrzeżeń średniego ryzyka.'});
