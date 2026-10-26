@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'rx-bibi-manager.html'
+      - 'rx-million-hearts.js'
+      - 'tests/rx-million-hearts.cjs'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
       - '.github/workflows/rx-bibi-browser.yml'
@@ -40,6 +42,8 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.56.1
       - name: Sprawdź gotowość Chromium
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
+      - name: Sprawdź silnik RX MILION SERC
+        run: node tests/rx-million-hearts.cjs
       - name: Uruchom testy RX BIBI
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
