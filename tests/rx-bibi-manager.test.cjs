@@ -229,3 +229,8 @@ console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
 assert.ok(bibi.includes("document.createElement('details')"),'RX Developer 8.5 must group findings in expandable cards');
 assert.ok(bibi.includes('groups.get(item.path).push(item)'),'RX Developer 8.5 must group findings by file');
 console.log('PASS: RX Developer 8.5 expandable per-file diagnostics');
+assert.ok(bibi.includes('id="rxExpandAll"'),'RX Developer 8.6 must expose expand-all button');
+assert.ok(bibi.includes('id="rxCollapseAll"'),'RX Developer 8.6 must expose collapse-all button');
+assert.ok(bibi.includes("querySelectorAll('details').forEach(x=>x.open=true)"),'RX Developer 8.6 must expand all file groups');
+assert.ok(bibi.includes("querySelectorAll('details').forEach(x=>x.open=false)"),'RX Developer 8.6 must collapse all file groups');
+console.log('PASS: RX Developer 8.6 expand/collapse controls');
