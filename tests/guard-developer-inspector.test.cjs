@@ -273,3 +273,21 @@ assert.deepEqual(equalityReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['unsafe-iframe-srcdoc','medium',4]
 ]);
 console.log('PASS: RX Developer 3.7 HTML assignment versus equality');
+
+const arrowReport=inspectSource({path:'src/arrow.js',source:[
+ 'const a = node.innerHTML => value;',
+ 'const b = frame.srcdoc => value;',
+ 'const c = node.outerHTML => value;',
+ 'const d = document.domain => value;',
+ 'node.innerHTML = userHtml;',
+ 'frame.srcdoc = userHtml;',
+ 'node.outerHTML = userHtml;',
+ 'document.domain = newDomain;'
+].join('\n')});
+assert.deepEqual(arrowReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['dangerous-document-domain','high',8],
+ ['outer-html','medium',7],
+ ['unsafe-iframe-srcdoc','medium',6],
+ ['inner-html','medium',5]
+]);
+console.log('PASS: RX Developer 3.8 arrow syntax is not HTML/domain assignment');
