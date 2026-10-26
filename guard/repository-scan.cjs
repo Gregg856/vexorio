@@ -73,6 +73,7 @@ function scan(root=process.cwd()){
   }
   if(!stat.isFile()){files.push({path:name,error:'unsafe_file_type'});continue;}
   if(stat.size>400000){files.push({path:name,error:'too_large'});continue;}
+  if(stat.size===0){files.push({path:name,error:'empty_file'});continue;}
   let source;
   try{source=fs.readFileSync(full,'utf8');}
   catch(error){files.push({path:name,error:'unreadable'});continue;}
