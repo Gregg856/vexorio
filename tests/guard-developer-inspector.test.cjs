@@ -286,8 +286,8 @@ const arrowReport=inspectSource({path:'src/arrow.js',source:[
 ].join('\n')});
 assert.deepEqual(arrowReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['dangerous-document-domain','high',8],
- ['outer-html','medium',7],
+ ['inner-html','medium',5],
  ['unsafe-iframe-srcdoc','medium',6],
- ['inner-html','medium',5]
+ ['outer-html','medium',7]
 ]);
 console.log('PASS: RX Developer 3.8 arrow syntax is not HTML/domain assignment');
