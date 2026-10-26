@@ -677,12 +677,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   const code=developerInput.value;const issues=[];
   if(!code.trim()){developerOutput.textContent='Wklej kod JavaScript, aby rozpocząć analizę.';return;}
   try{new Function(code);}catch(error){issues.push('Błąd składni JavaScript: '+String(error.message).slice(0,180));}
-  if(/\\beval\\s*\\(/.test(code))issues.push('Uwaga: eval() może uruchamiać niebezpieczny kod.');
-  if(/\\binnerHTML\\s*=/.test(code))issues.push('Sprawdź innerHTML: nie wstawiaj niezaufanych danych bez zabezpieczeń.');
-  if(/(?:api[_-]?key|secret|token|password)\\s*[:=]\\s*['"][^'"]{8,}['"]/i.test(code))issues.push('Możliwy sekret w kodzie — nie publikuj kluczy ani haseł.');
-  if(/console\\.log\\s*\\(/.test(code))issues.push('Sprawdź console.log przed publikacją, aby nie ujawniać danych.');
-  if(/\\bfetch\\s*\\(/.test(code)&&!/\\.catch\\s*\\(|\\btry\\s*\\{/.test(code))issues.push('Sprawdź obsługę błędów żądań fetch.');
-  developerOutput.textContent=issues.length?issues.map((x,i)=>(i+1)+'. '+x).join('\\n'):'Nie wykryto problemów przez podstawowe reguły RX. To nie jest pełny audyt bezpieczeństwa.';
+  if(/\beval\s*\(/.test(code))issues.push('Uwaga: eval() może uruchamiać niebezpieczny kod.');
+  if(/\binnerHTML\s*=/.test(code))issues.push('Sprawdź innerHTML: nie wstawiaj niezaufanych danych bez zabezpieczeń.');
+  if(/(?:api[_-]?key|secret|token|password)\s*[:=]\s*['"][^'"]{8,}['"]/i.test(code))issues.push('Możliwy sekret w kodzie — nie publikuj kluczy ani haseł.');
+  if(/console\.log\s*\(/.test(code))issues.push('Sprawdź console.log przed publikacją, aby nie ujawniać danych.');
+  if(/\bfetch\s*\(/.test(code)&&!/\.catch\s*\(|\btry\s*\{/.test(code))issues.push('Sprawdź obsługę błędów żądań fetch.');
+  developerOutput.textContent=issues.length?issues.map((x,i)=>(i+1)+'. '+x).join('\n'):'Nie wykryto problemów przez podstawowe reguły RX. To nie jest pełny audyt bezpieczeństwa.';
  });
  const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
  developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy);
