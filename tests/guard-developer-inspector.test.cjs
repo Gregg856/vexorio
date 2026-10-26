@@ -87,7 +87,7 @@ const severityReport=inspectSource({path:'src/report.js',source:[
  'const api_key = "abcdefghijklmnopqrstuvwxyz123456";'
 ].join('\n')});
 assert.deepEqual(severityReport.findings.map(({rule,severity,line})=>[rule,severity,line]),[
- ['eval','high',1],['inner-html','medium',2],['console-log','low',3],['hardcoded-secret','high',4]
+ ['eval','high',1],['hardcoded-secret','high',4],['inner-html','medium',2],['console-log','low',3]
 ]);
 assert.ok(severityReport.findings.every(f=>typeof f.message==='string'&&f.message.length>0));
 assert.ok(severityReport.findings.every(f=>!('source' in f)&&!('match' in f)));
