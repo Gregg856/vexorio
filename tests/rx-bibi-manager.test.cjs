@@ -348,3 +348,6 @@ for(const [label,input,expected] of messageCases){
 }
 console.log('PASS: RX Developer message origin warning precise matching');
 
+
+assert.ok(bibi.includes('targetOrigin|walidację origin wiadomości'), 'Message origin warning must be evaluated against quoted event names');
+console.log('PASS: RX Developer message listener is included in literal-aware matching');
