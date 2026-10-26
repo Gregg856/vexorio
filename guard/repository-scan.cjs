@@ -66,7 +66,12 @@ function scan(root=process.cwd()){
   let stat;
   try{stat=fs.lstatSync(full);}
   catch(error){files.push({path:name,error:error.code==='ENOENT'?'missing':'unreadable'});continue;}
-  if(!stat.isFile()||stat.isSymbolicLink()){files.push({path:name,error:'unsafe_file_type'});continue;}
+  if(stat.isSymbolicLink()){
+   let targetExists=false;
+   try{fs.statSync(full);targetExists=true;}catch(error){if(error.code!=='ENOENT')targetExists=true;}
+   files.push({path:name,error:targetExists?'unsafe_file_type':'missing'});continue;
+  }
+  if(!stat.isFile()){files.push({path:name,error:'unsafe_file_type'});continue;}
   if(stat.size>400000){files.push({path:name,error:'too_large'});continue;}
   let source;
   try{source=fs.readFileSync(full,'utf8');}
