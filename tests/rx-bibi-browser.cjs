@@ -207,6 +207,21 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     const guardLink = page.getByRole('link', { name: 'RX Strażak', exact: true });
     record('Link RX Strażak', await guardLink.count() > 0);
     const guard = await browser.newPage({ ...devices['Pixel 7'] });
+    // The guard page also reads GitHub's public API; use the same short-lived
+    // runner-side proxy as the manager to avoid unauthenticated rate limits.
+    if(process.env.GITHUB_TOKEN){
+      await guard.route(/^https:\/\/api\.github\.com\//,async route=>{
+        try{
+          const original=route.request();
+          const upstream=await fetch(original.url(),{
+            method:original.method(),
+            headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+process.env.GITHUB_TOKEN,'X-GitHub-Api-Version':'2022-11-28'},
+            signal:AbortSignal.timeout(15000)
+          });
+          await route.fulfill({status:upstream.status,contentType:upstream.headers.get('content-type')||'application/json',body:await upstream.text(),headers:{'access-control-allow-origin':'*','cache-control':'no-store'}});
+        }catch(err){console.error('RX Guard GitHub API proxy:',err.message);await route.abort();}
+      });
+    }
     watch(guard, 'RX Strażak', guardErrors);
     const guardResponse = await guard.goto(base + '/guard-lab.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
     record('RX Strażak HTTP', guardResponse && guardResponse.status() === 200);
