@@ -1,0 +1,40 @@
+name: RX ALARM — workflow failures
+on:
+  workflow_run:
+    workflows:
+      - VEXORIO checks
+      - Deploy VEXORIO
+      - RX BIBI Tester — mobile browser
+    types: [completed]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Register RX alarm in GitHub Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const marker = '<!-- RX-ALARM:' + run.name.replace(/-->/g, '') + ' -->';
+            const {owner,repo} = context.repo;
+            const title = '⚠️ RX ALARM: ' + run.name + ' — test nieudany';
+            const body = marker + '\n' +
+              'RX wykrył nieudany test automatyczny.\n\n' +
+              '- Workflow: ' + run.name + '\n' +
+              '- Uruchomienie: #' + run.run_number + '\n' +
+              '- Commit: ' + run.head_sha + '\n' +
+              '- Logi: ' + run.html_url + '\n\n' +
+              'RX nie naprawia i nie publikuje zmian automatycznie.';
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,repo,state:'open',per_page:100
+            });
+            const previous = issues.find(issue => !issue.pull_request && issue.body?.includes(marker));
+            if (previous) {
+              await github.rest.issues.createComment({owner,repo,issue_number:previous.number,body});
+            } else {
+              await github.rest.issues.create({owner,repo,title,body});
+            }
