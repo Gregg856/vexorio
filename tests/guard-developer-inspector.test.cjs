@@ -132,3 +132,8 @@ const exactCap=inspectSource({path:'src/exact-cap.js',source:'console.log(x);\n'
 assert.equal(exactCap.findings.length,50);
 assert.equal(exactCap.limited,false);
 console.log('PASS: RX Developer 2.5 high-risk findings survive cap and exact cap is not truncated');
+
+assert.equal(capPriority.omitted,12);
+assert.equal(exactCap.omitted,0);
+assert.equal(inspectSource({path:'src/empty.js',source:'const ok=true;'}).omitted,0);
+console.log('PASS: RX Developer 2.6 omitted finding counts');
