@@ -602,6 +602,31 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  const original=[...main.childNodes].filter(node=>node.nodeType===1&&node.tagName!=='SCRIPT');
  const mapping={rxPriority:'diagnostyka',alerts:'strażak',strażakStatus:'strażak',availability:'strażak',incidents:'diagnostyka',incidentReport:'diagnostyka',autoIncidents:'diagnostyka',diagnosisHistory:'historia',resolvedHistory:'historia',latest:'historia',lastSuccess:'historia',runs:'historia',summary:'historia',browserTester:'tester',testerControl:'tester',rxEngines:'ustawienia'};
+ const rxPluginCatalog=Object.freeze([
+  {id:'rx-strazak',name:'RX Strażak',category:'Monitoring',state:'dostępny',description:'Kontrola dostępności i stanu strony',view:'strażak'},
+  {id:'rx-tester',name:'RX Tester',category:'Testowanie',state:'dostępny',description:'Testy i raporty kontrolne',view:'tester'},
+  {id:'rx-diagnostyka',name:'RX Diagnostyka',category:'Diagnostyka',state:'dostępny',description:'Analiza błędów i alarmów',view:'diagnostyka'},
+  {id:'rx-historia',name:'RX Historia',category:'Zarządzanie',state:'dostępny',description:'Historia publikacji i raportów',view:'historia'},
+  {id:'rx-developer',name:'RX Developer',category:'Programowanie',state:'planowany',description:'Własny moduł analizy kodu i propozycji poprawek'},
+  {id:'rx-studio',name:'RX Studio',category:'Media',state:'planowany',description:'Filmy, montaż i napisy'},
+  {id:'rx-grafika',name:'RX Grafika',category:'Media',state:'planowany',description:'Tworzenie i edycja grafik'},
+  {id:'rx-muzyka',name:'RX Muzyka',category:'Media',state:'planowany',description:'Teksty, dźwięk i muzyka'},
+  {id:'rx-bibi-ai',name:'RX BIBI AI',category:'Asystent',state:'planowany',description:'Swobodna rozmowa po podłączeniu modelu'}
+ ]);
+ const pluginView=document.createElement('section');pluginView.className='rx-plugin-catalog';
+ const pluginTitle=document.createElement('h2');pluginTitle.textContent='🧩 RX Plugins — nasze moduły';
+ const pluginNote=document.createElement('p');pluginNote.className='meta';pluginNote.textContent='Katalog własnych modułów RX. „Planowany” oznacza, że funkcja nie jest jeszcze uruchomiona. Zewnętrzne integracje pozostają pomocnicze.';
+ pluginView.append(pluginTitle,pluginNote);
+ for(const item of rxPluginCatalog){
+  const card=document.createElement('div');card.className='card';card.style.margin='10px 0';card.style.padding='12px';
+  const heading=document.createElement('strong');heading.textContent=item.name+' — '+item.state;
+  const description=document.createElement('p');description.textContent=item.category+' · '+item.description;
+  card.append(heading,description);
+  if(item.view){const open=document.createElement('button');open.type='button';open.textContent='Otwórz moduł';open.addEventListener('click',()=>activate(item.view));card.append(open);}
+  pluginView.append(card);
+ }
+ views.set('plugins',pluginView);pane.append(pluginView);
+ const pluginNav=document.createElement('button');pluginNav.type='button';pluginNav.textContent='🧩 RX Plugins';pluginNav.addEventListener('click',()=>activate('plugins'));side.append(pluginNav);buttons.set('plugins',pluginNav);
  const fallback=views.get('ustawienia');
  const header=original.find(node=>node.tagName==='H1');if(header){header.textContent='🛡️ RX BIBI Manager';header.classList.add('rx-app-title');}
  for(const node of original){
