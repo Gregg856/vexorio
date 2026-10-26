@@ -27,8 +27,10 @@ export default {
             return run?{name,number:run.run_number,status:run.status,result:run.conclusion||null,link:run.html_url}:{name,status:'unknown',result:null};
           }catch{return {name,status:'unavailable',result:null};}
         }));
-        if(runs.every(run=>run.status==='unavailable'))throw new Error('github_unavailable');
-        return new Response(JSON.stringify({ok:true,command:'RX STATUS',source:'github-actions',runs}),{status:200,headers});
+        // A temporary GitHub API outage must not make the RX status endpoint fail with 502.
+        // Report degraded availability explicitly so the UI can show a warning.
+        const degraded=runs.every(run=>run.status==='unavailable');
+        return new Response(JSON.stringify({ok:!degraded,command:'RX STATUS',source:'github-actions',degraded,runs}),{status:200,headers});
       }catch{
         return new Response(JSON.stringify({ok:false,command:'RX STATUS',error:'status_temporarily_unavailable'}),{status:502,headers});
       }
