@@ -22,3 +22,4 @@ jobs:
           node tests/push-service-worker.test.cjs
           node tests/rx-direct.cjs
           node tests/rx-ai-builder.cjs
+          node tests/rx-verified-dataset.cjs
