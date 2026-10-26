@@ -46,7 +46,9 @@ function inspectSource({path,source}={}){
   if(findings.length>=50)break;
  }
  findings.sort((a,b)=>a.line-b.line);
- return {path,lines:source.split('\n').length,findings,limited:findings.length>=50,readOnly:true};
+ const summary={high:0,medium:0,low:0,total:findings.length};
+ for(const finding of findings)summary[finding.severity]++;
+ return {path,lines:source.split('\n').length,findings,summary,limited:findings.length>=50,readOnly:true};
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={inspectSource};
 if(typeof window!=='undefined')window.GuardDeveloperInspector={inspectSource};
