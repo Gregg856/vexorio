@@ -20,12 +20,14 @@ function summarize(report){
  const priorityFiles=files.filter(f=>f.status==='scanned'&&f.signals>0)
   .sort((a,b)=>b.severity.high-a.severity.high||b.severity.medium-a.severity.medium||b.severity.low-a.severity.low||a.path.localeCompare(b.path))
   .slice(0,10).map(f=>({path:f.path,signals:f.signals,severity:f.severity}));
+ const skippedByReason={};
+ for(const file of files)if(file.status!=='scanned')skippedByReason[file.status]=(skippedByReason[file.status]||0)+1;
  const recommendations=[];
  if(severity.high>0)recommendations.push({priority:'high',action:'Najpierw przejrzyj problemy wysokiego ryzyka w plikach z listy priorityFiles.'});
  if(severity.medium>0)recommendations.push({priority:'medium',action:'Zweryfikuj miejsca użycia niebezpiecznych operacji DOM i innych ostrzeżeń średniego ryzyka.'});
  if(severity.low>0)recommendations.push({priority:'low',action:'Ogranicz zbędne logowanie i pozostałe ostrzeżenia niskiego ryzyka.'});
  if(files.some(f=>f.status!=='scanned'))recommendations.push({priority:'review',action:'Sprawdź pominięte pliki — skanowanie nie objęło całego zakresu.'});
- return {version:1,filesScanned:files.filter(f=>f.status==='scanned').length,filesSkipped:files.filter(f=>f.status!=='scanned').length,signals:report.signals,severity,byScope,priorityFiles,recommendations,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
+ return {version:1,filesScanned:files.filter(f=>f.status==='scanned').length,filesSkipped:files.filter(f=>f.status!=='scanned').length,signals:report.signals,severity,byScope,priorityFiles,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
 }
 if(require.main===module){
  const summary=summarize(scan());
