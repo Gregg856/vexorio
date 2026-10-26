@@ -7,7 +7,7 @@ class RXMillionHearts {
       if(!Number.isSafeInteger(value)||value<1)throw new RangeError(key+' must be a positive integer');
     }
     this.maxConcurrent=maxConcurrent;this.maxQueue=maxQueue;this.memoryLimit=memoryLimit;this.logicalHeads=logicalHeads;
-    this.handlers=new Map();this.queue=[];this.active=0;this.running=new Map();this.nextJobId=0;this.memory=[];this.failurePatterns=new Map();
+    this.handlers=new Map();this.queue=[];this.active=0;this.running=new Map();this.nextJobId=0;this.memory=[];this.failurePatterns=new Map();this.antMemories=new Map();
     this.stats={accepted:0,completed:0,failed:0,rejected:0};
   }
   register(name,handler){
@@ -52,6 +52,47 @@ class RXMillionHearts {
     const now=Date.now();
     return [...this.running].filter(([,job])=>now-job.startedAt>=thresholdMs)
       .map(([id,job])=>({id,cell:job.cell,elapsedMs:now-job.startedAt}));
+  }
+  // RX ANT MEMORY 1.0: compact, bounded, per-head verified references only.
+  rememberAnt(headIndex,code,fixId,{testsPassed=false}={}){
+    if(!testsPassed)throw new Error('Verified tests required');
+    const head=this.headId(headIndex);
+    if(typeof code!=='string'||!/^[a-z0-9_-]{1,48}$/i.test(code))throw new TypeError('Invalid memory code');
+    if(typeof fixId!=='string'||!/^[a-z0-9_-]{1,64}$/i.test(fixId))throw new TypeError('Invalid fix ID');
+    let entries=this.antMemories.get(head);
+    if(!entries){
+      if(this.antMemories.size>=this.memoryLimit)this.antMemories.delete(this.antMemories.keys().next().value);
+      entries=new Map();this.antMemories.set(head,entries);
+    }
+    entries.delete(code);entries.set(code,fixId);
+    while(entries.size>8)entries.delete(entries.keys().next().value);
+    return {head,code,fixId};
+  }
+  recallAnt(headIndex,code){
+    const head=this.headId(headIndex);
+    if(typeof code!=='string'||!/^[a-z0-9_-]{1,48}$/i.test(code))throw new TypeError('Invalid memory code');
+    const fixId=this.antMemories.get(head)?.get(code);
+    return fixId?{head,code,fixId,requiresApproval:true}:null;
+  }
+  exportAntMemory(){
+    return {version:1,ants:[...this.antMemories].map(([head,entries])=>({head,entries:[...entries].map(([code,fixId])=>({code,fixId}))}))};
+  }
+  importAntMemory(data){
+    if(!data||data.version!==1||!Array.isArray(data.ants)||data.ants.length>this.memoryLimit)throw new TypeError('Invalid ant memory');
+    const next=new Map();
+    for(const ant of data.ants){
+      if(!ant||typeof ant.head!=='string'||!/^RX-\\d{6}$/.test(ant.head)||!Array.isArray(ant.entries)||ant.entries.length>8||next.has(ant.head))throw new TypeError('Invalid ant');
+      const index=Number(ant.head.slice(3))-1;
+      if(this.headId(index)!==ant.head)throw new TypeError('Unknown ant');
+      const entries=new Map();
+      for(const item of ant.entries){
+        if(!item||typeof item.code!=='string'||!/^[a-z0-9_-]{1,48}$/i.test(item.code)||typeof item.fixId!=='string'||!/^[a-z0-9_-]{1,64}$/i.test(item.fixId)||entries.has(item.code))throw new TypeError('Invalid ant entry');
+        entries.set(item.code,item.fixId);
+      }
+      next.set(ant.head,entries);
+    }
+    this.antMemories=next;
+    return next.size;
   }
   // Aggregate only bounded, sanitized error categories; never store raw payloads or secrets.
   rememberFailure(cell,code){
