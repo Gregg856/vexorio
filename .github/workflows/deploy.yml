@@ -220,7 +220,7 @@ jobs:
         run: |
           node guard/repository-scan.cjs
           node guard/repository-summary.cjs
-          node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('guard-developer-summary.json','utf8'));fs.writeFileSync('public/rx-fix-guidance.json',JSON.stringify({version:1,generatedAt:new Date().toISOString(),scanStatus:r.scanStatus,fileFixSuggestions:r.fileFixSuggestions})+'\\n')"
+          node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('guard-developer-summary.json','utf8'));fs.writeFileSync('public/rx-fix-guidance.json',JSON.stringify({version:1,generatedAt:new Date().toISOString(),scanStatus:r.scanStatus,severity:r.severity,filesScanned:r.filesScanned,filesSkipped:r.filesSkipped,fileFixSuggestions:r.fileFixSuggestions})+'\\n')"
           node guard/developer-changes.cjs
           node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('guard-developer-changes.json','utf8'));fs.writeFileSync('public/guard-changes-summary.json',JSON.stringify({status:r.status,changedFiles:r.changedFiles,summary:r.summary})+'\\n')"
 
