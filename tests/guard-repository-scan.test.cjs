@@ -15,6 +15,12 @@ try{
  assert.ok(missingScript.findings.some(f=>f.rule==='missing-script'&&f.severity==='high'));
  fs.writeFileSync(path.join(dir,'missing-script.js'),'const ok=1;');
  assert.equal(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.length,0);
+ const scriptTarget=path.join(dir,'missing-script.js');
+ fs.unlinkSync(scriptTarget);
+ fs.symlinkSync(path.join(dir,'guard-chat.js'),scriptTarget);
+ assert.ok(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.some(f=>f.rule==='missing-script'),'symlinked script must not count as safe local asset');
+ fs.unlinkSync(scriptTarget);
+ fs.writeFileSync(scriptTarget,'const ok=1;');
  fs.writeFileSync(path.join(dir,'guard-lab.html'),'<script src="/guard-developer-inspector.js"></script>');
  fs.mkdirSync(path.join(dir,'guard'));
  fs.writeFileSync(path.join(dir,'guard','developer-inspector.cjs'),'const inspect=1;');
