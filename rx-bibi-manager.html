@@ -424,7 +424,19 @@ async function refresh(){
           if(!failures.length)secureOutput.append(document.createTextNode('Brak nieudanych zadań w odpowiedzi serwera.'));
           for(const job of failures){
             secureOutput.append(document.createTextNode('Zadanie: '+String(job.name||'brak nazwy')+' — '+(Array.isArray(job.steps)?job.steps.map(st=>String(st.name||'etap')).join(' · '):'brak etapów')+'; '));
-            for(const message of (Array.isArray(job.messages)?job.messages:[])){secureOutput.append(document.createElement('br'),document.createTextNode('Błąd: '+String(message).slice(0,240)));}
+            for(const message of (Array.isArray(job.messages)?job.messages:[])){
+              const msg=String(message).slice(0,240);
+              secureOutput.append(document.createElement('br'),document.createTextNode('Błąd: '+msg));
+              const lower=msg.toLowerCase();
+              let recommendation='Sprawdź pełny log zadania GitHub i ustal przyczynę przed zmianą kodu.';
+              let files='Pliki: ustal na podstawie ścieżki w logu.';
+              if(/syntaxerror|unexpected token|invalid regular expression|unterminated/.test(lower)){recommendation='Błąd składni: uruchom kontrolę składni przed wdrożeniem i popraw wskazany w logu wiersz.';files='Sprawdź plik i numer wiersza z komunikatu; przy błędzie Worker: worker.js.';}
+              else if(/assertionerror|expected|actual|test failed/.test(lower)){recommendation='Nieudana asercja: porównaj wynik oczekiwany z rzeczywistym i popraw test lub zachowanie aplikacji, nie wyłączaj testu.';files='Sprawdź plik testowy wymieniony w logu oraz powiązany moduł.';}
+              else if(/403|forbidden|permission denied|unauthorized/.test(lower)){recommendation='Sprawdź uprawnienia i konfigurację uwierzytelnienia; nie publikuj sekretów ani tokenów.';files='Sprawdź konfigurację workflow, Worker i reguły dostępu.';}
+              else if(/timeout|timed out|etimedout/.test(lower)){recommendation='Sprawdź czas odpowiedzi, połączenie i limit zadania; nie zwiększaj limitu bez diagnozy.';files='Sprawdź test i wywoływany endpoint.';}
+              else if(/wrangler|cloudflare|deploy failed/.test(lower)){recommendation='Sprawdź etap wdrożenia Cloudflare, konfigurację i uprawnienia publikacji.';files='Sprawdź worker.js i .github/workflows/deploy.yml.';}
+              secureOutput.append(document.createElement('br'),document.createTextNode('RX sugeruje: '+recommendation+' '+files));
+            }
             if(job.log_notice)secureOutput.append(document.createElement('br'),document.createTextNode(String(job.log_notice)));
           }
           secureOutput.append(document.createTextNode(' '+String(payload.notice||'')));
