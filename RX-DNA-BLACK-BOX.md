@@ -118,3 +118,8 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `rx-dna-lineage.cjs`: versioned snapshot and strict validated restore of bounded ancestry records.
 - `rx-dna-memory.cjs`: explicit opt-in local file save/load with temp-file rename, 2 MB cap, restrictive file mode; `tests/rx-dna-memory.cjs` in CI.
 - Important: local disk persistence only when caller explicitly invokes save; NOT Cloudflare durable storage, scheduled auto-save, cryptographic integrity, verified approvals, or rollback. Single-writer use only. Next: durable staging backend with authenticated access and concurrency protection.
+
+## RX DNA CLOUD MEMORY 4.0 — adapter
+- `rx-dna-cloud-memory.cjs`: bounded, validated cloud-lineage adapter with required authorization, load/save and optimistic revision checks.
+- `tests/rx-dna-cloud-memory.cjs`: mocked backend tests for access denial, roundtrip and conflict.
+- NOT connected to live Supabase staging or production; no actual durable cloud persistence until an authenticated compare-and-swap backend is configured and tested. No new database tables, credentials or spending. Caller-provided authorization callback must be backed by trusted identity verification.
