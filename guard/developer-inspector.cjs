@@ -45,7 +45,7 @@ function inspectSource({path,source}={}){
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
   {id:'inner-html',severity:'medium',pattern:/\.innerHTML\s*=(?!=|>)/g,message:'Sprawdź, czy HTML nie zawiera niezaufanych danych.'},
   {id:'console-log',severity:'low',pattern:/\bconsole\s*\.\s*log\s*\(/g,message:'Sprawdź, czy logi nie ujawniają danych.'},
-  {id:'document-write',severity:'medium',pattern:/\bdocument\s*\.\s*write\s*\(/g,message:'document.write może wprowadzić niebezpieczny HTML.'},
+  {id:'document-write',severity:'medium',pattern:/\bdocument\s*\.\s*write(?:ln)?\s*\(/g,message:'document.write lub document.writeln może wprowadzić niebezpieczny HTML.'},
   {id:'insecure-http',severity:'medium',pattern:/\bfetch\s*\(\s*['"]http:\/\//g,message:'Żądanie HTTP bez szyfrowania. Sprawdź, czy wymagane jest HTTPS.'},
   {id:'tls-verification-disabled',severity:'high',pattern:/\brejectUnauthorized\s*:\s*false\b/g,message:'Wyłączona weryfikacja certyfikatu TLS. Sprawdź bezpieczeństwo połączenia.'},
   {id:'postmessage-wildcard',severity:'medium',pattern:/\.postMessage\s*\([^;\n]*,\s*['"]\*['"]\s*\)/g,message:'postMessage z odbiorcą * może ujawniać dane innym oknom.'},
