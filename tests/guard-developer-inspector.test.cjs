@@ -151,3 +151,16 @@ const manyLines=inspectSource({path:'src/many-lines.js',source:'x;\n'.repeat(100
 assert.equal(manyLines.lines,10001);
 assert.equal(manyLines.findings[0].line,10001);
 console.log('PASS: RX Developer 2.8 indexed line lookup with CRLF and large files');
+
+const quotedSecurityText=inspectSource({path:'src/quoted-security.js',source:[
+ 'const a = "fetch(\u0027http://example.org\u0027)";',
+ 'const b = "otherWindow.postMessage(payload, \u0027*\u0027)";',
+ 'const c = "api_key = \u0027abcdefghijklmnopqrstuvwxyz123456\u0027";',
+ 'fetch("http://example.org");',
+ 'otherWindow.postMessage(payload, "*");',
+ 'const api_key = "abcdefghijklmnopqrstuvwxyz123456";'
+].join('\n')});
+assert.deepEqual(quotedSecurityText.findings.map(f=>[f.rule,f.line]),[
+ ['hardcoded-secret',6],['insecure-http',4],['postmessage-wildcard',5]
+]);
+console.log('PASS: RX Developer 2.9 quoted security examples do not trigger false positives');
