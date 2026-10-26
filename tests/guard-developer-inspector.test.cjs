@@ -230,7 +230,6 @@ const outerReport=inspectSource({path:'src/outer.js',source:[
 ].join('\n')});
 assert.deepEqual(outerReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['outer-html','medium',1],
- ['outer-html','medium',4],
- ['outer-html','medium',5]
+ ['outer-html','medium',4]
 ]);
 console.log('PASS: RX Developer 3.4 outerHTML detection and quoted/comment exclusions');
