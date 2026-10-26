@@ -52,6 +52,12 @@ try{
   const linkedScan=scan(linkedRoot);
   assert.ok(!linkedScan.files.some(f=>f.path.startsWith('guard/')),'symlinked directories must not be scanned');
  }finally{fs.rmSync(linkedRoot,{recursive:true,force:true});}
+ const huge=path.join(dir,'guard-code-ui.js');
+ fs.writeFileSync(huge,'x'.repeat(400001));
+ const hugeReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
+ assert.equal(hugeReport.error,'too_large');
+ assert.equal(hugeReport.findings,undefined);
+ fs.unlinkSync(huge);
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
