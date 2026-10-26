@@ -13,9 +13,14 @@ function summarize(report){
    severity[finding.severity]++;
    byScope[scope][finding.severity]++;
   }
-  files.push({path:file.path,status:'scanned',signals:file.findings.length});
+  const counts={high:0,medium:0,low:0};
+  for(const finding of file.findings)if(Object.hasOwn(counts,finding.severity))counts[finding.severity]++;
+  files.push({path:file.path,status:'scanned',signals:file.findings.length,severity:counts});
  }
- return {version:1,filesScanned:files.filter(f=>f.status==='scanned').length,filesSkipped:files.filter(f=>f.status!=='scanned').length,signals:report.signals,severity,byScope,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
+ const priorityFiles=files.filter(f=>f.status==='scanned'&&f.signals>0)
+  .sort((a,b)=>b.severity.high-a.severity.high||b.severity.medium-a.severity.medium||b.severity.low-a.severity.low||a.path.localeCompare(b.path))
+  .slice(0,10).map(f=>({path:f.path,signals:f.signals,severity:f.severity}));
+ return {version:1,filesScanned:files.filter(f=>f.status==='scanned').length,filesSkipped:files.filter(f=>f.status!=='scanned').length,signals:report.signals,severity,byScope,priorityFiles,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
 }
 if(require.main===module){
  const summary=summarize(scan());
