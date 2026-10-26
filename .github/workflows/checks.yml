@@ -24,3 +24,4 @@ jobs:
           node tests/rx-ai-builder.cjs
           node tests/rx-verified-dataset.cjs
           node tests/rx-evaluator.cjs
+          node tests/rx-neuron-v2.cjs
