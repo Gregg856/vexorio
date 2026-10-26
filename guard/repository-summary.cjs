@@ -31,6 +31,8 @@ function summarize(report){
  }
  const topRules=[...ruleCounts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).map(([rule,count])=>({rule,count}));
  const priorityRules=[...ruleSeverity.entries()].sort((a,b)=>b[1].high-a[1].high||b[1].medium-a[1].medium||b[1].low-a[1].low||a[0].localeCompare(b[0])).slice(0,10).map(([rule,severity])=>({rule,severity}));
+ const RULE_GUIDANCE={eval:'Zastąp eval jawnym wywołaniem lub bezpiecznym parserem.', 'function-constructor':'Usuń dynamiczne tworzenie funkcji z tekstu.', 'inner-html':'Użyj textContent lub sanitizacji zaufanym narzędziem.', 'console-log':'Usuń logowanie danych wrażliwych z produkcji.', 'hardcoded-secret':'Przenieś sekret do konfiguracji serwera i zmień ujawniony klucz.', 'insecure-http':'Użyj HTTPS, jeśli punkt końcowy go obsługuje.'};
+ const suggestedFixes=priorityRules.filter(item=>Object.hasOwn(RULE_GUIDANCE,item.rule)).slice(0,5).map(item=>({rule:item.rule,action:RULE_GUIDANCE[item.rule]}));
  const priorityFiles=files.filter(f=>f.status==='scanned'&&f.signals>0)
   .sort((a,b)=>b.severity.high-a.severity.high||b.severity.medium-a.severity.medium||b.severity.low-a.severity.low||a.path.localeCompare(b.path))
   .slice(0,10).map(f=>({path:f.path,signals:f.signals,severity:f.severity}));
@@ -61,7 +63,7 @@ function summarize(report){
  if(severity.low>0)recommendations.push({priority:'low',action:'Ogranicz zbędne logowanie i pozostałe ostrzeżenia niskiego ryzyka.'});
  if(skippedByReason.empty_file)recommendations.push({priority:'review',action:'Sprawdź puste pliki źródłowe — mogą oznaczać nieukończony moduł.'});
  if(files.some(f=>f.status!=='scanned'))recommendations.push({priority:'review',action:'Sprawdź pominięte pliki — skanowanie nie objęło całego zakresu.'});
- return {version:1,filesScanned,filesSkipped,filesWithSignals,cleanFiles,cleanPercent,scanStatus,scanComplete,coveragePercent,signals:report.signals,severity,byScope,affectedFiles,reviewFiles,mediumReviewFiles,lowReviewFiles,reviewQueueTotal,reviewQueue,priorityFiles,topRules,priorityRules,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
+ return {version:1,filesScanned,filesSkipped,filesWithSignals,cleanFiles,cleanPercent,scanStatus,scanComplete,coveragePercent,signals:report.signals,severity,byScope,affectedFiles,reviewFiles,mediumReviewFiles,lowReviewFiles,reviewQueueTotal,reviewQueue,priorityFiles,topRules,priorityRules,suggestedFixes,recommendations,skippedByReason,files,disclaimer:'Static heuristic matches; manually review each finding. No automated edits.'};
 }
 if(require.main===module){
  const summary=summarize(scan());
