@@ -704,23 +704,38 @@ document.addEventListener('DOMContentLoaded',()=>{
  const developerAfter=document.createElement('pre');developerAfter.style.whiteSpace='pre-wrap';developerAfter.style.overflowWrap='anywhere';
  const developerCopyPatch=document.createElement('button');developerCopyPatch.type='button';developerCopyPatch.textContent='📋 Kopiuj proponowany kod';developerCopyPatch.disabled=true;
  let developerSuggestedCode='';
+ let developerPreviewSource='';
+ const developerPreviewStatus=document.createElement('p');developerPreviewStatus.className='meta';developerPreviewStatus.setAttribute('aria-live','polite');
+ developerInput.addEventListener('input',()=>{
+  developerSuggestedCode='';developerPreviewSource='';developerCopyPatch.disabled=true;
+  developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
+  developerBefore.textContent='';developerAfter.textContent='';
+  developerPreviewStatus.textContent='Kod zmieniony — przygotuj nowy podgląd.';
+ });
  developerSuggest.addEventListener('click',()=>{
   const original=developerInput.value;
-  developerCopyPatch.disabled=true;developerSuggestedCode='';
-  if(!original.trim()){developerBefore.textContent='Najpierw wklej kod.';developerAfter.textContent='';return;}
+  developerCopyPatch.disabled=true;developerSuggestedCode='';developerPreviewSource='';
+  developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
+  if(!original.trim()){developerBefore.textContent='Najpierw wklej kod.';developerAfter.textContent='';developerPreviewStatus.textContent='';return;}
   const updated=original.replace(/\bconsole\.log\s*\(/g,'console.debug(');
   developerBefore.textContent='PRZED:\n'+original;
-  if(updated===original){developerAfter.textContent='Brak obsługiwanych automatycznych propozycji. RX nie zmienia kodu.';return;}
-  developerSuggestedCode=updated;
+  if(updated===original){developerAfter.textContent='Brak obsługiwanych propozycji. RX nie zmienia kodu.';developerPreviewStatus.textContent='';return;}
+  developerSuggestedCode=updated;developerPreviewSource=original;
   developerAfter.textContent='PO (propozycja, nie zastosowano):\n'+updated;
+  developerPreviewStatus.textContent='Uwaga: console.debug nadal loguje dane. To podgląd zamiany, nie usunięcie ryzyka.';
   developerCopyPatch.disabled=false;
  });
  developerCopyPatch.addEventListener('click',async()=>{
-  if(!developerSuggestedCode)return;
-  try{await navigator.clipboard.writeText(developerSuggestedCode);developerCopyPatch.textContent='✓ Skopiowano';}
-  catch(_){const field=document.createElement('textarea');field.value=developerSuggestedCode;field.readOnly=true;field.style.width='100%';developerPreview.append(field);field.select();}
+  if(!developerSuggestedCode||developerInput.value!==developerPreviewSource){developerCopyPatch.disabled=true;developerPreviewStatus.textContent='Kod zmieniony — przygotuj nowy podgląd.';return;}
+  try{
+   if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+   await navigator.clipboard.writeText(developerSuggestedCode);developerCopyPatch.textContent='✓ Skopiowano';
+  }catch(_){
+   const field=document.createElement('textarea');field.value=developerSuggestedCode;field.readOnly=true;field.style.width='100%';developerPreview.append(field);field.select();
+   developerPreviewStatus.textContent='Zaznaczony kod — skopiuj ręcznie.';
+  }
  });
- developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerCopyPatch);
+ developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerPreviewStatus,developerCopyPatch);
  developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy,developerPreview);
  views.set('developer',developerView);pane.append(developerView);
  const developerNav=document.createElement('button');developerNav.type='button';developerNav.textContent='💻 RX Developer';developerNav.addEventListener('click',()=>activate('developer'));side.append(developerNav);buttons.set('developer',developerNav);
