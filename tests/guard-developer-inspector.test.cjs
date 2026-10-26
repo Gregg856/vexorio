@@ -79,3 +79,17 @@ assert.deepEqual(inlineComment.findings.map(f=>[f.rule,f.line]),[['console-log',
 const urlLiteral=inspectSource({path:'src/url-literal.js',source:'const url="https://example.org/path";\nfetch("http://example.org");'});
 assert.deepEqual(urlLiteral.findings.map(f=>[f.rule,f.line]),[['insecure-http',2]]);
 console.log('PASS: RX Developer 2.2 quoted strings and inline comments');
+
+const severityReport=inspectSource({path:'src/report.js',source:[
+ 'const a=eval(input);',
+ 'el.innerHTML = html;',
+ 'console.log(value);',
+ 'const api_key = "abcdefghijklmnopqrstuvwxyz123456";'
+].join('\n')});
+assert.deepEqual(severityReport.findings.map(({rule,severity,line})=>[rule,severity,line]),[
+ ['eval','high',1],['inner-html','medium',2],['console-log','low',3],['hardcoded-secret','high',4]
+]);
+assert.ok(severityReport.findings.every(f=>typeof f.message==='string'&&f.message.length>0));
+assert.ok(severityReport.findings.every(f=>!('source' in f)&&!('match' in f)));
+assert.ok(!JSON.stringify(severityReport).includes('abcdefghijklmnopqrstuvwxyz123456'));
+console.log('PASS: RX Developer 2.3 safe severity, line and secret-free reports');
