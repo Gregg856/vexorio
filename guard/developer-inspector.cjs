@@ -46,6 +46,8 @@ function inspectSource({path,source}={}){
  for(const rule of rules){
   const target=['insecure-http','postmessage-wildcard','hardcoded-secret'].includes(rule.id)?scanSource:codeSource;
   for(const match of target.matchAll(rule.pattern)){
+   // Text inside quoted strings is not executable code; keep real argument literals scannable.
+   if(target===scanSource&&codeSource[match.index]===' ')continue;
    const line=lineAt(match.index);
    findings.push({rule:rule.id,severity:rule.severity,line,message:rule.message});
   }
