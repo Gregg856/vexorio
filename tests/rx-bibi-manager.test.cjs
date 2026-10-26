@@ -200,4 +200,9 @@ assert.ok(bibi.includes('Timer z kodem jako tekst jest ryzykowny'),'RX Developer
 assert.ok(bibi.includes('Połączenie HTTP bez szyfrowania'),'RX Developer 1.6 should warn on HTTP');
 assert.ok(bibi.includes('Logowanie może ujawniać dane również w trybie debug/info'),'RX Developer 1.6 should warn on debug/info logs');
 console.log('PASS: RX Developer 1.6 security rules');
+assert.ok(bibi.includes('Możliwy zapis sekretu w localStorage'),'RX Developer 1.7 must flag localStorage secrets');
+assert.ok(bibi.includes('Sprawdź otwieranie nowych okien'),'RX Developer 1.7 must flag popup safety');
+assert.ok(bibi.includes('postMessage() z targetOrigin *'),'RX Developer 1.7 must flag wildcard messaging');
+assert.ok(bibi.includes('Sprawdź przekierowanie i walidację adresu'),'RX Developer 1.7 must flag redirects');
+console.log('PASS: RX Developer 1.7 security patterns');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
