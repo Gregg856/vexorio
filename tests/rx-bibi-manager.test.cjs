@@ -289,7 +289,10 @@ const lexCases=[
  ['real executable call',"eval('1+1')",'eval',true],
  ['template expression',"const value = \x60safe \${eval('1')}\x60;",'eval',true],
  ['template plain text',"const value = \x60eval(1)\x60;",'eval',false],
- ['regex text',"const re = /eval\\(1\\)/;",'eval',false]
+ ['regex text',"const re = /eval\\(1\\)/;",'eval',false],
+ ['nested template interpolation',"const v = \x60outer \${\x60inner \${eval('1')}\x60}\x60;",'eval',true],
+ ['nested braces in interpolation',"const v = \x60value \${({a:eval('1')}).a}\x60;",'eval',true],
+ ['comment inside interpolation',"const v = \x60value \${/* eval('fake') */ 42}\x60;",'eval',false]
 ];
 for(const [label,input,needle,expected] of lexCases){
  const output=maskSnippet(input);
