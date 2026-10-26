@@ -7,7 +7,7 @@ class RXMillionHearts {
       if(!Number.isSafeInteger(value)||value<1)throw new RangeError(key+' must be a positive integer');
     }
     this.maxConcurrent=maxConcurrent;this.maxQueue=maxQueue;this.memoryLimit=memoryLimit;this.logicalHeads=logicalHeads;
-    this.handlers=new Map();this.queue=[];this.active=0;this.memory=[];
+    this.handlers=new Map();this.queue=[];this.active=0;this.memory=[];this.failurePatterns=new Map();
     this.stats={accepted:0,completed:0,failed:0,rejected:0};
   }
   register(name,handler){
@@ -42,13 +42,28 @@ class RXMillionHearts {
         .finally(()=>{this.active--;this._drain();});
     }
   }
+  // Aggregate only bounded, sanitized error categories; never store raw payloads or secrets.
+  rememberFailure(cell,code){
+    if(!this.handlers.has(cell))throw new Error('Unknown cell: '+cell);
+    if(typeof code!=='string'||!/^[a-z0-9_-]{1,48}$/i.test(code))throw new TypeError('Invalid failure code');
+    const key=cell+':'+code;
+    const previous=this.failurePatterns.get(key)||{cell,code,count:0};
+    this.failurePatterns.delete(key);
+    this.failurePatterns.set(key,{cell,code,count:previous.count+1});
+    while(this.failurePatterns.size>this.memoryLimit)this.failurePatterns.delete(this.failurePatterns.keys().next().value);
+    return this.failurePatterns.get(key).count;
+  }
+  recurringFailures(minCount=2){
+    if(!Number.isSafeInteger(minCount)||minCount<1)throw new RangeError('Invalid minimum count');
+    return [...this.failurePatterns.values()].filter(x=>x.count>=minCount).map(x=>({...x}));
+  }
   _remember(cell,status){
     this.memory.push({cell,status,time:new Date().toISOString()});
     if(this.memory.length>this.memoryLimit)this.memory.shift();
   }
   snapshot(){
     return {registeredCells:this.handlers.size,logicalHeads:this.logicalHeads,active:this.active,queued:this.queue.length,
-      stats:{...this.stats},recent:this.memory.slice(-10)};
+      stats:{...this.stats},recurringFailures:this.recurringFailures(),recent:this.memory.slice(-10)};
   }
 }
 function createRXHearts(){
