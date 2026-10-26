@@ -314,3 +314,19 @@ for(const [label,input,expected] of [
  assert.equal(sinks.some(re=>re.test(maskedInput)),expected,'RX HTML sink: '+label);
 }
 console.log('PASS: RX Developer HTML injection sink regression');
+
+assert.ok(bibi.includes("Sprawdź zapis document.cookie."),'RX Developer cookie write warning exists');
+assert.ok(bibi.includes("Sprawdź walidację origin wiadomości postMessage."),'RX Developer message origin warning exists');
+for(const [label,input,expected] of [
+ ['cookie assignment',"document.cookie = 'session=abc';",true],
+ ['message listener',"window.addEventListener('message', event => {});",true],
+ ['comment with cookie',"// document.cookie = 'session=abc';",false],
+ ['string with message listener',"const x = \"window.addEventListener('message')\";",false]
+]){
+ const maskedInput=maskSnippet(input);
+ const codeOnlyCookie=/\b(?:document|window)\.cookie\s*=/g;
+ const codeOnlyMessage=/\b(?:window\.)?addEventListener\s*\(\s*['"]message['"]/g;
+ const detected=codeOnlyCookie.test(maskedInput)||codeOnlyMessage.test(input)&&maskedInput.includes('addEventListener');
+ assert.equal(detected,expected,'RX cookie/message smoke test: '+label);
+}
+console.log('PASS: RX Developer cookie and message listener regression');
