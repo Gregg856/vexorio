@@ -24,5 +24,10 @@ const prioritized=summarize({signals:4,files:[
 ]});
 assert.deepEqual(prioritized.priorityFiles.map(f=>f.path),['critical.js','medium.js','low.js']);
 assert.equal(JSON.stringify(prioritized).includes('source'),false);
+assert.deepEqual(s.recommendations.map(r=>r.priority),['high','medium','low','review']);
+assert.deepEqual(prioritized.recommendations.map(r=>r.priority),['high','medium','low']);
+assert.deepEqual(summarize({signals:0,files:[{path:'ok.js',findings:[]}]}).recommendations,[]);
+assert.equal(JSON.stringify(s.recommendations).includes('source'),false);
+console.log('PASS: RX Developer 5.1 prioritized remediation guidance');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
