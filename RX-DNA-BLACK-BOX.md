@@ -49,3 +49,11 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Verified synthetic `RX-000001` revision 1 → 2 and one audit row; stale revision 1 was rejected.
 - Verified no `EXECUTE` for `anon`/`authenticated`, no anonymous audit table access.
 - **Not yet connected to Queen/browser/Worker**. Requires server-only authenticated gateway and backup/restore tests before automatic ant persistence.
+
+## RX DNA CLOUD 1.1 — server adapter milestone
+- Added `rx-dna-store-server.cjs`: dependency-injected server-only store requiring a trusted `authorize(context)` callback for every load/save.
+- Validates ant ID, bounded verified-fix references, snapshot shape and optimistic revisions.
+- Added `tests/rx-dna-store.cjs` with mocked persistence: authorization denial, round-trip, stale revision conflict and malformed payload rejection.
+- CI `rx-bibi-browser.yml` now runs the server adapter tests.
+- **Security boundary:** an authorization callback is not itself an identity provider. Do not pass client-controlled booleans as proof of Queen privileges. The test-only `{queen:true}` fixture is NOT production authorization.
+- **Integration pending:** actual trusted server identity verification, staging DB connector and Queen UI. No claim of live cloud synchronization yet.
