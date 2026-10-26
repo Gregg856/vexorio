@@ -623,9 +623,29 @@ document.addEventListener('DOMContentLoaded',()=>{
  form.append(input,send);form.addEventListener('submit',event=>{
   event.preventDefault();const message=input.value.trim();if(!message)return;input.value='';bubble(message,true);
   const value=message.toLocaleLowerCase('pl');
-  const target=/test/.test(value)?'tester':/histori|publikacj|raport/.test(value)?'historia':/straż|monitor|stan strony/.test(value)?'strażak':/ustaw|silnik|konto/.test(value)?'ustawienia':/błęd|awari|diagno|alarm/.test(value)?'diagnostyka':null;
-  if(target){bubble('Otwieram kategorię: '+buttons.get(target).textContent+'.');activate(target);}
-  else bubble('Nie rozpoznaję polecenia. Dostępne: Strażak, Tester, Diagnostyka, Historia, Ustawienia.');
+  const snapshot=id=>String(document.getElementById(id)?.textContent||'').replace(/\\s+/g,' ').trim().slice(0,350);
+  const explain=(answer,key)=>{
+   bubble(answer);
+   if(key){const action=document.createElement('button');action.type='button';action.textContent='Otwórz: '+buttons.get(key).textContent;action.addEventListener('click',()=>activate(key));log.append(action);}
+   log.scrollTop=log.scrollHeight;
+  };
+  if(/^(cześć|czesc|hej|witaj|halo|dzień dobry|dzien dobry|siema)[!. ]*$/.test(value)){
+   explain('Cześć! Jestem RX Strażak — asystentem do odczytu stanu VEXORIO i nawigacji. Mogę pokazać ostatnie błędy, status strony, testy i publikacje. Co sprawdzamy?');
+  }else if(/(co|czy|jak).*(działa|dziala|stan|status|stron)|stan strony|monitor|straż|straz/.test(value)){
+   explain('Aktualny odczyt panelu: '+(snapshot('availability')||'Brak wyniku kontroli dostępności.')+' '+(snapshot('strażakStatus')||'Brak danych Strażaka.')+' Dane mogą być opóźnione; odśwież monitoring, aby je zweryfikować.','strażak');
+  }else if(/błęd|bled|awari|diagno|alarm|nie działa|nie dziala|problem/.test(value)){
+   explain('Ostatni raport diagnostyczny: '+(snapshot('rxPriority')||'Brak pobranego raportu błędów.')+' Nie wprowadzam poprawek automatycznie.','diagnostyka');
+  }else if(/test|sprawdź|sprawdz/.test(value)){
+   explain('Testy RX możesz uruchomić w module Tester. Uruchomienie wymaga uprawnień administratora; sam czat nie wysyła żądania testowego.','tester');
+  }else if(/histori|publikacj|wdroż|wdroz|commit|raport/.test(value)){
+   explain('Ostatnia publikacja: '+(snapshot('latest')||'Brak aktualnego wyniku publikacji.')+' '+(snapshot('lastSuccess')||'') ,'historia');
+  }else if(/ustaw|silnik|konto|moduł|modul/.test(value)){
+   explain('W Ustawieniach znajdziesz listę modułów RX. Nie zmieniam kont ani konfiguracji bez osobnego zatwierdzenia.','ustawienia');
+  }else if(/pomoc|co potrafisz|co możesz|co mozesz/.test(value)){
+   explain('Potrafię odczytać bieżące komunikaty z panelu RX, wskazać błędy i ostatnie publikacje oraz otwierać moduły. Nie jestem jeszcze podłączony do modelu językowego i nie wykonuję samodzielnych napraw.');
+  }else{
+   explain('Rozumiem, że pytasz: „'+message.slice(0,90)+'”. Nie mam jeszcze modelu AI do swobodnej rozmowy. Spróbuj: „co nie działa?”, „stan strony”, „ostatnia publikacja”, „uruchom test” lub „pomoc”.');
+  }
  });
  chat.append(title,notice,shortcuts,log,form);
  function activate(key){for(const [name,view] of views)view.hidden=name!==key;for(const [name,button] of buttons)button.setAttribute('aria-current',name===key?'page':'false');if(window.innerWidth<=700){side.hidden=true;menu.setAttribute('aria-expanded','false');}window.scrollTo({top:0,behavior:'auto'});}
