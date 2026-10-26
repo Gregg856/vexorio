@@ -19,7 +19,9 @@ async function executeRXCommand(rx,command,{signal}={}){
     if(signal?.aborted)throw signal.reason||new Error('Aborted');
     try{
       const value=await rx.dispatch(step.cell,{command:normalized},{signal,priority:step.priority});
-      results.push({cell:step.cell,ok:true,status:value?.status||'completed'});
+      const status=value?.status||'completed';
+      const ok=status==='completed'||status==='checked'||status==='success'||status==='ok';
+      results.push({cell:step.cell,ok,status});
     }catch(error){
       results.push({cell:step.cell,ok:false,status:'failed'});
     }
