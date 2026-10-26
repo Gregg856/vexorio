@@ -222,6 +222,10 @@ assert.ok(bibi.includes('x.rule===filter.value'),'RX Developer 8.1 must filter g
 console.log('PASS: RX Developer 8.1 rule filter regression');
 assert.ok(bibi.includes('id="rxGuidanceSearch"'),'RX Developer 8.3 search field must exist');
 assert.ok(bibi.includes('search.oninput=render'),'RX Developer 8.3 must update results while typing');
-assert.ok(bibi.includes("String(x.path||'').toLocaleLowerCase('pl').includes(query)"),'RX Developer 8.3 must search file paths');
+assert.ok(bibi.includes("x.path.toLocaleLowerCase('pl').includes(query)"),'RX Developer 8.3 must search file paths');
 console.log('PASS: RX Developer 8.3 live diagnostic search regression');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
+
+assert.ok(bibi.includes("document.createElement('details')"),'RX Developer 8.5 must group findings in expandable cards');
+assert.ok(bibi.includes('groups.get(item.path).push(item)'),'RX Developer 8.5 must group findings by file');
+console.log('PASS: RX Developer 8.5 expandable per-file diagnostics');
