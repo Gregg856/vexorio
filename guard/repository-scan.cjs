@@ -36,12 +36,22 @@ function checkHtmlReferences(root,source){
  const findings=[];
  for(const match of source.matchAll(/<script\b[^>]*\bsrc=["'](\/[-\w./]+(?:\?[^"']*)?)["'][^>]*>/gi)){
   const name=match[1].split('?')[0].slice(1);
-  if(name.includes('..'))continue;
+  if(name.split('/').some(segment=>segment==='..'||segment==='.'||!segment))continue;
   const sourcePath=GENERATED_ASSETS[name]||name;
   let safeAsset=false;
   try{
-   const asset=fs.lstatSync(path.join(root,sourcePath));
-   safeAsset=asset.isFile()&&!asset.isSymbolicLink();
+   const parts=sourcePath.split('/');
+   let current=root;
+   let safeParents=true;
+   for(const part of parts.slice(0,-1)){
+    current=path.join(current,part);
+    const parent=fs.lstatSync(current);
+    if(!parent.isDirectory()||parent.isSymbolicLink()){safeParents=false;break;}
+   }
+   if(safeParents){
+    const asset=fs.lstatSync(path.join(root,sourcePath));
+    safeAsset=asset.isFile()&&!asset.isSymbolicLink();
+   }
   }catch(error){safeAsset=false;}
   if(!safeAsset){
    findings.push({rule:'missing-script',severity:'high',line:source.slice(0,match.index).split('\n').length,message:'Brak lokalnego pliku skryptu: '+name});
