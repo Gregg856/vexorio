@@ -11,7 +11,7 @@ function reviewModelCandidate(rx,{evaluation,goal='classification',minExamples=1
  let metrics=null;
  if(evaluation){
   metrics=evaluateModel({...evaluation,minExamples,minImprovement});
-  if(!metrics.passed)blockers.push('Independent evaluation did not pass');
+  if(!metrics.passed||metrics.candidateAccuracy<=metrics.baselineAccuracy)blockers.push('Independent evaluation did not demonstrate improvement');
  }else blockers.push('Independent evaluation not provided');
  // A candidate dataset is never silently reused as a held-out evaluation set.
  return Object.freeze({
