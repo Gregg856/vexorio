@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const pluginNav=document.createElement('button');pluginNav.type='button';pluginNav.textContent='🧩 RX Plugins';pluginNav.addEventListener('click',()=>activate('plugins'));side.append(pluginNav);buttons.set('plugins',pluginNav);
  const rxTasksKey='rx-bibi-tasks-v1';
  const rxTasks=[];
- try{const saved=JSON.parse(localStorage.getItem(rxTasksKey)||'[]');if(Array.isArray(saved))for(const t of saved.slice(0,50)){if(t&&typeof t.title==='string'&&typeof t.module==='string'&&['oczekuje','zakończone'].includes(t.status))rxTasks.push({id:String(t.id).slice(0,50),title:t.title.slice(0,180),module:t.module.slice(0,40),status:t.status,lastResult:typeof t.lastResult==='string'?t.lastResult.slice(0,300):''});}}catch(_){}
+ try{const saved=JSON.parse(localStorage.getItem(rxTasksKey)||'[]');if(Array.isArray(saved))for(const t of saved.slice(0,50)){if(t&&typeof t.title==='string'&&typeof t.module==='string'&&['oczekuje','zakończone'].includes(t.status))rxTasks.push({id:String(t.id).slice(0,50),title:t.title.slice(0,180),module:t.module.slice(0,40),status:t.status,lastResult:typeof t.lastResult==='string'?t.lastResult.slice(0,300):'',lastCheckedAt:typeof t.lastCheckedAt==='string'?t.lastCheckedAt:''});}}catch(_){}
  const taskView=document.createElement('section');taskView.className='rx-task-board';
  const taskTitle=document.createElement('h2');taskTitle.textContent='📋 RX Zadania — nasza kolejka';
  const taskInfo=document.createElement('p');taskInfo.className='meta';taskInfo.textContent='Zadania zapisują się lokalnie w tej przeglądarce. Dodanie zadania nie uruchamia automatycznie narzędzi ani nie zmienia kodu.';
@@ -684,16 +684,24 @@ document.addEventListener('DOMContentLoaded',()=>{
   'rx-tester':async()=>{const response=await fetch('/api/rx/health',{method:'GET',cache:'no-store',credentials:'same-origin'});if(!response.ok)throw Error('HTTP '+response.status);return 'Test odczytu /api/rx/health: OK (HTTP '+response.status+')';}
  });
 
+ const addRxTask=(title,module)=>{
+  const normalized=title.trim().replace(/\\s+/g,' ').toLocaleLowerCase('pl');
+  const existing=rxTasks.find(t=>t.status==='oczekuje'&&t.module===module&&t.title.trim().replace(/\\s+/g,' ').toLocaleLowerCase('pl')===normalized);
+  if(existing)return {added:false,task:existing};
+  const task={id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),title,module,status:'oczekuje'};
+  rxTasks.unshift(task);if(rxTasks.length>50)rxTasks.length=50;
+  persistTasks();renderTasks();return {added:true,task};
+ };
  const persistTasks=()=>{try{localStorage.setItem(rxTasksKey,JSON.stringify(rxTasks.slice(0,50)));}catch(_){}};
  const renderTasks=()=>{taskList.replaceChildren();if(!rxTasks.length){const p=document.createElement('p');p.textContent='Brak zadań.';taskList.append(p);return;}for(const t of rxTasks){const card=document.createElement('div');card.className='card';card.style.margin='10px 0';card.style.padding='12px';const desc=document.createElement('p');desc.textContent=t.title+' · '+t.module+' · '+t.status;card.append(desc);const toggle=document.createElement('button');toggle.type='button';toggle.textContent=t.status==='oczekuje'?'Oznacz jako zakończone':'Przywróć';toggle.addEventListener('click',()=>{t.status=t.status==='oczekuje'?'zakończone':'oczekuje';persistTasks();renderTasks();});const remove=document.createElement('button');remove.type='button';remove.textContent='Usuń';remove.style.marginLeft='8px';remove.addEventListener('click',()=>{const index=rxTasks.indexOf(t);if(index>=0)rxTasks.splice(index,1);persistTasks();renderTasks();});card.append(toggle,remove);
   if(t.status==='oczekuje'&&rxTaskExecutors[t.module]){
    const run=document.createElement('button');run.type='button';run.textContent='Wykonaj bezpieczny odczyt';run.style.marginLeft='8px';
-   run.addEventListener('click',async()=>{run.disabled=true;run.textContent='Sprawdzam…';try{const result=await rxTaskExecutors[t.module]();t.lastResult=result;persistTasks();renderTasks();}catch(error){t.lastResult='Błąd: '+String(error.message).slice(0,180);persistTasks();renderTasks();}});
+   run.addEventListener('click',async()=>{run.disabled=true;run.textContent='Sprawdzam…';try{const result=await rxTaskExecutors[t.module]();t.lastResult=result;t.lastCheckedAt=new Date().toISOString();persistTasks();renderTasks();}catch(error){t.lastResult='Błąd: '+String(error.message).slice(0,180);t.lastCheckedAt=new Date().toISOString();persistTasks();renderTasks();}});
    card.append(run);
   }
-  if(t.lastResult){const result=document.createElement('p');result.className='meta';result.textContent=t.lastResult;card.append(result);}
+  if(t.lastResult){const result=document.createElement('p');result.className='meta';result.textContent=(t.lastResult.startsWith('Błąd:')?'❌ ':'✅ ')+t.lastResult+(t.lastCheckedAt?' · '+new Date(t.lastCheckedAt).toLocaleString('pl-PL'):'');card.append(result);}
   taskList.append(card);}};
- taskForm.addEventListener('submit',event=>{event.preventDefault();const title=taskInput.value.trim();if(!title)return;rxTasks.unshift({id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),title,module:taskSelect.value,status:'oczekuje'});if(rxTasks.length>50)rxTasks.length=50;taskInput.value='';persistTasks();renderTasks();});
+ taskForm.addEventListener('submit',event=>{event.preventDefault();const title=taskInput.value.trim();if(!title)return;const outcome=addRxTask(title,taskSelect.value);taskInput.value='';if(!outcome.added)alert('To zadanie już oczekuje w kolejce RX.');});
  taskView.append(taskTitle,taskInfo,taskForm,taskList);renderTasks();views.set('zadania',taskView);pane.append(taskView);
  const taskNav=document.createElement('button');taskNav.type='button';taskNav.textContent='📋 RX Zadania';taskNav.addEventListener('click',()=>activate('zadania'));side.append(taskNav);buttons.set('zadania',taskNav);
  const fallback=views.get('ustawienia');
@@ -728,10 +736,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    const title=taskMatch[1].trim().slice(0,180);
    if(!title){explain('Podaj treść zadania, np. „Dodaj zadanie: sprawdź VEXORIO”.');return;}
    const module=/film|wideo|montaż|montaz|tiktok|youtube/.test(value)?'rx-studio':/grafik|obraz|miniatur|plakat/.test(value)?'rx-grafika':/muzyk|piosen|dźwięk|dzwiek/.test(value)?'rx-muzyka':/kod|napraw|program|develop/.test(value)?'rx-developer':/test|sprawdź|sprawdz/.test(value)?'rx-tester':'rx-strazak';
-   rxTasks.unshift({id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),title,module,status:'oczekuje'});
-   if(rxTasks.length>50)rxTasks.length=50;
-   persistTasks();renderTasks();
-   explain('Dodałem zadanie „'+title+'” do kolejki '+module+'. To zapis planu, nie automatyczne wykonanie.','zadania');
+   const outcome=addRxTask(title,module);
+   explain(outcome.added?'Dodałem zadanie „'+title+'” do kolejki '+module+'. To zapis planu, nie automatyczne wykonanie.':'Zadanie „'+title+'” już oczekuje w kolejce '+module+'. Nie dodałem duplikatu.','zadania');
   }else if(/^(pokaż|pokaz|otwórz|otworz)\s+(moje\s+)?zadania|lista zadań|lista zadan/.test(value)){
    const pending=rxTasks.filter(t=>t.status==='oczekuje').length;
    explain('Masz '+pending+' oczekujących zadań. Otwieram listę.','zadania');
