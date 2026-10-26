@@ -55,7 +55,7 @@ function maskJavaScript(source) {
 }
 
 const RULES=Object.freeze([
- {id:'RX001',severity:'high',pattern:/\beval\s*\(/g,message:'eval() wykonuje dynamiczny kod.',advice:'Zastąp eval() bezpieczną funkcją lub parserem.'},
+ {id:'RX001',severity:'high',pattern:/(?<![\w$.])eval\s*\(/g,message:'eval() wykonuje dynamiczny kod.',advice:'Zastąp eval() bezpieczną funkcją lub parserem.'},
  {id:'RX002',severity:'medium',pattern:/\binnerHTML\s*=/g,message:'Przypisanie innerHTML wymaga kontroli danych.',advice:'Dla tekstu użyj textContent; HTML poddaj sanitizacji.'},
  {id:'RX003',severity:'medium',pattern:/\bouterHTML\s*=/g,message:'Przypisanie outerHTML wymaga kontroli danych.',advice:'Nie wstawiaj niezaufanego HTML.'},
  {id:'RX004',severity:'medium',pattern:/\binsertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML() może wstrzyknąć HTML.',advice:'Waliduj i sanitizuj dane wejściowe.'},
@@ -92,7 +92,7 @@ function analyzeJavaScript(source){
  }
  const rank={high:0,medium:1,low:2};
  findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
- return {engine:'RX Developer Core',version:'0.3.1',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
+ return {engine:'RX Developer Core',version:'0.3.2',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
 }
 module.exports={maskJavaScript,analyzeJavaScript};
 
