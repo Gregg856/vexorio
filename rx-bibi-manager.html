@@ -613,6 +613,25 @@ document.addEventListener('DOMContentLoaded',()=>{
   {id:'rx-muzyka',name:'RX Muzyka',category:'Media',state:'planowany',description:'Teksty, dźwięk i muzyka'},
   {id:'rx-bibi-ai',name:'RX BIBI AI',category:'Asystent',state:'planowany',description:'Swobodna rozmowa po podłączeniu modelu'}
  ]);
+ const rxPluginRuntime=(()=>{
+  const registry=new Map();
+  return Object.freeze({
+   register(plugin){
+    if(!plugin||typeof plugin.id!=='string'||!/^rx-[a-z-]+$/.test(plugin.id)||registry.has(plugin.id)||typeof plugin.run!=='function')throw Error('Nieprawidłowa lub powtórzona wtyczka RX');
+    registry.set(plugin.id,Object.freeze({id:plugin.id,run:plugin.run}));
+   },
+   list(){return Array.from(registry.keys());},
+   async run(id,context={}){
+    const plugin=registry.get(id);if(!plugin)throw Error('Nieznana wtyczka RX');
+    return plugin.run(Object.freeze({...context}));
+   }
+  });
+ })();
+ for(const item of rxPluginCatalog){
+  if(!item.view)continue;
+  rxPluginRuntime.register({id:item.id,run:()=>({ok:true,view:item.view,description:item.description})});
+ }
+ window.RXPluginRuntime=rxPluginRuntime;
  const pluginView=document.createElement('section');pluginView.className='rx-plugin-catalog';
  const pluginTitle=document.createElement('h2');pluginTitle.textContent='🧩 RX Plugins — nasze moduły';
  const pluginNote=document.createElement('p');pluginNote.className='meta';pluginNote.textContent='Katalog własnych modułów RX. „Planowany” oznacza, że funkcja nie jest jeszcze uruchomiona. Zewnętrzne integracje pozostają pomocnicze.';
@@ -622,7 +641,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const heading=document.createElement('strong');heading.textContent=item.name+' — '+item.state;
   const description=document.createElement('p');description.textContent=item.category+' · '+item.description;
   card.append(heading,description);
-  if(item.view){const open=document.createElement('button');open.type='button';open.textContent='Otwórz moduł';open.addEventListener('click',()=>activate(item.view));card.append(open);}
+  if(item.view){const open=document.createElement('button');open.type='button';open.textContent='Otwórz moduł';open.addEventListener('click',async()=>{try{const result=await rxPluginRuntime.run(item.id);if(result.ok&&views.has(result.view))activate(result.view);}catch(error){alert('RX Plugins: '+error.message);}});card.append(open);}
   pluginView.append(card);
  }
  views.set('plugins',pluginView);pane.append(pluginView);
