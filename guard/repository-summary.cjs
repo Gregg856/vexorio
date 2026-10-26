@@ -39,7 +39,7 @@ function summarize(report){
  const filesWithSignals=files.filter(f=>f.status==='scanned'&&f.signals>0).length;
  const cleanFiles=files.filter(f=>f.status==='scanned'&&f.signals===0).length;
  const cleanPercent=filesWithSignals+cleanFiles?Math.round(cleanFiles/(filesWithSignals+cleanFiles)*100):0;
- const scanStatus=filesWithSignals>0?'review_required':cleanFiles>0?'no_signals':'no_files_scanned';
+ const scanStatus=filesWithSignals>0?'review_required':files.some(f=>f.status!=='scanned')?'incomplete':cleanFiles>0?'no_signals':'no_files_scanned';
  const filesScanned=files.filter(f=>f.status==='scanned').length;
  const filesSkipped=files.length-filesScanned;
  const coveragePercent=files.length?Math.round(filesScanned/files.length*100):0;
