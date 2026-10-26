@@ -52,7 +52,10 @@ export default {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
       if(request.method!=='GET')return reply(405,'Dozwolone tylko GET.');
-      if(request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      const origin=request.headers.get('Origin');
+      if(origin&&origin!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      const fetchSite=request.headers.get('Sec-Fetch-Site');
+      if(fetchSite&&fetchSite!=='same-origin'&&fetchSite!=='none')return reply(403,'Żądanie spoza witryny.');
       const runId=url.searchParams.get('run_id');
       if(!/^[1-9][0-9]{0,15}$/.test(runId||''))return reply(400,'Nieprawidłowy identyfikator testu.');
       if(!env.RX_GITHUB_DISPATCH_TOKEN||!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Diagnostyka nie jest skonfigurowana.');
