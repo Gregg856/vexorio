@@ -681,6 +681,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    {re:/\beval\s*\(/g,label:'eval() może uruchamiać niebezpieczny kod.',fix:'Zastąp eval() bezpiecznym parserem lub jawnie wywoływaną funkcją.'},
    {re:/\binnerHTML\s*=/g,label:'Sprawdź przypisanie do innerHTML.',fix:'Dla zwykłego tekstu użyj textContent; HTML z zewnątrz wymaga sanitizacji.'},
    {re:/\bouterHTML\s*=/g,label:'Sprawdź przypisanie do outerHTML.',fix:'Unikaj wstawiania niesprawdzonego HTML; dla tekstu użyj textContent.'},
+   {re:/\b(?:document|window)\.cookie\s*=/g,label:'Sprawdź zapis document.cookie.',fix:'Dla sesji preferuj ciasteczka HttpOnly, Secure i SameSite ustawiane po stronie serwera.'},
+   {re:/\b(?:window\.)?addEventListener\s*\(\s*['\"]message['\"]/g,label:'Sprawdź walidację origin wiadomości postMessage.',fix:'Przed użyciem event.data sprawdź event.origin oraz oczekiwany format danych.'},
    {re:/\binsertAdjacentHTML\s*\(/g,label:'Sprawdź insertAdjacentHTML() pod kątem wstrzyknięcia HTML.',fix:'Nie przekazuj niezaufanego HTML bez sanitizacji; dla tekstu użyj bezpiecznych metod DOM.'},
    {re:/(?:api[_-]?key|secret|token|password)\s*[:=]\s*['"][^'"]{8,}['"]/gi,label:'Możliwy sekret zapisany w kodzie.',fix:'Usuń sekret z kodu i przechowuj go po stronie serwera; w razie ujawnienia zmień klucz.'},
    {re:/console\.log\s*\(/g,label:'console.log() może ujawniać dane.',fix:'Usuń logowanie danych wrażliwych przed publikacją.'},
