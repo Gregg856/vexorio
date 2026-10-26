@@ -26,7 +26,18 @@ function createDNALineage({maxVersions=1000,maxDepth=100}={}){
   while(cursor){chain.push({...cursor});cursor=cursor.parentId?versions.get(cursor.parentId):null;}
   return chain.reverse();
  }
+ function snapshot(){return {schema:1,versions:[...versions.values()].map(v=>({...v}))};}
  function get(id){const v=versions.get(id);return v?{...v}:null;}
- return Object.freeze({register,lineage,get,count:()=>versions.size});
+ return Object.freeze({register,lineage,get,snapshot,count:()=>versions.size});
 }
-module.exports={createDNALineage};
+function restoreDNALineage(snapshot,limits={}){
+ if(!snapshot||snapshot.schema!==1||!Array.isArray(snapshot.versions)||snapshot.versions.length>100000)throw Error('Invalid DNA snapshot');
+ const store=createDNALineage(limits);
+ for(const v of snapshot.versions){
+  if(!v||Object.keys(v).sort().join(',')!=='approved,depth,id,notes,parentId,testsPassed')throw Error('Invalid DNA record');
+  const restored=store.register({id:v.id,parentId:v.parentId,approved:v.approved,testsPassed:v.testsPassed,notes:v.notes});
+  if(restored.depth!==v.depth)throw Error('Invalid DNA depth');
+ }
+ return store;
+}
+module.exports={createDNALineage,restoreDNALineage};
