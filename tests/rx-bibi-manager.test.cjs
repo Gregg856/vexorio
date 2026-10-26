@@ -205,4 +205,9 @@ assert.ok(bibi.includes('Sprawdź otwieranie nowych okien'),'RX Developer 1.7 mu
 assert.ok(bibi.includes('postMessage() z targetOrigin *'),'RX Developer 1.7 must flag wildcard messaging');
 assert.ok(bibi.includes('Sprawdź przekierowanie i walidację adresu'),'RX Developer 1.7 must flag redirects');
 console.log('PASS: RX Developer 1.7 security patterns');
+assert.ok(bibi.includes('RX Developer 1.9 — raport'),'RX Developer 1.9 report title');
+assert.ok(bibi.includes('const severity=issue=>'),'RX Developer must assign heuristic severity');
+assert.ok(bibi.includes('counts[severity(issue)]++'),'RX Developer must count severity levels');
+assert.ok(bibi.includes('Ocena heurystyczna — wymaga weryfikacji'),'RX Developer must disclose limitations');
+console.log('PASS: RX Developer 1.9 severity report checks');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
