@@ -696,7 +696,32 @@ document.addEventListener('DOMContentLoaded',()=>{
   developerOutput.textContent=issues.length?issues.map((issue,i)=>(i+1)+'. '+(issue.line?'Linia '+issue.line+': ':'')+issue.label+'\n   Sugestia: '+issue.fix).join('\n\n'):'Nie wykryto problemów przez podstawowe reguły RX. To nie jest pełny audyt bezpieczeństwa.';
  });
  const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
- developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy);
+ const developerPreview=document.createElement('section');
+ const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.2 — podgląd bezpiecznej poprawki';
+ const developerPreviewInfo=document.createElement('p');developerPreviewInfo.className='meta';developerPreviewInfo.textContent='Tylko prosta, jawna zamiana console.log → console.debug. Podgląd nie zapisuje zmian ani nie uruchamia kodu. Pozostałe ostrzeżenia wymagają ręcznej oceny.';
+ const developerSuggest=document.createElement('button');developerSuggest.type='button';developerSuggest.textContent='👀 Przygotuj podgląd';
+ const developerBefore=document.createElement('pre');developerBefore.style.whiteSpace='pre-wrap';developerBefore.style.overflowWrap='anywhere';
+ const developerAfter=document.createElement('pre');developerAfter.style.whiteSpace='pre-wrap';developerAfter.style.overflowWrap='anywhere';
+ const developerCopyPatch=document.createElement('button');developerCopyPatch.type='button';developerCopyPatch.textContent='📋 Kopiuj proponowany kod';developerCopyPatch.disabled=true;
+ let developerSuggestedCode='';
+ developerSuggest.addEventListener('click',()=>{
+  const original=developerInput.value;
+  developerCopyPatch.disabled=true;developerSuggestedCode='';
+  if(!original.trim()){developerBefore.textContent='Najpierw wklej kod.';developerAfter.textContent='';return;}
+  const updated=original.replace(/\bconsole\.log\s*\(/g,'console.debug(');
+  developerBefore.textContent='PRZED:\n'+original;
+  if(updated===original){developerAfter.textContent='Brak obsługiwanych automatycznych propozycji. RX nie zmienia kodu.';return;}
+  developerSuggestedCode=updated;
+  developerAfter.textContent='PO (propozycja, nie zastosowano):\n'+updated;
+  developerCopyPatch.disabled=false;
+ });
+ developerCopyPatch.addEventListener('click',async()=>{
+  if(!developerSuggestedCode)return;
+  try{await navigator.clipboard.writeText(developerSuggestedCode);developerCopyPatch.textContent='✓ Skopiowano';}
+  catch(_){const field=document.createElement('textarea');field.value=developerSuggestedCode;field.readOnly=true;field.style.width='100%';developerPreview.append(field);field.select();}
+ });
+ developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerCopyPatch);
+ developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy,developerPreview);
  views.set('developer',developerView);pane.append(developerView);
  const developerNav=document.createElement('button');developerNav.type='button';developerNav.textContent='💻 RX Developer';developerNav.addEventListener('click',()=>activate('developer'));side.append(developerNav);buttons.set('developer',developerNav);
  const rxTasksKey='rx-bibi-tasks-v1';
