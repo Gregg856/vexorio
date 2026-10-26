@@ -8,9 +8,9 @@ const sample=[
 ].join('\n');
 const report=inspectSource({path:'example.js',source:sample});
 assert.deepEqual(report.findings.map(f=>[f.rule,f.line,f.severity]),[
+ ['hardcoded-secret',3,'high'],
  ['document-write',1,'medium'],
- ['insecure-http',2,'medium'],
- ['hardcoded-secret',3,'high']
+ ['insecure-http',2,'medium']
 ]);
 const extra=inspectSource({path:'security.js',source:['const options={rejectUnauthorized:false};','otherWindow.postMessage(payload, "*");'].join('\n')});
 assert.deepEqual(extra.findings.map(f=>[f.rule,f.line,f.severity]),[
