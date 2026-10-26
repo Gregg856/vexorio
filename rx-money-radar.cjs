@@ -14,6 +14,6 @@ function createMoneyRadar({capacity=100}={}){
   const lead={id:'RXLEAD-'+String(leads.size+1).padStart(6,'0'),source,url:canonical,title,service,estimatedRevenueCents,estimatedCostCents,estimatedMarginCents:estimatedRevenueCents-estimatedCostCents,permission,status:'research_only'};
   leads.set(canonical,lead);return structuredClone(lead);
  }
- return Object.freeze({add,list:()=>[...leads.values()].map(structuredClone)});
+ return Object.freeze({add,list:()=>[...leads.values()].map(item=>structuredClone(item))});
 }
 module.exports={createMoneyRadar};
