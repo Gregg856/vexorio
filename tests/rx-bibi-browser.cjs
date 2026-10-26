@@ -52,8 +52,8 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       await button.evaluate(el=>el.click());
       await page.waitForTimeout(100);
     };
+    record('Nagłówek RX BIBI', await page.locator('h1').filter({hasText:/RX BIBI Manager/}).count() > 0);
     await openRxTab('🧪 Tester');
-    record('Nagłówek RX BIBI', await page.getByRole('heading', { name: /RX BIBI Manager/ }).count() > 0);
     const tester=page.getByRole('region',{name:'RX BIBI Tester'});
     record('Panel RX BIBI Tester widoczny',await tester.count()===1);
     try{
