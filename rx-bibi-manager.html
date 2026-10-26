@@ -699,7 +699,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(!rule.re.test(lines[i]))continue;
     if(rule.label.includes('fetch()')&&/\.catch\s*\(|\btry\s*\{/.test(code))continue;
    if(rule.label.includes('otwieranie nowych okien')&&/noopener|noreferrer/.test(lines[i]))continue;
-   if(rule.label.includes('przekierowanie')&&/\b(?:encodeURI|encodeURIComponent|new URL)\s*\(/.test(lines[i]))continue;
     issues.push({line:i+1,label:rule.label,fix:rule.fix});
    }
   }
