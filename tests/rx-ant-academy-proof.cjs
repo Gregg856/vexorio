@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createVerifiedAcademy}=require('../rx-ant-academy-proof.cjs');
+const a=createVerifiedAcademy({maxAnts:1,maxReceipts:3});
+const proof={receiptId:'RXPROOF-ci_run_001',antId:'RX-000001',kind:'test',passed:true,source:'trusted_ci'};
+assert.equal(a.record(proof).duplicate,false);
+assert.equal(a.record(proof).duplicate,true);
+assert.equal(a.leaderboard()[0].points,2);
+assert.throws(()=>a.record({...proof,passed:false}),/Receipt collision/);
+assert.throws(()=>a.record({...proof,receiptId:'RXPROOF-ci_run_002',source:'self'}),/Invalid proof/);
+a.record({...proof,receiptId:'RXPROOF-ci_run_002',passed:false});
+assert.equal(a.leaderboard()[0].points,2);
+assert.throws(()=>a.record({...proof,receiptId:'RXPROOF-ci_run_003',antId:'RX-000002'}),/Academy full/);
+assert.equal(a.receiptCount(),2);
+a.record({...proof,receiptId:'RXPROOF-ci_run_003',kind:'improvement'});
+assert.equal(a.leaderboard()[0].points,12);
+assert.throws(()=>a.record({...proof,receiptId:'RXPROOF-ci_run_004'}),/Receipt limit/);
+console.log('PASS RX Academy proof deduplication, failed tasks, capacity and collision');
