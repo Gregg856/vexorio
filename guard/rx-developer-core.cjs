@@ -60,7 +60,11 @@ const RULES=Object.freeze([
  {id:'RX003',severity:'medium',pattern:/\bouterHTML\s*=/g,message:'Przypisanie outerHTML wymaga kontroli danych.',advice:'Nie wstawiaj niezaufanego HTML.'},
  {id:'RX004',severity:'medium',pattern:/\binsertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML() może wstrzyknąć HTML.',advice:'Waliduj i sanitizuj dane wejściowe.'},
  {id:'RX005',severity:'low',pattern:/\bconsole\.(?:log|debug|info)\s*\(/g,message:'Logowanie może ujawnić dane.',advice:'Sprawdź, czy log nie zawiera sekretów.'},
- {id:'RX006',severity:'medium',pattern:/\bdocument\.write\s*\(/g,message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'}
+ {id:'RX006',severity:'medium',pattern:/\bdocument\.write\s*\(/g,message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'},
+ {id:'RX007',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczne tworzenie funkcji może wykonać niezaufany kod.',advice:'Unikaj new Function() dla danych z zewnątrz.'},
+ {id:'RX008',severity:'medium',pattern:/\bdocument\.cookie\s*=/g,message:'Zapis cookie w JavaScript wymaga przeglądu zabezpieczeń.',advice:'Dla sesji rozważ ciasteczka HttpOnly ustawiane przez serwer.'},
+ {id:'RX009',severity:'high',pattern:/\bpostMessage\s*\([^,\n]+,\s*\*/g,message:'postMessage() z dowolnym odbiorcą może ujawnić dane.',advice:'Wskaż konkretny targetOrigin.'},
+ {id:'RX010',severity:'medium',pattern:/\b(?:window\.)?location\.href\s*=/g,message:'Przekierowanie wymaga sprawdzenia źródła adresu.',advice:'Waliduj docelowy adres i dozwolone domeny.'}
 ]);
 function analyzeJavaScript(source){
  const masked=maskJavaScript(source);
@@ -77,7 +81,7 @@ function analyzeJavaScript(source){
  }
  const rank={high:0,medium:1,low:2};
  findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
- return {engine:'RX Developer Core',version:'0.1.0',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
+ return {engine:'RX Developer Core',version:'0.2.0',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
 }
 module.exports={maskJavaScript,analyzeJavaScript};
 
