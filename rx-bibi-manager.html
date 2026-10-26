@@ -703,7 +703,11 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(mode==='string'){
     if(escaped){escaped=false;masked.push(newline?c:' ');continue;}
     if(c==='\\'){escaped=true;masked.push(' ');continue;}
-    if(quote==='\x60'&&c==='
+    if(quote==='\x60'&&c==='$'&&next==='{'){
+     templateDepth.push(0);mode='code';masked.push(' ',' ');i++;continue;
+    }
+    if(c===quote){mode='code';masked.push(' ');continue;}
+    masked.push(newline?c:' ');continue;
    }
    if(templateDepth.length){
     if(c==='{'){templateDepth[templateDepth.length-1]++;}
