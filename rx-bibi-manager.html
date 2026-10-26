@@ -1001,7 +1001,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const header=original.find(node=>node.tagName==='H1');if(header){header.textContent='🛡️ RX BIBI Manager';header.classList.add('rx-app-title');}
  for(const node of original){
   const id=node.id||'';
-  const target=mapping[id]||((node.querySelector?.('#diagnosisEntries')||node.querySelector?.('[data-filter="failure"]')||node.querySelector?.('#exportReport'))?'historia':(node.querySelector?.('#rxQuickStart')||node.querySelector?.('#rxStartTest')?'tester':node.querySelector?.('[aria-label="Centrum narzędzi RX"]')?'diagnostyka':'ustawienia'));
+  const target=mapping[id]||((node.matches?.('[aria-label="Filtr historii"],#refresh,#exportReport,#exportInfo,#status,#filterStatus')||node.querySelector?.('#diagnosisEntries')||node.querySelector?.('[data-filter="failure"]')||node.querySelector?.('#exportReport'))?'historia':(node.matches?.('[aria-label="Centrum narzędzi RX"]')||node.querySelector?.('[aria-label="Centrum narzędzi RX"]'))?'diagnostyka':(node.querySelector?.('#rxQuickStart')||node.querySelector?.('#rxStartTest'))?'tester':'ustawienia');
   (views.get(target)||fallback).append(node);
  }
  const chat=views.get('chat');chat.classList.add('rx-chat');
