@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {runExperiment}=require('../rx-ant-lab.cjs');
+const r=runExperiment();
+assert.equal(r.testedVariants,3);
+assert.equal(r.passingVariants,3);
+assert.equal(r.dna.versions[0].approved,false);
+assert.equal(r.dna.versions[0].testsPassed,true);
+assert.equal(r.dataset,'synthetic-v1');
+console.log('PASS RX Ant Lab reproducible benchmark');
