@@ -38,7 +38,12 @@ function checkHtmlReferences(root,source){
   const name=match[1].split('?')[0].slice(1);
   if(name.includes('..'))continue;
   const sourcePath=GENERATED_ASSETS[name]||name;
-  if(!fs.existsSync(path.join(root,sourcePath))){
+  let safeAsset=false;
+  try{
+   const asset=fs.lstatSync(path.join(root,sourcePath));
+   safeAsset=asset.isFile()&&!asset.isSymbolicLink();
+  }catch(error){safeAsset=false;}
+  if(!safeAsset){
    findings.push({rule:'missing-script',severity:'high',line:source.slice(0,match.index).split('\n').length,message:'Brak lokalnego pliku skryptu: '+name});
   }
  }
