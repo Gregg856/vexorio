@@ -30,8 +30,12 @@ const fs=require('node:fs');
   assert.equal(calls,3);
   global.fetch=async()=>new Response('',{status:503});
   result=await worker.fetch(request(base+'?command=RX%20STATUS'),{});
-  assert.equal(result.status,502);
-  assert.equal((await result.json()).ok,false);
+  assert.equal(result.status,200);
+  const degradedReport=await result.json();
+  assert.equal(degradedReport.ok,false);
+  assert.equal(degradedReport.degraded,true);
+  assert.equal(degradedReport.runs.length,3);
+  assert.ok(degradedReport.runs.every(run=>run.status==='unavailable'));
  }finally{global.fetch=originalFetch;}
  console.log('RX DIRECT endpoint: PASS');
 })().catch(error=>{console.error(error);process.exitCode=1;});
