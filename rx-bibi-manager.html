@@ -697,30 +697,42 @@ document.addEventListener('DOMContentLoaded',()=>{
  });
  const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
  const developerPreview=document.createElement('section');
- const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.2 — podgląd bezpiecznej poprawki';
+ const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.3 — podgląd i różnice';
  const developerPreviewInfo=document.createElement('p');developerPreviewInfo.className='meta';developerPreviewInfo.textContent='Tylko prosta, jawna zamiana console.log → console.debug. Podgląd nie zapisuje zmian ani nie uruchamia kodu. Pozostałe ostrzeżenia wymagają ręcznej oceny.';
  const developerSuggest=document.createElement('button');developerSuggest.type='button';developerSuggest.textContent='👀 Przygotuj podgląd';
  const developerBefore=document.createElement('pre');developerBefore.style.whiteSpace='pre-wrap';developerBefore.style.overflowWrap='anywhere';
  const developerAfter=document.createElement('pre');developerAfter.style.whiteSpace='pre-wrap';developerAfter.style.overflowWrap='anywhere';
  const developerCopyPatch=document.createElement('button');developerCopyPatch.type='button';developerCopyPatch.textContent='📋 Kopiuj proponowany kod';developerCopyPatch.disabled=true;
+ const developerDiff=document.createElement('pre');developerDiff.style.whiteSpace='pre-wrap';developerDiff.style.overflowWrap='anywhere';developerDiff.setAttribute('aria-label','Różnice między kodem oryginalnym a propozycją');
+ const developerReset=document.createElement('button');developerReset.type='button';developerReset.textContent='↩️ Cofnij propozycję';developerReset.disabled=true;
+ developerReset.addEventListener('click',()=>{
+  developerSuggestedCode='';developerPreviewSource='';
+  developerAfter.textContent='';developerDiff.textContent='';
+  developerCopyPatch.disabled=true;developerReset.disabled=true;
+  developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
+  developerPreviewStatus.textContent='Propozycja cofnięta. Oryginalny kod pozostaje bez zmian.';
+ });
  let developerSuggestedCode='';
  let developerPreviewSource='';
  const developerPreviewStatus=document.createElement('p');developerPreviewStatus.className='meta';developerPreviewStatus.setAttribute('aria-live','polite');
  developerInput.addEventListener('input',()=>{
   developerSuggestedCode='';developerPreviewSource='';developerCopyPatch.disabled=true;
   developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
-  developerBefore.textContent='';developerAfter.textContent='';
+  developerBefore.textContent='';developerAfter.textContent='';developerDiff.textContent='';developerReset.disabled=true;
   developerPreviewStatus.textContent='Kod zmieniony — przygotuj nowy podgląd.';
  });
  developerSuggest.addEventListener('click',()=>{
   const original=developerInput.value;
-  developerCopyPatch.disabled=true;developerSuggestedCode='';developerPreviewSource='';
+  developerCopyPatch.disabled=true;developerReset.disabled=true;developerDiff.textContent='';developerSuggestedCode='';developerPreviewSource='';
   developerCopyPatch.textContent='📋 Kopiuj proponowany kod';
   if(!original.trim()){developerBefore.textContent='Najpierw wklej kod.';developerAfter.textContent='';developerPreviewStatus.textContent='';return;}
   const updated=original.replace(/\bconsole\.log\s*\(/g,'console.debug(');
   developerBefore.textContent='PRZED:\n'+original;
   if(updated===original){developerAfter.textContent='Brak obsługiwanych propozycji. RX nie zmienia kodu.';developerPreviewStatus.textContent='';return;}
   developerSuggestedCode=updated;developerPreviewSource=original;
+  const beforeLines=original.split(/\r?\n/),afterLines=updated.split(/\r?\n/);
+  developerDiff.textContent='RÓŻNICE (numery linii):\n'+beforeLines.map((line,i)=>line===afterLines[i]?'  '+(i+1)+'  '+line:'- '+(i+1)+'  '+line+'\n+ '+(i+1)+'  '+afterLines[i]).join('\n');
+  developerReset.disabled=false;
   developerAfter.textContent='PO (propozycja, nie zastosowano):\n'+updated;
   developerPreviewStatus.textContent='Uwaga: console.debug nadal loguje dane. To podgląd zamiany, nie usunięcie ryzyka.';
   developerCopyPatch.disabled=false;
@@ -735,7 +747,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    developerPreviewStatus.textContent='Zaznaczony kod — skopiuj ręcznie.';
   }
  });
- developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerPreviewStatus,developerCopyPatch);
+ developerPreview.append(developerPreviewTitle,developerPreviewInfo,developerSuggest,developerBefore,developerAfter,developerDiff,developerPreviewStatus,developerCopyPatch,developerReset);
  developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy,developerPreview);
  views.set('developer',developerView);pane.append(developerView);
  const developerNav=document.createElement('button');developerNav.type='button';developerNav.textContent='💻 RX Developer';developerNav.addEventListener('click',()=>activate('developer'));side.append(developerNav);buttons.set('developer',developerNav);
