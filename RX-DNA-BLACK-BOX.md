@@ -99,3 +99,8 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `rx-ant-academy-proof.cjs`: bounded in-memory receipt deduplication, collision detection, passed-only score accounting and leaderboard. `tests/rx-ant-academy-proof.cjs` added to CI.
 - Critical trust boundary: `source:'trusted_ci'` is a plain caller-provided string, NOT authentication or a verified CI attestation. This is only a local adapter; it must not be exposed as an untrusted public endpoint or used for automatic production privileges.
 - Next: verified GitHub run identity and immutable receipts, durable storage, actual measured performance. No financial rewards or autonomous actions.
+
+## RX STELLAR LAB 1.0
+- `rx-stellar-lab.cjs`: bounded, in-memory validated relative brightness observations, deduplication and basic statistics by star ID.
+- `tests/rx-stellar-lab.cjs`: synthetic-data tests in RX CI.
+- No real astronomy feed, telescope integration, AI training, electricity generation, or revenue. Future: permission-compliant public dataset import, provenance checks, persistence, actual model evaluation and a validated product concept.
