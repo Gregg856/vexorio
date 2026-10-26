@@ -188,4 +188,11 @@ makePreview(sourceForPreview);
 assert.equal(sourceForPreview,"console.log('original');",'Preview must not mutate the original source string');
 console.log('PASS: RX Developer preview transformation behavioral checks');
 console.log('PASS: RX Developer 1.3 preview safety and discard regression');
+
+assert.ok(bibi.includes('const developerContainsSecret=code=>'),'RX Developer must check potential secrets');
+assert.ok(bibi.includes('!developerContainsSecret(item.before)&&!developerContainsSecret(item.after)'),'RX Developer must filter previously saved secret-like history');
+assert.ok(bibi.includes('if(!developerContainsSecret(original)&&!developerContainsSecret(updated))'),'RX Developer must not save secret-like preview history');
+assert.ok(bibi.includes("developerHistory.length>10"),'RX Developer history must remain bounded');
+assert.ok(bibi.includes('developerHistoryClear.addEventListener'),'RX Developer must allow local history clearing');
+console.log('PASS: RX Developer 1.5 history privacy regression checks');
 console.log('PASS: RX BIBI Manager 1.0 read-only deployment recommendations');
