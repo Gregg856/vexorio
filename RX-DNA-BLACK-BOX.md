@@ -57,3 +57,10 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - CI `rx-bibi-browser.yml` now runs the server adapter tests.
 - **Security boundary:** an authorization callback is not itself an identity provider. Do not pass client-controlled booleans as proof of Queen privileges. The test-only `{queen:true}` fixture is NOT production authorization.
 - **Integration pending:** actual trusted server identity verification, staging DB connector and Queen UI. No claim of live cloud synchronization yet.
+
+## RX DNA CLOUD 1.2 — HTTPS transport
+- Added `rx-dna-cloud-gateway.cjs` and `rx-dna-cloud-transport.cjs` (Node CommonJS): bounded RPC allowlist, HTTPS Supabase URL validation, JWT forwarding and explicit denied-access handling.
+- Added mocked transport and gateway contract tests to RX CI.
+- Staging SQL gateway functions `public.rx_dna_staging_read` and `public.rx_dna_staging_write` require `auth.uid()` and `public.is_vexorio_admin()`. Anonymous EXECUTE revoked.
+- **Still pending:** live authenticated admin round-trip, automated Queen integration, persistence on restart, backup/restore, and end-to-end authorization tests.
+- The transport uses public Supabase key + authenticated user JWT, not a service-role key. Never store JWT in repo or test logs.
