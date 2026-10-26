@@ -89,3 +89,8 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `tests/rx-genesis.cjs`: inheritance, selection, capacity, generation and review gates.
 - No autonomous code generation, actual measured performance, persistent storage, cryptographically verified test evidence, or automatic deployment. Test/security flags are caller supplied, not independently validated. No production database changes.
 - RX BIBI #127, VEXORIO checks #2171, Cloudflare deploy #2333 were successful before this change; Genesis CI must be checked separately.
+
+## RX ANT ACADEMY 1.0
+- `rx-ant-academy.cjs`: bounded in-memory reputation and deterministic rank/leaderboard with non-monetary rewards only.
+- `tests/rx-ant-academy.cjs`: promotion, invalid metrics, capacity, leaderboard.
+- Important: performance metrics are caller-provided, not yet independently verified; priorities are informational, not connected to scheduler. No payments, automatic actions or persistence. Future work: authenticated measured outcomes and durable storage.
