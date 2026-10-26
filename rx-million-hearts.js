@@ -2,11 +2,11 @@
 // RX MILION SERC 1.0 — bounded, event-driven logical cells.
 // A "heart" is a lightweight task handler, not an AI model or OS process.
 class RXMillionHearts {
-  constructor({maxConcurrent=4,maxQueue=1000,memoryLimit=200}={}){
-    for(const [key,value] of Object.entries({maxConcurrent,maxQueue,memoryLimit})){
+  constructor({maxConcurrent=4,maxQueue=1000,memoryLimit=200,logicalHeads=1000}={}){
+    for(const [key,value] of Object.entries({maxConcurrent,maxQueue,memoryLimit,logicalHeads})){
       if(!Number.isSafeInteger(value)||value<1)throw new RangeError(key+' must be a positive integer');
     }
-    this.maxConcurrent=maxConcurrent;this.maxQueue=maxQueue;this.memoryLimit=memoryLimit;
+    this.maxConcurrent=maxConcurrent;this.maxQueue=maxQueue;this.memoryLimit=memoryLimit;this.logicalHeads=logicalHeads;
     this.handlers=new Map();this.queue=[];this.active=0;this.memory=[];
     this.stats={accepted:0,completed:0,failed:0,rejected:0};
   }
@@ -15,6 +15,11 @@ class RXMillionHearts {
     if(typeof handler!=='function')throw new TypeError('Cell handler must be a function');
     if(this.handlers.has(name))throw new Error('Cell already registered: '+name);
     this.handlers.set(name,handler);return this;
+  }
+  // Logical head IDs are virtual labels; no workers or AI models are spawned.
+  headId(index){
+    if(!Number.isSafeInteger(index)||index<0||index>=this.logicalHeads)throw new RangeError('Invalid logical head index');
+    return 'RX-'+String(index+1).padStart(6,'0');
   }
   dispatch(name,payload,{signal}={}){
     if(!this.handlers.has(name))return Promise.reject(new Error('Unknown cell: '+name));
@@ -42,7 +47,7 @@ class RXMillionHearts {
     if(this.memory.length>this.memoryLimit)this.memory.shift();
   }
   snapshot(){
-    return {registeredCells:this.handlers.size,active:this.active,queued:this.queue.length,
+    return {registeredCells:this.handlers.size,logicalHeads:this.logicalHeads,active:this.active,queued:this.queue.length,
       stats:{...this.stats},recent:this.memory.slice(-10)};
   }
 }
