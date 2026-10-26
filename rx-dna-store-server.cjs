@@ -23,7 +23,7 @@ function createRXDNAStore({read,write,authorize}){
   async load(context,antId){
    await check(context);
    if(!ANT_ID.test(antId))throw new TypeError('Invalid ant ID');
-   const record=await read(antId);
+   const record=await read(antId,context);
    if(record==null)return null;
    if(!Number.isSafeInteger(record.revision)||record.revision<1)throw new TypeError('Invalid revision');
    return {revision:record.revision,snapshot:validateSnapshot(antId,record.snapshot)};
@@ -32,7 +32,7 @@ function createRXDNAStore({read,write,authorize}){
    await check(context);
    if(!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid expected revision');
    const clean=validateSnapshot(antId,snapshot);
-   const revision=await write(antId,clean,expectedRevision);
+   const revision=await write(antId,clean,expectedRevision,context);
    if(!Number.isSafeInteger(revision)||revision<=expectedRevision)throw new Error('Invalid storage revision');
    return {antId,revision};
   }
