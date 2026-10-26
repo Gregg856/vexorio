@@ -44,7 +44,9 @@ function scan(root=process.cwd()){
  for(const name of listFiles(root)){
   const full=path.join(root,name);
   if(!fs.existsSync(full)){files.push({path:name,error:'missing'});continue;}
-  const stat=fs.lstatSync(full);
+  let stat;
+  try{stat=fs.lstatSync(full);}
+  catch(error){files.push({path:name,error:'unreadable'});continue;}
   if(!stat.isFile()||stat.isSymbolicLink()){files.push({path:name,error:'unsafe_file_type'});continue;}
   if(stat.size>400000){files.push({path:name,error:'too_large'});continue;}
   let source;
