@@ -194,6 +194,29 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX BIBI 1.5 plan dla każdej sklasyfikowanej awarii',planCount===incidentPriorities,'Plany: '+planCount+', priorytety: '+incidentPriorities);
     const unsafePlans=await diagnosticPlans.filter({hasText:/undefined|NaN|\\[object Object\\]/}).count();
     record('RX BIBI 1.5 czytelne podpowiedzi',unsafePlans===0,'Niepoprawne plany: '+unsafePlans);
+    // Visual UX regression: mobile chat-first layout and navigation.
+    const visual = await page.evaluate(() => {
+      const menu=document.querySelector('.rx-menu-toggle');
+      const nav=document.querySelector('.rx-side');
+      const chat=document.querySelector('.rx-chat');
+      const compose=document.querySelector('.rx-compose');
+      const input=compose?.querySelector('textarea');
+      const developer=document.getElementById('rxFixGuidance');
+      const rect=el=>el?({top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom,width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height}):null;
+      return {menu:rect(menu),navHidden:!!nav?.hidden||getComputedStyle(nav).display==='none',chat:rect(chat),compose:rect(compose),input:rect(input),developerHidden:!!developer&&!developer.getClientRects().length,viewport:innerWidth,documentWidth:document.documentElement.scrollWidth};
+    });
+    record('RX UI: menu kategorii domyślnie zamknięte',visual.navHidden,JSON.stringify(visual));
+    record('RX UI: czat i pole pisania bez ogromnej pustki',!!visual.chat&&!!visual.compose&&visual.compose.top-visual.chat.top<750,JSON.stringify(visual));
+    record('RX UI: Developer poza ekranem czatu',visual.developerHidden,JSON.stringify(visual));
+    record('RX UI: pole pisania mieści się na telefonie',!!visual.input&&visual.input.width>=180&&visual.documentWidth<=visual.viewport+2,JSON.stringify(visual));
+    await page.screenshot({path:path.join(reportDir,'rx-chat-mobile-start.png'),fullPage:true});
+    await page.locator('.rx-menu-toggle').click();
+    record('RX UI: kategorie otwierają się na żądanie',await page.locator('.rx-side').isVisible());
+    await page.locator('.rx-side').getByRole('button',{name:/Developer/}).click();
+    record('RX UI: Developer otwiera właściwy panel',await page.locator('#rxFixGuidance').isVisible());
+    await page.locator('.rx-menu-toggle').click();
+    await page.locator('.rx-side').getByRole('button',{name:/Rozmowa z RX Strażakiem/}).click();
+    record('RX UI: powrót do czatu zamyka menu',await page.locator('.rx-chat').isVisible()&&!(await page.locator('.rx-side').isVisible()));
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
