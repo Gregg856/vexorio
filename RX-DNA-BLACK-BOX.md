@@ -77,3 +77,9 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Added `rx-money-radar.cjs`: bounded, deduplicated, research-only opportunity records with estimated revenue and cost; no crawling, outreach, billing or payment.
 - Added `tests/rx-evolution-radar.cjs` to RX CI.
 - Still pending: verified external leads, persistence in staging, trusted owner authorization, and any background scheduler. Zero autonomous spending.
+
+## RX ANT HIBERNATION 1.0
+- `rx-ant-hibernation.cjs`: bounded in-memory logical credit allocation and max concurrent active ants; sleep/wake only, no cloud scheduler or physical energy generation.
+- `tests/rx-ant-hibernation.cjs`: credit exhaustion, sleep, max concurrency, invalid ID.
+- RX EVOLUTION/RADAR CI failure #125 diagnosed from job logs: passing `structuredClone` directly to `Array.map` caused Node 24 to interpret the array index as options. Fixed in both modules using an explicit callback.
+- New CI must be verified before marking changes green. No production DB writes or automatic spending.
