@@ -469,7 +469,9 @@ async function refresh(){
                 const key='rx-bibi-diagnoses-v1';
                 const current=JSON.parse(localStorage.getItem(key)||'[]');
                 const entries=Array.isArray(current)?current.filter(x=>x&&typeof x.date==='string'&&typeof x.summary==='string'):[];
-                const summary='Uruchomienie #'+String(run.id)+' — '+String(secureOutput.textContent||'').slice(0,900);
+                // Persist only the run identifier and generic failed-step names, never log messages.
+                const safeSteps=failures.flatMap(job=>Array.isArray(job.failed_steps)?job.failed_steps:[]).map(step=>String(step).replace(/[^a-zA-Z0-9 _./:-]/g,'').slice(0,90)).slice(0,5);
+                const summary='Uruchomienie #'+String(run.id)+' — diagnostyka administratora; nieudane etapy: '+(safeSteps.length?safeSteps.join(', '):'brak nazw etapów');
                 const filtered=entries.filter(x=>!x.summary.startsWith('Uruchomienie #'+String(run.id)+' — '));
                 filtered.push({date:new Date().toISOString(),summary});
                 localStorage.setItem(key,JSON.stringify(filtered.slice(-10)));
