@@ -351,3 +351,19 @@ console.log('PASS: RX Developer message origin warning precise matching');
 
 assert.ok(bibi.includes('targetOrigin|walidację origin wiadomości'), 'Message origin warning must be evaluated against quoted event names');
 console.log('PASS: RX Developer message listener is included in literal-aware matching');
+
+assert.ok(bibi.includes("test(codeLines[i])||/\\btry\\s*\\{/.test(codeLines.slice("),'RX Developer fetch handling must use executable masked code');
+const fetchCases=[
+ ['fake catch in comment',"fetch('/api'); // .catch(handle)",true],
+ ['fake try in comment',"// try {\nfetch('/api');",true],
+ ['real inline catch',"fetch('/api').catch(handle);",false],
+ ['real try nearby',"try {\nfetch('/api');\n} catch(e) {}",false]
+];
+for(const [label,input,expectedWarning] of fetchCases){
+ const codeLines=maskSnippet(input).split(/\r?\n/);
+ const fetchLine=codeLines.findIndex(line=>/\bfetch\s*\(/.test(line));
+ assert.ok(fetchLine>=0,'fetch call must be present: '+label);
+ const handled=/\.catch\s*\(/.test(codeLines[fetchLine])||/\btry\s*\{/.test(codeLines.slice(Math.max(0,fetchLine-2),fetchLine+1).join(' '));
+ assert.equal(!handled,expectedWarning,'RX fetch handling: '+label);
+}
+console.log('PASS: RX Developer fetch error handling ignores comments');
