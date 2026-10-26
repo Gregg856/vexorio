@@ -30,11 +30,11 @@
   const cells=classifyTask(description);
   proposedTask={description,cells};
   if(approveTask)approveTask.disabled=false;
-  if(taskResult)taskResult.textContent='🐜 Plan mrówek (reguły, bez modelu AI)\\nZadanie: '+description+'\\nKomórki: '+cells.join(', ')+'\\nKroki: 1. Analiza 2. Testy 3. Raport dla Królowej 4. Ręczna decyzja\\nStatus: OCZEKUJE NA ZATWIERDZENIE. Niczego nie wykonano.';
+  if(taskResult)taskResult.textContent='🐜 Plan mrówek (reguły, bez modelu AI)\nZadanie: '+description+'\nKomórki: '+cells.join(', ')+'\nKroki: 1. Analiza 2. Testy 3. Raport dla Królowej 4. Ręczna decyzja\nStatus: OCZEKUJE NA ZATWIERDZENIE. Niczego nie wykonano.';
  });
  approveTask?.addEventListener('click',()=>{
   if(!proposedTask||taskInput?.value.trim()!==proposedTask.description)return;
-  if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\\nZadanie: '+proposedTask.description+'\\nKomórki: '+proposedTask.cells.join(', ')+'\\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
+  if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\nZadanie: '+proposedTask.description+'\nKomórki: '+proposedTask.cells.join(', ')+'\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
   resetTask();
  });
 
