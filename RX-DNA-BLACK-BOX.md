@@ -64,3 +64,10 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Staging SQL gateway functions `public.rx_dna_staging_read` and `public.rx_dna_staging_write` require `auth.uid()` and `public.is_vexorio_admin()`. Anonymous EXECUTE revoked.
 - **Still pending:** live authenticated admin round-trip, automated Queen integration, persistence on restart, backup/restore, and end-to-end authorization tests.
 - The transport uses public Supabase key + authenticated user JWT, not a service-role key. Never store JWT in repo or test logs.
+
+## RX MONEY ENGINE 1.0 — zero-budget prototype (owner approved)
+- Owner approved provisional allocation: 70% of available net funds for RX development, 30% reserve, with explicit approval for any expenditure.
+- Added `rx-money-engine.cjs` with six role labels (SCOUT, SALES, TESTER, REPORT, TREASURER, BUILDER), deterministic task status transitions and in-memory income/expense ledger in integer cents.
+- Added `tests/rx-money-engine.cjs` to RX CI; checks approval requirement and 70/30 split.
+- **Not live:** no customer acquisition, no payments, no financial accounts, no scheduled agents, no persistent ledger, no authenticated owner approval. No mining. This is a local software prototype only.
+- Next: persistent append-only staging ledger with authenticated approval, idempotency, bounded scheduling, legal/commercial review and cost controls. No autonomous payments.
