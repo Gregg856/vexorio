@@ -36,6 +36,7 @@ function inspectSource({path,source}={}){
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'timer-string-code',severity:'high',pattern:/\b(?:setTimeout|setInterval)\s*\(\s*['"`]/g,message:'Timer otrzymał tekst zamiast funkcji. Może wykonywać kod dynamicznie.'},
   {id:'javascript-url',severity:'high',pattern:/\b(?:location\s*(?:\.\s*href)?|window\s*\.\s*open)\s*(?:=|\()\s*['"`]javascript\s*:/gi,message:'Adres javascript: może uruchamiać kod w kontekście strony.'},
+  {id:'domparser-html',severity:'medium',pattern:/\bparseFromString\s*\([^;\n]*,\s*['"`]text\/html['"`]\s*\)/g,message:'Parsowanie HTML z tekstu wymaga kontroli niezaufanych danych.'},
   {id:'outer-html',severity:'medium',pattern:/\.outerHTML\s*=(?!=)/g,message:'Przypisanie outerHTML wymaga kontroli niezaufanego HTML.'},
   {id:'insert-adjacent-html',severity:'medium',pattern:/\.insertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML wymaga kontroli niezaufanego HTML.'},
   {id:'unsafe-iframe-srcdoc',severity:'medium',pattern:/\.srcdoc\s*=/g,message:'Przypisanie iframe.srcdoc wymaga kontroli niezaufanego HTML.'},
@@ -49,7 +50,7 @@ function inspectSource({path,source}={}){
   {id:'hardcoded-secret',severity:'high',pattern:/\b(?:api[_-]?key|secret|access[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_-]{24,}['"]/gi,message:'Możliwy sekret wpisany bezpośrednio w kodzie. Nie umieszczaj go w publicznym repozytorium.'}
  ];
  for(const rule of rules){
-  const target=['insecure-http','postmessage-wildcard','hardcoded-secret','timer-string-code','javascript-url'].includes(rule.id)?scanSource:codeSource;
+  const target=['insecure-http','postmessage-wildcard','hardcoded-secret','timer-string-code','javascript-url','domparser-html'].includes(rule.id)?scanSource:codeSource;
   for(const match of target.matchAll(rule.pattern)){
    // Text inside quoted strings is not executable code; keep real argument literals scannable.
    if(target===scanSource&&codeSource[match.index]===' ')continue;
