@@ -129,5 +129,13 @@ assert.deepEqual(fixes.suggestedFixes.map(x=>x.rule),['eval','inner-html']);
 assert.ok(fixes.suggestedFixes.every(x=>typeof x.action==='string'&&x.action.length>10));
 assert.deepEqual(summarize({signals:0,files:[]}).suggestedFixes,[]);
 console.log('PASS: RX Developer 7.3 safe rule-specific suggestions');
+const moreFixes=summarize({signals:3,files:[{path:'network.js',findings:[
+ {rule:'tls-verification-disabled',severity:'high'},
+ {rule:'postmessage-wildcard',severity:'medium'},
+ {rule:'document-write',severity:'medium'}
+]}]});
+assert.deepEqual(moreFixes.suggestedFixes.map(x=>x.rule),['tls-verification-disabled','document-write','postmessage-wildcard']);
+assert.ok(moreFixes.suggestedFixes.some(x=>x.action.includes('TLS')));
+console.log('PASS: RX Developer 7.4 expanded safe suggestions');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
