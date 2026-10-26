@@ -83,3 +83,9 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `tests/rx-ant-hibernation.cjs`: credit exhaustion, sleep, max concurrency, invalid ID.
 - RX EVOLUTION/RADAR CI failure #125 diagnosed from job logs: passing `structuredClone` directly to `Array.map` caused Node 24 to interpret the array index as options. Fixed in both modules using an explicit callback.
 - New CI must be verified before marking changes green. No production DB writes or automatic spending.
+
+## RX GENESIS 1.0 — DIGITAL EVOLUTION
+- `rx-genesis.cjs`: bounded in-memory proposals, parent-child inheritance only from approved variants, generation limit, test/security flags, human approval label, deterministic best-score selection.
+- `tests/rx-genesis.cjs`: inheritance, selection, capacity, generation and review gates.
+- No autonomous code generation, actual measured performance, persistent storage, cryptographically verified test evidence, or automatic deployment. Test/security flags are caller supplied, not independently validated. No production database changes.
+- RX BIBI #127, VEXORIO checks #2171, Cloudflare deploy #2333 were successful before this change; Genesis CI must be checked separately.
