@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createDNALineage}=require('../rx-dna-lineage.cjs');
+const d=createDNALineage({maxVersions:3,maxDepth:1});
+d.register({id:'RXDNA-root',approved:true,testsPassed:true});
+d.register({id:'RXDNA-child',parentId:'RXDNA-root',approved:true,testsPassed:true});
+assert.deepEqual(d.lineage('RXDNA-child').map(v=>v.id),['RXDNA-root','RXDNA-child']);
+assert.throws(()=>d.register({id:'RXDNA-grandchild',parentId:'RXDNA-child'}),/depth limit/);
+assert.throws(()=>d.register({id:'RXDNA-bad',approved:true,testsPassed:false}),/Approval requires/);
+assert.throws(()=>d.register({id:'RXDNA-child'}),/already exists/);
+d.register({id:'RXDNA-unverified',testsPassed:false});
+assert.throws(()=>d.register({id:'RXDNA-next',parentId:'RXDNA-unverified'}),/capacity/);
+assert.equal(d.count(),3);
+console.log('PASS RX DNA lineage parent verification, depth and capacity');
