@@ -52,3 +52,11 @@ assert.deepEqual(crlfCases.findings.map(f=>[f.rule,f.line]),[
 ]);
 assert.ok(!JSON.stringify(crlfCases).includes('abcdefghijklmnopqrstuvwxyz123456'));
 console.log('PASS: RX Developer 2.1 CRLF, real findings and secret redaction');
+
+const safeLiteral=inspectSource({path:'src/literal.js',source:'const note = "ordinary text";'});
+assert.equal(safeLiteral.findings.length,0);
+const multiline=inspectSource({path:'src/multiline.js',source:'/* harmless\n eval(ignored)\n*/\neval(real);'});
+assert.deepEqual(multiline.findings.map(f=>[f.rule,f.line]),[['eval',4]]);
+const httpSecret=inspectSource({path:'src/valid.js',source:'const secret = "abcdefghijklmnopqrstuvwxyz123456";\nfetch("http://example.org");'});
+assert.deepEqual(httpSecret.findings.map(f=>[f.rule,f.line]),[['hardcoded-secret',1],['insecure-http',2]]);
+console.log('PASS: RX Developer 2.1 literal, multiline and active security checks');
