@@ -41,6 +41,7 @@ function inspectSource({path,source}={}){
   {id:'outer-html',severity:'medium',pattern:/\.outerHTML\s*=(?!=|>)/g,message:'Przypisanie outerHTML wymaga kontroli niezaufanego HTML.'},
   {id:'insert-adjacent-html',severity:'medium',pattern:/\.insertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML wymaga kontroli niezaufanego HTML.'},
   {id:'unsafe-iframe-srcdoc',severity:'medium',pattern:/\.srcdoc\s*=(?!=|>)/g,message:'Przypisanie iframe.srcdoc wymaga kontroli niezaufanego HTML.'},
+  {id:'indirect-eval',severity:'high',pattern:/\(\s*0\s*,\s*eval\s*\)\s*\(/g,message:'Pośrednie wywołanie eval może wykonywać niezaufany kod.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
   {id:'inner-html',severity:'medium',pattern:/\.innerHTML\s*=(?!=|>)/g,message:'Sprawdź, czy HTML nie zawiera niezaufanych danych.'},
   {id:'console-log',severity:'low',pattern:/\bconsole\s*\.\s*log\s*\(/g,message:'Sprawdź, czy logi nie ujawniają danych.'},
