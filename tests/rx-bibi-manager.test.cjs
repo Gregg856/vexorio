@@ -432,3 +432,9 @@ for(const [label,code,ruleId] of [
 assert.equal(rxCoreAnalyze("// document.cookie = 'x'\nconst s = 'new Function()';").summary.total,0);
 assert.equal(rxCoreAnalyze("const x = 1;").version,'0.2.0');
 console.log('PASS: RX Developer Core ten security rules');
+
+const rxColumnReport=rxCoreAnalyze("  eval('x');\n    document.write('ok');");
+assert.deepEqual(rxColumnReport.findings.map(x=>[x.id,x.line,x.column]),[['RX001',1,3],['RX006',2,5]]);
+const rxSameLine=rxCoreAnalyze("eval('1'); eval('2');");
+assert.deepEqual(rxSameLine.findings.map(x=>x.column),[1,12]);
+console.log('PASS: RX Developer Core accurate one-based line and column locations');
