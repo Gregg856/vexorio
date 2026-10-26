@@ -694,6 +694,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   ];
   try{new Function(code);}catch(error){issues.push({line:null,label:'Błąd składni: '+String(error.message).slice(0,180),fix:'Sprawdź nawiasy, cudzysłowy i przecinki w kodzie.'});}
   for(let i=0;i<lines.length;i++){
+   // Skip full-line comments to reduce obvious false positives; inline comments remain heuristic.
+   if(/^\s*(?:\/\/|\*|\/\*)/.test(lines[i]))continue;
    for(const rule of rules){
     rule.re.lastIndex=0;
     if(!rule.re.test(lines[i]))continue;
