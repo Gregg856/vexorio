@@ -1,0 +1,56 @@
+'use strict';
+// RX MILION SERC 1.0 — bounded, event-driven logical cells.
+// A "heart" is a lightweight task handler, not an AI model or OS process.
+class RXMillionHearts {
+  constructor({maxConcurrent=4,maxQueue=1000,memoryLimit=200}={}){
+    for(const [key,value] of Object.entries({maxConcurrent,maxQueue,memoryLimit})){
+      if(!Number.isSafeInteger(value)||value<1)throw new RangeError(key+' must be a positive integer');
+    }
+    this.maxConcurrent=maxConcurrent;this.maxQueue=maxQueue;this.memoryLimit=memoryLimit;
+    this.handlers=new Map();this.queue=[];this.active=0;this.memory=[];
+    this.stats={accepted:0,completed:0,failed:0,rejected:0};
+  }
+  register(name,handler){
+    if(typeof name!=='string'||!/^[a-z][a-z0-9_-]{0,63}$/i.test(name))throw new TypeError('Invalid cell name');
+    if(typeof handler!=='function')throw new TypeError('Cell handler must be a function');
+    if(this.handlers.has(name))throw new Error('Cell already registered: '+name);
+    this.handlers.set(name,handler);return this;
+  }
+  dispatch(name,payload,{signal}={}){
+    if(!this.handlers.has(name))return Promise.reject(new Error('Unknown cell: '+name));
+    if(signal?.aborted)return Promise.reject(signal.reason||new Error('Aborted'));
+    if(this.queue.length>=this.maxQueue){this.stats.rejected++;return Promise.reject(new Error('RX hearts queue full'));}
+    this.stats.accepted++;
+    return new Promise((resolve,reject)=>{
+      const job={name,payload,signal,resolve,reject};
+      this.queue.push(job);this._drain();
+    });
+  }
+  _drain(){
+    while(this.active<this.maxConcurrent&&this.queue.length){
+      const job=this.queue.shift();
+      if(job.signal?.aborted){job.reject(job.signal.reason||new Error('Aborted'));continue;}
+      this.active++;
+      Promise.resolve().then(()=>this.handlers.get(job.name)(job.payload,{signal:job.signal}))
+        .then(result=>{this.stats.completed++;this._remember(job.name,'ok');job.resolve(result);},
+          error=>{this.stats.failed++;this._remember(job.name,'error');job.reject(error);})
+        .finally(()=>{this.active--;this._drain();});
+    }
+  }
+  _remember(cell,status){
+    this.memory.push({cell,status,time:new Date().toISOString()});
+    if(this.memory.length>this.memoryLimit)this.memory.shift();
+  }
+  snapshot(){
+    return {registeredCells:this.handlers.size,active:this.active,queued:this.queue.length,
+      stats:{...this.stats},recent:this.memory.slice(-10)};
+  }
+}
+function createRXHearts(){
+  const rx=new RXMillionHearts();
+  const cells=['code','security','tests','translations','diagnostics','history','performance','moderation','deploy','memory'];
+  for(const cell of cells)rx.register(cell,async payload=>({cell,status:'needs-integration',inputReceived:payload!==undefined}));
+  return rx;
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={RXMillionHearts,createRXHearts};
+if(typeof window!=='undefined')window.RXMillionHearts={RXMillionHearts,createRXHearts};
