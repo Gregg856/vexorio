@@ -76,6 +76,24 @@ const fs=require('node:fs');
   assert.equal(result.failed.length,1);
   assert.equal(result.failed[0].steps.length,1,'Only failed steps are returned');
   assert.equal(githubReads,1,'Admin reads GitHub once');
+  // Exercise filtered log extraction without exposing raw tokens or credentials.
+  let logRequests=0;
+  globalThis.fetch=async url=>{
+   const target=String(url);
+   if(target.endsWith('/auth/v1/user'))return Response.json({id:'authorized-admin'});
+   if(target.endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
+   if(target.includes('/actions/runs/123/jobs'))return Response.json({jobs:[{id:456,name:'deploy',conclusion:'failure',steps:[{name:'Build',conclusion:'failure'}]}]});
+   if(target.includes('/actions/jobs/456/logs')){logRequests++;return new Response(null,{status:302,headers:{Location:'https://example.blob.core.windows.net/logs/job.txt'}});}
+   if(target.includes('example.blob.core.windows.net'))return new Response('ERROR: build failed\\nERROR: token=very-secret\\nERROR: see https://private.example/path\\n',{status:200});
+   throw Error('Unexpected network request: '+target);
+  };
+  r=await worker.fetch(new Request(origin+'/api/rx/failed-steps?run_id=123&include_logs=1',{headers:{Authorization:'Bearer valid-token'}}),diagEnv);
+  assert.equal(r.status,200,'Admin may request filtered logs');
+  const logged=await r.json();
+  assert.equal(logRequests,1,'Fetch failed job log once');
+  assert.ok(logged.failed[0].messages.some(x=>x.includes('build failed')),'Safe error extracted');
+  assert.ok(!JSON.stringify(logged).includes('very-secret'),'Sensitive token must not reach response');
+  assert.ok(!JSON.stringify(logged).includes('private.example'),'URLs must be removed');
  }finally{globalThis.fetch=originalDiagFetch;}
  console.log('PASS RX workflow dispatch: method, origin, missing configuration and authentication');
 })().catch(e=>{console.error(e);process.exitCode=1});
