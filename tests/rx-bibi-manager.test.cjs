@@ -205,7 +205,7 @@ assert.ok(bibi.includes('Sprawdź otwieranie nowych okien'),'RX Developer 1.7 mu
 assert.ok(bibi.includes('postMessage() z targetOrigin *'),'RX Developer 1.7 must flag wildcard messaging');
 assert.ok(bibi.includes('Sprawdź przekierowanie i walidację adresu'),'RX Developer 1.7 must flag redirects');
 console.log('PASS: RX Developer 1.7 security patterns');
-assert.ok(bibi.includes('RX Developer 1.9 — raport'),'RX Developer 1.9 report title');
+assert.ok(bibi.includes('RX Developer — raport analizy'),'RX Developer 1.9 report title');
 assert.ok(bibi.includes('const severity=issue=>'),'RX Developer must assign heuristic severity');
 assert.ok(bibi.includes('counts[severity(issue)]++'),'RX Developer must count severity levels');
 assert.ok(bibi.includes('Ocena heurystyczna — wymaga weryfikacji'),'RX Developer must disclose limitations');
@@ -245,3 +245,7 @@ console.log('PASS: RX Developer 9.0 read-only proposal export');
 for(const term of ['Priorytet przeglądu:', 'Lista kontrolna przed zatwierdzeniem:', 'Uruchom odpowiednie testy', 'Zatwierdź zmiany dopiero po przeglądzie'])assert.ok(bibi.includes(term),'RX Developer 9.2 proposal must contain '+term);
 assert.ok(bibi.includes("?'pilny':items.some"),'RX Developer 9.2 must calculate review priority');
 console.log('PASS: RX Developer 9.2 proposal priority and review checklist');
+
+assert.ok(!/RX Developer 1\.\d+/.test(bibi),'RX Developer UI must not expose stale 1.x version labels');
+assert.ok(bibi.includes('RX Developer — historia i ochrona danych'),'RX Developer history heading must be consistent');
+console.log('PASS: RX Developer consistent headings');
