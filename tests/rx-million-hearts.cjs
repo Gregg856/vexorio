@@ -4,6 +4,17 @@ const {RXMillionHearts,createRXHearts}=require('../rx-million-hearts.js');
 (async()=>{
  const rx=createRXHearts();
  assert.equal(rx.snapshot().registeredCells,10);
+ assert.equal(rx.rememberFailure('tests','mobile_overflow'),1);
+ assert.equal(rx.snapshot().recurringFailures.length,0);
+ assert.equal(rx.rememberFailure('tests','mobile_overflow'),2);
+ assert.deepEqual(rx.snapshot().recurringFailures,[{cell:'tests',code:'mobile_overflow',count:2}]);
+ assert.throws(()=>rx.rememberFailure('tests','secret=abc'),/Invalid failure code/);
+ const limitedMemory=new RXMillionHearts({memoryLimit:1});
+ limitedMemory.register('tests',async()=>true);
+ limitedMemory.rememberFailure('tests','first');
+ limitedMemory.rememberFailure('tests','second');
+ assert.equal(limitedMemory.failurePatterns.size,1);
+
  assert.equal(rx.snapshot().logicalHeads,1000);
  const million=new RXMillionHearts({logicalHeads:1000000,maxConcurrent:2,maxQueue:3});
  assert.equal(million.snapshot().logicalHeads,1000000);
