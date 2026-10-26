@@ -6,6 +6,38 @@
  const save=document.getElementById('rxQueenSaveMemory');
  const clear=document.getElementById('rxQueenClearMemory');
  const key='rx_queen_verified_memory_v1';
+ // Read-only task triage: ants propose checks, Queen explicitly approves a plan.
+ const taskInput=document.getElementById('rxQueenTask');
+ const analyzeTask=document.getElementById('rxQueenTaskAnalyze');
+ const approveTask=document.getElementById('rxQueenTaskApprove');
+ const taskResult=document.getElementById('rxQueenTaskResult');
+ let proposedTask=null;
+ const classifyTask=description=>{
+  const text=description.toLocaleLowerCase('pl');
+  const cells=[];
+  if(/błąd|blad|test|awari|nie działa|nie dziala|fail/.test(text))cells.push('tests','diagnostics');
+  if(/kod|javascript|css|html|funkcj|skrypt/.test(text))cells.push('code');
+  if(/hasł|hasl|sekret|token|bezpiecz|uprawnien/.test(text))cells.push('security');
+  if(/wydajno|wolno|szybko|opóźn|opozn/.test(text))cells.push('performance');
+  if(!cells.length)cells.push('diagnostics');
+  return [...new Set(cells)];
+ };
+ const resetTask=()=>{proposedTask=null;if(approveTask)approveTask.disabled=true;};
+ taskInput?.addEventListener('input',resetTask);
+ analyzeTask?.addEventListener('click',()=>{
+  const description=taskInput?.value.trim()||'';
+  if(!description||description.length>2000){if(taskResult)taskResult.textContent='Wpisz zadanie (maksymalnie 2000 znaków).';resetTask();return;}
+  const cells=classifyTask(description);
+  proposedTask={description,cells};
+  if(approveTask)approveTask.disabled=false;
+  if(taskResult)taskResult.textContent='🐜 Plan mrówek (reguły, bez modelu AI)\\nZadanie: '+description+'\\nKomórki: '+cells.join(', ')+'\\nKroki: 1. Analiza 2. Testy 3. Raport dla Królowej 4. Ręczna decyzja\\nStatus: OCZEKUJE NA ZATWIERDZENIE. Niczego nie wykonano.';
+ });
+ approveTask?.addEventListener('click',()=>{
+  if(!proposedTask||taskInput?.value.trim()!==proposedTask.description)return;
+  if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\\nZadanie: '+proposedTask.description+'\\nKomórki: '+proposedTask.cells.join(', ')+'\\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
+  resetTask();
+ });
+
  // RX NEURON 2.4: opt-in, local-only transfer of approved fixes.
  const exportButton=document.getElementById('rxQueenExportMemory');
  const importButton=document.getElementById('rxQueenImportPreview');
