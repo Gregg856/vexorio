@@ -10,17 +10,24 @@ export default {
       const command=url.searchParams.get('command');
       if(command!=='RX STATUS')return new Response(JSON.stringify({ok:false,error:'unknown_command'}),{status:400,headers});
       try{
-        const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=15',{
-          headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Direct-2076'},
-          signal:AbortSignal.timeout(8000)
-        });
-        if(!response.ok)throw new Error('github_unavailable');
-        const data=await response.json();
-        const names=['RX BIBI Tester — mobile browser','VEXORIO checks','Deploy VEXORIO'];
-        const runs=names.map(name=>{
-          const run=data.workflow_runs?.find(item=>item.name===name);
-          return run?{name,number:run.run_number,status:run.status,result:run.conclusion||null,link:run.html_url}:{name,status:'unknown',result:null};
-        });
+        const workflows=[
+          {name:'RX BIBI Tester — mobile browser',file:'rx-bibi-browser.yml'},
+          {name:'VEXORIO checks',file:'checks.yml'},
+          {name:'Deploy VEXORIO',file:'deploy.yml'}
+        ];
+        const runs=await Promise.all(workflows.map(async ({name,file})=>{
+          try{
+            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+file+'/runs?per_page=1',{
+              headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Direct-2076'},
+              signal:AbortSignal.timeout(8000)
+            });
+            if(!response.ok)return {name,status:'unavailable',result:null};
+            const data=await response.json();
+            const run=data.workflow_runs?.[0];
+            return run?{name,number:run.run_number,status:run.status,result:run.conclusion||null,link:run.html_url}:{name,status:'unknown',result:null};
+          }catch{return {name,status:'unavailable',result:null};}
+        }));
+        if(runs.every(run=>run.status==='unavailable'))throw new Error('github_unavailable');
         return new Response(JSON.stringify({ok:true,command:'RX STATUS',source:'github-actions',runs}),{status:200,headers});
       }catch{
         return new Response(JSON.stringify({ok:false,command:'RX STATUS',error:'status_temporarily_unavailable'}),{status:502,headers});
