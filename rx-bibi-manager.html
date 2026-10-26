@@ -706,6 +706,28 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(c===quote){mode='code';masked.push(' ');continue;}
     masked.push(newline?c:' ');continue;
    }
+   // A slash following an expression starter can begin a regular-expression literal.
+   if(c==='/'&&next!=='/'&&next!=='*'){
+    const prefix=masked.join('').replace(/\s+$/,'');
+    const previous=prefix.slice(-1);
+    if(!previous||/[=(:,!&|?;{\[+*%-]/.test(previous)){
+     let j=i+1,inClass=false,escapeRegex=false,closed=false;
+     for(;j<code.length;j++){
+      const ch=code[j];
+      if(ch==='\n'||ch==='\r')break;
+      if(escapeRegex){escapeRegex=false;continue;}
+      if(ch==='\\'){escapeRegex=true;continue;}
+      if(ch==='[')inClass=true;
+      else if(ch===']')inClass=false;
+      else if(ch==='/'&&!inClass){closed=true;break;}
+     }
+     if(closed){
+      for(;i<=j;i++)masked.push(' ');
+      i--;
+      continue;
+     }
+    }
+   }
    if(c==='/'&&next==='/'){masked.push(' ',' ');i++;mode='line';continue;}
    if(c==='/'&&next==='*'){masked.push(' ',' ');i++;mode='block';continue;}
    if(c==='"'||c==="'"||c==='`'){var quote=c;mode='string';masked.push(' ');continue;}
