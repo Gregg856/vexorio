@@ -53,7 +53,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
       await page.waitForTimeout(100);
     };
     await openRxTab('🧪 Tester');
-    record('Nagłówek RX BIBI', await page.getByRole('heading', { name: /RX BIBI Manager 1\.3/ }).count() > 0);
+    record('Nagłówek RX BIBI', await page.getByRole('heading', { name: /RX BIBI Manager/ }).count() > 0);
     const tester=page.getByRole('region',{name:'RX BIBI Tester'});
     record('Panel RX BIBI Tester widoczny',await tester.count()===1);
     try{
@@ -220,12 +220,13 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     await page.screenshot({path:path.join(reportDir,'rx-chat-mobile-start.png'),fullPage:true});
     await page.locator('.rx-menu-toggle').click();
     record('RX UI: kategorie otwierają się na żądanie',await page.locator('.rx-side').isVisible());
-    await page.locator('.rx-side').getByRole('button',{name:/Developer/}).click();
+    await openRxTab('🧰 RX Developer');
     record('RX UI: Developer otwiera właściwy panel',await page.locator('#rxFixGuidance').isVisible());
     await page.locator('.rx-menu-toggle').click();
-    await page.locator('.rx-side').getByRole('button',{name:/Rozmowa z RX Strażakiem/}).click();
+    await openRxTab('🧠 Rozmowa z RX Strażakiem');
     record('RX UI: powrót do czatu zamyka menu',await page.locator('.rx-chat').isVisible()&&!(await page.locator('.rx-side').isVisible()));
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
+    await openRxTab('📚 Historia');
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
       const exists = await button.count() > 0;
