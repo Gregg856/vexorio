@@ -129,3 +129,9 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Hourly existing GitHub Actions workflow executes it and uploads a 7-day artifact; no ongoing process between runs, no model weights trained, no automatic code edits, no production DB changes or costs beyond existing CI quotas.
 - `tests/rx-ant-lab.cjs` checks expected experiment outcome.
 - RX DNA CLOUD MEMORY 4.0 adapter remains unconnected to live staging. Existing staging `rx_private.ant_memory` is for different ant snapshots and must not be reused without a validated schema and auth migration.
+
+## RX DNA CLOUD MEMORY — staging connection
+- Created `rx_private.dna_lineage_memory` in Supabase STAGING `owkjdlpawczrnwyszduj` with RLS, private grants, JSON shape and size constraints, revision.
+- Created admin-gated `public.rx_dna_lineage_staging_read/write` RPCs using authenticated user identity and `public.is_vexorio_admin()`; anon EXECUTE revoked. Verified table/RLS/grants via SQL.
+- `rx-dna-lineage-staging.cjs` connects `createCloudLineage` to these RPCs using logged-in admin JWT; `tests/rx-dna-lineage-staging.cjs` tests transport with mock fetch.
+- Not yet tested end-to-end with real admin JWT. No automatic uploads or model training; do not claim cloud persistence for RX Queen until a live authenticated write/read succeeds. Production untouched.
