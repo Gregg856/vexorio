@@ -23,6 +23,6 @@ function createEvolutionEngine(){
   p.status='approved_for_manual_implementation';p.review.reviewedBy=reviewedBy;
   return structuredClone(p);
  }
- return Object.freeze({propose,evaluate,approve,list:()=>[...proposals.values()].map(structuredClone)});
+ return Object.freeze({propose,evaluate,approve,list:()=>[...proposals.values()].map(item=>structuredClone(item))});
 }
 module.exports={createEvolutionEngine};
