@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {analyzeLightCurve}=require('../rx-stellar-signal.cjs');
+const curve=[10,10.1,9.9,10.2,9.8,10.1,10,15].map((brightness,i)=>({id:'o'+i,observedAt:new Date(Date.UTC(2026,0,i+1)).toISOString(),brightness}));
+const result=analyzeLightCurve(curve);
+assert.equal(result.status,'analyzed');
+assert.deepEqual(result.flags.map(x=>x.id),['o7']);
+assert.equal(analyzeLightCurve(curve.slice(0,2)).status,'insufficient_data');
+assert.equal(analyzeLightCurve(curve.map(x=>({...x,brightness:10}))).status,'flat_baseline');
+assert.throws(()=>analyzeLightCurve([curve[0],curve[0]]),/Invalid observation/);
+assert.throws(()=>analyzeLightCurve(curve,{threshold:0}),/Invalid analysis settings/);
+console.log('PASS RX Stellar Signal anomaly screening and bounds');
