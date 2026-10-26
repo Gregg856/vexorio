@@ -39,6 +39,9 @@ jobs:
           test -s public/rx-bibi-manager.html
           grep -Eq 'RX BIBI Manager 1\.[0-9]+' public/rx-bibi-manager.html
           cp guard-lab.js public/guard-lab.js
+          # RX Queen is loaded by guard-lab.html; ship it with the static assets.
+          cp guard-rx-queen-panel.js public/guard-rx-queen-panel.js
+          test -s public/guard-rx-queen-panel.js
           cp guard-rx-conversation.js public/guard-rx-conversation.js
           cp guard-rx-orchestrator.js public/guard-rx-orchestrator.js
           cp guard-rx-browser.js public/guard-rx-browser.js
