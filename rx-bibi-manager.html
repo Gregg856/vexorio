@@ -440,6 +440,14 @@ async function refresh(){
             if(job.log_notice)secureOutput.append(document.createElement('br'),document.createTextNode(String(job.log_notice)));
           }
           secureOutput.append(document.createTextNode(' '+String(payload.notice||'')));
+          const copyButton=document.createElement('button');
+          copyButton.type='button';copyButton.textContent='Kopiuj diagnozę RX';
+          copyButton.addEventListener('click',async()=>{
+            const report='RX BIBI — diagnostyka uruchomienia '+String(run.id)+'\n'+secureOutput.innerText+'\nGitHub: https://github.com/Gregg856/vexorio/actions/runs/'+String(run.id);
+            try{await navigator.clipboard.writeText(report);copyButton.textContent='Skopiowano';}
+            catch{copyButton.textContent='Kopiowanie niedostępne';}
+          });
+          secureDetails.append(copyButton);
         }catch(error){secureOutput.textContent='Nie udało się pobrać: '+String(error.message||error);}
         finally{secureButton.disabled=false;}
       });
