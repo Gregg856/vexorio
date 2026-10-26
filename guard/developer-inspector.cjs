@@ -17,6 +17,9 @@ function inspectSource({path,source}={}){
  ];
  for(const rule of rules){
   for(const match of source.matchAll(rule.pattern)){
+   const lineStart=source.lastIndexOf('\n',match.index-1)+1;
+   // Ignore matches in full-line JavaScript comments; keep executable lines unchanged.
+   if(/^\s*\/\//.test(source.slice(lineStart,match.index)))continue;
    const line=source.slice(0,match.index).split('\n').length;
    findings.push({rule:rule.id,severity:rule.severity,line,message:rule.message});
    if(findings.length>=50)break;
