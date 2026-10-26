@@ -9,6 +9,12 @@ const {RXMillionHearts,createRXHearts}=require('../rx-million-hearts.js');
  assert.equal(rx.rememberFailure('tests','mobile_overflow'),2);
  assert.deepEqual(rx.snapshot().recurringFailures,[{cell:'tests',code:'mobile_overflow',count:2}]);
  assert.throws(()=>rx.rememberFailure('tests','secret=abc'),/Invalid failure code/);
+ assert.equal(rx.suggestKnownFix('tests','mobile_overflow'),null);
+ assert.throws(()=>rx.rememberVerifiedFix('tests','mobile_overflow','fix_001'),/Verified tests required/);
+ assert.equal(rx.rememberVerifiedFix('tests','mobile_overflow','fix_001',{testsPassed:true}).verifiedFix,'fix_001');
+ assert.deepEqual(rx.suggestKnownFix('tests','mobile_overflow'),{cell:'tests',code:'mobile_overflow',fixId:'fix_001',requiresApproval:true});
+ assert.throws(()=>rx.rememberVerifiedFix('tests','mobile_overflow','../unsafe',{testsPassed:true}),/Invalid fix ID/);
+
  const limitedMemory=new RXMillionHearts({memoryLimit:1});
  limitedMemory.register('tests',async()=>true);
  limitedMemory.rememberFailure('tests','first');
