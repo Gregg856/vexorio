@@ -93,3 +93,10 @@ assert.ok(severityReport.findings.every(f=>typeof f.message==='string'&&f.messag
 assert.ok(severityReport.findings.every(f=>!('source' in f)&&!('match' in f)));
 assert.ok(!JSON.stringify(severityReport).includes('abcdefghijklmnopqrstuvwxyz123456'));
 console.log('PASS: RX Developer 2.3 safe severity, line and secret-free reports');
+
+assert.deepEqual(severityReport.summary,{high:2,medium:1,low:1,total:4});
+assert.deepEqual(inspectSource({path:'src/empty.js',source:'const ok = true;'}).summary,{high:0,medium:0,low:0,total:0});
+assert.equal(capped.summary.total,50);
+assert.equal(capped.summary.high,50);
+assert.ok(!JSON.stringify(severityReport.summary).includes('abcdefghijklmnopqrstuvwxyz123456'));
+console.log('PASS: RX Developer 2.3 severity summary and finding cap');
