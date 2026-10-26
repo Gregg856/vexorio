@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'rx-bibi-manager.html'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
       - '.github/workflows/rx-bibi-browser.yml'
