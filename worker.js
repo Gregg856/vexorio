@@ -1,6 +1,8 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Backward-compatible alias: the existing Strażak lives at /guard-lab.html.
+    if(url.pathname==='/rx-strazak.html')return Response.redirect(url.origin+'/guard-lab.html',302);
     // RX DIRECT 2076: safe, read-only live status; no deploy or code mutation.
     if(url.pathname==='/api/rx/direct'){
       const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
