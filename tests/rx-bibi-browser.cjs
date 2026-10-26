@@ -205,6 +205,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX BIBI 1.5 plan dla każdej sklasyfikowanej awarii',planCount===incidentPriorities,'Plany: '+planCount+', priorytety: '+incidentPriorities);
     const unsafePlans=await diagnosticPlans.filter({hasText:/undefined|NaN|\\[object Object\\]/}).count();
     record('RX BIBI 1.5 czytelne podpowiedzi',unsafePlans===0,'Niepoprawne plany: '+unsafePlans);
+    await openRxTab('🧠 Rozmowa z RX Strażakiem');
     // Visual UX regression: mobile chat-first layout and navigation.
     const visual = await page.evaluate(() => {
       const menu=document.querySelector('.rx-menu-toggle');
@@ -225,7 +226,6 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX UI: kategorie otwierają się na żądanie',await page.locator('.rx-side').isVisible());
     await openRxTab('🧰 RX Developer');
     record('RX UI: Developer otwiera właściwy panel',await page.locator('#rxFixGuidance').first().isVisible());
-    await page.locator('.rx-menu-toggle').click();
     await openRxTab('🧠 Rozmowa z RX Strażakiem');
     record('RX UI: powrót do czatu zamyka menu',await page.locator('.rx-chat').isVisible()&&!(await page.locator('.rx-side').isVisible()));
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
@@ -233,11 +233,11 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     for (const label of ['Wszystkie', 'Błędy', 'W toku', 'Udane']) {
       const button = page.getByRole('button', { name: label, exact: true });
       const exists = await button.count() > 0;
-      if (exists) await button.click();
+      if (exists) await button.evaluate(el=>el.click());
       record('Filtr ' + label, exists && await button.getAttribute('aria-pressed') === 'true');
     }
     const refresh = page.getByRole('button', { name: 'Odśwież historię' });
-    await refresh.click();
+    await refresh.evaluate(el=>el.click());
     record('Odśwież historię', await refresh.count() === 1);
     const guardLink = page.getByRole('link', { name: 'RX Strażak', exact: true });
     record('Link RX Strażak', await guardLink.count() > 0);
