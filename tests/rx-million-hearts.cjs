@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {RXMillionHearts,createRXHearts}=require('../rx-million-hearts.js');
+(async()=>{
+ const rx=createRXHearts();
+ assert.equal(rx.snapshot().registeredCells,10);
+ assert.equal((await rx.dispatch('tests',{id:1})).status,'needs-integration');
+ const bounded=new RXMillionHearts({maxConcurrent:1,maxQueue:1});
+ let release;
+ bounded.register('slow',()=>new Promise(resolve=>{release=resolve;}));
+ const first=bounded.dispatch('slow');
+ await Promise.resolve();await Promise.resolve();
+ const second=bounded.dispatch('slow');
+ await assert.rejects(bounded.dispatch('slow'),/queue full/);
+ release('one');assert.equal(await first,'one');
+ await Promise.resolve();await Promise.resolve();
+ release('two');assert.equal(await second,'two');
+ assert.equal(bounded.snapshot().stats.completed,2);
+ console.log('RX MILION SERC 1.0: PASS');
+})().catch(err=>{console.error(err);process.exitCode=1;});
