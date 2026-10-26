@@ -13,6 +13,8 @@ on:
       - 'worker.js'
       - 'rx-million-hearts.js'
       - 'rx-dna-core.js'
+      - 'rx-dna-store-server.cjs'
+      - 'tests/rx-dna-store.cjs'
       - 'tests/rx-dna-core.cjs'
       - 'RX-DNA-BLACK-BOX.md'
       - 'rx-command-bridge.js'
@@ -58,6 +60,8 @@ jobs:
         run: node --check guard-rx-queen-panel.js
       - name: Sprawdź RX DNA CLOUD
         run: node tests/rx-dna-core.cjs
+      - name: Sprawdź prywatny magazyn RX DNA
+        run: node tests/rx-dna-store.cjs
       - name: Sprawdź silnik RX MILION SERC
         run: node tests/rx-million-hearts.cjs
       - name: Sprawdź RX COMMAND BRIDGE
