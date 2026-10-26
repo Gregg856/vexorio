@@ -454,7 +454,7 @@ const rxBrowserAdapter=require('fs').readFileSync(require('path').join(__dirname
 const rxBrowserContext={window:{}};
 require('vm').runInNewContext(rxBrowserAdapter,rxBrowserContext);
 assert.equal(rxBrowserContext.window.RXDeveloperCore.analyzeJavaScript("eval('1')").summary.high,1);
-assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.0'));
+assert.ok(bibi.includes('🧪 Testuj nowy RX Core 0.3.1'));
 assert.ok(bibi.includes('/guard/rx-developer-core-browser.js'));
 assert.ok(bibi.includes('window.RXDeveloperCore.analyzeJavaScript(source)'));
 console.log('PASS: RX Developer Core opt-in browser integration');
