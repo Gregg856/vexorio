@@ -35,6 +35,14 @@ try{
  const syntaxReport=scan(dir);
  assert.ok(syntaxReport.files.find(f=>f.path==='guard/broken.js').findings.some(f=>f.rule==='syntax-error'&&f.severity==='high'));
  assert.ok(!syntaxReport.files.find(f=>f.path==='guard/helper.cjs').findings.some(f=>f.rule==='syntax-error'));
+ const external=fs.mkdtempSync(path.join(os.tmpdir(),'guard-outside-'));
+ try{
+  fs.writeFileSync(path.join(external,'outside.js'),'eval(secret);');
+  fs.symlinkSync(path.join(external,'outside.js'),path.join(dir,'guard-code-ui.js'));
+  const symlinkResult=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
+  assert.equal(symlinkResult.error,'unsafe_file_type');
+  assert.equal(symlinkResult.findings,undefined);
+ }finally{fs.rmSync(external,{recursive:true,force:true});}
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
