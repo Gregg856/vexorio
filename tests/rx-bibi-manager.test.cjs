@@ -393,3 +393,17 @@ for(const [label,input,needle,expected] of [
  assert.equal(output.includes(needle),expected,'RX Core lexical behavior: '+label);
 }
 console.log('PASS: RX Developer Core independent lexical scanner');
+
+for(const [label,input,needle,expected] of [
+ ['regex literal',"const re=/eval\\(1\\)/;",'eval',false],
+ ['regex character class',"const re=/[a/b]eval/gi;",'eval',false],
+ ['regex escaped slash',"const re=/a\\/b eval/;",'eval',false],
+ ['division expression',"const ratio=total / count; eval('1')",'eval',true],
+ ['regex in interpolation',"const t=\x60\${/eval/.test(x)}\x60",'eval',false],
+ ['executable after regex',"const re=/x/; eval('1')",'eval',true]
+]){
+ const output=rxCoreMask(input);
+ assert.equal(output.length,input.length,'RX Core regex preserves offsets: '+label);
+ assert.equal(output.includes(needle),expected,'RX Core regex behavior: '+label);
+}
+console.log('PASS: RX Developer Core regex masking and division behavior');
