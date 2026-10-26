@@ -44,6 +44,14 @@ try{
   assert.equal(symlinkResult.findings,undefined);
   fs.unlinkSync(path.join(dir,'guard-code-ui.js'));
  }finally{fs.rmSync(external,{recursive:true,force:true});}
+ const linkedRoot=fs.mkdtempSync(path.join(os.tmpdir(),'guard-linked-root-'));
+ try{
+  fs.symlinkSync(path.join(dir,'guard'),path.join(linkedRoot,'guard'),'dir');
+  const linkedNames=listFiles(linkedRoot);
+  assert.ok(!linkedNames.some(name=>name.startsWith('guard/')),'symlinked directories must not be traversed');
+  const linkedScan=scan(linkedRoot);
+  assert.ok(!linkedScan.files.some(f=>f.path.startsWith('guard/')),'symlinked directories must not be scanned');
+ }finally{fs.rmSync(linkedRoot,{recursive:true,force:true});}
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
