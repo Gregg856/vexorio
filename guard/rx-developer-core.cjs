@@ -75,7 +75,9 @@ function analyzeJavaScript(source){
   while((match=rule.pattern.exec(masked))!==null){
    const offset=match.index;
    const line=source.slice(0,offset).split('\n').length;
-   findings.push({id:rule.id,severity:rule.severity,line,column:offset-source.lastIndexOf('\n',offset-1),message:rule.message,advice:rule.advice});
+   const lineStart=source.lastIndexOf('\n',offset-1)+1;
+   const column=offset-lineStart+1;
+   findings.push({id:rule.id,severity:rule.severity,line,column,message:rule.message,advice:rule.advice});
    if(match[0].length===0)rule.pattern.lastIndex++;
   }
  }
