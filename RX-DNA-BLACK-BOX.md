@@ -71,3 +71,9 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Added `tests/rx-money-engine.cjs` to RX CI; checks approval requirement and 70/30 split.
 - **Not live:** no customer acquisition, no payments, no financial accounts, no scheduled agents, no persistent ledger, no authenticated owner approval. No mining. This is a local software prototype only.
 - Next: persistent append-only staging ledger with authenticated approval, idempotency, bounded scheduling, legal/commercial review and cost controls. No autonomous payments.
+
+## RX EVOLUTION + MONEY RADAR 1.0
+- Added `rx-evolution-engine.cjs`: bounded proposal queue, tests/security evaluation flags, human approval before any manual implementation. It does not generate, execute, or deploy code.
+- Added `rx-money-radar.cjs`: bounded, deduplicated, research-only opportunity records with estimated revenue and cost; no crawling, outreach, billing or payment.
+- Added `tests/rx-evolution-radar.cjs` to RX CI.
+- Still pending: verified external leads, persistence in staging, trusted owner authorization, and any background scheduler. Zero autonomous spending.
