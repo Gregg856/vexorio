@@ -430,7 +430,7 @@ for(const [label,code,ruleId] of [
  assert.ok(report.findings.some(x=>x.id===ruleId),'RX Core security rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// document.cookie = 'x'\nconst s = 'new Function()';").summary.total,0);
-assert.equal(rxCoreAnalyze("const x = 1;").version,'0.2.0');
+assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.0');
 console.log('PASS: RX Developer Core ten security rules');
 
 const rxColumnReport=rxCoreAnalyze("  eval('x');\n    document.write('ok');");
