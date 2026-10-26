@@ -29,5 +29,29 @@ function createDNABackup(dna,antMemory){
  if(new Set(entries.map(x=>x.code)).size!==entries.length)throw new TypeError('Duplicate memory entry');
  return {version:1,dna:verified,memory:{version:1,ants:[{head:verified.id,entries}]}};
 }
-if(typeof module!=='undefined'&&module.exports)module.exports={createAntDNA,validateAntDNA,createDNABackup};
-if(typeof window!=='undefined')window.RXDNACore={createAntDNA,validateAntDNA,createDNABackup};
+// FNV-1a 32-bit checksum detects accidental corruption; NOT cryptographic authentication.
+function dnaChecksum(backup){
+ const normalized=JSON.stringify(backup);
+ let hash=0x811c9dc5;
+ for(let i=0;i<normalized.length;i++){
+  const c=normalized.charCodeAt(i);
+  hash=Math.imul(hash^c,0x01000193)>>>0;
+ }
+ return hash.toString(16).padStart(8,'0');
+}
+function sealDNABackup(dna,antMemory){
+ const backup=createDNABackup(dna,antMemory);
+ return {format:'RX-DNA-BACKUP-1',backup,checksum:dnaChecksum(backup)};
+}
+function verifyDNABackup(sealed){
+ if(!sealed||sealed.format!=='RX-DNA-BACKUP-1'||!sealed.backup||typeof sealed.checksum!=='string'||!/^[0-9a-f]{8}$/.test(sealed.checksum))throw new TypeError('Invalid sealed backup');
+ if(dnaChecksum(sealed.backup)!==sealed.checksum)throw new Error('DNA backup checksum mismatch');
+ const backup=sealed.backup;
+ if(backup.version!==1||!backup.memory||backup.memory.version!==1||!Array.isArray(backup.memory.ants)||backup.memory.ants.length!==1)throw new TypeError('Invalid DNA backup structure');
+ const dna=validateAntDNA(backup.dna);
+ const reconstructed=createDNABackup(dna,backup.memory);
+ if(JSON.stringify(reconstructed)!==JSON.stringify(backup))throw new TypeError('Noncanonical DNA backup');
+ return reconstructed;
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={createAntDNA,validateAntDNA,createDNABackup,sealDNABackup,verifyDNABackup};
+if(typeof window!=='undefined')window.RXDNACore={createAntDNA,validateAntDNA,createDNABackup,sealDNABackup,verifyDNABackup};
