@@ -180,3 +180,18 @@ assert.deepEqual(timerReport.findings.map(f=>[f.rule,f.severity,f.line]),[
 ]);
 assert.equal(timerReport.summary.high,3);
 console.log('PASS: RX Developer 3.0 string-based timer execution and false-positive checks');
+
+const jsUrlReport=inspectSource({path:'src/navigation.js',source:[
+ 'location.href = "javascript:alert(1)";',
+ "window.open('javascript:alert(2)');",
+ 'location = "https://example.org";',
+ 'const example = "location.href = \'javascript:alert(1)\'";',
+ '// location.href = "javascript:alert(3)";',
+ 'location.href = "JAVASCRIPT:alert(4)";'
+].join('\n')});
+assert.deepEqual(jsUrlReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['javascript-url','high',1],
+ ['javascript-url','high',2],
+ ['javascript-url','high',6]
+]);
+console.log('PASS: RX Developer 3.1 javascript navigation URL detection and quoted-text exclusion');
