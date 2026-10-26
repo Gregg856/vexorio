@@ -233,3 +233,16 @@ assert.deepEqual(outerReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['outer-html','medium',4]
 ]);
 console.log('PASS: RX Developer 3.4 outerHTML detection and quoted/comment exclusions');
+
+const parserReport=inspectSource({path:'src/parser.js',source:[
+ 'parser.parseFromString(userHtml, "text/html");',
+ 'parser.parseFromString(xml, "application/xml");',
+ 'const example = "parser.parseFromString(x, \'text/html\')";',
+ '// parser.parseFromString(malicious, "text/html");',
+ "parser.parseFromString(otherHtml, 'text/html');"
+].join('\n')});
+assert.deepEqual(parserReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['domparser-html','medium',1],
+ ['domparser-html','medium',5]
+]);
+console.log('PASS: RX Developer 3.5 DOMParser HTML detection and safe XML/text exclusions');
