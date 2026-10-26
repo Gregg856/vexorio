@@ -45,7 +45,8 @@ function inspectSource({path,source}={}){
   }
   if(findings.length>=50)break;
  }
- findings.sort((a,b)=>a.line-b.line);
+ const severityRank={high:0,medium:1,low:2};
+ findings.sort((a,b)=>severityRank[a.severity]-severityRank[b.severity]||a.line-b.line);
  const summary={high:0,medium:0,low:0,total:findings.length};
  for(const finding of findings)summary[finding.severity]++;
  return {path,lines:source.split('\n').length,findings,summary,limited:findings.length>=50,readOnly:true};
