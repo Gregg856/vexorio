@@ -224,7 +224,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     await page.locator('.rx-menu-toggle').click();
     record('RX UI: kategorie otwierają się na żądanie',await page.locator('.rx-side').isVisible());
     await openRxTab('🧰 RX Developer');
-    record('RX UI: Developer otwiera właściwy panel',await page.locator('#rxFixGuidance').isVisible());
+    record('RX UI: Developer otwiera właściwy panel',await page.locator('#rxFixGuidance').first().isVisible());
     await page.locator('.rx-menu-toggle').click();
     await openRxTab('🧠 Rozmowa z RX Strażakiem');
     record('RX UI: powrót do czatu zamyka menu',await page.locator('.rx-chat').isVisible()&&!(await page.locator('.rx-side').isVisible()));
