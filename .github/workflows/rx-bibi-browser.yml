@@ -14,6 +14,7 @@ on:
       - 'rx-million-hearts.js'
       - 'rx-dna-core.js'
       - 'tests/rx-dna-core.cjs'
+      - 'RX-DNA-BLACK-BOX.md'
       - 'rx-command-bridge.js'
       - 'tests/rx-command-bridge.cjs'
       - 'tests/rx-million-hearts.cjs'
@@ -68,6 +69,17 @@ jobs:
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         if: always()
         run: node tests/rx-bibi-studio.cjs
+      - name: RX BLACK BOX — raport uruchomienia
+        if: always()
+        env:
+          RX_RUN_ID: ${{ github.run_id }}
+          RX_SHA: ${{ github.sha }}
+          RX_REPO: ${{ github.repository }}
+          RX_WORKFLOW: ${{ github.workflow }}
+          RX_JOB_STATUS: ${{ job.status }}
+        run: |
+          mkdir -p rx-bibi-reports
+          node -e 'const fs=require("node:fs");const e=process.env;const report={schema:1,kind:"rx-black-box-ci",repository:e.RX_REPO,workflow:e.RX_WORKFLOW,runId:e.RX_RUN_ID,commit:e.RX_SHA,jobStatus:e.RX_JOB_STATUS,recordedAt:new Date().toISOString(),note:"CI job metadata; see GitHub Actions for per-step outcomes"};fs.writeFileSync("rx-bibi-reports/rx-black-box-run.json",JSON.stringify(report,null,2)+"\\n")'
       - name: Zachowaj raporty i zrzuty
         if: always()
         uses: actions/upload-artifact@v6
