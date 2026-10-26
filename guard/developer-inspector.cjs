@@ -34,6 +34,7 @@ function inspectSource({path,source}={}){
  }
  const rules=[
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
+  {id:'timer-string-code',severity:'high',pattern:/\b(?:setTimeout|setInterval)\s*\(\s*['"`]/g,message:'Timer otrzymał tekst zamiast funkcji. Może wykonywać kod dynamicznie.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
   {id:'inner-html',severity:'medium',pattern:/\.innerHTML\s*=/g,message:'Sprawdź, czy HTML nie zawiera niezaufanych danych.'},
   {id:'console-log',severity:'low',pattern:/\bconsole\.log\s*\(/g,message:'Sprawdź, czy logi nie ujawniają danych.'},
@@ -44,7 +45,7 @@ function inspectSource({path,source}={}){
   {id:'hardcoded-secret',severity:'high',pattern:/\b(?:api[_-]?key|secret|access[_-]?token)\s*[:=]\s*['"][A-Za-z0-9_-]{24,}['"]/gi,message:'Możliwy sekret wpisany bezpośrednio w kodzie. Nie umieszczaj go w publicznym repozytorium.'}
  ];
  for(const rule of rules){
-  const target=['insecure-http','postmessage-wildcard','hardcoded-secret'].includes(rule.id)?scanSource:codeSource;
+  const target=['insecure-http','postmessage-wildcard','hardcoded-secret','timer-string-code'].includes(rule.id)?scanSource:codeSource;
   for(const match of target.matchAll(rule.pattern)){
    // Text inside quoted strings is not executable code; keep real argument literals scannable.
    if(target===scanSource&&codeSource[match.index]===' ')continue;
