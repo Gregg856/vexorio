@@ -486,3 +486,26 @@ console.log('PASS: RX Core ignores nested location property false positives');
 const rxPostMessageResult=rxCoreAnalyze('messenger.postMessage("ok");\nwindow.postMessage("hello","https://example.org");\npostMessage("hi","*");\nother.window.postMessage("nested");');
 assert.deepEqual(rxPostMessageResult.findings.filter(x=>x.id==='RX009').map(x=>x.line),[2,3]);
 console.log('PASS: RX Core postMessage rule avoids arbitrary object methods');
+
+// Batch regression suite: 20 independent cases; no code execution.
+assert.equal(rxCoreAnalyze("obj.eval('x')").findings.filter(f=>f.id==="RX001").length,0,'RX batch 1: RX001');
+assert.equal(rxCoreAnalyze("eval('x')").findings.filter(f=>f.id==="RX001").length,1,'RX batch 2: RX001');
+assert.equal(rxCoreAnalyze("const x='innerHTML =';").findings.filter(f=>f.id==="RX002").length,0,'RX batch 3: RX002');
+assert.equal(rxCoreAnalyze("node.innerHTML = html;").findings.filter(f=>f.id==="RX002").length,1,'RX batch 4: RX002');
+assert.equal(rxCoreAnalyze("node.outerHTML = html;").findings.filter(f=>f.id==="RX003").length,1,'RX batch 5: RX003');
+assert.equal(rxCoreAnalyze("node.insertAdjacentHTML('beforeend',html);").findings.filter(f=>f.id==="RX004").length,1,'RX batch 6: RX004');
+assert.equal(rxCoreAnalyze("// console.log(secret)").findings.filter(f=>f.id==="RX005").length,0,'RX batch 7: RX005');
+assert.equal(rxCoreAnalyze("console.log('ok')").findings.filter(f=>f.id==="RX005").length,1,'RX batch 8: RX005');
+assert.equal(rxCoreAnalyze("document.write('hi')").findings.filter(f=>f.id==="RX006").length,1,'RX batch 9: RX006');
+assert.equal(rxCoreAnalyze("new Function('return 1')").findings.filter(f=>f.id==="RX007").length,1,'RX batch 10: RX007');
+assert.equal(rxCoreAnalyze("document.cookie = 'a=b'").findings.filter(f=>f.id==="RX008").length,1,'RX batch 11: RX008');
+assert.equal(rxCoreAnalyze("messenger.postMessage('hi')").findings.filter(f=>f.id==="RX009").length,0,'RX batch 12: RX009');
+assert.equal(rxCoreAnalyze("window.postMessage('hi','*')").findings.filter(f=>f.id==="RX009").length,1,'RX batch 13: RX009');
+assert.equal(rxCoreAnalyze("router.location.href = '/a'").findings.filter(f=>f.id==="RX010").length,0,'RX batch 14: RX010');
+assert.equal(rxCoreAnalyze("window.location.href = '/a'").findings.filter(f=>f.id==="RX010").length,1,'RX batch 15: RX010');
+assert.equal(rxCoreAnalyze("localStorage.setItem('k','v')").findings.filter(f=>f.id==="RX011").length,1,'RX batch 16: RX011');
+assert.equal(rxCoreAnalyze("window.open('/a')").findings.filter(f=>f.id==="RX012").length,1,'RX batch 17: RX012');
+assert.equal(rxCoreAnalyze("setInterval(()=>{},100)").findings.filter(f=>f.id==="RX013").length,1,'RX batch 18: RX013');
+assert.equal(rxCoreAnalyze("`eval('x')`").findings.filter(f=>f.id==="RX001").length,0,'RX batch 19: RX001');
+assert.equal(rxCoreAnalyze("/eval\\(/.test(input)").findings.filter(f=>f.id==="RX001").length,0,'RX batch 20: RX001');
+console.log('PASS: RX Core 20-case batch regression suite');
