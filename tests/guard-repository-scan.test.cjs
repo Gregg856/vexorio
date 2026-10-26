@@ -89,6 +89,8 @@ try{
  fs.symlinkSync(path.join(dir,'not-present.js'),brokenLink);
  const brokenReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
  assert.equal(brokenReport.error,'missing','broken links must be reported without crashing');
+ assert.equal(brokenReport.findings,undefined);
+ assert.equal(scan(dir).files.find(f=>f.path==='worker.js').error,'missing','missing regular file must be classified consistently');
  fs.unlinkSync(brokenLink);
  const blockedRoot=fs.mkdtempSync(path.join(os.tmpdir(),'guard-blocked-root-'));
  try{
