@@ -61,7 +61,9 @@ jobs:
       - name: Sprawdź RX DNA CLOUD
         run: node tests/rx-dna-core.cjs
       - name: Sprawdź prywatny magazyn RX DNA
-        run: node tests/rx-dna-store.cjs
+        run: |
+          node tests/rx-dna-store.cjs
+          node tests/rx-dna-cloud-gateway.cjs
       - name: Sprawdź silnik RX MILION SERC
         run: node tests/rx-million-hearts.cjs
       - name: Sprawdź RX COMMAND BRIDGE
