@@ -4,7 +4,8 @@
 async function render({files,duration=5,ratio='9:16',motion='zoom',transition='cut',caption='',captionPosition='bottom',audioFile=null,audioVolume=0.7,audioStart=0,onProgress=()=>{}}){
  if(!files||!files.length)throw Error('Dodaj zdjęcia, aby utworzyć film.');
  if(!root.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error('Ta przeglądarka nie obsługuje lokalnego nagrywania wideo.');
- const mime=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9'].find(x=>MediaRecorder.isTypeSupported(x));
+ const candidates=audioFile?['video/webm;codecs=vp8,opus','video/webm;codecs=vp9,opus','video/webm','video/mp4']:['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9'];
+ const mime=candidates.find(x=>MediaRecorder.isTypeSupported(x));
  if(!mime)throw Error('Przeglądarka nie obsługuje eksportu wideo MP4 ani WebM.');
  duration=Math.min(30,Math.max(1,Math.round(Number(duration)||5)));
  const sizes={'9:16':[540,960],'16:9':[960,540],'1:1':[720,720],'4:5':[640,800]};
