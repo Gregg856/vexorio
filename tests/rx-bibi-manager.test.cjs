@@ -463,6 +463,8 @@ const rxCoreSource=require('fs').readFileSync(require('path').join(__dirname,'..
 const rxBrowserExpected="// Browser adapter for RX Developer Core; do not edit independently.\n"+
  rxCoreSource.replace("module.exports={maskJavaScript,analyzeJavaScript};","if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});");
 assert.equal(rxBrowserAdapter,rxBrowserExpected,'RX Core browser adapter must stay synchronized with the source engine');
+assert.equal(rxCoreAnalyze('eval("1")').version,rxBrowserContext.window.RXDeveloperCore.analyzeJavaScript('eval("1")').version,'Browser and Node core versions must match');
+assert.ok(bibi.includes('Testuj nowy RX Core '+rxCoreAnalyze('').version),'Manager must show current Core version');
 console.log('PASS: RX Developer Core browser adapter synchronized with source');
 
 const rxLongSource=Array.from({length:3000},(_,i)=>i===2999?'eval("x")':'const safe'+i+'=1;').join('\n');
