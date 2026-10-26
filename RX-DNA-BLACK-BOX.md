@@ -108,3 +108,8 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 ## RX STELLAR SIGNAL 2.0
 - `rx-stellar-signal.cjs`: robust median/MAD anomaly screening for bounded light curves; tests in `tests/rx-stellar-signal.cjs` and RX CI.
 - Zero-MAD baseline returns `flat_baseline`, not a discovery. No real data feed, astrophysical calibration, uncertainty modeling or trained AI. Flags require independent scientific review.
+
+## RX DIGITAL DNA 2.0 — lineage
+- `rx-dna-lineage.cjs`: immutable, bounded in-memory lineage with approved/tested-parent requirement, depth and capacity limits, ancestry lookup.
+- `tests/rx-dna-lineage.cjs`: tests registered in RX CI.
+- Important: testsPassed and approved are caller-provided booleans, not authenticated evidence; no real rollback, persistence or automatic code inheritance yet. Future: verified CI evidence, durable version store and controlled rollback.
