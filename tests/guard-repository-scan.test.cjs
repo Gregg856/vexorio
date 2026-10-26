@@ -25,6 +25,17 @@ try{
  fs.mkdirSync(path.join(dir,'guard'));
  fs.writeFileSync(path.join(dir,'guard','developer-inspector.cjs'),'const inspect=1;');
  assert.equal(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.length,0,'generated browser asset should resolve to its source');
+ const externalAssets=fs.mkdtempSync(path.join(os.tmpdir(),'guard-assets-'));
+ try{
+  fs.writeFileSync(path.join(externalAssets,'script.js'),'const ok=1;');
+  fs.symlinkSync(externalAssets,path.join(dir,'linked-assets'),'dir');
+  fs.writeFileSync(path.join(dir,'guard-lab.html'),'<script src="/linked-assets/script.js"></script>');
+  assert.ok(scan(dir).files.find(f=>f.path==='guard-lab.html').findings.some(f=>f.rule==='missing-script'),'symlinked parent directory must be rejected');
+ }finally{
+  fs.unlinkSync(path.join(dir,'linked-assets'));
+  fs.rmSync(externalAssets,{recursive:true,force:true});
+  fs.writeFileSync(path.join(dir,'guard-lab.html'),'<script src="/guard-developer-inspector.js"></script>');
+ }
  fs.mkdirSync(path.join(dir,'tests'));
  fs.writeFileSync(path.join(dir,'guard','helper.cjs'),'const x=1;');
  fs.writeFileSync(path.join(dir,'tests','example.test.cjs'),'const x=1;');
