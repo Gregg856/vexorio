@@ -113,3 +113,8 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - `rx-dna-lineage.cjs`: immutable, bounded in-memory lineage with approved/tested-parent requirement, depth and capacity limits, ancestry lookup.
 - `tests/rx-dna-lineage.cjs`: tests registered in RX CI.
 - Important: testsPassed and approved are caller-provided booleans, not authenticated evidence; no real rollback, persistence or automatic code inheritance yet. Future: verified CI evidence, durable version store and controlled rollback.
+
+## RX DNA MEMORY 3.0
+- `rx-dna-lineage.cjs`: versioned snapshot and strict validated restore of bounded ancestry records.
+- `rx-dna-memory.cjs`: explicit opt-in local file save/load with temp-file rename, 2 MB cap, restrictive file mode; `tests/rx-dna-memory.cjs` in CI.
+- Important: local disk persistence only when caller explicitly invokes save; NOT Cloudflare durable storage, scheduled auto-save, cryptographic integrity, verified approvals, or rollback. Single-writer use only. Next: durable staging backend with authenticated access and concurrency protection.
