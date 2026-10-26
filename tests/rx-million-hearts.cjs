@@ -57,5 +57,18 @@ const {RXMillionHearts,createRXHearts}=require('../rx-million-hearts.js');
  assert.deepEqual(await Promise.all([a,low,urgent,equal]),['first','low','urgent','equal']);
  assert.deepEqual(order,['first','urgent','equal','low']);
  assert.equal(queen.snapshot().active,0);
+ const watch=new RXMillionHearts({maxConcurrent:1});
+ let finish;
+ watch.register('slow',()=>new Promise(resolve=>{finish=resolve;}));
+ const pending=watch.dispatch('slow');
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(watch.snapshot().active,1);
+ assert.equal(watch.stalledJobs(1).length<=1,true);
+ assert.throws(()=>watch.stalledJobs(0),/Invalid stall threshold/);
+ finish('done');
+ assert.equal(await pending,'done');
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(watch.stalledJobs(1).length,0);
+
  console.log('RX MILION SERC 1.0: PASS');
 })().catch(err=>{console.error(err);process.exitCode=1;});
