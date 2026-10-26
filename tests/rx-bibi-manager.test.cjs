@@ -407,3 +407,15 @@ for(const [label,input,needle,expected] of [
  assert.equal(output.includes(needle),expected,'RX Core regex behavior: '+label);
 }
 console.log('PASS: RX Developer Core regex masking and division behavior');
+
+const {analyzeJavaScript:rxCoreAnalyze}=require('../guard/rx-developer-core.cjs');
+const rxCoreReport=rxCoreAnalyze("const safe = 'eval(1)';\n// innerHTML = fake\nconst node = document.body;\nnode.innerHTML = userInput;\neval('1');");
+assert.equal(rxCoreReport.engine,'RX Developer Core');
+assert.equal(rxCoreReport.summary.total,2);
+assert.equal(rxCoreReport.summary.high,1);
+assert.equal(rxCoreReport.summary.medium,1);
+assert.deepEqual(rxCoreReport.findings.map(x=>[x.id,x.line]),[['RX002',4],['RX001',5]]);
+assert.equal(rxCoreAnalyze("const text = \x60eval(1)\x60;").summary.total,0);
+assert.equal(rxCoreAnalyze("const text = \x60\${eval('1')}\x60;").summary.high,1);
+assert.equal(rxCoreAnalyze("const re = /eval/;").summary.total,0);
+console.log('PASS: RX Developer Core structured rule engine and false-positive guards');
