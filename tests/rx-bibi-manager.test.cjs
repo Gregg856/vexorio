@@ -430,7 +430,7 @@ for(const [label,code,ruleId] of [
  assert.ok(report.findings.some(x=>x.id===ruleId),'RX Core security rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// document.cookie = 'x'\nconst s = 'new Function()';").summary.total,0);
-assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.0');
+assert.equal(rxCoreAnalyze("const x = 1;").version,'0.3.1');
 console.log('PASS: RX Developer Core ten security rules');
 
 const rxColumnReport=rxCoreAnalyze("  eval('x');\n    document.write('ok');");
@@ -447,7 +447,7 @@ for(const [label,code,ruleId] of [
  assert.ok(rxCoreAnalyze(code).findings.some(x=>x.id===ruleId),'RX Core added rule: '+label);
 }
 assert.equal(rxCoreAnalyze("// window.open(url)\nconst text = 'setInterval()';").summary.total,0);
-assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.0');
+assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.1');
 console.log('PASS: RX Developer Core thirteen review rules');
 
 const rxBrowserAdapter=require('fs').readFileSync(require('path').join(__dirname,'../guard/rx-developer-core-browser.js'),'utf8');
@@ -464,3 +464,11 @@ const rxBrowserExpected="// Browser adapter for RX Developer Core; do not edit i
  rxCoreSource.replace("module.exports={maskJavaScript,analyzeJavaScript};","if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});");
 assert.equal(rxBrowserAdapter,rxBrowserExpected,'RX Core browser adapter must stay synchronized with the source engine');
 console.log('PASS: RX Developer Core browser adapter synchronized with source');
+
+const rxLongSource=Array.from({length:3000},(_,i)=>i===2999?'eval("x")':'const safe'+i+'=1;').join('\n');
+const rxLongResult=rxCoreAnalyze(rxLongSource);
+assert.equal(rxLongResult.findings.length,1);
+assert.equal(rxLongResult.findings[0].line,3000);
+assert.equal(rxLongResult.findings[0].column,1);
+assert.equal(rxLongResult.version,'0.3.1');
+console.log('PASS: RX Core indexed line location for large files');
