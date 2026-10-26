@@ -81,6 +81,11 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    onProgress(Math.round(t/duration*100));
   }
   draw(0);
+  // Ensure the audio graph is running before recording; headless/mobile browsers
+  // may keep a newly created AudioContext suspended after decoding a file.
+  if(audioContext&&audioContext.state==='suspended'){
+   try{await audioContext.resume()}catch(error){throw Error('Nie można uruchomić dźwięku: '+error.message)}
+  }
   try{recorder.start(250)}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   if(audioSource){const offset=Math.max(0,Number(audioStart)||0)%audioSource.buffer.duration;audioSource.start(0,offset)}
   const start=performance.now();
