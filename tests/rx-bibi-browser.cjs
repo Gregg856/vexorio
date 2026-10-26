@@ -264,7 +264,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX Strażak nagłówek', await guard.getByRole('heading', { name: /Strażak/ }).count() > 0);
     await guard.screenshot({ path: path.join(reportDir, 'rx-strazak-mobile.png'), fullPage: true });
     const guardTabs=guard.getByRole('tab');
-    record('RX Strażak — trzy zakładki',await guardTabs.count()===3);
+    record('RX Strażak — cztery zakładki',await guardTabs.count()===4);
     const devTab=guard.getByRole('tab',{name:/Developer/});
     await devTab.click();
     record('RX Strażak — Developer otwiera panel',await devTab.getAttribute('aria-selected')==='true'&&await guard.locator('#guardPanelDeveloper').isVisible());
