@@ -70,6 +70,8 @@ jobs:
         run: node tests/rx-money-engine.cjs
       - name: Sprawdź RX EVOLUTION i MONEY RADAR
         run: node tests/rx-evolution-radar.cjs
+      - name: Sprawdź RX DNA MEMORY
+        run: node tests/rx-dna-memory.cjs
       - name: Sprawdź RX DNA LINEAGE
         run: node tests/rx-dna-lineage.cjs
       - name: Sprawdź RX STELLAR SIGNAL
