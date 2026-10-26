@@ -983,6 +983,9 @@ document.addEventListener('DOMContentLoaded',()=>{
  taskForm.addEventListener('submit',event=>{event.preventDefault();const title=taskInput.value.trim();if(!title)return;const outcome=addRxTask(title,taskSelect.value);taskInput.value='';if(!outcome.added)alert('To zadanie już oczekuje w kolejce RX.');});
  taskView.append(taskTitle,taskInfo,taskForm,taskList);renderTasks();views.set('zadania',taskView);pane.append(taskView);
  const taskNav=document.createElement('button');taskNav.type='button';taskNav.textContent='📋 RX Zadania';taskNav.addEventListener('click',()=>activate('zadania'));side.append(taskNav);buttons.set('zadania',taskNav);
+ // Keep history controls with their report, not in Settings.
+ const historyControls=new Set(['refresh','exportReport','exportInfo','status','filterStatus','runs','summary','freshness']);
+ for(const id of historyControls)mapping[id]='historia';
  const fallback=views.get('ustawienia');
  const header=original.find(node=>node.tagName==='H1');if(header){header.textContent='🛡️ RX BIBI Manager';header.classList.add('rx-app-title');}
  for(const node of original){
