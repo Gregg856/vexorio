@@ -79,6 +79,22 @@ async function refresh(){
    incidentPanel.append(el('p','meta','W ostatnich '+relevant.length+' powiązanych uruchomieniach: '+failures.length+' nieudanych. Grupowanie według workflow, nie według przyczyny błędu.'));
    const groups=new Map();
    for(const run of relevant){const name=String(run.name||'Nieznany workflow');if(!groups.has(name))groups.set(name,[]);groups.get(name).push(run);}
+   // History is derived from the fetched GitHub runs; no extra personal data is stored.
+   const resolvedGroups=[...groups].filter(([,history])=>{
+    const latestCompleted=history.find(run=>run.status==='completed');
+    return latestCompleted?.conclusion==='success'&&history.some(run=>run.status==='completed'&&run.conclusion==='failure');
+   });
+   incidentPanel.append(el('p','ok','Historyczne awarie z późniejszym udanym przebiegiem: '+resolvedGroups.length+' workflow w pobranej próbce.'));
+   for(const [name,history] of resolvedGroups.slice(0,5)){
+    const successful=history.find(run=>run.status==='completed'&&run.conclusion==='success');
+    const olderFailure=history.find(run=>run.status==='completed'&&run.conclusion==='failure');
+    const line=el('p','meta',name+' — późniejszy test zakończył się sukcesem; wcześniejsza awaria #'+String(olderFailure.id)+'. ');
+    if(Number.isSafeInteger(successful?.id)){
+      const link=el('a','','Zobacz udany przebieg');link.href='https://github.com/Gregg856/vexorio/actions/runs/'+successful.id;link.target='_blank';link.rel='noopener noreferrer';line.append(link);
+    }
+    incidentPanel.append(line);
+   }
+   incidentPanel.append(el('p','meta','Sukces późniejszego przebiegu nie dowodzi naprawienia identycznej przyczyny. Historia ograniczona do pobranych uruchomień.'));
    const priorityPanel=document.getElementById('rxPriority');
    if(priorityPanel){
     const current=[...groups].map(([name,history])=>({name,latest:history[0]})).filter(item=>item.latest);
