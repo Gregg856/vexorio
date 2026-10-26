@@ -6,6 +6,8 @@ on:
     paths:
       - 'rx-bibi-manager.html'
       - 'rx-million-hearts.js'
+      - 'rx-command-bridge.js'
+      - 'tests/rx-command-bridge.cjs'
       - 'tests/rx-million-hearts.cjs'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
@@ -45,6 +47,8 @@ jobs:
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
       - name: Sprawdź silnik RX MILION SERC
         run: node tests/rx-million-hearts.cjs
+      - name: Sprawdź RX COMMAND BRIDGE
+        run: node tests/rx-command-bridge.cjs
       - name: Uruchom testy RX BIBI
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
