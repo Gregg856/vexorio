@@ -258,7 +258,7 @@ assert.ok(bibi.includes("developerInput.maxLength=12000"), 'RX Developer must ca
 console.log('PASS: RX Developer read-only pasted-code analysis security contract');
 
 assert.ok(!bibi.includes("/\\.catch\\s*\\(|\\btry\\s*\\{/.test(code)"), 'RX Developer must not suppress all fetch findings due to unrelated try/catch');
-assert.ok(bibi.includes('lines.slice(Math.max(0,i-2),i+1)'), 'RX Developer fetch heuristics must be scoped near the call');
+assert.ok(bibi.includes('codeLines.slice(Math.max(0,i-2),i+1)'), 'RX Developer fetch heuristics must be scoped near the call');
 console.log('PASS: RX Developer fetch warning scope regression');
 
 assert.ok(bibi.includes("const codeLines=masked.join('').split("),'RX Developer must lexically mask comments and strings');
