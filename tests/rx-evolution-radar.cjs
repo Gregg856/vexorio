@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createEvolutionEngine}=require('../rx-evolution-engine.cjs');
+const {createMoneyRadar}=require('../rx-money-radar.cjs');
+const evo=createEvolutionEngine();
+const p=evo.propose({antId:'RX-000001',area:'tests',summary:'Add stable smoke tests for RX memory',evidence:['local test planned']});
+assert.throws(()=>evo.approve(p.id,'owner'),/Not ready/);
+assert.equal(evo.evaluate(p.id,{testsPassed:true,securityPassed:true}).status,'ready_for_human_review');
+assert.throws(()=>evo.approve(p.id,''),/Human approval/);
+assert.equal(evo.approve(p.id,'owner').status,'approved_for_manual_implementation');
+const radar=createMoneyRadar({capacity:1});
+const lead={source:'sample',url:'https://example.org/request?id=1',title:'Sample consent-based QA opportunity',service:'qa',estimatedRevenueCents:7900,estimatedCostCents:0,permission:'public_listing'};
+assert.equal(radar.add(lead).status,'research_only');
+assert.equal(radar.add(lead).id,'RXLEAD-000001');
+assert.equal(radar.list().length,1);
+assert.throws(()=>radar.add({...lead,url:'https://example.org/other'}),/Radar full/);
+assert.throws(()=>createMoneyRadar().add({...lead,url:'http://example.org'}),/Invalid source URL/);
+console.log('PASS RX evolution human gate and money radar bounded deduplication');
