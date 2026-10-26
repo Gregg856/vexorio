@@ -275,3 +275,25 @@ assert.ok(bibi.includes("if(escapeRegex){escapeRegex=false;continue;}"),'RX Deve
 assert.ok(bibi.includes("💻 RX Developer 9.4 — analiza kodu"),'RX Developer must retain visible version label');
 console.log('PASS: RX Developer 9.4 lexical and version guards');
 
+
+
+const lexerStart=bibi.indexOf("  const masked=[];let mode='code',escaped=false;");
+const lexerEnd=bibi.indexOf("  const codeLines=masked.join('').split(",lexerStart);
+assert.ok(lexerStart>=0&&lexerEnd>lexerStart,'RX Developer lexer boundaries must exist');
+const lexerSource=bibi.slice(lexerStart,lexerEnd);
+const maskSnippet=new Function('code',lexerSource+"return masked.join('');");
+const lexCases=[
+ ['quoted text',"const example = 'eval(1)';",'eval(1)',false],
+ ['line comment',"// eval(1)\nconsole.log('ok')",'eval(1)',false],
+ ['block comment',"/* eval(1) */ console.log('ok')",'eval(1)',false],
+ ['real executable call',"eval('1+1')",'eval',true],
+ ['template expression',"const value = \x60safe \${eval('1')}\x60;",'eval',true],
+ ['template plain text',"const value = \x60eval(1)\x60;",'eval',false],
+ ['regex text',"const re = /eval\\(1\\)/;",'eval',false]
+];
+for(const [label,input,needle,expected] of lexCases){
+ const output=maskSnippet(input);
+ assert.equal(output.length,input.length,'Lexer must preserve offsets: '+label);
+ assert.equal(output.includes(needle),expected,'Lexer behavior: '+label);
+}
+console.log('PASS: RX Developer lexer behavioral smoke tests');
