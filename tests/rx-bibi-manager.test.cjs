@@ -438,3 +438,14 @@ assert.deepEqual(rxColumnReport.findings.map(x=>[x.id,x.line,x.column]),[['RX001
 const rxSameLine=rxCoreAnalyze("eval('1'); eval('2');");
 assert.deepEqual(rxSameLine.findings.map(x=>x.column),[1,12]);
 console.log('PASS: RX Developer Core accurate one-based line and column locations');
+
+for(const [label,code,ruleId] of [
+ ['localStorage',"localStorage.setItem('token', value)",'RX011'],
+ ['new window',"window.open(url, '_blank')",'RX012'],
+ ['repeating timer',"setInterval(run, 1000)",'RX013']
+]){
+ assert.ok(rxCoreAnalyze(code).findings.some(x=>x.id===ruleId),'RX Core added rule: '+label);
+}
+assert.equal(rxCoreAnalyze("// window.open(url)\nconst text = 'setInterval()';").summary.total,0);
+assert.equal(rxCoreAnalyze('const ok = 1;').version,'0.3.0');
+console.log('PASS: RX Developer Core thirteen review rules');
