@@ -2,11 +2,12 @@
 const assert=require('node:assert/strict');
 const {createRXDNAStore}=require('../rx-dna-store-server.cjs');
 (async()=>{
- const records=new Map();let writes=0;
+ const records=new Map();let writes=0;const verifiedContext=Object.freeze({queen:true,session:'server-verified'});
  const store=createRXDNAStore({
   authorize:async ctx=>ctx?.queen===true,
-  read:async id=>records.get(id)||null,
-  write:async(id,snapshot,expected)=>{
+  read:async (id,ctx)=>{assert.equal(ctx,verifiedContext);return records.get(id)||null},
+  write:async(id,snapshot,expected,ctx)=>{
+   assert.equal(ctx,verifiedContext);
    const prev=records.get(id);
    if((prev?.revision||0)!==expected)throw new Error('Ant memory revision conflict');
    const revision=expected+1;records.set(id,{revision,snapshot});writes++;return revision;
@@ -15,10 +16,10 @@ const {createRXDNAStore}=require('../rx-dna-store-server.cjs');
  const snapshot={version:1,ants:[{head:'RX-000001',entries:[{code:'test_ok',fixId:'verified_1'}]}]};
  await assert.rejects(store.save({},'RX-000001',snapshot,0),/authorization/);
  assert.equal(writes,0);
- assert.equal((await store.save({queen:true},'RX-000001',snapshot,0)).revision,1);
- assert.equal((await store.load({queen:true},'RX-000001')).snapshot.ants[0].entries[0].fixId,'verified_1');
- await assert.rejects(store.save({queen:true},'RX-000001',snapshot,0),/revision conflict/);
- await assert.rejects(store.save({queen:true},'RX-000001',{...snapshot,ants:[{head:'RX-000002',entries:[]}]},1),/Invalid ant entries/);
+ assert.equal((await store.save(verifiedContext,'RX-000001',snapshot,0)).revision,1);
+ assert.equal((await store.load(verifiedContext,'RX-000001')).snapshot.ants[0].entries[0].fixId,'verified_1');
+ await assert.rejects(store.save(verifiedContext,'RX-000001',snapshot,0),/revision conflict/);
+ await assert.rejects(store.save(verifiedContext,'RX-000001',{...snapshot,ants:[{head:'RX-000002',entries:[]}]},1),/Invalid ant entries/);
  await assert.rejects(store.load({},'RX-000001'),/authorization/);
  assert.equal(writes,1);
  console.log('PASS RX DNA server store authorization, roundtrip, revision and validation');
