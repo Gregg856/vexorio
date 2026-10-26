@@ -42,3 +42,10 @@ This file is the **versioned, human-readable project handoff**, not a secret vau
 - Verified server-side SQL round-trip for synthetic ant `RX-000001`; no real user data stored.
 - **Not yet connected** to RX handlers, Queen, or browser; no public REST API and no cross-device synchronization claimed.
 - Next: build authenticated server-side write/read path with audit trail, optimistic revision control, backup and restore tests on staging. Keep credentials off client.
+
+## RX DNA CLOUD 1.1 — audit and optimistic locking (staging)
+- Migration `rx_dna_cloud_audit_and_revision_guard` on staging only: private `rx_private.ant_memory_audit`, audit trigger and `rx_private.write_ant_memory(text,jsonb,bigint)`.
+- Version guard: expected revision 0 inserts new memory, otherwise updates only the matching revision; stale writes raise `Ant memory revision conflict`.
+- Verified synthetic `RX-000001` revision 1 → 2 and one audit row; stale revision 1 was rejected.
+- Verified no `EXECUTE` for `anon`/`authenticated`, no anonymous audit table access.
+- **Not yet connected to Queen/browser/Worker**. Requires server-only authenticated gateway and backup/restore tests before automatic ant persistence.
