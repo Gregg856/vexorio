@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   {id:'rx-tester',name:'RX Tester',category:'Testowanie',state:'dostępny',description:'Testy i raporty kontrolne',view:'tester'},
   {id:'rx-diagnostyka',name:'RX Diagnostyka',category:'Diagnostyka',state:'dostępny',description:'Analiza błędów i alarmów',view:'diagnostyka'},
   {id:'rx-historia',name:'RX Historia',category:'Zarządzanie',state:'dostępny',description:'Historia publikacji i raportów',view:'historia'},
-  {id:'rx-developer',name:'RX Developer',category:'Programowanie',state:'planowany',description:'Własny moduł analizy kodu i propozycji poprawek'},
+  {id:'rx-developer',name:'RX Developer',category:'Programowanie',state:'dostępny',description:'Lokalna podstawowa analiza JavaScript',view:'developer'},
   {id:'rx-studio',name:'RX Studio',category:'Media',state:'planowany',description:'Filmy, montaż i napisy'},
   {id:'rx-grafika',name:'RX Grafika',category:'Media',state:'planowany',description:'Tworzenie i edycja grafik'},
   {id:'rx-muzyka',name:'RX Muzyka',category:'Media',state:'planowany',description:'Teksty, dźwięk i muzyka'},
@@ -667,6 +667,27 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  views.set('plugins',pluginView);pane.append(pluginView);
  const pluginNav=document.createElement('button');pluginNav.type='button';pluginNav.textContent='🧩 RX Plugins';pluginNav.addEventListener('click',()=>activate('plugins'));side.append(pluginNav);buttons.set('plugins',pluginNav);
+ const developerView=document.createElement('section');developerView.className='rx-developer';
+ const developerTitle=document.createElement('h2');developerTitle.textContent='💻 RX Developer — analiza kodu';
+ const developerInfo=document.createElement('p');developerInfo.className='meta';developerInfo.textContent='Własny lokalny analizator fragmentów JavaScript. Nie wysyła kodu do zewnętrznych usług, nie modyfikuje repozytorium ani nie wykonuje wklejonego kodu.';
+ const developerInput=document.createElement('textarea');developerInput.rows=9;developerInput.maxLength=12000;developerInput.placeholder='Wklej fragment JavaScript do sprawdzenia…';developerInput.setAttribute('aria-label','Kod do analizy RX Developer');developerInput.style.width='100%';
+ const developerRun=document.createElement('button');developerRun.type='button';developerRun.textContent='🔎 Analizuj kod';
+ const developerOutput=document.createElement('pre');developerOutput.style.whiteSpace='pre-wrap';developerOutput.style.overflowWrap='anywhere';developerOutput.setAttribute('aria-live','polite');
+ developerRun.addEventListener('click',()=>{
+  const code=developerInput.value;const issues=[];
+  if(!code.trim()){developerOutput.textContent='Wklej kod JavaScript, aby rozpocząć analizę.';return;}
+  try{new Function(code);}catch(error){issues.push('Błąd składni JavaScript: '+String(error.message).slice(0,180));}
+  if(/\\beval\\s*\\(/.test(code))issues.push('Uwaga: eval() może uruchamiać niebezpieczny kod.');
+  if(/\\binnerHTML\\s*=/.test(code))issues.push('Sprawdź innerHTML: nie wstawiaj niezaufanych danych bez zabezpieczeń.');
+  if(/(?:api[_-]?key|secret|token|password)\\s*[:=]\\s*['"][^'"]{8,}['"]/i.test(code))issues.push('Możliwy sekret w kodzie — nie publikuj kluczy ani haseł.');
+  if(/console\\.log\\s*\\(/.test(code))issues.push('Sprawdź console.log przed publikacją, aby nie ujawniać danych.');
+  if(/\\bfetch\\s*\\(/.test(code)&&!/\\.catch\\s*\\(|\\btry\\s*\\{/.test(code))issues.push('Sprawdź obsługę błędów żądań fetch.');
+  developerOutput.textContent=issues.length?issues.map((x,i)=>(i+1)+'. '+x).join('\\n'):'Nie wykryto problemów przez podstawowe reguły RX. To nie jest pełny audyt bezpieczeństwa.';
+ });
+ const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
+ developerView.append(developerTitle,developerInfo,developerInput,developerRun,developerOutput,developerCopy);
+ views.set('developer',developerView);pane.append(developerView);
+ const developerNav=document.createElement('button');developerNav.type='button';developerNav.textContent='💻 RX Developer';developerNav.addEventListener('click',()=>activate('developer'));side.append(developerNav);buttons.set('developer',developerNav);
  const rxTasksKey='rx-bibi-tasks-v1';
  const rxTasks=[];
  try{const saved=JSON.parse(localStorage.getItem(rxTasksKey)||'[]');if(Array.isArray(saved))for(const t of saved.slice(0,50)){if(t&&typeof t.title==='string'&&typeof t.module==='string'&&['oczekuje','zakończone'].includes(t.status))rxTasks.push({id:String(t.id).slice(0,50),title:t.title.slice(0,180),module:t.module.slice(0,40),status:t.status,lastResult:typeof t.lastResult==='string'?t.lastResult.slice(0,300):'',lastCheckedAt:typeof t.lastCheckedAt==='string'?t.lastCheckedAt:''});}}catch(_){}
