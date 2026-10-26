@@ -330,3 +330,21 @@ for(const [label,input,expected] of [
  assert.equal(detected,expected,'RX cookie/message smoke test: '+label);
 }
 console.log('PASS: RX Developer cookie and message listener regression');
+
+const messageRule=/\b(?:window\.)?addEventListener\s*\(\s*['"]message['"]/g;
+const messageCases=[
+ ["single quoted listener","window.addEventListener('message', handler)",true],
+ ["double quoted listener",'addEventListener("message", handler)',true],
+ ["unrelated event","window.addEventListener('click', handler)",false],
+ ["commented listener","// window.addEventListener('message', handler)",false],
+ ["quoted listener","const text = \"addEventListener('message', handler)\";",false]
+];
+for(const [label,input,expected] of messageCases){
+ messageRule.lastIndex=0;
+ const executable=maskSnippet(input);
+ const match=messageRule.exec(input);
+ const actual=!!(match&&executable.slice(match.index,match.index+Math.min(6,match[0].length)).trim());
+ assert.equal(actual,expected,'RX message rule exact behavior: '+label);
+}
+console.log('PASS: RX Developer message origin warning precise matching');
+
