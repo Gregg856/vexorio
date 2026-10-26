@@ -58,6 +58,15 @@ try{
  assert.equal(hugeReport.error,'too_large');
  assert.equal(hugeReport.findings,undefined);
  fs.unlinkSync(huge);
+ const unreadable=path.join(dir,'guard-code-ui.js');
+ fs.writeFileSync(unreadable,'const x=1;');
+ fs.chmodSync(unreadable,0o000);
+ try{
+  if(process.getuid&&process.getuid()!==0){
+   const unreadableReport=scan(dir).files.find(f=>f.path==='guard-code-ui.js');
+   assert.equal(unreadableReport.error,'unreadable');
+  }
+ }finally{fs.chmodSync(unreadable,0o600);fs.unlinkSync(unreadable);}
  assert.equal(report.signals,2);
  assert.deepEqual(report.files[0].findings.map(x=>x.rule),['eval','console-log']);
  assert.equal(report.files[1].error,'missing');
