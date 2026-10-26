@@ -36,6 +36,7 @@ function inspectSource({path,source}={}){
   {id:'eval',severity:'high',pattern:/\beval\s*\(/g,message:'Dynamiczne wykonywanie kodu przez eval wymaga kontroli.'},
   {id:'timer-string-code',severity:'high',pattern:/\b(?:setTimeout|setInterval)\s*\(\s*['"`]/g,message:'Timer otrzymał tekst zamiast funkcji. Może wykonywać kod dynamicznie.'},
   {id:'javascript-url',severity:'high',pattern:/\b(?:location\s*(?:\.\s*href)?|window\s*\.\s*open)\s*(?:=|\()\s*['"`]javascript\s*:/gi,message:'Adres javascript: może uruchamiać kod w kontekście strony.'},
+  {id:'outer-html',severity:'medium',pattern:/\.outerHTML\s*=/g,message:'Przypisanie outerHTML wymaga kontroli niezaufanego HTML.'},
   {id:'insert-adjacent-html',severity:'medium',pattern:/\.insertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML wymaga kontroli niezaufanego HTML.'},
   {id:'unsafe-iframe-srcdoc',severity:'medium',pattern:/\.srcdoc\s*=/g,message:'Przypisanie iframe.srcdoc wymaga kontroli niezaufanego HTML.'},
   {id:'function-constructor',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczny konstruktor Function może wykonywać niezaufany kod.'},
