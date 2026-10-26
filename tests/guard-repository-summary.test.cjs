@@ -100,5 +100,9 @@ assert.equal(summarize({signals:1,files:[{path:'flagged.js',findings:[{rule:'eva
 assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]}]}).scanComplete,true);
 assert.equal(summarize({signals:0,files:[]}).scanComplete,false);
 console.log('PASS: RX Developer 6.8 scan completeness');
+assert.equal(affected.reviewFiles,2);
+assert.equal(summarize({signals:1,files:[{path:'low.js',findings:[{rule:'log',severity:'low'}]}]}).reviewFiles,0);
+assert.equal(summarize({signals:0,files:[]}).reviewFiles,0);
+console.log('PASS: RX Developer 6.9 high-priority file count');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
