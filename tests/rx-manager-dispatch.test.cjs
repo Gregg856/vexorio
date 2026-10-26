@@ -27,7 +27,8 @@ const fs=require('node:fs');
  try{
   let githubCalls=0;
   globalThis.fetch=async url=>{
-   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'not-admin'});
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'regular-user'});
+   if(String(url).endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(false);
    githubCalls++;
    return new Response(null,{status:204});
   };
@@ -35,12 +36,13 @@ const fs=require('node:fs');
   assert.equal(r.status,403,'Authenticated non-admin must be denied');
   assert.equal(githubCalls,0,'Non-admin must not dispatch GitHub workflow');
   globalThis.fetch=async url=>{
-   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'admin'});
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'second-admin'});
+   if(String(url).endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
    githubCalls++;
    return new Response(null,{status:204});
   };
   r=await call('POST',{'Origin':origin,'Authorization':'Bearer valid-token'},settings);
-  assert.equal(r.status,202,'Authenticated admin may dispatch workflow');
+  assert.equal(r.status,202,'Admin in admin_members may dispatch workflow');
   assert.equal(githubCalls,1,'Admin dispatch must call GitHub exactly once');
  }finally{globalThis.fetch=originalFetch;}
  console.log('PASS RX workflow dispatch: method, origin, missing configuration and authentication');
