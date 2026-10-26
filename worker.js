@@ -48,6 +48,36 @@ export default {
       if(github.status!==204)return reply(502,'GitHub odrzucił uruchomienie (HTTP '+github.status+').');
       return new Response(JSON.stringify({ok:true,message:'Test zlecony. Odśwież wyniki za chwilę.'}),{status:202,headers});
     }
+    if (url.pathname === '/api/rx/failed-steps') {
+      const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
+      const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='GET')return reply(405,'Dozwolone tylko GET.');
+      if(request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      const runId=url.searchParams.get('run_id');
+      if(!/^[1-9][0-9]{0,15}$/.test(runId||''))return reply(400,'Nieprawidłowy identyfikator testu.');
+      if(!env.RX_GITHUB_DISPATCH_TOKEN||!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Diagnostyka nie jest skonfigurowana.');
+      const auth=request.headers.get('Authorization')||'';
+      if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Zaloguj się jako administrator.');
+      let base;
+      try{base=new URL(env.SUPABASE_URL);}catch{return reply(503,'Nieprawidłowa konfiguracja Supabase.');}
+      if(base.protocol!=='https:'||!/^[a-z0-9-]+[.]supabase[.]co$/.test(base.hostname)||base.pathname!=='/'||base.search||base.hash||base.username||base.password||base.port)return reply(503,'Nieprawidłowa konfiguracja Supabase.');
+      try{
+        const identity=await fetch(new URL('/auth/v1/user',base),{headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},signal:AbortSignal.timeout(8000)});
+        if(!identity.ok)return reply(401,'Sesja administratora jest nieważna.');
+        const user=await identity.json();
+        if(!user?.id||user.is_anonymous===true)return reply(403,'Brak uprawnień administratora.');
+        const check=await fetch(new URL('/rest/v1/rpc/is_vexorio_admin',base),{method:'POST',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)});
+        if(!check.ok)return reply(502,'Nie można zweryfikować uprawnień.');
+        if((await check.json())!==true)return reply(403,'Brak uprawnień administratora.');
+      }catch{return reply(502,'Nie można zweryfikować sesji administratora.');}
+      try{
+        const github=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+runId+'/jobs?per_page=100',{headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-BIBI-Manager'},signal:AbortSignal.timeout(12000)});
+        if(!github.ok)return reply(502,'GitHub nie udostępnił danych (HTTP '+github.status+').');
+        const data=await github.json();
+        const failed=(Array.isArray(data.jobs)?data.jobs:[]).filter(job=>job.conclusion==='failure').slice(0,10).map(job=>({name:String(job.name||'Zadanie').slice(0,180),id:job.id,steps:(Array.isArray(job.steps)?job.steps:[]).filter(step=>step.conclusion==='failure').map(step=>({name:String(step.name||'Etap').slice(0,180),started_at:step.started_at,completed_at:step.completed_at}))}));
+        return new Response(JSON.stringify({ok:true,run_id:runId,failed,notice:'GitHub API udostępnia etapy i czasy, ale nie treść komunikatów z logów.'}),{status:200,headers});
+      }catch{return reply(502,'Nie udało się pobrać diagnostyki GitHub.');}
+    }
     if (url.pathname === '/api/listing-view') {
       if (request.method !== 'POST') return new Response(null, {status: 405, headers: {'Allow': 'POST', 'Cache-Control': 'no-store'}});
       if (request.headers.get('Origin') !== url.origin) return new Response(null, {status: 403, headers: {'Cache-Control': 'no-store'}});
