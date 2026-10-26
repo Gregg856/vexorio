@@ -1,6 +1,29 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // RX DIRECT 2076: safe, read-only live status; no deploy or code mutation.
+    if(url.pathname==='/api/rx/direct'){
+      const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+      if(request.method!=='GET')return new Response(JSON.stringify({ok:false,error:'method_not_allowed'}),{status:405,headers:{...headers,Allow:'GET'}});
+      const command=url.searchParams.get('command');
+      if(command!=='RX STATUS')return new Response(JSON.stringify({ok:false,error:'unknown_command'}),{status:400,headers});
+      try{
+        const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=15',{
+          headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Direct-2076'},
+          signal:AbortSignal.timeout(8000)
+        });
+        if(!response.ok)throw new Error('github_unavailable');
+        const data=await response.json();
+        const names=['RX BIBI Tester — mobile browser','VEXORIO checks','Deploy VEXORIO'];
+        const runs=names.map(name=>{
+          const run=data.workflow_runs?.find(item=>item.name===name);
+          return run?{name,number:run.run_number,status:run.status,result:run.conclusion||null,link:run.html_url}:{name,status:'unknown',result:null};
+        });
+        return new Response(JSON.stringify({ok:true,command:'RX STATUS',source:'github-actions',runs}),{status:200,headers});
+      }catch{
+        return new Response(JSON.stringify({ok:false,command:'RX STATUS',error:'status_temporarily_unavailable'}),{status:502,headers});
+      }
+    }
     if (url.pathname === '/api/rx/health') {
       if(request.method!=='GET')return new Response(null,{status:405,headers:{Allow:'GET','Cache-Control':'no-store'}});
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
