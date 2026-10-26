@@ -21,7 +21,10 @@ function listFiles(root){
   try{dirStat=fs.lstatSync(base);}
   catch(error){continue;}
   if(!dirStat.isDirectory()||dirStat.isSymbolicLink())continue;
-  for(const entry of fs.readdirSync(base,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){
+  let entries;
+  try{entries=fs.readdirSync(base,{withFileTypes:true});}
+  catch(error){continue;}
+  for(const entry of entries.sort((a,b)=>a.name.localeCompare(b.name))){
    if(!entry.isFile()||!/^[-\w.]+\.(?:js|cjs|mjs)$/.test(entry.name))continue;
    names.push(directory+'/'+entry.name);
   }
