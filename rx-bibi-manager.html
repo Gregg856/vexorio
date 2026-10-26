@@ -386,6 +386,7 @@ async function refresh(){
   const counts={success:0,failure:0,pending:0,other:0};for(const run of runs){if(run.status!=='completed')counts.pending++;else if(run.conclusion==='success')counts.success++;else if(run.conclusion==='failure')counts.failure++;else counts.other++;}for(const [key,label] of [['success','Udane'],['failure','Nieudane'],['pending','W toku'],['other','Pozostałe']]){const card=el('div','item');card.append(el('strong',key==='success'?'ok':key==='failure'?'bad':'wait',String(counts[key])),el('small','',label));summary.append(card);}const apiDate=response.headers.get('date');const apiAge=apiDate?Date.parse(apiDate):NaN;const rawAge=response.headers.get('age');const ageSeconds=rawAge!==null?Number(rawAge):0;const ageMinutes=Number.isFinite(apiAge)?Math.max(0,(Date.now()-apiAge)/60000):0;const stale=(Number.isFinite(ageSeconds)&&ageSeconds>300)||ageMinutes>5;freshness.textContent=!data.workflow_runs.length?'Świeżość danych: brak uruchomień w odpowiedzi GitHub API.':stale?'Świeżość danych: mogą być nieaktualne (opóźniona odpowiedź API).':'Świeżość danych: aktualne (ostatni udany odczyt).';status.textContent=(runs.length?'Ostatnie '+runs.length+' uruchomień (z '+data.workflow_runs.length+' pobranych)':'Brak dostępnych uruchomień.')+' · Odczyt: '+new Date().toLocaleString('pl-PL')+' (czas urządzenia).';
   let inspectedFailures=0;
   const seenFailureSignatures=new Map();
+  const failureHistory=[];
   for(const run of runs){
    const item=el('article','item'),state=run.status==='completed'?(run.conclusion||'brak wyniku'):'w toku';item.dataset.result=run.status!=='completed'?'pending':run.conclusion==='failure'?'failure':run.conclusion==='success'?'success':'other';
    const cls=state==='success'?'ok':state==='failure'?'bad':'wait';
@@ -454,6 +455,7 @@ async function refresh(){
       });
       const failureSignature=jobs.filter(j=>j.conclusion==='failure').map(j=>String(j.name||'')+':'+(Array.isArray(j.steps)?j.steps.filter(st=>st.conclusion==='failure').map(st=>st.name).join('|'):'')).sort().join(';');
       if(failureSignature){
+        failureHistory.push({runId:String(run.id),signature:failureSignature,date:run.created_at||'',url:'https://github.com/Gregg856/vexorio/actions/runs/'+String(run.id)});
         const previous=seenFailureSignatures.get(failureSignature);
         if(previous){
           item.append(el('p','meta','Powtarzająca się awaria: ten sam zestaw nieudanych etapów wystąpił już w uruchomieniu #'+previous+'. Przed ponowną poprawką porównaj oba logi; sama nazwa etapu nie potwierdza identycznej przyczyny.'));
@@ -467,6 +469,23 @@ async function refresh(){
      }catch(error){diagnostic.textContent='Diagnoza niedostępna ('+String(error.message||'błąd API')+'). Otwórz logi.';}
     }else diagnostic.textContent='Diagnoza niedostępna: brak identyfikatora uruchomienia.';
    }
+  }
+  // Snapshot of visible failures; derived from GitHub data, not a persistent database.
+  const oldHistory=document.getElementById('rx-failure-history');
+  if(oldHistory)oldHistory.remove();
+  if(failureHistory.length){
+    const history=document.createElement('details');history.id='rx-failure-history';history.className='item';
+    const summary=document.createElement('summary');summary.textContent='Historia diagnoz: '+failureHistory.length+' nieudanych uruchomień (bieżący odczyt)';history.append(summary);
+    const groups=new Map();
+    for(const record of failureHistory){const group=groups.get(record.signature)||[];group.push(record);groups.set(record.signature,group);}
+    for(const group of groups.values()){
+      history.append(el('p','meta',group.length>1?'Powtarzająca się grupa ('+group.length+' uruchomienia)':'Pojedyncza awaria'));
+      for(const record of group){
+        const link=el('a','', 'Uruchomienie #'+record.runId+(record.date?' · '+formatDate(record.date):''));
+        link.href=record.url;link.target='_blank';link.rel='noopener noreferrer';history.append(link,document.createTextNode(' '));
+      }
+    }
+    root.prepend(history);
   }
   applyFilter();
  }catch(error){freshness.textContent=root.children.length?'Świeżość danych: mogą być nieaktualne (nieudane odświeżenie).':'Świeżość danych: brak połączenia lub danych.';if(!root.children.length){latest.textContent='Ostatnia publikacja: nie można potwierdzić (błąd odczytu).';lastSuccess.textContent='Ostatnia udana publikacja: brak danych.';incidents.textContent='Przegląd błędów: brak danych.';}status.textContent='Nie udało się pobrać nowych danych: '+String(error.message||'nieznany błąd')+'. '+(root.children.length?'Widoczne dane mogą być nieaktualne.':'Otwórz GitHub Actions, aby sprawdzić status.');}
