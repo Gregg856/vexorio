@@ -31,3 +31,12 @@ const commentCases=inspectSource({path:'src/comments.js',source:[
 ].join('\n')});
 assert.deepEqual(commentCases.findings.map(f=>[f.rule,f.line]),[['eval',4],['console-log',5]]);
 console.log('PASS: RX Developer 2.0 full-line comment false-positive regression');
+
+const blockCases=inspectSource({path:'src/blocks.js',source:[
+ '/* eval(fake);',
+ 'console.log(fake); */',
+ 'const real=eval(input);',
+ '/* const api_key = "abcdefghijklmnopqrstuvwxyz123456"; */'
+].join('\n')});
+assert.deepEqual(blockCases.findings.map(f=>[f.rule,f.line]),[['eval',3]]);
+console.log('PASS: RX Developer 2.1 multiline comment regression');
