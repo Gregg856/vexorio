@@ -699,7 +699,11 @@ document.addEventListener('DOMContentLoaded',()=>{
    run.addEventListener('click',async()=>{run.disabled=true;run.textContent='Sprawdzam…';try{const result=await rxTaskExecutors[t.module]();t.lastResult=result;t.lastCheckedAt=new Date().toISOString();persistTasks();renderTasks();}catch(error){t.lastResult='Błąd: '+String(error.message).slice(0,180);t.lastCheckedAt=new Date().toISOString();persistTasks();renderTasks();}});
    card.append(run);
   }
-  if(t.lastResult){const result=document.createElement('p');result.className='meta';result.textContent=(t.lastResult.startsWith('Błąd:')?'❌ ':'✅ ')+t.lastResult+(t.lastCheckedAt?' · '+new Date(t.lastCheckedAt).toLocaleString('pl-PL'):'');card.append(result);}
+  if(t.lastResult){const result=document.createElement('p');result.className='meta';result.textContent=(t.lastResult.startsWith('Błąd:')?'❌ ':'✅ ')+t.lastResult+(t.lastCheckedAt?' · '+new Date(t.lastCheckedAt).toLocaleString('pl-PL'):'');card.append(result);
+   const copy=document.createElement('button');copy.type='button';copy.textContent='📋 Kopiuj wynik';copy.addEventListener('click',async()=>{
+    const report='RX Strażak — wynik diagnostyki\\nZadanie: '+t.title+'\\nModuł: '+t.module+'\\nWynik: '+t.lastResult+'\\nSprawdzono: '+(t.lastCheckedAt||'brak daty');
+    try{await navigator.clipboard.writeText(report);copy.textContent='✓ Skopiowano';}catch(_){const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';card.append(field);field.select();copy.textContent='Zaznaczony tekst — skopiuj';}
+   });card.append(copy);}
   taskList.append(card);}};
  taskForm.addEventListener('submit',event=>{event.preventDefault();const title=taskInput.value.trim();if(!title)return;const outcome=addRxTask(title,taskSelect.value);taskInput.value='';if(!outcome.added)alert('To zadanie już oczekuje w kolejce RX.');});
  taskView.append(taskTitle,taskInfo,taskForm,taskList);renderTasks();views.set('zadania',taskView);pane.append(taskView);
