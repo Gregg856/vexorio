@@ -195,3 +195,15 @@ assert.deepEqual(jsUrlReport.findings.map(f=>[f.rule,f.severity,f.line]),[
  ['javascript-url','high',6]
 ]);
 console.log('PASS: RX Developer 3.1 javascript navigation URL detection and quoted-text exclusion');
+
+const srcdocReport=inspectSource({path:'src/iframe.js',source:[
+ 'frame.srcdoc = userHtml;',
+ 'const example = "frame.srcdoc = userHtml";',
+ '// frame.srcdoc = maliciousHtml;',
+ 'frame.srcdoc = "<p>Safe static example</p>";'
+].join('\n')});
+assert.deepEqual(srcdocReport.findings.map(f=>[f.rule,f.severity,f.line]),[
+ ['unsafe-iframe-srcdoc','medium',1],
+ ['unsafe-iframe-srcdoc','medium',4]
+]);
+console.log('PASS: RX Developer 3.2 iframe srcdoc assignment detection');
