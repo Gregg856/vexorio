@@ -15,4 +15,14 @@ assert.deepEqual(s.byScope.tests,{high:0,medium:0,low:1});
 assert.deepEqual(s.severity,{high:1,medium:1,low:1});
 assert.deepEqual(s.files[2],{path:'c.js',status:'too_large'});
 assert.equal(JSON.stringify(s).includes('source'),false);
+assert.deepEqual(s.priorityFiles.map(f=>f.path),['a.js','tests/b.test.js']);
+assert.deepEqual(s.priorityFiles[0].severity,{high:1,medium:1,low:0});
+const prioritized=summarize({signals:4,files:[
+ {path:'low.js',findings:[{severity:'low'},{severity:'low'}]},
+ {path:'critical.js',findings:[{severity:'high'}]},
+ {path:'medium.js',findings:[{severity:'medium'}]}
+]});
+assert.deepEqual(prioritized.priorityFiles.map(f=>f.path),['critical.js','medium.js','low.js']);
+assert.equal(JSON.stringify(prioritized).includes('source'),false);
+console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
