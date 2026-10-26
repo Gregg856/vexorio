@@ -17,6 +17,9 @@ body main{max-width:1200px}
 
 .rx-app-title{font-size:1.5rem;margin:8px 0 16px}.rx-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.rx-shortcuts button{padding:8px 12px;min-height:44px}.rx-chatlog{min-height:220px;max-height:50vh;overflow-y:auto;scrollbar-gutter:stable}.rx-chat h2{font-size:1.2rem;margin:0}.rx-chat .meta{margin:8px 0}.rx-side{z-index:3}.rx-view{min-width:0}.rx-view .item{max-width:100%}.rx-compose input{font-size:16px}.rx-compose button{white-space:nowrap;flex:0 0 52px!important;width:52px!important;max-width:52px!important;padding:8px!important;min-width:52px}.rx-compose input{display:block;flex:1 1 0!important;width:0!important;min-width:0!important;min-height:50px;box-sizing:border-box}.rx-compose{display:flex!important;flex-direction:row!important;align-items:stretch;width:100%;min-width:0}.rx-compose button{font-size:0!important}.rx-compose button::after{content:'➤';font-size:23px;line-height:1}.rx-menu-toggle{position:relative;z-index:4}
 @media(max-width:700px){.rx-app-title{font-size:1.35rem}.rx-chat{padding:12px;min-height:calc(100dvh - 165px)}.rx-chatlog{max-height:45dvh}.rx-compose{position:sticky;bottom:0;background:#102637;padding:8px 0}.rx-shortcuts button{flex:1 1 42%;font-size:.88rem}.rx-side button{min-height:48px}.rx-side:not([hidden]){display:block}.rx-menu-toggle{min-height:48px}}
+
+/* RX BIBI mobile chat-first layout; categories are optional navigation. */
+@media(max-width:700px){.rx-menu-toggle{margin:0 0 8px;min-height:44px;font-size:.95rem}.rx-side:not([hidden]){max-height:45dvh;overflow:auto}.rx-chat{min-height:calc(100dvh - 130px);padding:12px}.rx-chatlog{max-height:none;min-height:180px}.rx-compose{position:sticky;bottom:0;z-index:2}.rx-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.rx-shortcuts button{min-width:0;width:100%}}
 </style></head><body><main>
 <h1>🛡️ RX BIBI Manager 1.3</h1><section class="item" aria-label="Stan połączenia RX"><strong>📡 Stan połączenia RX</strong><p id="rxConnectionSummary" class="meta" role="status" aria-live="polite">Sprawdzam połączenie…</p><button id="rxConnectionRefresh" type="button">↻ Sprawdź stan RX</button><p class="meta"><a href="https://github.com/Gregg856/vexorio/actions/workflows/deploy.yml" target="_blank" rel="noopener noreferrer">📦 Historia publikacji</a> · <a href="https://github.com/Gregg856/vexorio/actions/workflows/rx-bibi-browser.yml" target="_blank" rel="noopener noreferrer">🧪 Historia testów RX</a></p><p class="meta">Historia publikacji i inne narzędzia działają niezależnie od tokenu testowego.</p></section><section class="rxQuick" aria-label="Szybki test RX"><strong>🧪 SZYBKI TEST RX</strong><p>Jeden przycisk — wynik pokaże się tutaj.</p><button id="rxQuickStart" type="button">▶ URUCHOM TEST RX</button><p id="rxQuickResult" class="rxResult wait" role="status" aria-live="polite">Gotowy do uruchomienia testu.</p></section><p>Panel historii publikacji VEXORIO. Dane pobierane z publicznego GitHub Actions. Panel niczego nie publikuje ani nie naprawia automatycznie.</p>
 <p><a href="/guard-lab.html">RX Strażak</a> · <a href="/">VEXORIO</a> · <a href="https://github.com/Gregg856/vexorio/actions" rel="noopener noreferrer">Wszystkie uruchomienia</a></p>
@@ -592,8 +595,8 @@ document.addEventListener('DOMContentLoaded',()=>{
  const shell=document.createElement('div');shell.className='rx-workspace';
  const side=document.createElement('nav');side.className='rx-side';side.setAttribute('aria-label','Kategorie RX');
  const pane=document.createElement('div');pane.className='rx-pane';
- const menu=document.createElement('button');menu.type='button';menu.className='rx-menu-toggle';menu.textContent='☰ Kategorie RX';menu.setAttribute('aria-expanded','false');
- const groups=[['chat','💬 Czat RX Strażak'],['strażak','🛡️ Strażak'],['tester','🧪 Tester'],['diagnostyka','🔎 Diagnostyka'],['historia','📚 Historia'],['ustawienia','⚙️ Ustawienia']];
+ const menu=document.createElement('button');menu.type='button';menu.className='rx-menu-toggle';menu.textContent='☰ Kategorie i narzędzia RX';menu.setAttribute('aria-expanded','false');
+ const groups=[['chat','🧠 Rozmowa z RX Strażakiem'],['strażak','🛡️ Strażak'],['tester','🧪 Tester'],['diagnostyka','🔎 Diagnostyka'],['historia','📚 Historia'],['ustawienia','⚙️ Ustawienia']];
  const views=new Map(),buttons=new Map();
  for(const [key,label] of groups){
   const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',()=>activate(key));
@@ -930,15 +933,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   (views.get(target)||fallback).append(node);
  }
  const chat=views.get('chat');chat.classList.add('rx-chat');
- const title=document.createElement('h2');title.textContent='🛡️ RX Strażak — centrum sterowania';
- const notice=document.createElement('p');notice.className='meta';notice.textContent='To nawigator istniejących funkcji RX, nie rozmowa z modelem AI. Wybierz polecenie, aby otworzyć odpowiedni moduł.';
+ const title=document.createElement('h2');title.textContent='🧠 RX Strażak — centrum RX BIBI';
+ const notice=document.createElement('p');notice.className='meta';notice.textContent='Napisz, co mam sprawdzić lub zaplanować. RX Strażak koordynuje dostępne narzędzia; odpowiedzi opierają się na funkcjach panelu, bez udawania połączenia z modelem językowym.';
  const log=document.createElement('div');log.className='rx-chatlog';log.setAttribute('aria-live','polite');
  const bubble=(message,user=false)=>{const p=document.createElement('div');p.className='rx-bubble'+(user?' user':'');p.textContent=message;log.append(p);return p;};
- bubble('Witaj w RX Strażak. Wybierz kategorię lub napisz: pokaż błędy, uruchom test, historia publikacji albo stan strony.');
+ bubble('Witaj! Jestem RX Strażak. Napisz od razu, co mam sprawdzić. Mogę pokazać błędy, status strony, testy, historię i zapisać zadanie.');
  const shortcuts=document.createElement('div');shortcuts.className='rx-shortcuts';
  for(const [key,label] of [['strażak','🛡️ Stan strony'],['diagnostyka','🔎 Błędy'],['tester','🧪 Testy'],['historia','📚 Historia']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>activate(key));shortcuts.append(b);}
  const form=document.createElement('form');form.className='rx-compose';
- const input=document.createElement('input');input.setAttribute('aria-label','Polecenie dla RX');input.placeholder='Napisz do RX…';input.maxLength=160;
+ const input=document.createElement('input');input.setAttribute('aria-label','Polecenie dla RX');input.placeholder='Napisz polecenie do RX Strażaka…';input.maxLength=500;
  const send=document.createElement('button');send.type='submit';send.textContent='Wyślij';send.setAttribute('aria-label','Wyślij wiadomość');send.title='Wyślij wiadomość';
  form.append(input,send);form.addEventListener('submit',event=>{
   event.preventDefault();const message=input.value.trim();if(!message)return;input.value='';bubble(message,true);
