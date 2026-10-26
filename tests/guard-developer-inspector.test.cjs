@@ -66,3 +66,16 @@ assert.deepEqual(inlineBlock.findings.map(f=>[f.rule,f.line]),[['eval',1]]);
 const multiInline=inspectSource({path:'src/inline-block.js',source:'const a=1; /* console.log(fake);\n eval(fake); */ console.log(real);'});
 assert.deepEqual(multiInline.findings.map(f=>[f.rule,f.line]),[['console-log',2]]);
 console.log('PASS: RX Developer 2.1 inline block comments preserve real code');
+
+const quotedCases=inspectSource({path:'src/quoted.js',source:[
+ 'const note = "eval(fake) and console.log(fake)";',
+ "const other = 'document.write(fake)';",
+ 'const real = eval(userInput);',
+ 'console.log(real);'
+].join('\n')});
+assert.deepEqual(quotedCases.findings.map(f=>[f.rule,f.line]),[['eval',3],['console-log',4]]);
+const inlineComment=inspectSource({path:'src/inline-comment.js',source:'const x=1; // eval(fake)\nconsole.log(x);'});
+assert.deepEqual(inlineComment.findings.map(f=>[f.rule,f.line]),[['console-log',2]]);
+const urlLiteral=inspectSource({path:'src/url-literal.js',source:'const url="https://example.org/path";\nfetch("http://example.org");'});
+assert.deepEqual(urlLiteral.findings.map(f=>[f.rule,f.line]),[['insecure-http',2]]);
+console.log('PASS: RX Developer 2.2 quoted strings and inline comments');
