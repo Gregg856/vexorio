@@ -34,6 +34,7 @@ try{
  fs.writeFileSync(path.join(dir,'guard','broken.js'),'function ( {');
  const syntaxReport=scan(dir);
  assert.ok(syntaxReport.files.find(f=>f.path==='guard/broken.js').findings.some(f=>f.rule==='syntax-error'&&f.severity==='high'));
+ assert.equal(syntaxReport.files.find(f=>f.path==='guard/broken.js').findings[0].rule,'syntax-error','high-severity syntax failure should appear first');
  assert.ok(!syntaxReport.files.find(f=>f.path==='guard/helper.cjs').findings.some(f=>f.rule==='syntax-error'));
  const external=fs.mkdtempSync(path.join(os.tmpdir(),'guard-outside-'));
  try{
