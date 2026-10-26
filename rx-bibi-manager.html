@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  views.set('plugins',pluginView);pane.append(pluginView);
  const pluginNav=document.createElement('button');pluginNav.type='button';pluginNav.textContent='🧩 RX Plugins';pluginNav.addEventListener('click',()=>activate('plugins'));side.append(pluginNav);buttons.set('plugins',pluginNav);
  const developerView=document.createElement('section');developerView.className='rx-developer';
- const developerTitle=document.createElement('h2');developerTitle.textContent='💻 RX Developer 1.6 — analiza kodu';
+ const developerTitle=document.createElement('h2');developerTitle.textContent='💻 RX Developer 1.7 — analiza kodu';
  const developerInfo=document.createElement('p');developerInfo.className='meta';developerInfo.textContent='Własny lokalny analizator fragmentów JavaScript. Nie wysyła kodu do zewnętrznych usług, nie modyfikuje repozytorium ani nie wykonuje wklejonego kodu.';
  const developerInput=document.createElement('textarea');developerInput.rows=9;developerInput.maxLength=12000;developerInput.placeholder='Wklej fragment JavaScript do sprawdzenia…';developerInput.setAttribute('aria-label','Kod do analizy RX Developer');developerInput.style.width='100%';
  const developerRun=document.createElement('button');developerRun.type='button';developerRun.textContent='🔎 Analizuj kod';
@@ -686,7 +686,11 @@ document.addEventListener('DOMContentLoaded',()=>{
    {re:/\bdocument\.write\s*\(/g,label:'document.write() może nadpisać stronę lub wstrzyknąć HTML.',fix:'Buduj elementy przez createElement() i textContent.'},
    {re:/\b(?:setTimeout|setInterval)\s*\(\s*['"\x60]/g,label:'Timer z kodem jako tekst jest ryzykowny.',fix:'Przekaż funkcję zamiast łańcucha znaków.'},
    {re:/\b(?:fetch|XMLHttpRequest)\s*\(\s*['"]http:\/\//g,label:'Połączenie HTTP bez szyfrowania.',fix:'Użyj HTTPS i zweryfikuj adres serwera.'},
-   {re:/\bconsole\.(?:debug|info)\s*\(/g,label:'Logowanie może ujawniać dane również w trybie debug/info.',fix:'Usuń logowanie wrażliwych wartości przed publikacją.'}
+   {re:/\bconsole\.(?:debug|info)\s*\(/g,label:'Logowanie może ujawniać dane również w trybie debug/info.',fix:'Usuń logowanie wrażliwych wartości przed publikacją.'},
+   {re:/\blocalStorage\.setItem\s*\(\s*['"][^'"]*(?:token|secret|password|api[_-]?key)/gi,label:'Możliwy zapis sekretu w localStorage.',fix:'Nie przechowuj tokenów ani haseł w localStorage; rozważ bezpieczną sesję po stronie serwera.'},
+   {re:/\bwindow\.open\s*\(/g,label:'Sprawdź otwieranie nowych okien.',fix:'Jeśli otwierasz zewnętrzny adres, użyj noopener/noreferrer i zweryfikuj URL.'},
+   {re:/\bpostMessage\s*\([^,]+,\s*['"]\*['"]/g,label:'postMessage() z targetOrigin * może wysłać dane do niepożądanego odbiorcy.',fix:'Ustaw konkretny, zaufany origin zamiast *.'},
+   {re:/\b(?:location|window\.location)\.href\s*=\s*(?!['"\x60]https?:\/\/)/g,label:'Sprawdź przekierowanie i walidację adresu.',fix:'Waliduj docelowy URL i dopuszczone domeny przed przekierowaniem.'}
   ];
   try{new Function(code);}catch(error){issues.push({line:null,label:'Błąd składni: '+String(error.message).slice(0,180),fix:'Sprawdź nawiasy, cudzysłowy i przecinki w kodzie.'});}
   for(let i=0;i<lines.length;i++){
@@ -701,7 +705,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  });
  const developerCopy=document.createElement('button');developerCopy.type='button';developerCopy.textContent='📋 Kopiuj raport';developerCopy.addEventListener('click',async()=>{const report='RX Developer — raport\\n'+developerOutput.textContent;if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(report);developerCopy.textContent='✓ Skopiowano';return;}catch(_){}}const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';developerView.append(field);field.select();});
  const developerPreview=document.createElement('section');
- const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.6 — podgląd i ochrona historii';
+ const developerPreviewTitle=document.createElement('h3');developerPreviewTitle.textContent='🛠️ RX Developer 1.7 — podgląd i ochrona historii';
  const developerPreviewInfo=document.createElement('p');developerPreviewInfo.className='meta';developerPreviewInfo.textContent='Tylko prosta, jawna zamiana console.log → console.debug. Podgląd nie zapisuje zmian ani nie uruchamia kodu. Pozostałe ostrzeżenia wymagają ręcznej oceny.';
  const developerSuggest=document.createElement('button');developerSuggest.type='button';developerSuggest.textContent='👀 Przygotuj podgląd';
  const developerBefore=document.createElement('pre');developerBefore.style.whiteSpace='pre-wrap';developerBefore.style.overflowWrap='anywhere';
