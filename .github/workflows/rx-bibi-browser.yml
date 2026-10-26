@@ -70,6 +70,8 @@ jobs:
         run: node tests/rx-money-engine.cjs
       - name: Sprawdź RX EVOLUTION i MONEY RADAR
         run: node tests/rx-evolution-radar.cjs
+      - name: Sprawdź RX STELLAR SIGNAL
+        run: node tests/rx-stellar-signal.cjs
       - name: Sprawdź RX STELLAR LAB
         run: node tests/rx-stellar-lab.cjs
       - name: Sprawdź RX ANT ACADEMY
