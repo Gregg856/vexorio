@@ -986,6 +986,9 @@ document.addEventListener('DOMContentLoaded',()=>{
  // Keep history controls with their report, not in Settings.
  const historyControls=new Set(['refresh','exportReport','exportInfo','status','filterStatus','runs','summary','freshness']);
  for(const id of historyControls)mapping[id]='historia';
+ // Filter navigation has no ID; move it alongside history controls.
+ const filters=document.querySelector('nav.filters[aria-label="Filtr historii"]');
+ if(filters)views.get('historia').append(filters);
  const fallback=views.get('ustawienia');
  const header=original.find(node=>node.tagName==='H1');if(header){header.textContent='🛡️ RX BIBI Manager';header.classList.add('rx-app-title');}
  for(const node of original){
