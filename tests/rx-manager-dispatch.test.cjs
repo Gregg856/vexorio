@@ -85,7 +85,7 @@ const fs=require('node:fs');
    if(target.includes('/actions/runs/123/jobs'))return Response.json({jobs:[{id:456,name:'deploy',conclusion:'failure',steps:[{name:'Build',conclusion:'failure'}]}]});
    if(target.includes('/actions/jobs/456/logs')){logRequests++;return new Response(null,{status:302,headers:{Location:'https://example.blob.core.windows.net/logs/job.txt'}});}
    if(target.includes('example.blob.core.windows.net'))return new Response('ERROR: build failed\nERROR: token=very-secret\nERROR: see https://private.example/path\n',{status:200});
-   throw Error('Unexpected network request: '+target);
+      throw Error('Unexpected network request: '+target);
   };
   r=await worker.fetch(new Request(origin+'/api/rx/failed-steps?run_id=123&include_logs=1',{headers:{Authorization:'Bearer valid-token'}}),diagEnv);
   assert.equal(r.status,200,'Admin may request filtered logs');
