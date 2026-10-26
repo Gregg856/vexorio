@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {evaluateModel}=require('../rx-evaluator.js');
+const examples=Array.from({length:10},(_,i)=>({expectedFixId:i%2?'fix_b':'fix_a',approvedForEvaluation:true}));
+const baseline=examples.map((e,i)=>i<7?e.expectedFixId:'wrong');
+const candidate=examples.map((e,i)=>i<9?e.expectedFixId:'wrong');
+const result=evaluateModel({examples,baselinePredictions:baseline,candidatePredictions:candidate});
+assert.equal(result.sampleSize,10);
+assert.equal(result.passed,true);
+assert.equal(result.requiresHumanApproval,true);
+assert.equal(result.status,'evaluation_only');
+assert.equal(evaluateModel({examples,baselinePredictions:candidate,candidatePredictions:baseline}).passed,false);
+assert.equal(evaluateModel({examples:examples.slice(0,2),baselinePredictions:baseline.slice(0,2),candidatePredictions:candidate.slice(0,2)}).passed,false);
+assert.throws(()=>evaluateModel({examples:[{expectedFixId:'fix_a',approvedForEvaluation:false}],baselinePredictions:['fix_a'],candidatePredictions:['fix_a']}),/Unapproved/);
+assert.throws(()=>evaluateModel({examples,baselinePredictions:baseline.slice(1),candidatePredictions:candidate}),/Invalid evaluation/);
+console.log('RX EVALUATOR: PASS');
