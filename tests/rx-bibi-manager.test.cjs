@@ -300,3 +300,17 @@ for(const [label,input,needle,expected] of lexCases){
  assert.equal(output.includes(needle),expected,'Lexer behavior: '+label);
 }
 console.log('PASS: RX Developer lexer behavioral smoke tests');
+
+assert.ok(bibi.includes("re:/\\bouterHTML\\s*=/g"),'RX Developer must detect outerHTML assignments');
+assert.ok(bibi.includes("re:/\\binsertAdjacentHTML\\s*\\(/g"),'RX Developer must detect insertAdjacentHTML calls');
+for(const [label,input,expected] of [
+ ['outerHTML assignment',"element.outerHTML = '<img>';",true],
+ ['insertAdjacentHTML call',"element.insertAdjacentHTML('beforeend', html);",true],
+ ['HTML sink in comment',"// element.outerHTML = '<img>';",false],
+ ['HTML sink in string',"const note = 'element.insertAdjacentHTML()';",false]
+]){
+ const maskedInput=maskSnippet(input);
+ const sinks=[/\bouterHTML\s*=/g,/\binsertAdjacentHTML\s*\(/g];
+ assert.equal(sinks.some(re=>re.test(maskedInput)),expected,'RX HTML sink: '+label);
+}
+console.log('PASS: RX Developer HTML injection sink regression');
