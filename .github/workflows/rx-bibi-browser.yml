@@ -12,7 +12,8 @@ on:
       - '.github/workflows/rx-bibi-browser.yml'
   workflow_dispatch:
   schedule:
-    - cron: '23 6 * * *'
+    # RX MILION SERC: monitoring przez całą dobę, raz na godzinę (UTC).
+    - cron: '23 * * * *'
 
 permissions:
   contents: read
