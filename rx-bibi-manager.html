@@ -654,7 +654,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const side=document.createElement('nav');side.className='rx-side';side.setAttribute('aria-label','Kategorie RX');
  const pane=document.createElement('div');pane.className='rx-pane';
  const menu=document.createElement('button');menu.type='button';menu.className='rx-menu-toggle';menu.textContent='☰ Kategorie i narzędzia RX';menu.setAttribute('aria-expanded','false');
- const groups=[['chat','🧠 Rozmowa z RX Strażakiem'],['strażak','🛡️ Strażak'],['tester','🧪 Tester'],['diagnostyka','🔎 Diagnostyka'],['historia','📚 Historia'],['ustawienia','⚙️ Ustawienia']];
+ const groups=[['chat','🧠 Rozmowa z RX Strażakiem'],['strażak','🛡️ Strażak'],['tester','🧪 Tester'],['diagnostyka','🔎 Diagnostyka'],['historia','📚 Historia'],['developer','🧰 RX Developer'],['ustawienia','⚙️ Ustawienia']];
  const views=new Map(),buttons=new Map();
  for(const [key,label] of groups){
   const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',()=>activate(key));
