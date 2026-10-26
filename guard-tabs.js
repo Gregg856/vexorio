@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const names=['Chat','Developer','Moderation'];
+ const names=['Chat','Developer','Moderation','Queen'];
  const tabs=names.map(n=>document.getElementById('guardTab'+n));
  const panels=names.map(n=>document.getElementById('guardPanel'+n));
  if(tabs.some(t=>!t)||panels.some(p=>!p))return;
