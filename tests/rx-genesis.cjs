@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createGenesis}=require('../rx-genesis.cjs');
+const g=createGenesis({maxVariants:3,maxGeneration:1});
+const root=g.propose({area:'memory',description:'Reuse verified cache entries',score:70,testsPassed:true,securityPassed:true});
+assert.throws(()=>g.propose({parentId:root.id,area:'memory',description:'Child before approval',score:80}),/Parent must be approved/);
+assert.throws(()=>g.approve(root.id,''),/Human approval/);
+g.approve(root.id,'owner');
+const child=g.propose({parentId:root.id,area:'memory',description:'Reuse compressed verified cache',score:85,testsPassed:true,securityPassed:true});
+assert.equal(child.generation,1);
+assert.equal(g.best('memory').id,root.id);
+g.approve(child.id,'owner');
+assert.equal(g.best('memory').id,child.id);
+assert.throws(()=>g.propose({parentId:child.id,area:'memory',description:'Unbounded generation blocked',score:90}),/Generation limit/);
+const unverified=g.propose({area:'tests',description:'Unverified new proposal',score:99});
+assert.throws(()=>g.approve(unverified.id,'owner'),/Evidence gate/);
+assert.throws(()=>g.propose({area:'tests',description:'Fourth proposal blocked',score:5}),/Genesis full/);
+console.log('PASS RX Genesis inheritance, approval, selection and bounds');
