@@ -98,6 +98,31 @@ const fs=require('node:fs');
   assert.equal(r.status,502,'Permission verification errors must fail closed');
   r=await diag({'Authorization':'Bearer valid-token','Sec-Fetch-Site':'same-site'});
   assert.equal(r.status,403,'Same-site but cross-origin diagnostic requests must be denied');
+  // GitHub API failures must be handled without exposing response bodies or credentials.
+  globalThis.fetch=async url=>{
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'authorized-admin'});
+   if(String(url).endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
+   return new Response('private GitHub token=do-not-leak',{status:403});
+  };
+  r=await diag({'Authorization':'Bearer valid-token'});
+  assert.equal(r.status,502,'GitHub API rate limit or permission error must be handled');
+  assert.ok(!(await r.text()).includes('do-not-leak'),'GitHub response body must not leak');
+  globalThis.fetch=async url=>{
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'authorized-admin'});
+   if(String(url).endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
+   return new Response('not-json',{status:200});
+  };
+  r=await diag({'Authorization':'Bearer valid-token'});
+  assert.equal(r.status,502,'Malformed GitHub JSON must fail gracefully');
+  assert.ok(!(await r.text()).includes('not-json'),'Malformed response body must not leak');
+  globalThis.fetch=async url=>{
+   if(String(url).endsWith('/auth/v1/user'))return Response.json({id:'authorized-admin'});
+   if(String(url).endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
+   throw Error('secret network failure');
+  };
+  r=await diag({'Authorization':'Bearer valid-token'});
+  assert.equal(r.status,502,'Network failure must fail gracefully');
+  assert.ok(!(await r.text()).includes('secret network failure'),'Network exception details must not leak');
   // Exercise filtered log extraction without exposing raw tokens or credentials.
   let logRequests=0;
   globalThis.fetch=async url=>{
