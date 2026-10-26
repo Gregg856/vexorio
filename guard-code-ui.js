@@ -11,7 +11,7 @@
    const lines=['Plik: '+report.path,'Liczba linii: '+report.lines,'Wykryte sygnały: '+summary.total,'Podsumowanie zagrożeń: wysokie '+summary.high+' | średnie '+summary.medium+' | niskie '+summary.low];
    for(const item of report.findings)lines.push('Linia '+item.line+' ['+item.severity+']: '+item.message);
    if(!report.findings.length)lines.push('Nie znaleziono sygnałów objętych obecnymi regułami. To nie gwarantuje bezpieczeństwa.');
-   if(report.limited)lines.push('Wynik ograniczony do 50 sygnałów.');
+   if(report.limited)lines.push('Wynik ograniczony do 50 sygnałów. Pominięto: '+(report.omitted??'nieznana liczba')+'.');
    lines.push('Analiza lokalna, bez uruchamiania kodu i bez wysyłania go na serwer.');
    if(window.GuardCodeFix){
     const fixes=window.GuardCodeFix.suggestFixes(report);
