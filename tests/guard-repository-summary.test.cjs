@@ -91,7 +91,9 @@ assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]}]}).cleanPerc
 console.log('PASS: RX Developer 6.5 clean-file percentage');
 assert.equal(affected.scanStatus,'review_required');
 assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]}]}).scanStatus,'no_signals');
-assert.equal(summarize({signals:0,files:[{path:'missing.js',error:'missing'}]}).scanStatus,'no_files_scanned');
+assert.equal(summarize({signals:0,files:[{path:'missing.js',error:'missing'}]}).scanStatus,'incomplete');
+assert.equal(summarize({signals:0,files:[]}).scanStatus,'no_files_scanned');
+assert.equal(summarize({signals:0,files:[{path:'ok.js',findings:[]},{path:'missing.js',error:'missing'}]}).scanStatus,'incomplete');
 console.log('PASS: RX Developer 6.6 scan status');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
