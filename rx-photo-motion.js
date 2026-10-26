@@ -90,7 +90,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   try{recorder.start(250)}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   if(audioSource){const offset=Math.max(0,Number(audioStart)||0)%audioSource.buffer.duration;audioSource.start(0,offset)}
   const start=performance.now();
-  function frame(now){if(recorder.state==='inactive'){stopped=true;stream.getTracks().forEach(track=>track.stop());return}const t=Math.min(duration,(now-start)/1000);try{draw(t)}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;recorder.stop();stream.getTracks().forEach(track=>track.stop())}else frameId=requestAnimationFrame(frame)}
+  function frame(now){if(recorder.state==='inactive'){stopped=true;stream.getTracks().forEach(track=>track.stop());return}const t=Math.min(duration,(now-start)/1000);try{draw(t)}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;try{if(recorder.state==='recording')recorder.requestData()}catch{}setTimeout(()=>{if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop())},250)}else frameId=requestAnimationFrame(frame)}
   frameId=requestAnimationFrame(frame);
   try{return await result}finally{if(frameId)cancelAnimationFrame(frameId);if(!stopped&&recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());if(audioSource){try{audioSource.stop()}catch{}}if(audioContext)await audioContext.close()}
  }finally{loaded.length=0}
