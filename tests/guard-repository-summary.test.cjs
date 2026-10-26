@@ -73,5 +73,13 @@ assert.deepEqual(rankedRules.priorityRules,[
  {rule:'low-rule',severity:{high:0,medium:0,low:1}}
 ]);
 console.log('PASS: RX Developer 6.2 severity-prioritized rules');
+const affected=summarize({signals:4,files:[
+ {path:'a.js',findings:[{rule:'eval',severity:'high'},{rule:'eval',severity:'high'}]},
+ {path:'b.js',findings:[{rule:'eval',severity:'high'},{rule:'log',severity:'low'}]},
+ {path:'c.js',findings:[]},{path:'d.js',error:'missing'}
+]});
+assert.deepEqual(affected.affectedFiles,{high:2,medium:0,low:1});
+assert.equal(affected.severity.high,3);
+console.log('PASS: RX Developer 6.3 affected-file counts');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
