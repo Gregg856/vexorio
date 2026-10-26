@@ -63,7 +63,7 @@ const RULES=Object.freeze([
  {id:'RX006',severity:'medium',pattern:/\bdocument\.write\s*\(/g,message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'},
  {id:'RX007',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczne tworzenie funkcji może wykonać niezaufany kod.',advice:'Unikaj new Function() dla danych z zewnątrz.'},
  {id:'RX008',severity:'medium',pattern:/\bdocument\.cookie\s*=/g,message:'Zapis cookie w JavaScript wymaga przeglądu zabezpieczeń.',advice:'Dla sesji rozważ ciasteczka HttpOnly ustawiane przez serwer.'},
- {id:'RX009',severity:'high',pattern:/\bpostMessage\s*\([^,\n]+,\s*\*/g,message:'postMessage() z dowolnym odbiorcą może ujawnić dane.',advice:'Wskaż konkretny targetOrigin.'},
+ {id:'RX009',severity:'medium',pattern:/\bpostMessage\s*\(/g,message:'Sprawdź targetOrigin wywołania postMessage().',advice:'Wskaż konkretny targetOrigin.'},
  {id:'RX010',severity:'medium',pattern:/\b(?:window\.)?location\.href\s*=/g,message:'Przekierowanie wymaga sprawdzenia źródła adresu.',advice:'Waliduj docelowy adres i dozwolone domeny.'}
 ]);
 function analyzeJavaScript(source){
