@@ -63,5 +63,15 @@ assert.deepEqual(ruleSummary.topRules,[{rule:'eval',count:2},{rule:'console-log'
 assert.equal(JSON.stringify(ruleSummary.topRules).includes('unsafe secret'),false);
 assert.deepEqual(summarize({signals:0,files:[]}).topRules,[]);
 console.log('PASS: RX Developer 6.1 top detection rules');
+const rankedRules=summarize({signals:4,files:[{path:'rank.js',findings:[
+ {rule:'low-rule',severity:'low'},{rule:'high-rule',severity:'high'},
+ {rule:'medium-rule',severity:'medium'},{rule:'high-rule',severity:'high'}
+]}]});
+assert.deepEqual(rankedRules.priorityRules,[
+ {rule:'high-rule',severity:{high:2,medium:0,low:0}},
+ {rule:'medium-rule',severity:{high:0,medium:1,low:0}},
+ {rule:'low-rule',severity:{high:0,medium:0,low:1}}
+]);
+console.log('PASS: RX Developer 6.2 severity-prioritized rules');
 console.log('PASS: RX Developer 5.0 ranked repository risk overview');
 console.log('PASS: Strażak Developer summary counts and no source content');
