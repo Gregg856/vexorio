@@ -19,6 +19,30 @@ function maskJavaScript(source) {
   }
   if(c==='/'&&n==='/'){frames.push({type:'line'});i+=2;continue;}
   if(c==='/'&&n==='*'){frames.push({type:'block'});i+=2;continue;}
+
+  // Mask regex literals after expression starters; leave division operators visible.
+  if(c==='/'&&n!=='/'&&n!=='*'){
+   let k=i-1;
+   while(k>=0&&/\s/.test(out[k]))k--;
+   const previous=k>=0?out[k]:'';
+   if(!previous||/[=(:,!&|?;{\[+*%-]/.test(previous)){
+    let j=i+1,escaped=false,inClass=false,closed=false;
+    for(;j<source.length;j++){
+     const ch=source[j];
+     if(ch==='\n'||ch==='\r')break;
+     if(escaped){escaped=false;continue;}
+     if(ch==='\\'){escaped=true;continue;}
+     if(ch==='[')inClass=true;
+     else if(ch===']')inClass=false;
+     else if(ch==='/'&&!inClass){closed=true;break;}
+    }
+    if(closed){
+     j++;
+     while(j<source.length&&/[a-z]/i.test(source[j]))j++;
+     i=j;continue;
+    }
+   }
+  }
   if(c==='"'||c==="'"){frames.push({type:'string',quote:c});i++;continue;}
   if(c==='\x60'){frames.push({type:'template',quote:c});i++;continue;}
   if(f.interpolation){
