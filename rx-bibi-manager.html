@@ -693,12 +693,42 @@ document.addEventListener('DOMContentLoaded',()=>{
    {re:/\b(?:location|window\.location)\.href\s*=\s*(?!['"\x60]https?:\/\/)/g,label:'Sprawdź przekierowanie i walidację adresu.',fix:'Waliduj docelowy URL i dopuszczone domeny przed przekierowaniem.'}
   ];
   try{new Function(code);}catch(error){issues.push({line:null,label:'Błąd składni: '+String(error.message).slice(0,180),fix:'Sprawdź nawiasy, cudzysłowy i przecinki w kodzie.'});}
+  // Lexical mask: preserve character positions and line numbers without executing input.
+  // Strings and comments are masked for code-only rules; secret assignments retain strings.
+  const masked=[];let mode='code',escaped=false;
+  for(let i=0;i<code.length;i++){
+   const c=code[i],next=code[i+1],newline=c==='\n'||c==='\r';
+   if(mode==='line'){if(newline){mode='code';masked.push(c);}else masked.push(' ');continue;}
+   if(mode==='block'){if(c==='*'&&next==='/'){masked.push(' ',' ');i++;mode='code';}else masked.push(newline?c:' ');continue;}
+   if(mode==='string'){
+    if(escaped){escaped=false;masked.push(newline?c:' ');continue;}
+    if(c==='\\'){escaped=true;masked.push(' ');continue;}
+    if(c===quote){mode='code';masked.push(' ');continue;}
+    masked.push(newline?c:' ');continue;
+   }
+   if(c==='/'&&next==='/'){masked.push(' ',' ');i++;mode='line';continue;}
+   if(c==='/'&&next==='*'){masked.push(' ',' ');i++;mode='block';continue;}
+   if(c==='"'||c==="'"||c==='`'){var quote=c;mode='string';masked.push(' ');continue;}
+   masked.push(c);
+  }
+  const codeLines=masked.join('').split(/\r?\n/);
   for(let i=0;i<lines.length;i++){
-   // Skip full-line comments to reduce obvious false positives; inline comments remain heuristic.
-   if(/^\s*(?:\/\/|\*|\/\*)/.test(lines[i]))continue;
    for(const rule of rules){
-    rule.re.lastIndex=0;
-    if(!rule.re.test(lines[i]))continue;
+    // Secret and literal-argument rules need original strings, but must not match comments.
+    const needsLiterals=/sekret zapisany|HTTP bez szyfrowania|Timer z kodem|localStorage|targetOrigin/.test(rule.label);
+    const candidate=needsLiterals?lines[i]:codeLines[i];
+    if(!needsLiterals){
+     rule.re.lastIndex=0;
+     if(!rule.re.test(candidate))continue;
+    }else{
+     rule.re.lastIndex=0;
+     let match,found=false;
+     while((match=rule.re.exec(candidate))!==null){
+      if(codeLines[i].slice(match.index,match.index+Math.min(6,match[0].length)).trim()){found=true;break;}
+      if(!rule.re.global)break;
+     }
+     if(!found)continue;
+    }
     if(rule.label.includes('fetch()')&&(/\.catch\s*\(/.test(lines[i])||/\btry\s*\{/.test(lines.slice(Math.max(0,i-2),i+1).join(' '))))continue;
    if(rule.label.includes('otwieranie nowych okien')&&/noopener|noreferrer/.test(lines[i]))continue;
     issues.push({line:i+1,label:rule.label,fix:rule.fix});
