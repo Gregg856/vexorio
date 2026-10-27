@@ -105,6 +105,13 @@ jobs:
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         if: always()
         run: node tests/rx-bibi-studio.cjs
+      - name: RX QUEEN — raport nocnej zmiany
+        if: always()
+        env:
+          RX_JOB_STATUS: ${{ job.status }}
+          RX_RUN_ID: ${{ github.run_id }}
+        run: |
+          node -e 'const fs=require("node:fs");const p="rx-bibi-reports/rx-ant-lab.json";let report=null;try{report=JSON.parse(fs.readFileSync(p,"utf8"))}catch{}const lines=["## 🐜 RX QUEEN — raport mrówek","- Testy całego zadania: **"+process.env.RX_JOB_STATUS+"**","- Numer uruchomienia: "+process.env.RX_RUN_ID,report?"- Eksperyment syntetyczny: "+report.passingVariants+"/"+report.testedVariants+" wariantów spełniło kryterium":"- Eksperyment syntetyczny: brak raportu","- Dane: syntetyczne; nie oznacza treningu modelu AI ani zapisu DNA do chmury."];fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\n")+"\n")'
       - name: RX BLACK BOX — raport uruchomienia
         if: always()
         env:
