@@ -186,11 +186,12 @@ function analyzeJavaScript(source){
   while((match=rule.pattern.exec(masked))!==null){
    const offset=match.index;
    // Skip known locally shadowed browser globals; conservative file-level check.
-   const shadowName=rule.id==='RX005'?'console':rule.id==='RX006'?'document':rule.id==='RX010'?'location':null;
+   const shadowName=rule.id==='RX005'?'console':rule.id==='RX006'||rule.id==='RX008'?'document':rule.id==='RX010'?'location':rule.id==='RX011'?'sessionStorage':rule.id==='RX012'?'window':rule.id==='RX013'?'setInterval':rule.id==='RX007'?'Function':null;
    if(shadowName){
     const prefix=masked.slice(0,offset);
     const shadowPattern=new RegExp('\\b(?:const|let|var)\\s+'+shadowName+'\\s*=\\s*\\{');
     if(shadowPattern.test(prefix))continue;
+    if((shadowName==='setInterval'||shadowName==='Function')&&new RegExp('\\b(?:const|let|var)\\s+'+shadowName+'\\s*=').test(prefix))continue;
     // A parameter with the same name shadows the browser global inside its function body.
     const paramShadow=new RegExp(String.raw`\bfunction\s*[A-Za-z_$\w]*\s*\([^)]*\b`+shadowName+String.raw`\b[^)]*\)\s*\{`,'g');
     let localFunction,insideShadow=false;
