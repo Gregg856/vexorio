@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {runCloudComputer,CHECKS}=require('../rx-mega-cloud-computer.cjs');
+const {runCloudComputer,runAntQueue,CHECKS}=require('../rx-mega-cloud-computer.cjs');
 const r=runCloudComputer();
 assert.equal(r.planned,CHECKS.length);
 assert.equal(r.passed,0);
@@ -28,4 +28,27 @@ assert.throws(()=>runCloudComputer({selectedChecks:['tests/unknown.cjs']}),/allo
 assert.throws(()=>runCloudComputer({selectedChecks:[CHECKS[0],CHECKS[0]]}),/duplicate/);
 assert.throws(()=>runCloudComputer({maxChecks:-1}),/budget/);
 assert.throws(()=>runCloudComputer({maxChecks:100}),/budget/);
+const queue={schema:1,kind:'rx-cosmos-ant-queue',planned:[
+ {id:'ant-a',action:'run_unit_tests',target:CHECKS[0],status:'needs_review',requiresApproval:true},
+ {id:'ant-b',action:'inspect',target:'unsafe.sh',status:'needs_review',requiresApproval:true},
+ {id:'ant-c',action:'run_unit_tests',target:CHECKS[1],status:'needs_review',requiresApproval:true}
+]};
+const noApproval=runAntQueue(queue);
+assert.equal(noApproval.executed,0);
+assert.equal(noApproval.approvalRequired,true);
+assert.equal(noApproval.skippedTasks,3);
+const approved=runAntQueue(queue,{approvedIds:['ant-a','ant-c'],maxChecks:1});
+assert.equal(approved.planned,1);
+assert.equal(approved.deferred,1);
+assert.equal(approved.approvedTasks,2);
+assert.equal(approved.executed,0);
+const actual=runAntQueue(queue,{approvedIds:['ant-a'],execute:true,maxChecks:1});
+assert.equal(actual.passed,1);
+assert.deepEqual(actual.executedTaskIds,['ant-a']);
+assert.throws(()=>runAntQueue(queue,{approvedIds:['missing']}),/Unknown RX ant approval/);
+assert.throws(()=>runAntQueue(queue,{approvedIds:['ant-a','ant-a']}),/Invalid RX ant queue/);
+assert.throws(()=>runAntQueue(queue,{maxChecks:100}),/Invalid RX ant queue/);
+assert.throws(()=>runAntQueue({...queue,planned:[queue.planned[0],queue.planned[0]]}),/Invalid RX ant queue task/);
+assert.throws(()=>runAntQueue({...queue,planned:[{...queue.planned[0],requiresApproval:false}]}),/Invalid RX ant queue task/);
+assert.equal(runAntQueue(queue,{approvedIds:['ant-b'],execute:true}).executed,0);
 console.log('PASS RX MEGA CLOUD COMPUTER bounded real test execution and lab reports');
