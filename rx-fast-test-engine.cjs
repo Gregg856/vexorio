@@ -34,5 +34,19 @@ async function runFastTests({tests=DEFAULT_TESTS,parallel=3,timeoutMs=20000}={})
  await Promise.all(Array.from({length:Math.min(parallel,tests.length)},worker));
  return {schema:1,kind:'rx-fast-test-engine',passed:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,total:results.length,elapsedMs:Date.now()-suiteStarted,slowest:results.filter(Boolean).slice().sort((a,b)=>b.ms-a.ms).slice(0,3).map(r=>({file:r.file,ms:r.ms,ok:r.ok})),results};
 }
-if(require.main===module)runFastTests().then(report=>{fs.mkdirSync('rx-bibi-reports',{recursive:true});fs.writeFileSync('rx-bibi-reports/rx-fast-tests.json',JSON.stringify(report,null,2)+'\n');for(const r of report.results)console.log((r.ok?'PASS ':'FAIL ')+r.file+' '+r.ms+'ms'+(r.ok?'':' '+(r.output||r.error||'')));console.log('RX FAST:',report.passed+'/'+report.total,'in',report.elapsedMs+'ms');if(process.env.GITHUB_STEP_SUMMARY){const lines=['## RX FAST — testy równoległe','- Wynik: '+report.passed+'/'+report.total,'- Czas całej serii: '+report.elapsedMs+' ms','- Najwolniejsze:'];for(const t of report.slowest)lines.push('  - '+t.file+': '+t.ms+' ms'+(t.ok?'':' (FAIL)'));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n')}if(report.failed)process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1});
-module.exports={runFastTests,selectFastTests};
+function changedFilesFromGit(){
+ const {execFileSync}=require('node:child_process');
+ try{
+  const base=process.env.RX_FAST_BASE_SHA;
+  if(!base||!/^[a-f0-9]{40}$/i.test(base))return null;
+  const out=execFileSync('git',['diff','--name-only','--diff-filter=ACMR',base,'HEAD'],{encoding:'utf8',timeout:5000,maxBuffer:200000});
+  return out.trim()?out.trim().split(/\r?\n/):[];
+ }catch{return null}
+}
+if(require.main===module){
+ const changed=process.env.RX_FAST_SELECTIVE==='1'?changedFilesFromGit():null;
+ const tests=changed===null?DEFAULT_TESTS:selectFastTests(changed);
+ console.log('RX FAST mode:',changed===null?'full fallback':'selected', 'tests:',tests.length);
+ runFastTests({tests}).then(report=>{fs.mkdirSync('rx-bibi-reports',{recursive:true});fs.writeFileSync('rx-bibi-reports/rx-fast-tests.json',JSON.stringify(report,null,2)+'\n');for(const r of report.results)console.log((r.ok?'PASS ':'FAIL ')+r.file+' '+r.ms+'ms'+(r.ok?'':' '+(r.output||r.error||'')));console.log('RX FAST:',report.passed+'/'+report.total,'in',report.elapsedMs+'ms');if(process.env.GITHUB_STEP_SUMMARY){const lines=['## RX FAST — testy równoległe','- Wynik: '+report.passed+'/'+report.total,'- Czas całej serii: '+report.elapsedMs+' ms','- Najwolniejsze:'];for(const t of report.slowest)lines.push('  - '+t.file+': '+t.ms+' ms'+(t.ok?'':' (FAIL)'));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n')}if(report.failed)process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1});
+}
+module.exports={runFastTests,selectFastTests,changedFilesFromGit};
