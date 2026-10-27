@@ -44,7 +44,11 @@ if(require.main===module){
  if(fastReport)report.fastMetrics={elapsedMs:fastReport.elapsedMs??null,slowest:Array.isArray(fastReport.slowest)?fastReport.slowest:[]};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-ant-supervisor.json',JSON.stringify(report,null,2)+'\n');
- if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX QUEEN — zadania mrówek\n- Stan: '+report.state+'\n- Zgłoszenia: '+report.issues.length+'\n- Automatyczne poprawki: 0\n');
+ if(process.env.GITHUB_STEP_SUMMARY){
+  const fast=report.fastMetrics;
+  const slow=fast?.slowest?.map(t=>'  - '+t.file+': '+t.ms+' ms'+(t.ok?'':' (błąd)')).join('\n');
+  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX QUEEN — zadania mrówek\n- Stan: '+report.state+'\n- Zgłoszenia: '+report.issues.length+'\n- Automatyczne poprawki: 0\n'+(fast?'- RX FAST, czas całej serii: '+(fast.elapsedMs===null?'brak pomiaru':fast.elapsedMs+' ms')+'\n- Najwolniejsze testy:\n'+(slow||'  - brak danych')+'\n':''));
+ }
  console.log('RX QUEEN ANT SUPERVISOR:',report.state,report.issues.length,'issues');
 }
 module.exports={summarize};
