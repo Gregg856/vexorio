@@ -18,3 +18,15 @@ assert.equal(repeated.builder.queue.length,1);
 assert.equal(repeated.builder.queue[0].requiresApproval,true);
 assert.equal(repeated.productionModified,false);
 console.log('PASS RX injected diagnostic -> Medusa -> Memory -> Queen board -> Ant Builder -> Developer patch preview (no writes)');
+
+const {summarize}=require('../rx-queen-ant-supervisor.cjs');
+const fastReport={kind:'rx-fast-test-engine',results:[{file:'tests/rx-ant-task-board.cjs',ok:false,timedOut:true,exitCode:null}]};
+const triage=summarize({fast:fastReport});
+assert.equal(triage.state,'attention_required');
+assert.equal(triage.issues[0].action,'inspect_test_timeout');
+assert.equal(triage.issues[0].target,'tests/rx-ant-task-board.cjs');
+const triageReview=reviewRX({supervisor:triage,runId:'rx-fast-timeout'});
+assert.equal(triageReview.board.tasks.length,1);
+assert.equal(triageReview.board.tasks[0].requiresApproval,true);
+assert.equal(triageReview.productionModified,false);
+console.log('PASS RX FAST timeout report -> QUEEN -> MEDUSA -> task board');
