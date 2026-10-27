@@ -224,12 +224,26 @@ jobs:
       - name: RX MEDUSA — przekaz sygnałów do Królowej
         if: always()
         run: node rx-medusa-engine.cjs
+      - name: RX MEMORY — odzyskaj historię z poprzednich przebiegów
+        if: always()
+        uses: actions/cache/restore@v4
+        with:
+          path: rx-memory-cache/history.json
+          key: rx-signal-memory-${{ github.run_id }}
+          restore-keys: |
+            rx-signal-memory-
       - name: RX MEMORY — testuj pamięć powracających błędów
         if: always()
         run: node tests/rx-signal-memory.cjs
       - name: RX MEMORY — zapisz sygnały
         if: always()
         run: node rx-signal-memory.cjs
+      - name: RX MEMORY — zachowaj historię
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: rx-memory-cache/history.json
+          key: rx-signal-memory-${{ github.run_id }}
       - name: RX QUEEN AI 2.0 — testuj kierowanie zadań
         if: always()
         run: node tests/rx-queen-ai-bridge.cjs
