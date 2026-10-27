@@ -14,15 +14,15 @@ const {chromium,devices}=require('playwright');
   // Push tests can start before Cloudflare deploy finishes. Wait for the new UI.
   let musicReady=false;
   for(let attempt=0;attempt<24;attempt++){
-    musicReady=await page.locator('#music').count()===1&&await page.locator('#audioVolume').count()===1;
+    musicReady=await page.locator('#music').count()===1&&await page.locator('#audioVolume').count()===1&&await page.evaluate(()=>typeof window.RXVideoEngine?.create==='function');
     if(musicReady)break;
     await page.waitForTimeout(5000);
     await page.reload({waitUntil:'load',timeout:30000});
   }
   check('Wdrozenie panelu muzyki',musicReady);
-  if(!musicReady)throw Error('Cloudflare nie wdrozyl jeszcze panelu muzyki po 120 sekundach.');
-  const engines=await page.evaluate(()=>({director:typeof window.RXDirector?.plan==='function',motion:typeof window.RXPhotoMotion?.render==='function',formats:window.RXPhotoMotion?.supportedTypes?.()||[]}));
-  check('RX AI Director',engines.director);check('RX PhotoMotion',engines.motion);
+  if(!musicReady)throw Error('Cloudflare nie wdrozyl jeszcze panelu muzyki i RX Video Engine po 120 sekundach.');
+  const engines=await page.evaluate(()=>({director:typeof window.RXDirector?.plan==='function',video:typeof window.RXVideoEngine?.create==='function',motion:typeof window.RXPhotoMotion?.render==='function',formats:window.RXPhotoMotion?.supportedTypes?.()||[]}));
+  check('RX AI Director',engines.director);check('RX Video Engine',engines.video);check('RX PhotoMotion',engines.motion);
   check('Sterowanie kamera',await page.locator('#motion option').count()===3);
   check('Przejscia',await page.locator('#transition option').count()===2);
   check('Pole napisu w edytorze',await page.locator('#caption').count()===1);
@@ -52,7 +52,7 @@ const {chromium,devices}=require('playwright');
   if(engines.formats.length){
    check('Render button enabled',await page.locator('#render').isEnabled());
    await page.locator('#render').click();
-   await page.locator('#videoResult').waitFor({state:'visible',timeout:45000});
+   try{await page.locator('#videoResult').waitFor({state:'visible',timeout:45000})}catch(e){throw Error('PhotoMotion initial export failed: '+await page.locator('#status').innerText()+'; '+e.message)}
    const details=await page.locator('#videoPreview').evaluate(async v=>{await new Promise((resolve,reject)=>{if(v.readyState>=1)return resolve();v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('Video decode error')),{once:true});setTimeout(()=>reject(Error('Video metadata timeout')),15000)});return {duration:v.duration,src:!!v.currentSrc}});
    check('Playable recording',details.src&&Number.isFinite(details.duration)&&details.duration>0,JSON.stringify(details));
    check('Download link',Boolean(await page.locator('#videoDownload').getAttribute('href'))); 
