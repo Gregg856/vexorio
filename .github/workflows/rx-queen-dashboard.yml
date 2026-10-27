@@ -1,0 +1,25 @@
+name: RX Queen Dashboard — isolated CI
+on:
+  pull_request:
+    paths:
+      - 'rx-queen-dashboard-render.cjs'
+      - 'tests/rx-queen-dashboard-render.cjs'
+      - '.github/workflows/rx-queen-dashboard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check rx-queen-dashboard-render.cjs
+          node --check tests/rx-queen-dashboard-render.cjs
+      - name: Test safe HTML rendering
+        run: node tests/rx-queen-dashboard-render.cjs
