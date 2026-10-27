@@ -57,7 +57,16 @@ if(require.main===module){
  fs.mkdirSync('rx-queue-cache',{recursive:true});
  fs.writeFileSync('rx-queue-cache/history.json',JSON.stringify(reviewQueue,null,2)+'\n');
  fs.writeFileSync('rx-bibi-reports/rx-bibi-budget.json',JSON.stringify(budget,null,2)+'\n');
- if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
+ if(process.env.GITHUB_STEP_SUMMARY){
+  const safe=value=>String(value).replace(/[\r\n|<>\\`]/g,' ').slice(0,120);
+  const lines=['## RX QUEEN — kolejka do przeglądu','- Przebieg: '+safe(runId),'- Unikalne zgłoszenia: '+board.totalUnique,'- W kolejce: '+reviewQueue.tasks.length,'- Wykonane automatycznie: **0**','- Zatwierdzone automatycznie: **0**'];
+  if(reviewQueue.tasks.length){
+   lines.push('','| Priorytet | Źródło | Zadanie | Wystąpienia |','| --- | --- | --- | ---: |');
+   for(const task of reviewQueue.tasks.slice(0,20))lines.push('| '+safe(task.priority)+' | '+safe(task.source)+' | '+safe(task.action)+' → '+safe(task.target)+' | '+task.occurrences+' |');
+   if(reviewQueue.tasks.length>20)lines.push('','Pozostałe zadania w artefakcie rx-bibi-mobile-report.');
+  }else lines.push('- Brak oczekujących zadań w tym raporcie.');
+  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');
+ }
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
 }
 module.exports={buildBoard,buildReviewQueue};
