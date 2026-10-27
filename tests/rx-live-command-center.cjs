@@ -8,6 +8,8 @@ assert.match(html,/guard-rx-live-command-center\.js/);
 assert.match(html,/data-rx-live-grid/);
 assert.match(script,/Promise\.all/);
 assert.match(script,/cache:'no-store'/);
+assert.ok(script.includes('branch='+"'"+'+encodeURIComponent(reviewBranch)'));
+assert.ok(script.includes('rx/ant-builder-1-3-prototype'));
 assert.match(script,/kind:'unknown'/);
 assert.doesNotMatch(script,/innerHTML\s*=/);
 assert.doesNotMatch(script,/localStorage|sessionStorage|POST|DELETE/);
