@@ -33,12 +33,12 @@ try {
   assert.equal(reviewed.reviews[0].suggestions.length,0);
   assert.equal(reviewed.sourceLoad.loaded,1);
   assert.equal(fs.readFileSync(srcPath,'utf8'),'const safe = 1;\n');
-  fs.writeFileSync(srcPath,'debugger;\\n');
+  fs.writeFileSync(srcPath,'debugger;\n');
   const proposed=reviewBibiReports({dir,runId:'ci_propose',root:dir,loadLocalSources:true});
   assert.equal(proposed.reviews.length,1);
   assert.equal(proposed.reviews[0].suggestions.length,1);
   assert.equal(proposed.reviews[0].suggestions[0].status,'review_only');
-  assert.equal(fs.readFileSync(srcPath,'utf8'),'debugger;\\n');
+  assert.equal(fs.readFileSync(srcPath,'utf8'),'debugger;\n');
   fs.rmSync(srcPath);
   fs.symlinkSync(path.join(os.tmpdir(),'rx-unified-outside.js'),srcPath);
   const skipped=reviewBibiReports({dir,runId:'ci_4',root:dir,loadLocalSources:true});
