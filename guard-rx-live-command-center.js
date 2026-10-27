@@ -5,6 +5,29 @@
  const grid=root.querySelector('[data-rx-live-grid]');
  const refresh=root.querySelector('[data-rx-live-refresh]');
  const stamp=root.querySelector('[data-rx-live-time]');
+ const capabilities=[
+  ['Królowa','tested'],['Komputer RX','tested'],['Planer chmury','tested'],['RX Mega Computer','tested'],
+  ['Cloud Gateway','adapter'],['Cloud Transport','adapter'],['Cloud Memory','adapter'],
+  ['Pamięć sygnałów','tested'],['Medusa','tested'],['Tablica mrówek','tested'],
+  ['Ant Builder','tested'],['Developer','tested'],['RX Unified','prototype'],
+  ['Adapter BIBI','prototype'],['Odczyt kodu','prototype'],['Skrzynka RX','missing']
+ ];
+ const readiness=root.querySelector('[data-rx-readiness]');
+ if(readiness){
+  const legend=text('p','Rejestr możliwości RX — stan zadeklarowany w kodzie, nie odczyt działania na żywo.');
+  legend.className='note';
+  const summary=text('p','Przetestowane: '+capabilities.filter(x=>x[1]==='tested').length+' · Adaptery: '+capabilities.filter(x=>x[1]==='adapter').length+' · Prototypy: '+capabilities.filter(x=>x[1]==='prototype').length+' · Brakujące: '+capabilities.filter(x=>x[1]==='missing').length);
+  summary.className='note';
+  const list=document.createElement('div');list.className='rx-live-grid';
+  for(const [name,status] of capabilities){
+   const item=document.createElement('article');item.className='rx-live-card';
+   const label=text('strong',name);
+   const badge=text('span',({tested:'Testowany',adapter:'Adapter',prototype:'Prototyp',missing:'Nie znaleziono'})[status]);
+   badge.className='rx-live-badge rx-live-'+(status==='tested'?'success':'unknown');
+   item.append(label,badge);list.append(item);
+  }
+  readiness.replaceChildren(legend,summary,list);
+ }
  const names=[['RX BIBI','rx-bibi-browser.yml'],['RX Monitor','guard-monitor.yml'],['RX Builder','rx-ant-builder-check.yml'],['RX Patch','rx-patch-drafter-check.yml']];
  const repo='Gregg856/vexorio';
  const url=name=>'https://api.github.com/repos/'+repo+'/actions/workflows/'+name+'/runs?per_page=5';
