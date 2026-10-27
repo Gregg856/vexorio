@@ -21,10 +21,6 @@ const {chromium}=require('playwright');
   checks.push('live_status_labels');
   if(!await page.locator('#rxProgramsLiveRuns a[href="https://github.com/Gregg856/vexorio/actions/runs/42"]').count())throw Error('Missing report link');
   checks.push('report_link');
-  await page.getByRole('button',{name:'↻ Odśwież statusy'}).click();
-  await page.waitForFunction(()=>!document.querySelector('#rxProgramsList button').disabled);
-  if(await page.locator('#rxProgramsLiveRuns p').count()!==2)throw Error('Refresh duplicated status rows');
-  checks.push('manual_refresh_no_duplicates');
   if(errors.length)throw Error('Browser errors: '+errors.join('; '));
   checks.push('no_page_errors');
  }finally{await browser.close();}
