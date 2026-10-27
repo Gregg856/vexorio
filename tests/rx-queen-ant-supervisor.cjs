@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {summarize}=require('../rx-queen-ant-supervisor.cjs');
+const ok=summarize({computer:{checks:[{file:'tests/ok.cjs',status:'passed'}]},ai:{kind:'rx-ant-ai-evaluation',candidateAccuracy:0.9,previousAccuracy:0.8},panel:{kind:'rx-queen-panel-check',ok:true}});
+assert.equal(ok.state,'no_reported_failures');
+assert.equal(ok.issues.length,0);
+const bad=summarize({computer:{checks:[{file:'tests/fail.cjs',status:'failed'}]},ai:{kind:'rx-ant-ai-evaluation',candidateAccuracy:0.5,previousAccuracy:0.8},panel:{kind:'rx-queen-panel-check',ok:false}});
+assert.equal(bad.issues.length,3);
+assert.equal(bad.autoFixesApplied,0);
+assert.throws(()=>summarize({ai:{kind:'wrong',candidateAccuracy:0.5}}),/Invalid AI/);
+console.log('PASS RX QUEEN: cloud, AI and panel issue triage');
