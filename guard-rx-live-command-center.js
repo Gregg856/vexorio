@@ -29,6 +29,24 @@
   }catch(_){
    const message=text('p','Raport kolejki jest archiwizowany w GitHub Actions, ale nie został opublikowany jako plik strony. Nie można potwierdzić bieżących zadań.');
    const link=document.createElement('a');link.href='https://github.com/'+repo+'/actions/workflows/rx-bibi-browser.yml';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Otwórz raporty BIBI w GitHub Actions';
+   try{
+    const runsResponse=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/rx-bibi-browser.yml/runs?branch='+encodeURIComponent(reviewBranch)+'&per_page=5',{cache:'no-store'});
+    if(!runsResponse.ok)throw Error('HTTP '+runsResponse.status);
+    const runsData=await runsResponse.json();
+    const runs=Array.isArray(runsData.workflow_runs)?runsData.workflow_runs:[];
+    const completed=runs.find(run=>run.status==='completed');
+    if(completed&&Number.isSafeInteger(completed.id)){
+     const artifactsResponse=await fetch('https://api.github.com/repos/'+repo+'/actions/runs/'+completed.id+'/artifacts?per_page=30',{cache:'no-store'});
+     if(!artifactsResponse.ok)throw Error('HTTP '+artifactsResponse.status);
+     const artifactsData=await artifactsResponse.json();
+     const artifact=Array.isArray(artifactsData.artifacts)?artifactsData.artifacts.find(a=>a.name==='rx-bibi-mobile-report'&&!a.expired):null;
+     if(artifact){
+      message.textContent='Ostatni zakończony przebieg BIBI ma archiwum raportów. Zawartość kolejki nie jest dostępna bez pobrania archiwum; zadania nie są potwierdzone.';
+      link.href=completed.html_url;
+      link.textContent='Otwórz archiwum raportów BIBI (przebieg '+completed.id+')';
+     }
+    }
+   }catch(_){/* GitHub may be private, rate-limited or unavailable: retain safe fallback. */}
    queenQueue.replaceChildren(message,link);
   }
  }
