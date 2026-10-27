@@ -51,16 +51,20 @@ const {chromium,devices}=require('playwright');
   check('Eksport projektu',await page.locator('#export').isEnabled());
   if(engines.formats.length){
    check('Render button enabled',await page.locator('#render').isEnabled());
+   const firstExportStarted=Date.now();
    await page.locator('#render').click();
    try{await page.locator('#videoResult').waitFor({state:'visible',timeout:45000})}catch(e){throw Error('PhotoMotion initial export failed: '+await page.locator('#status').innerText()+'; '+e.message)}
+   check('Czas eksportu pierwszego filmu',true,(Date.now()-firstExportStarted)+' ms');
    const details=await page.locator('#videoPreview').evaluate(async v=>{await new Promise((resolve,reject)=>{if(v.readyState>=1)return resolve();v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('Video decode error')),{once:true});setTimeout(()=>reject(Error('Video metadata timeout')),15000)});return {duration:v.duration,src:!!v.currentSrc}});
    check('Playable recording',details.src&&Number.isFinite(details.duration)&&details.duration>0,JSON.stringify(details));
    check('Download link',Boolean(await page.locator('#videoDownload').getAttribute('href'))); 
    // Render a captioned clip and verify that the caption pixels are part of the video frame.
    await page.locator('#caption').fill('RX NAPIS TEST');
    const beforeCaption=await page.locator('#videoDownload').getAttribute('href');
+   const captionExportStarted=Date.now();
    await page.locator('#render').click();
    await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeCaption,{timeout:45000});
+   check('Czas eksportu filmu z napisem',true,(Date.now()-captionExportStarted)+' ms');
    const captionPixels=await page.locator('#videoPreview').evaluate(async v=>{
      v.load();await new Promise((resolve,reject)=>{v.addEventListener('loadeddata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('caption video decode failed')),{once:true});setTimeout(()=>reject(Error('caption decode timeout')),15000)});
      v.currentTime=Math.min(1,Math.max(0,v.duration/2));
@@ -80,6 +84,7 @@ const {chromium,devices}=require('playwright');
    await page.locator('#audioVolume').fill('60');
    await page.locator('#musicStart').fill('1');
    const beforeAudio=await page.locator('#videoDownload').getAttribute('href');
+   const audioExportStarted=Date.now();
    await page.locator('#render').click();
    try {
      await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.getAttribute('href')&&a.getAttribute('href')!==old},beforeAudio,{timeout:45000});
@@ -87,6 +92,7 @@ const {chromium,devices}=require('playwright');
      const diagnostic=await page.evaluate(()=>({status:document.getElementById('status')?.textContent,renderDisabled:document.getElementById('render')?.disabled,videoHref:document.getElementById('videoDownload')?.getAttribute('href'),audioName:document.getElementById('music')?.files?.[0]?.name}));
      throw new Error('Eksport filmu z muzyką: '+JSON.stringify(diagnostic)+'; '+error.message);
    }
+   check('Czas eksportu filmu z muzyka',true,(Date.now()-audioExportStarted)+' ms');
    const audioTrack=await page.locator('#videoPreview').evaluate(async v=>{
      v.load();await new Promise((resolve,reject)=>{v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(Error('audio video decode error')),{once:true});setTimeout(()=>reject(Error('audio metadata timeout')),15000)});
      v.muted=true;
@@ -111,10 +117,12 @@ const {chromium,devices}=require('playwright');
    await page.locator('#duration').selectOption('5');
    await page.locator('#prepare').click();
    const beforeFade=await page.locator('#videoDownload').getAttribute('href');
+   const fadeExportStarted=Date.now();
    await page.locator('#render').click();
    await page.waitForFunction(old=>{const a=document.getElementById('videoDownload');return !!a?.href&&a.getAttribute('href')!==old},beforeFade,{timeout:45000});
    await page.locator('#render').waitFor({state:'visible'});
    await page.waitForFunction(()=>!document.getElementById('render').disabled);
+   check('Czas eksportu przejscia fade',true,(Date.now()-fadeExportStarted)+' ms');
    check('Dwa zdjecia i fade',await page.locator('#videoDownload').getAttribute('href')!==beforeFade);
    // Verify 30-second storyboard, but do not encode 30 seconds on every daily run.
    await page.locator('#duration').selectOption('30');
@@ -122,8 +130,10 @@ const {chromium,devices}=require('playwright');
    const plan=await page.evaluate(()=>window.RXDirector.plan({prompt:'Test 30 sekund',type:'image-video',aspect_ratio:'9:16',duration_seconds:30,input_files:[{name:'a.png'},{name:'b.png'}]}));
    check('Plan 30 sekund',plan&&Array.isArray(plan.scenes)&&Math.abs(plan.scenes.reduce((a,x)=>a+x.duration_seconds,0)-30)<0.01);
    const previousHref=await page.locator('#videoDownload').getAttribute('href');
+   const fullExportStarted=Date.now();
    await page.locator('#render').click();
    await page.waitForFunction(oldHref=>{const el=document.getElementById('videoDownload');const href=el?.getAttribute('href');return !!href&&href!==oldHref},previousHref,{timeout:75000});
+   check('Czas eksportu filmu 30 sekund',true,(Date.now()-fullExportStarted)+' ms');
    const full=await page.locator('#videoPreview').evaluate(async v=>{
      // A new blob URL may be assigned while readyState still reflects the old 5s clip.
      // Explicitly reload the new source before reading its metadata.
