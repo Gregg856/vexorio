@@ -60,9 +60,9 @@ const maskCoreText=fs.readFileSync(require.resolve('./guard/rx-developer-core.cj
 const optimizedFrame='const c=source[i],n=source[i+1],f=frames[frames.length-1];';
 assert(maskCoreText.includes(optimizedFrame),'Expected current optimized frame lookup');
 const legacyCore=maskCoreText.replace(" const emit=i=>{out[i]=source[i];};"," const top=()=>frames[frames.length-1];\n const emit=i=>{out[i]=source[i];};").replace(optimizedFrame,'const c=source[i],n=source[i+1],f=top();');
-const sandbox={module:{exports:{}}};
-vm.runInNewContext(legacyCore,sandbox,{timeout:1000});
-const legacyMask=sandbox.module.exports.maskJavaScript;
+const maskSandbox={module:{exports:{}}};
+vm.runInNewContext(legacyCore,maskSandbox,{timeout:1000});
+const legacyMask=maskSandbox.module.exports.maskJavaScript;
 const maskAB=largeSources.map(({lines,text})=>{
  assert.equal(legacyMask(text),maskJavaScript(text),'Mask output must remain identical');
  for(let i=0;i<20;i++){legacyMask(text);maskJavaScript(text);}
