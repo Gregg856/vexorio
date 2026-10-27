@@ -29,9 +29,11 @@ if(require.main===module){
  const read=name=>{try{return JSON.parse(fs.readFileSync(path.join('rx-bibi-reports',name),'utf8'));}catch(e){if(e.code==='ENOENT')return null;throw e;}};
  const panel=read('rx-queen-panel-check.json');
  const browser=read('rx-queen-panel-browser.json');
- const report=summarize({computer:read('rx-mega-cloud-computer.json'),ai:read('rx-ant-ai-evaluation.json'),panel:panel||{kind:'rx-queen-panel-check',ok:false},browser:browser||{kind:'rx-queen-panel-browser',ok:false},studio:read('rx-bibi-studio-check.json'),programs:read('rx-programs-browser.json')});
- if(!browser)report.issues[report.issues.length-1].action='missing_browser_report';
- if(!panel)report.issues[report.issues.length-1].action='missing_panel_report';
+ const report=summarize({computer:read('rx-mega-cloud-computer.json'),ai:read('rx-ant-ai-evaluation.json'),panel,browser,studio:read('rx-bibi-studio-check.json'),programs:read('rx-programs-browser.json')});
+ for(const [name,exists] of [['panel',!!panel],['browser',!!browser],['studio',!!read('rx-bibi-studio-check.json')],['programs',!!read('rx-programs-browser.json')]]){
+  if(!exists)report.issues.push({source:name,priority:'medium',action:'missing_'+name+'_report',target:'rx-bibi-reports'});
+ }
+ if(report.issues.length)report.state='attention_required';
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-ant-supervisor.json',JSON.stringify(report,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX QUEEN — zadania mrówek\n- Stan: '+report.state+'\n- Zgłoszenia: '+report.issues.length+'\n- Automatyczne poprawki: 0\n');
