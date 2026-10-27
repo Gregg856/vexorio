@@ -47,6 +47,10 @@ jobs:
           cp guard-rx-browser.js public/guard-rx-browser.js
           cp guard-rx-monitor-report.js public/guard-rx-monitor-report.js
           cp guard-rx-categories.js public/guard-rx-categories.js
+          cp rx-screen-recorder.html public/rx-screen-recorder.html
+          cp rx-screen-recorder.js public/rx-screen-recorder.js
+          test -s public/rx-screen-recorder.html
+          test -s public/rx-screen-recorder.js
           cp guard-rx-programs.js public/guard-rx-programs.js
           test -s public/guard-rx-programs.js
           cp guard-install.js public/guard-install.js
