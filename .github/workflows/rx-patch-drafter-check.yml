@@ -37,3 +37,5 @@ jobs:
       - run: node tests/rx-source-reader.cjs
       - run: node tests/rx-capability-inventory.cjs
       - run: node tests/rx-two-chat-handoff.cjs
+      - run: node --check guard-rx-live-command-center.js
+      - run: node tests/rx-live-command-center.cjs
