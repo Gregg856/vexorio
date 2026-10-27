@@ -105,6 +105,18 @@ function analyzeJavaScript(source){
   extraMatches.push({offset:m.index,rule});
  }}
 
+ // Additional narrow patterns: global eval indirection and static template property writes.
+ const indirectGlobalEval=/\(\s*0\s*,\s*globalThis\.eval\s*\)\s*\(/g;
+ let globalEvalMatch;
+ while((globalEvalMatch=indirectGlobalEval.exec(masked))!==null)extraMatches.push({offset:globalEvalMatch.index,rule:{id:'RX001',severity:'high',message:'Indirect global eval call.',advice:'Avoid executing untrusted code.'}});
+ const templateProperty=/\b([A-Za-z_$][\w$]*)\s*\[\s*`innerHTML`\s*\]\s*=/g;
+ let templateMatch;
+ while((templateMatch=templateProperty.exec(source))!==null){
+  const at=templateMatch.index;
+  const bracket=source.indexOf('[',at+templateMatch[1].length);
+  if(masked.slice(at,at+templateMatch[1].length).trim()===templateMatch[1]&&masked[bracket]==='[')extraMatches.push({offset:at,rule:{id:'RX002',severity:'medium',message:'Computed innerHTML assignment.',advice:'Use textContent or sanitize HTML.'}});
+ }
+
  // Conservative detection of direct, unmodified aliases within the same source.
  // No interprocedural or control-flow claim: reassignment invalidates an alias.
  const indirectEval=/\(\s*0\s*,\s*eval\s*\)\s*\(/g;
@@ -161,6 +173,13 @@ function analyzeJavaScript(source){
   let match;
   while((match=rule.pattern.exec(masked))!==null){
    const offset=match.index;
+   // Skip known locally shadowed browser globals; conservative file-level check.
+   const shadowName=rule.id==='RX005'?'console':rule.id==='RX006'?'document':rule.id==='RX010'?'location':null;
+   if(shadowName){
+    const prefix=masked.slice(0,offset);
+    const shadowPattern=new RegExp('\\b(?:const|let|var)\\s+'+shadowName+'\\s*=\\s*\\{');
+    if(shadowPattern.test(prefix))continue;
+   }
    // A method named eval on an object is not the global eval function.
    if(rule.id==='RX001'&&/^eval\s*\(/.test(match[0])){
     const prior=masked.slice(0,offset);
