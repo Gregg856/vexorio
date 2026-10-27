@@ -8,10 +8,12 @@ function buildDeveloperReviewQueue({board,root=process.cwd(),maxReviews=20}={}){
  const limited={...board,tasks:board.tasks.slice(0,maxReviews)};
  const loaded=collectSources(limited,{root});
  const reviews=[];
+ const cachedReviews=new Map();
  for(const task of limited.tasks){
   if(!task||typeof task.target!=='string')throw Error('Invalid RX task');
   if(!Object.hasOwn(loaded.sources,task.target))continue;
-  const review=inspectAndPropose({target:task.target,source:loaded.sources[task.target]});
+  let review=cachedReviews.get(task.target);
+  if(!review){review=inspectAndPropose({target:task.target,source:loaded.sources[task.target]});cachedReviews.set(task.target,review);}
   reviews.push({target:task.target,priority:task.priority,action:task.action,
    analysis:review.analysis,suggestions:review.suggestions,
    status:'awaiting_review',approved:false,executed:false,requiresApproval:true});
