@@ -6,7 +6,7 @@ const {routeSignals} = require('./rx-medusa-engine.cjs');
 const {updateHistory} = require('./rx-signal-memory.cjs');
 const {buildBoard} = require('./rx-ant-task-board.cjs');
 const {collectSources} = require('./rx-source-reader.cjs');
-const {analyzeJavaScript} = require('./guard/rx-developer-core.cjs');
+const {buildDeveloperReviewQueue} = require('./rx-queen-developer-queue.cjs');
 const RUN_ID = /^[-a-zA-Z0-9_]{1,80}$/;
 function readReport(dir, name, optional=false) {
   const filename = path.join(dir, name);
@@ -31,16 +31,15 @@ function reviewBibiReports({dir='rx-bibi-reports',runId='local',root=process.cwd
   const reviewQueue = {schema:1,kind:'rx-bibi-review-queue',runId,
     tasks:board.tasks.map(task=>({...task,status:'awaiting_review',approved:false,executed:false})),
     requiresApproval:true,productionModified:false};
-  const loaded = loadLocalSources ? collectSources(board, {root}) : {sources:{},skipped:[],loaded:0};
-  const reviews = [];
-  for (const task of board.tasks.slice(0,20)) {
-    if (!Object.hasOwn(loaded.sources, task.target)) continue;
-    const source = loaded.sources[task.target];
-    if (typeof source !== 'string' || source.length > 500000) throw Error('Invalid source');
-    reviews.push({target:task.target,analysis:analyzeJavaScript(source),requiresApproval:true});
-  }
+  const developerQueue = loadLocalSources
+    ? buildDeveloperReviewQueue({board,root})
+    : {schema:1,kind:'rx-queen-developer-review-queue',reviews:[],
+       sourceLoad:{loaded:0,skipped:[]},requiresApproval:true,
+       productionModified:false,autoFixesApplied:0,automaticDeployment:false};
+  const reviews = developerQueue.reviews;
+  const sourceLoad = developerQueue.sourceLoad;
   return {schema:1,kind:'rx-bibi-unified-adapter',runId,medusa,memory,board,reviewQueue,
-    sourceLoad:{loaded:loaded.loaded,skipped:loaded.skipped},reviews,
+    sourceLoad,reviews,developerQueue,
     summary:{signals:medusa.signals.length,tasks:board.tasks.length,recurring:board.tasks.filter(t=>t.recurrent).length,analyzed:reviews.length},
     requiresApproval:true,productionModified:false,autoFixesApplied:0};
 }
