@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'rx-benchmark-2-0.cjs'
+      - 'guard/rx-developer-core.cjs'
+      - 'guard/rx-developer-core-browser.js'
       - '.github/workflows/rx-benchmark-2-0.yml'
   workflow_dispatch:
 jobs:
