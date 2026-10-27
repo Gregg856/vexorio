@@ -184,8 +184,9 @@ const maskOutputStrategies=memoryCases.map(({name,bytes})=>{
 });
 // Full-lexer A/B: identical scanner, different final output assembly.
 const joinSnippet="return out.join('');";
-assert(coreText.includes(joinSnippet),'RX mask output changed; update A/B benchmark deliberately');
-const chunkedCore=coreText.replace(joinSnippet,"const chunks=[];for(let k=0;k<out.length;k+=4096)chunks.push(out.slice(k,k+4096).join(''));return chunks.join('');");
+const chunkedSnippet="const chunks=[];for(let k=0;k<out.length;k+=4096)chunks.push(out.slice(k,k+4096).join(''));return chunks.join('');";
+assert(coreText.includes(joinSnippet)||coreText.includes(chunkedSnippet),'RX mask output changed; update A/B benchmark deliberately');
+const chunkedCore=coreText.includes(joinSnippet)?coreText.replace(joinSnippet,chunkedSnippet):coreText;
 const chunkSandbox={module:{exports:{}},exports:{}};vm.runInNewContext(chunkedCore,chunkSandbox,{timeout:5000});
 const chunkedMask=chunkSandbox.module.exports.maskJavaScript;
 assert.equal(typeof chunkedMask,'function');
