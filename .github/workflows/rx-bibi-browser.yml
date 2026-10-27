@@ -181,8 +181,11 @@ jobs:
         run: node tests/rx-stellar-signal.cjs
       - name: Sprawdź RX STELLAR LAB
         run: node tests/rx-stellar-lab.cjs
-      - name: RX FAST TEST ENGINE — równoległe testy podstawowe
+      - name: RX FAST TEST ENGINE — dobór testów według zmian
         if: always()
+        env:
+          RX_FAST_SELECTIVE: '1'
+          RX_FAST_BASE_SHA: ${{ github.event.before }}
         run: node rx-fast-test-engine.cjs
       - name: Sprawdź RX GENESIS
         run: node tests/rx-genesis.cjs
