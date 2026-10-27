@@ -24,7 +24,9 @@
  const hubRefresh=document.createElement('button');hubRefresh.type='button';hubRefresh.textContent='↻ Sprawdź raporty modułów';
  if(hubRefresh.style)hubRefresh.style.cssText='padding:9px;border-radius:9px;min-height:40px';
  if(typeof hub.append==='function')hub.append(hubTitle,hubStatus,hubRefresh);
- if(taskResult?.parentNode&&typeof taskResult.parentNode.insertBefore==='function')taskResult.parentNode.insertBefore(hub,taskResult);
+ const queenPanel=document.getElementById('guardPanelQueen');
+ if(queenPanel&&typeof queenPanel.insertBefore==='function')queenPanel.insertBefore(hub,queenPanel.firstChild?.nextSibling||queenPanel.firstChild);
+ else if(taskResult?.parentNode&&typeof taskResult.parentNode.insertBefore==='function')taskResult.parentNode.insertBefore(hub,taskResult);
  hubRefresh.addEventListener('click',async()=>{
   hubRefresh.disabled=true;hubStatus.textContent='Sprawdzam raporty CI…';
   try{
@@ -40,6 +42,12 @@
   }catch(_){hubStatus.textContent='⚪ Raporty chwilowo niedostępne. Nie można potwierdzić stanu modułów.';}
   finally{hubRefresh.disabled=false;}
  });
+
+ // Refresh once on opening Queen's tab; keep the manual refresh available.
+ let hubLoaded=false;
+ const queenTab=document.getElementById('guardTabQueen');
+ queenTab?.addEventListener('click',()=>{if(!hubLoaded){hubLoaded=true;hubRefresh.click();}});
+ if(queenTab?.getAttribute('aria-selected')==='true'){hubLoaded=true;hubRefresh.click();}
 
  // Queen CI triage: read-only evidence, never dispatches jobs or changes code.
  const ciButton=document.createElement('button');
