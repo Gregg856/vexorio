@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const {selectFastTests}=require('../rx-fast-test-engine.cjs');
+const all=selectFastTests([]);
+assert.equal(all.length,6);
+assert.deepEqual(selectFastTests(['rx-medusa-engine.cjs']),['tests/rx-medusa-engine.cjs']);
+assert.deepEqual(selectFastTests(['tests/rx-ant-task-board.cjs']),['tests/rx-ant-task-board.cjs']);
+assert.deepEqual(selectFastTests(['.github/workflows/rx-bibi-browser.yml']),all);
+assert.deepEqual(selectFastTests(['unmapped-file.js']),all);
+assert.throws(()=>selectFastTests(['',42]),/Invalid changed files/);
+console.log('PASS RX FAST selection: targeted tests and safe fallback');
