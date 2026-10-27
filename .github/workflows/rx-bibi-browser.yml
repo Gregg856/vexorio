@@ -46,6 +46,7 @@ on:
       - 'rx-ant-academy-ci.cjs'
       - 'tests/rx-ant-academy-ci.cjs'
       - 'rx-bibi-budget.cjs'
+      - 'rx-fast-test-engine.cjs'
       - 'tests/rx-bibi-budget.cjs'
       - 'tests/rx-ant-task-board.cjs'
       - 'tests/rx-queen-ant-supervisor.cjs'
@@ -174,12 +175,9 @@ jobs:
         run: node tests/rx-stellar-signal.cjs
       - name: Sprawdź RX STELLAR LAB
         run: node tests/rx-stellar-lab.cjs
-      - name: Sprawdź adapter Akademii do raportów CI
-        run: node tests/rx-ant-academy-ci.cjs
-      - name: Sprawdź RX ANT ACADEMY
-        run: node tests/rx-ant-academy.cjs
-      - name: Sprawdź dowody RX ANT ACADEMY
-        run: node tests/rx-ant-academy-proof.cjs
+      - name: RX FAST TEST ENGINE — równoległe testy podstawowe
+        if: always()
+        run: node rx-fast-test-engine.cjs
       - name: Sprawdź RX GENESIS
         run: node tests/rx-genesis.cjs
       - name: Sprawdź RX ANT HIBERNATION
@@ -223,15 +221,9 @@ jobs:
       - name: RX MRÓWKI — sprawdź katalog programów
         if: always()
         run: node tests/rx-programs-catalog.cjs
-      - name: RX MRÓWKI — testuj kolejkę priorytetów
-        if: always()
-        run: node tests/rx-ant-task-board.cjs
       - name: RX MRÓWKI — zaplanuj kolejne zadania
         if: always()
         run: node rx-ant-task-board.cjs
-      - name: RX BIBI — testuj limity kolejki
-        if: always()
-        run: node tests/rx-bibi-budget.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:
