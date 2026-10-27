@@ -14,10 +14,15 @@ Użytkownik / administrator
           |
        RX Strażak (centralny koordynator)
           |
+          +-- RX Meduza: sygnały i priorytety do Queen
           +-- RX Queen: planowanie i zadania mrówek
+          +-- RX ANT: Builder / Academy / Trainer / Hibernation
           +-- RX Developer: analiza i propozycje kodu
           +-- RX Tester: testy i raporty
-          +-- RX BIBI: raporty, pamięć i historia
+          +-- RX BIBI AI: router, Studio, Manager, raporty i pamięć
+          +-- RX DNA: pamięć i pochodzenie danych
+          +-- RX Cloud / Mega Cloud: ograniczone testy CI
+          +-- Laboratoria RX: Higgs, Cosmic, Energy, Stellar
           +-- Wtyczki: dozwolone integracje
           +-- Komputer RX (przyszły, po bezpiecznym sparowaniu)
 ```
@@ -31,6 +36,10 @@ Użytkownik / administrator
 5. Nie deklarujemy, że testy przeszły, urządzenie jest online lub wtyczka działa, jeśli nie mamy rzeczywistego potwierdzenia.
 6. Istniejący `rx-chat-preview.html` to **interfejs demonstracyjny**. Napis `RX Czat — centrum poleceń` oznacza miejsce wpisywania poleceń, nie centralny silnik.
 7. Uzgodniony kierunek wizualny: ciemny granat/czerń, neonowa zieleń, postać RX Strażaka, wygodny widok mobilny. Nie projektować go od początku w każdym etapie.
+
+## Pełny rejestr istniejących komponentów
+
+Zobacz [RX-MODULE-INVENTORY.md](RX-MODULE-INVENTORY.md). To źródło nazw modułów, plików i ograniczeń. Diagram powyżej opisuje **docelowe zależności**, nie wszystkie obecnie aktywne połączenia. Przy rozbudowie sprawdzaj rejestr zamiast tworzyć listę z pamięci.
 
 ## Następna praca
 
