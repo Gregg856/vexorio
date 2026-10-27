@@ -59,6 +59,7 @@ on:
       - 'tests/rx-million-hearts.cjs'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
+      - 'tests/rx-bibi-encoder-diagnostic.cjs'
       - '.github/workflows/rx-bibi-browser.yml'
   workflow_dispatch:
   schedule:
@@ -194,6 +195,9 @@ jobs:
         run: node --check rx-screen-recorder.js
       - name: RX BIBI — testuj Screen Recorder
         run: node tests/rx-screen-recorder.cjs
+      - name: RX BIBI — diagnostyka kodera wideo i audio
+        if: always()
+        run: node tests/rx-bibi-encoder-diagnostic.cjs
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         id: studio
         if: always()
