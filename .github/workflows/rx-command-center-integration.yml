@@ -1,0 +1,23 @@
+name: RX Command Center — integration checks
+on:
+  pull_request:
+    paths:
+      - 'guard-lab.html'
+      - 'guard-rx-live-command-center.js'
+      - 'tests/guard-rx-command-center-integration.test.cjs'
+      - '.github/workflows/rx-command-center-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: JavaScript syntax
+        run: node --check guard-rx-live-command-center.js
+      - name: HTML/JS integration regression
+        run: node tests/guard-rx-command-center-integration.test.cjs
