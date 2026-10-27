@@ -263,6 +263,15 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX Strażak HTTP', guardResponse && guardResponse.status() === 200);
     record('RX Strażak nagłówek', await guard.getByRole('heading', { name: /Strażak/ }).count() > 0);
     await guard.screenshot({ path: path.join(reportDir, 'rx-strazak-mobile.png'), fullPage: true });
+    // Queen's real mobile layout audit: browser measurements, not a simulated status.
+    const layout=await guard.evaluate(()=>{
+      const box=selector=>{const el=document.querySelector(selector);if(!el)return null;const r=el.getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height),visible:getComputedStyle(el).display!=='none'};};
+      return {viewport:innerHeight,catalog:box('#rxProgramsCatalog'),hero:box('.rx-bibi-hero'),chat:box('#guardPanelChat'),composer:box('#guardChatForm'),programsCollapsed:!!document.querySelector('#rxProgramsList details:not([open])'),documentWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth};
+    });
+    record('RX QUEEN — katalog programów zwinięty na telefonie',layout.programsCollapsed,JSON.stringify(layout));
+    record('RX QUEEN — Strażak nad katalogiem programów',!!layout.hero&&!!layout.catalog&&layout.hero.top<layout.catalog.top,JSON.stringify(layout));
+    record('RX QUEEN — brak poziomego przewijania panelu',layout.documentWidth<=layout.viewportWidth+2,JSON.stringify(layout));
+    fs.writeFileSync(path.join(reportDir,'rx-queen-live-layout.json'),JSON.stringify({schema:1,kind:'rx-queen-mobile-layout',url:base+'/guard-lab.html',observedAt:new Date().toISOString(),...layout},null,2)+'\\n');
     const guardTabs=guard.getByRole('tab');
     record('RX Strażak — cztery zakładki',await guardTabs.count()===4);
     const devTab=guard.getByRole('tab',{name:/Developer/});
