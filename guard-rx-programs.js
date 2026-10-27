@@ -10,6 +10,9 @@
  ['📊 RX BIBI Manager','Raporty i monitoring','panel','/rx-bibi-manager.html'],
  ['🎬 RX BIBI AI Studio','Narzędzia studia','panel','/rx-bibi-studio.html'],
  ['👑 RX QUEEN','Nadzór i pamięć','panel','#rxQueenCompare'],
+ ['☁️ RX Cloud','Moduły chmury — status w Centrum Królowej','panel','#rxQueenTaskResult'],
+ ['💻 RX Computer','Moduły komputera — status w Centrum Królowej','panel','#rxQueenTaskResult'],
+ ['📬 RX Skrzynka','Integracja oczekuje na potwierdzenie','panel','#rxQueenTaskResult'],
  ['🐜 RX ANT TASK BOARD','Kolejka priorytetów w CI','ci','https://github.com/Gregg856/vexorio/actions'],
  ['🧠 RX ANT AI Trainer','Mały model na danych syntetycznych','experiment','https://github.com/Gregg856/vexorio/actions'],
  ['☁️ RX MEGA CLOUD','Testy wykonywane w GitHub Actions','ci','https://github.com/Gregg856/vexorio/actions'],
@@ -33,7 +36,21 @@
   const state=document.createElement('small');state.textContent=names[status];state.style.color='#84dce6';
   a.append(title,desc,state);list.append(a);
  }
- root.replaceChildren(list);
+ root.replaceChildren(catalog);
+ // Mobile-first dashboard: keep monitoring accessible, collapse the long catalog.
+ const catalog=document.createElement('details');
+ const catalogTitle=document.createElement('summary');
+ catalogTitle.textContent='🧩 Pokaż wszystkie programy RX ('+programs.length+')';
+ if(catalogTitle.style)catalogTitle.style.cssText='cursor:pointer;padding:10px 4px;font-weight:700';
+ if(typeof catalog.append==='function')catalog.append(catalogTitle,list);
+ if(root.style)root.style.cssText='display:flex;flex-direction:column;gap:8px';
+ const catalogSection=document.getElementById('rxProgramsCatalog');
+ const hero=document.querySelector?.('.rx-bibi-hero');
+ if(catalogSection&&hero&&hero.parentNode===catalogSection.parentNode&&
+    typeof hero.parentNode.insertBefore==='function'){
+  hero.parentNode.insertBefore(catalogSection,hero.nextSibling);
+ }
+
  const status=document.createElement('p');
  status.id='rxProgramsLiveStatus';
  status.setAttribute('role','status');
@@ -41,7 +58,7 @@
  root.prepend(status);
  const summary=document.createElement('div');
  summary.id='rxProgramsLiveRuns';
- root.insertBefore(summary,list);
+ root.insertBefore(summary,catalog);
  const refresh=document.createElement('button');
  refresh.type='button';
  refresh.textContent='↻ Odśwież statusy';
