@@ -11,7 +11,7 @@ function generateRegressionTestDraft(task){
  const target=task.target.slice(0,120);
  const request=task.request.slice(0,80);
  // Generated code is a deliberately skipped test, not a fabricated passing assertion.
- const source="'use strict';\nconst {test}=require('node:test');\ntest.skip("+JSON.stringify('RX draft: '+target)+",()=>{\n  // TODO: reproduce "+request.replace(/[\r\n]/g,' ')+"\n});\n";
+ const source=["'use strict';","const {test}=require('node:test');","test.skip("+JSON.stringify('RX draft: '+target)+",()=>{","  // TODO: reproduce "+request.replace(/[\r\n]/g,' '),"});",""].join('\\n');
  return {filename:'rx-generated-regression-draft.cjs',source,status:'draft_requires_implementation',requiresApproval:true};
 }
 function prepareBuildQueue(board,{limit=10}={}){
