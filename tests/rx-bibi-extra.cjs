@@ -1,0 +1,34 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const {reviewBibiReports}=require('../rx-bibi-unified-adapter.cjs');
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rx-bibi-extra-'));
+const report=path.join(dir,'rx-queen-ant-supervisor.json');
+const memory=path.join(dir,'rx-signal-memory.json');
+const issue={source:'fast',action:'inspect_failed_test',target:'src/example.js',priority:'medium'};
+try {
+ fs.writeFileSync(report,JSON.stringify({kind:'rx-queen-ant-supervisor',issues:[issue,issue]}));
+ const one=reviewBibiReports({dir,runId:'first'});
+ assert.equal(one.summary.signals,1,'deduplication');
+ assert.equal(one.summary.tasks,1);
+ assert.equal(one.medusa.signals[0].occurrences,2);
+ assert.equal(one.summary.recurring,0);
+ fs.writeFileSync(memory,JSON.stringify(one.memory));
+ const before=fs.readFileSync(memory);
+ const two=reviewBibiReports({dir,runId:'second'});
+ assert.equal(two.summary.recurring,1,'recurring signal');
+ assert.equal(two.board.tasks[0].priority,'high','recurring task escalation');
+ assert.equal(two.reviewQueue.tasks[0].approved,false);
+ assert.equal(two.reviewQueue.tasks[0].executed,false);
+ assert.deepEqual(fs.readFileSync(memory),before,'memory must not be rewritten');
+ assert.equal(two.productionModified,false);
+ fs.writeFileSync(memory,'{bad');
+ assert.throws(()=>reviewBibiReports({dir,runId:'third'}),SyntaxError,'invalid memory must fail closed');
+ fs.rmSync(memory);
+ fs.rmSync(report);
+ fs.symlinkSync(path.join(os.tmpdir(),'outside-rx-bibi-report.json'),report);
+ assert.throws(()=>reviewBibiReports({dir,runId:'fourth'}),/ELOOP|ENOENT|Invalid RX report/,'report symlink must be rejected');
+ console.log('PASS RX BIBI extra: dedup, recurrence, escalation, no writes, malformed memory, report symlink');
+}finally{fs.rmSync(dir,{recursive:true,force:true});}
