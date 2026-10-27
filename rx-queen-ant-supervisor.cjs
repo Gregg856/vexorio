@@ -39,13 +39,25 @@ function summarize({computer=null,ai=null,panel=null,browser=null,studio=null,pr
  return {schema:1,kind:'rx-queen-ant-supervisor',state:issues.length?'attention_required':'no_reported_failures',sourcesChecked:{computer:!!computer,ai:!!ai,panel:!!panel,browser:!!browser,studio:!!studio,programs:!!programs,fast:!!fast,layout:!!layout},issues,autoFixesApplied:0,productionChanges:0,note:'Only reports available in current CI workspace. No autonomous code modifications or real-world AI quality claims.'};
 }
 if(require.main===module){
- const read=name=>{try{return JSON.parse(fs.readFileSync(path.join('rx-bibi-reports',name),'utf8'));}catch(e){if(e.code==='ENOENT')return null;throw e;}};
+ const invalidReports=[];
+ const read=name=>{
+  let raw;
+  try{raw=fs.readFileSync(path.join('rx-bibi-reports',name),'utf8');}
+  catch(e){if(e.code==='ENOENT')return null;throw e;}
+  try{return JSON.parse(raw);}
+  catch(e){
+   // A corrupt or concatenated CI report must not disable MEDUSA and the ant board.
+   invalidReports.push({source:'report',priority:'high',action:'inspect_invalid_json_report',target:name});
+   return null;
+  }
+ };
  const panel=read('rx-queen-panel-check.json');
  const browser=read('rx-queen-panel-browser.json');
  const report=summarize({computer:read('rx-mega-cloud-computer.json'),ai:read('rx-ant-ai-evaluation.json'),panel,browser,studio:read('rx-bibi-studio-check.json'),programs:read('rx-programs-browser.json'),fast:read('rx-fast-tests.json'),layout:read('rx-queen-live-layout.json')});
  for(const [name,exists] of [['panel',!!panel],['browser',!!browser],['studio',!!read('rx-bibi-studio-check.json')],['programs',!!read('rx-programs-browser.json')]]){
   if(!exists)report.issues.push({source:name,priority:'medium',action:'missing_'+name+'_report',target:'rx-bibi-reports'});
  }
+ report.issues.push(...invalidReports);
  if(report.issues.length)report.state='attention_required';
  const fastReport=read('rx-fast-tests.json');
  if(fastReport)report.fastMetrics={elapsedMs:fastReport.elapsedMs??null,slowest:Array.isArray(fastReport.slowest)?fastReport.slowest:[]};
