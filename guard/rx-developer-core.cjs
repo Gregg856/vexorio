@@ -55,16 +55,16 @@ function maskJavaScript(source) {
 
 const RULES=Object.freeze([
  {id:'RX001',severity:'high',pattern:/(?<![\w$.])(?:globalThis\s*\.\s*)?eval\s*\(/g,message:'eval() wykonuje dynamiczny kod.',advice:'Zastąp eval() bezpieczną funkcją lub parserem.'},
- {id:'RX002',severity:'medium',pattern:/(?:\binnerHTML\s*=|\[\s*['\"]innerHTML['\"]\s*\]\s*=)/g,message:'Przypisanie innerHTML wymaga kontroli danych.',advice:'Dla tekstu użyj textContent; HTML poddaj sanitizacji.'},
+ {id:'RX002',severity:'medium',pattern:/(?:\binnerHTML\s*(?:\+=|=)|\[\s*['\"]innerHTML['\"]\s*\]\s*=)/g,message:'Przypisanie innerHTML wymaga kontroli danych.',advice:'Dla tekstu użyj textContent; HTML poddaj sanitizacji.'},
  {id:'RX003',severity:'medium',pattern:/\bouterHTML\s*=/g,message:'Przypisanie outerHTML wymaga kontroli danych.',advice:'Nie wstawiaj niezaufanego HTML.'},
  {id:'RX004',severity:'medium',pattern:/\binsertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML() może wstrzyknąć HTML.',advice:'Waliduj i sanitizuj dane wejściowe.'},
- {id:'RX005',severity:'low',pattern:/(?<![\w$.])console\.(?:log|debug|info|warn)\s*\(/g,message:'Logowanie może ujawnić dane.',advice:'Sprawdź, czy log nie zawiera sekretów.'},
+ {id:'RX005',severity:'low',pattern:/(?<![\w$.])console\.(?:log|debug|info|warn|error)\s*\(/g,message:'Logowanie może ujawnić dane.',advice:'Sprawdź, czy log nie zawiera sekretów.'},
  {id:'RX006',severity:'medium',pattern:/(?<![\w$.])document\.write\s*\(/g,message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'},
- {id:'RX007',severity:'high',pattern:/\bnew\s+Function\s*\(/g,message:'Dynamiczne tworzenie funkcji może wykonać niezaufany kod.',advice:'Unikaj new Function() dla danych z zewnątrz.'},
+ {id:'RX007',severity:'high',pattern:/\b(?:new\s+)?Function\s*\(/g,message:'Dynamiczne tworzenie funkcji może wykonać niezaufany kod.',advice:'Unikaj new Function() dla danych z zewnątrz.'},
  {id:'RX008',severity:'medium',pattern:/(?<![\w$.])document\.cookie\s*=/g,message:'Zapis cookie w JavaScript wymaga przeglądu zabezpieczeń.',advice:'Dla sesji rozważ ciasteczka HttpOnly ustawiane przez serwer.'},
  {id:'RX009',severity:'medium',pattern:/(?<![\w$.])(?:window\.)?postMessage\s*\(/g,message:'Sprawdź targetOrigin wywołania postMessage().',advice:'Wskaż konkretny targetOrigin.'},
  {id:'RX010',severity:'medium',pattern:/(?<![\w$.])(?:window\.)?location(?:\.href|\[\s*['\"]href['\"]\s*\])\s*=/g,message:'Przekierowanie wymaga sprawdzenia źródła adresu.',advice:'Waliduj docelowy adres i dozwolone domeny.'},
- {id:'RX011',severity:'medium',pattern:/(?<![\w$.])localStorage\.setItem\s*\(/g,message:'Dane w localStorage są dostępne dla JavaScript.',advice:'Nie przechowuj tokenów sesji ani sekretów w localStorage.'},
+ {id:'RX011',severity:'medium',pattern:/(?<![\w$.])(?:localStorage|sessionStorage)\.setItem\s*\(/g,message:'Dane w localStorage są dostępne dla JavaScript.',advice:'Nie przechowuj tokenów sesji ani sekretów w localStorage.'},
  {id:'RX012',severity:'medium',pattern:/(?<![\w$.])window\.open\s*\(/g,message:'Nowe okno wymaga sprawdzenia ochrony przed dostępem do opener.',advice:'Stosuj noopener/noreferrer lub sprawdź ustawienia otwierania.'},
  {id:'RX013',severity:'medium',pattern:/(?<![\w$.])setInterval\s*\(/g,message:'Powtarzany timer wymaga kontroli cyklu życia.',advice:'Sprawdź clearInterval i ogranicz niepotrzebne wykonywanie.'}
 ]);
