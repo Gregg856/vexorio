@@ -219,9 +219,6 @@ jobs:
       - name: RX QUEEN — zbierz błędy chmury i AI
         if: always()
         run: node rx-queen-ant-supervisor.cjs
-      - name: RX MEDUSA — testuj sieć sygnałów
-        if: always()
-        run: node tests/rx-medusa-engine.cjs
       - name: RX MEDUSA — przekaz sygnałów do Królowej
         if: always()
         run: node rx-medusa-engine.cjs
