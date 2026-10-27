@@ -17,6 +17,8 @@ on:
       - 'tests/rx-dna-store.cjs'
       - 'tests/rx-dna-core.cjs'
       - 'RX-DNA-BLACK-BOX.md'
+      - 'rx-integration.cjs'
+      - 'tests/rx-integration.cjs'
       - 'rx-cloud-computer.cjs'
       - 'tests/rx-cloud-computer.cjs'
       - 'rx-ai-core.cjs'
@@ -74,6 +76,8 @@ jobs:
         run: node tests/rx-money-engine.cjs
       - name: Sprawdź RX EVOLUTION i MONEY RADAR
         run: node tests/rx-evolution-radar.cjs
+      - name: Sprawdź integrację RX z chmurą i laboratorium
+        run: node tests/rx-integration.cjs
       - name: Sprawdź RX CLOUD COMPUTER 1.0
         run: node tests/rx-cloud-computer.cjs
       - name: Sprawdź RX AI CORE 1.0
