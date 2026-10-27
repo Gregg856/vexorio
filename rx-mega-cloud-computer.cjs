@@ -10,7 +10,8 @@ const {estimateSolar}=require('./rx-energy-lab.cjs');
 const {syntheticDemo}=require('./rx-higgs-lab.cjs');
 const CHECKS=Object.freeze([
  'tests/rx-ai-core.cjs','tests/rx-cloud-computer.cjs','tests/rx-integration.cjs',
- 'tests/rx-higgs-lab.cjs','tests/rx-cosmic-collider.cjs','tests/rx-energy-lab.cjs'
+ 'tests/rx-higgs-lab.cjs','tests/rx-cosmic-collider.cjs','tests/rx-energy-lab.cjs',
+ 'tests/rx-ant-ai-trainer.cjs','tests/rx-ant-task-board.cjs','tests/rx-medusa-engine.cjs'
 ]);
 function runCloudComputer({execute=false}={}){
  const planner=createRXCloudComputer({maxTasks:20});
