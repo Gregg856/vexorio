@@ -26,9 +26,9 @@ function buildBoard(supervisor,{maxTasks=50,medusa=null,memory=null}={}){
 function buildReviewQueue(board,{previous=null,runId}={}){
  if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100)throw Error('Invalid RX board');
  if(typeof runId!=='string'||!/^[-a-zA-Z0-9_]{1,80}$/.test(runId))throw Error('Invalid RX run ID');
- if(previous!==null&&(!previous||previous.kind!=='rx-ant-review-queue'||!Array.isArray(previous.tasks)||previous.tasks.length>100))throw Error('Invalid prior review queue');
+ if(previous!==null&&(!previous||previous.kind!=='rx-ant-review-queue'||previous.schema!==1||!Array.isArray(previous.tasks)||previous.tasks.length>100))throw Error('Invalid prior review queue');
  const old=new Map();
- for(const task of previous?.tasks||[]){if(typeof task.id!=='string'||typeof task.firstSeen!=='string'||!Number.isSafeInteger(task.occurrences)||task.occurrences<1)throw Error('Invalid prior queue item');old.set(task.id,task);}
+ for(const task of previous?.tasks||[]){if(!task||typeof task.id!=='string'||typeof task.firstSeen!=='string'||!Number.isSafeInteger(task.occurrences)||task.occurrences<1||task.requiresApproval!==true||task.approved!==false||task.executed!==false||old.has(task.id))throw Error('Invalid prior queue item');old.set(task.id,task);}
  const tasks=board.tasks.map(task=>{
   const id=JSON.stringify([task.source,task.action,task.target]);
   const prior=old.get(id);
