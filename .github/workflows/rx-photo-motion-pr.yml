@@ -1,0 +1,31 @@
+name: RX PhotoMotion — candidate browser export
+on:
+  pull_request:
+    paths:
+      - 'rx-photo-motion.js'
+      - 'tests/rx-bibi-studio.cjs'
+      - '.github/workflows/rx-photo-motion-pr.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-save --no-package-lock playwright@1.56.1
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - run: node --check rx-photo-motion.js
+      - name: Test candidate PhotoMotion export with music
+        env:
+          RX_TEST_LOCAL_PHOTOMOTION: '1'
+        run: node tests/rx-bibi-studio.cjs
