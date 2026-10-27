@@ -112,6 +112,11 @@ function analyzeJavaScript(source){
  ];
  for(const rule of explicitGlobals){let match;while((match=rule.pattern.exec(masked))!==null)extraMatches.push({offset:match.index,rule});}
 
+ // Location navigation methods require the same destination validation as href writes.
+ const locationNavigation=/\blocation\.(?:assign|replace)\s*\(/g;
+ let navigationMatch;
+ while((navigationMatch=locationNavigation.exec(masked))!==null)extraMatches.push({offset:navigationMatch.index,rule:{id:'RX010',severity:'medium',message:'Navigation destination requires validation.',advice:'Validate redirect URLs.'}});
+
  // Additional narrow patterns: global eval indirection and static template property writes.
  const indirectGlobalEval=/\(\s*0\s*,\s*globalThis\.eval\s*\)\s*\(/g;
  let globalEvalMatch;
