@@ -108,8 +108,9 @@ function analyzeJavaScript(source){
   const escapeRegex=value=>value.replace(/[^A-Za-z0-9_$]/g,'');
   const name=escapeRegex(alias);
   if(new RegExp(String.raw`\b`+name+String.raw`\s*(?:=(?!=)|\+\+|--|\+=|-=)`).test(after))continue;
-  // Suppress aliases shadowed by same-named function parameters.
-  if(new RegExp(String.raw`\\bfunction\\s*[A-Za-z_$\\w]*\\s*\\([^)]*\\b`+name+String.raw`\\b[^)]*\\)`).test(after))continue;
+  // Shadowed function parameters must not be mistaken for outer aliases.
+  const shadowedParameter=new RegExp(String.raw`\bfunction\s*[A-Za-z_$\w]*\s*\([^)]*\b`+name+String.raw`\b[^)]*\)`);
+  if(shadowedParameter.test(after))continue;
   const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*\(`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
   let found;
   while((found=call.exec(after))!==null){
@@ -130,6 +131,11 @@ function analyzeJavaScript(source){
   let match;
   while((match=rule.pattern.exec(masked))!==null){
    const offset=match.index;
+   // A method named eval on an object is not the global eval function.
+   if(rule.id==='RX001'&&/^eval\s*\(/.test(match[0])){
+    const prior=masked.slice(0,offset);
+    if(/(?:\b(?:const|let|var)\s+\w+\s*=\s*\{[^{}]*|\{[^{}]*)$/.test(prior)&&/\b[A-Za-z_$][\w$]*\s*\([^()]*\)\s*\{/.test(masked.slice(offset,offset+100)))continue;
+   }
    const {line,column}=locate(offset);
    findings.push({id:rule.id,severity:rule.severity,line,column,message:rule.message,advice:rule.advice});
    if(match[0].length===0)rule.pattern.lastIndex++;
