@@ -17,7 +17,8 @@ function buildCosmosQueue(board,{maxTasks=9}={}){
  normalized.sort((a,b)=>PRIORITY[a.priority]-PRIORITY[b.priority]||a.source.localeCompare(b.source)||a.action.localeCompare(b.action)||a.target.localeCompare(b.target));
  const planned=normalized.slice(0,maxTasks).map((task,index)=>({id:'RXJOB-ant-'+index,...task,status:'needs_review',requiresApproval:true}));
  const deferredTasks=normalized.slice(maxTasks).map(task=>({...task,status:'deferred',requiresApproval:true}));
- const priorityCounts=Object.fromEntries(Object.keys(PRIORITY).map(key=>[key,normalized.filter(task=>task.priority===key).length]));
+ const priorityCounts={critical:0,high:0,medium:0,low:0};
+ for(const task of normalized)priorityCounts[task.priority]++;
  return {schema:1,kind:'rx-cosmos-ant-queue',planned,deferred:deferredTasks.length,deferredTasks,priorityCounts,limit:maxTasks,executed:0,autoFixesApplied:0,note:'Read-only queue. Tasks require approval; no arbitrary commands, edits or deployments.'};
 }
 function buildBoard(supervisor,{maxTasks=50,medusa=null,memory=null}={}){
