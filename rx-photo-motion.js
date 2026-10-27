@@ -21,9 +21,9 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    try{const img=new Image();img.src=url;await img.decode();loaded.push(img)}finally{URL.revokeObjectURL(url)}
   }
   if(!loaded.length)throw Error('Nie udało się wczytać zdjęć.');
-  const stream=canvas.captureStream(24),chunks=[];
-  // Capture at 24 fps automatically; mixing manual requestFrame with timed capture
-  // can produce an empty WebM in Chromium when an audio track is attached.
+  // Use explicit frame requests: an image must reach the encoder even when
+  // Chromium throttles automatic canvas capture in headless/background tabs.
+  const stream=canvas.captureStream(0);
   const videoTrack=stream.getVideoTracks()[0];
   if(!videoTrack)throw Error('Nie można przechwycić obrazu z canvas.');
   // Keep video and audio tracks alive until MediaRecorder has emitted its final data.
@@ -87,16 +87,17 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    onProgress(Math.round(t/duration*100));
   }
   draw(0);
+  videoTrack.requestFrame?.();
 
   // Ensure the audio graph is running before recording; headless/mobile browsers
   // may keep a newly created AudioContext suspended after decoding a file.
   if(audioContext&&audioContext.state==='suspended'){
    try{await audioContext.resume()}catch(error){throw Error('Nie można uruchomić dźwięku: '+error.message)}
   }
-  try{recorder.start()}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
+  try{recorder.start();draw(0);videoTrack.requestFrame?.()}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   if(audioSource){const offset=Math.max(0,Number(audioStart)||0)%audioSource.buffer.duration;audioSource.start(0,offset)}
   const start=performance.now();
-  function frame(now){if(recorder.state==='inactive'){stopped=true;return}const t=Math.min(duration,(now-start)/1000);try{draw(t)}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;/* Keep the canvas and audio tracks alive while the encoder flushes. */setTimeout(()=>{if(recorder.state==='recording'){try{draw(duration)}catch{}recorder.stop()}},500)}else frameId=requestAnimationFrame(frame)}
+  function frame(now){if(recorder.state==='inactive'){stopped=true;return}const t=Math.min(duration,(now-start)/1000);try{draw(t);videoTrack.requestFrame?.()}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;/* Keep the canvas and audio tracks alive while the encoder flushes. */setTimeout(()=>{if(recorder.state==='recording'){try{draw(duration);videoTrack.requestFrame?.()}catch{}recorder.stop()}},500)}else frameId=requestAnimationFrame(frame)}
   frameId=requestAnimationFrame(frame);
   try{return await result}finally{if(frameId)cancelAnimationFrame(frameId);if(!stopped&&recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());if(audioSource){try{audioSource.stop()}catch{}}if(audioContext)await audioContext.close()}
  }finally{loaded.length=0}

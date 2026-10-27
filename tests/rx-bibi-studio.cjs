@@ -4,6 +4,14 @@ const {chromium,devices}=require('playwright');
  const browser=await chromium.launch({headless:true,args:['--enable-features=MediaRecorder']});
  const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
  const base=process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev';
+ // For PR validation, load the candidate script from the checked-out branch
+ // rather than silently testing only the already deployed production bundle.
+ const localPhotoMotion=process.env.RX_TEST_LOCAL_PHOTOMOTION==='1';
+ if(localPhotoMotion){
+  const fs=require('node:fs');
+  const source=fs.readFileSync('rx-photo-motion.js','utf8');
+  await page.route('**/rx-photo-motion.js*',route=>route.fulfill({status:200,contentType:'application/javascript',body:source}));
+ }
  const results=[];
  const expectedSha=process.env.GITHUB_SHA||'';
  // Browser checks target the deployed site; record its source separately from the CI commit.
