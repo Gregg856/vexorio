@@ -348,6 +348,21 @@
     :'Koordynator RX jest niedostępny. Odśwież panel.');
    return;
   }
+  if(/^(diagnostyka rx|rx diagnostyka|status modułów|status modulow)$/i.test(command.trim())){
+   try{
+    const response=await fetch('/api/rx/modules',{cache:'no-store'});
+    if(!response.ok)throw Error('ci_unavailable');
+    const data=await response.json();
+    if(!Array.isArray(data.runs))throw Error('invalid_report');
+    const lines=data.runs.map(item=>{
+     const state=item.conclusion==='success'?'OK (CI)':item.conclusion==='failure'?'BŁĄD (CI)':item.status==='in_progress'?'TRWA (CI)':item.status==='no_runs'?'BRAK TESTU': 'NIEZWERYFIKOWANY';
+     return '• '+item.name+': '+state;
+    });
+    const failures=data.runs.filter(item=>item.conclusion==='failure');
+    append('RX Strażak','Diagnostyka RX — powiązane raporty GitHub Actions:'+String.fromCharCode(10)+lines.join(String.fromCharCode(10))+(failures.length?String.fromCharCode(10)+'UWAGA: '+failures.length+' workflow z błędem. Sprawdź raporty CI przed kolejnym wdrożeniem.':'')+String.fromCharCode(10)+'To wyniki CI, nie dowód autonomicznej pracy modułów.');
+   }catch(_){append('RX Strażak','Diagnostyka CI jest chwilowo niedostępna. Nie można potwierdzić stanu modułów.');}
+   return;
+  }
   if(window.GuardRXOrchestrator){
    const routing=window.GuardRXOrchestrator.route(command,{
     conversation:window.GuardRXConversation,
