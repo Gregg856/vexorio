@@ -4,7 +4,7 @@ const {createStellarLab}=require('../rx-stellar-lab.cjs');
 const lab=createStellarLab({maxObservations:2});
 const a={id:'OBS-001',source:'synthetic',starId:'TEST-STAR',brightness:10,observedAt:'2026-01-01T00:00:00Z'};
 lab.add(a);
-assert.deepEqual(lab.add(a),a);
+assert.deepEqual(lab.add(a),{...a,unit:'relative'});
 lab.add({...a,id:'OBS-002',brightness:14,observedAt:'2026-01-02T00:00:00Z'});
 assert.deepEqual(lab.summarize('TEST-STAR'),{starId:'TEST-STAR',count:2,min:10,max:14,mean:12,range:4});
 assert.throws(()=>lab.add({...a,brightness:11}),/collision/);
