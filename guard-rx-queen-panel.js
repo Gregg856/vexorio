@@ -12,6 +12,45 @@
  const approveTask=document.getElementById('rxQueenTaskApprove');
  const taskResult=document.getElementById('rxQueenTaskResult');
  let proposedTask=null;
+ // Queen CI triage: read-only evidence, never dispatches jobs or changes code.
+ const ciButton=document.createElement('button');
+ ciButton.type='button';
+ ciButton.textContent='👑 Pobierz testy i przygotuj polecenie';
+ if(ciButton.style)ciButton.style.cssText='margin:8px 0;padding:10px 12px;border-radius:10px;cursor:pointer';
+ if(taskResult?.parentNode&&typeof taskResult.parentNode.insertBefore==='function')taskResult.parentNode.insertBefore(ciButton,taskResult);
+ let ciBusy=false;
+ ciButton.addEventListener('click',async()=>{
+  if(ciBusy)return;
+  ciBusy=true;ciButton.disabled=true;
+  if(taskResult)taskResult.textContent='👑 Królowa: pobieram raporty testów RX…';
+  try{
+   const response=await fetch('/api/rx/modules',{cache:'no-store'});
+   if(!response.ok)throw Error('ci_unavailable');
+   const data=await response.json();
+   if(!Array.isArray(data.runs))throw Error('invalid_ci_report');
+   const failed=data.runs.filter(x=>x&&x.conclusion==='failure');
+   const active=data.runs.filter(x=>x&&(x.status==='queued'||x.status==='in_progress'));
+   const lines=['👑 Raport Królowej — odczyt CI','Sprawdzono modułów: '+data.runs.length,'Błędy: '+failed.length,'W trakcie / kolejka: '+active.length];
+   if(failed.length){
+    const first=failed[0];
+    const id=String(first.id||'moduł RX').slice(0,80);
+    const description='Sprawdź błąd CI modułu '+id+'; przeanalizuj log, przygotuj poprawkę i test regresji.';
+    if(taskInput)taskInput.value=description;
+    proposedTask=null;if(approveTask)approveTask.disabled=true;
+    lines.push('🐜 Propozycja polecenia wpisana do pola zadania: '+description);
+    if(typeof first.link==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(first.link))lines.push('Raport: '+first.link);
+    lines.push('Naciśnij Analizuj, a następnie zatwierdź plan. Nie uruchomiono żadnej zmiany.');
+   }else if(active.length){
+    lines.push('⏳ Testy jeszcze trwają. Nie tworzę polecenia naprawy bez wyniku.');
+   }else{
+    lines.push('🟢 W raporcie brak nieudanych testów. Nie tworzę zbędnego zadania.');
+   }
+   if(taskResult)taskResult.textContent=lines.join('\\n');
+  }catch(_){
+   if(taskResult)taskResult.textContent='⚪ Raport CI niedostępny. Królowa nie tworzy zadania bez potwierdzonych danych.';
+  }finally{ciBusy=false;ciButton.disabled=false;}
+ });
+
  const classifyTask=description=>{
   const text=description.toLocaleLowerCase('pl');
   const cells=[];
