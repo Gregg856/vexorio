@@ -20,7 +20,10 @@ function summarize({computer=null,ai=null,panel=null}={}){
 }
 if(require.main===module){
  const read=name=>{try{return JSON.parse(fs.readFileSync(path.join('rx-bibi-reports',name),'utf8'));}catch(e){if(e.code==='ENOENT')return null;throw e;}};
- const report=summarize({computer:read('rx-mega-cloud-computer.json'),ai:read('rx-ant-ai-evaluation.json'),panel:read('rx-queen-panel-check.json')});
+ const panel=read('rx-queen-panel-check.json');
+ const report=summarize({computer:read('rx-mega-cloud-computer.json'),ai:read('rx-ant-ai-evaluation.json'),panel:panel||{kind:'rx-queen-panel-check',ok:false}});
+ if(!panel)report.issues.push({source:'panel',priority:'medium',action:'missing_panel_report',target:'tests/rx-queen-panel-safety.cjs'});
+ if(!panel)report.state='attention_required';
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-ant-supervisor.json',JSON.stringify(report,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX QUEEN — zadania mrówek\n- Stan: '+report.state+'\n- Zgłoszenia: '+report.issues.length+'\n- Automatyczne poprawki: 0\n');
