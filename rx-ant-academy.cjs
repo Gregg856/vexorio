@@ -10,7 +10,7 @@ function createAntAcademy({maxAnts=1000}={}){
   // Input metrics must be supplied by a trusted verifier in future integration.
   const points=passedTests*2+verifiedImprovements*10+successfulTasks;
   const level=points>=250&&verifiedImprovements>=10?4:points>=100&&verifiedImprovements>=4?3:points>=40&&verifiedImprovements>=1?2:points>=10?1:0;
-  const record={antId,points,rank:ranks[level],priority:level+1,metrics:{passedTests,verifiedImprovements,successfulTasks}};
+  const record={antId,points,level:level+1,rank:ranks[level],priority:level+1,metrics:{passedTests,verifiedImprovements,successfulTasks},commercialEligible:false,earnings:0};
   ants.set(antId,record);return structuredClone(record);
  }
  function leaderboard(){return [...ants.values()].sort((a,b)=>b.points-a.points||a.antId.localeCompare(b.antId)).map(a=>structuredClone(a))}
