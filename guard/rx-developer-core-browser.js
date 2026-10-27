@@ -74,7 +74,7 @@ function analyzeJavaScript(source){
  const masked=maskJavaScript(source);
  const findings=[];
  const lineStarts=[0];
- for(let i=0;i<source.length;i++)if(source[i]==='\n')lineStarts.push(i+1);
+ for(let i=source.indexOf('\n');i!==-1;i=source.indexOf('\n',i+1))lineStarts.push(i+1);
  const locate=offset=>{
   let low=0,high=lineStarts.length;
   while(low<high){const mid=(low+high)>>>1;if(lineStarts[mid]<=offset)low=mid+1;else high=mid;}
@@ -93,7 +93,7 @@ function analyzeJavaScript(source){
  }
  const rank={high:0,medium:1,low:2};
  findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
- return {engine:'RX Developer Core',version:'0.3.5',findings,summary:{total:findings.length,high:findings.filter(x=>x.severity==='high').length,medium:findings.filter(x=>x.severity==='medium').length,low:findings.filter(x=>x.severity==='low').length}};
+ return {engine:'RX Developer Core',version:'0.3.5',findings,summary:{total:findings.length,...findings.reduce((counts,item)=>{counts[item.severity]++;return counts;},{high:0,medium:0,low:0})}};
 }
 if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});
 
