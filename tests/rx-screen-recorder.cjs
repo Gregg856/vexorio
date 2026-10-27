@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const elements=Object.fromEntries(['status','start','stop','download','preview','mic'].map(id=>[id,{id,hidden:true,disabled:false,checked:false,textContent:'',addEventListener(){}}]));
+const document={getElementById:id=>elements[id]};
+const window={addEventListener(){},MediaRecorder:function(){}};
+const navigator={mediaDevices:{getDisplayMedia:async()=>{throw Error('Odmowa dostępu do ekranu')}}};
+vm.runInNewContext(fs.readFileSync('rx-screen-recorder.js','utf8'),{document,window,navigator,URL,MediaStream:class{},console});
+assert.equal(typeof elements.start.onclick,'function');
+assert.equal(typeof elements.stop.onclick,'function');
+(async()=>{await elements.start.onclick();assert.match(elements.status.textContent,/Odmowa dostępu/);assert.equal(elements.start.disabled,false);assert.equal(elements.stop.disabled,true);console.log('PASS RX Screen Recorder: script initialization and denied permission cleanup')})().catch(e=>{console.error(e);process.exitCode=1});
