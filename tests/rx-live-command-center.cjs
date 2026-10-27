@@ -25,3 +25,9 @@ const {inventory}=require('../rx-capability-inventory.cjs');
 const source=inventory().components;
 assert.deepEqual(registry.components.map(x=>[x.id,x.file,x.role,x.status]),source.map(x=>[x.id,x.file,x.role,x.status]));
 assert.equal(registry.components.length,16);
+
+assert.match(html,/data-rx-queen-alerts/);
+assert.match(script,/workflowModules/);
+assert.match(script,/powiązanie diagnostyczne, nie dowód awarii modułu/);
+assert.match(script,/Królowa RX — moduły do kontroli/);
+console.log('PASS Queen RX maps workflow failures to review-only module alerts');
