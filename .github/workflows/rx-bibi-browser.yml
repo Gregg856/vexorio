@@ -11,6 +11,7 @@ on:
       - 'guard-lab.html'
       - 'guard-rx-queen-panel.js'
       - 'tests/rx-queen-panel-safety.cjs'
+      - 'tests/rx-queen-panel-browser.cjs'
       - 'worker.js'
       - 'rx-million-hearts.js'
       - 'rx-dna-core.js'
@@ -83,6 +84,8 @@ jobs:
         run: node --check guard-rx-queen-panel.js
       - name: RX MRÓWKI — sprawdź błędy panelu Królowej
         run: node tests/rx-queen-panel-safety.cjs
+      - name: RX MRÓWKI — klikaj panel Królowej w Chromium
+        run: node tests/rx-queen-panel-browser.cjs
       - name: Sprawdź RX DNA CLOUD
         run: node tests/rx-dna-core.cjs
       - name: Sprawdź prywatny magazyn RX DNA
