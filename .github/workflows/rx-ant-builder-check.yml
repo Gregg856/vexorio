@@ -1,0 +1,22 @@
+name: RX ANT BUILDER — focused checks
+on:
+  pull_request:
+    paths:
+      - 'rx-ant-builder.cjs'
+      - 'tests/rx-ant-builder.cjs'
+      - '.github/workflows/rx-ant-builder-check.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate builder syntax
+        run: node --check rx-ant-builder.cjs
+      - name: Validate builder regression tests
+        run: node --check tests/rx-ant-builder.cjs
+      - name: Test generated drafts and safety
+        run: node tests/rx-ant-builder.cjs
