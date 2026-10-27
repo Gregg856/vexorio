@@ -18,10 +18,11 @@ function runCloudComputer({execute=false}={}){
  for(let i=0;i<CHECKS.length;i++)planner.enqueue({id:'RXJOB-check-'+i,kind:'run_unit_tests',target:CHECKS[i]});
  const checks=CHECKS.map(file=>{
   if(!execute)return {file,status:'planned'};
+  const started=Date.now();
   const result=spawnSync(process.execPath,[file],{cwd:__dirname,encoding:'utf8',timeout:20000,maxBuffer:65536,env:{PATH:process.env.PATH||''}});
-  return {file,status:result.status===0&&!result.error?'passed':'failed',exitCode:result.status,error:result.error?String(result.error.message).slice(0,200):null};
+  return {file,durationMs:Date.now()-started,status:result.status===0&&!result.error?'passed':'failed',exitCode:result.status,error:result.error?String(result.error.message).slice(0,200):null};
  });
- return {schema:1,kind:'rx-mega-cloud-computer',executionEnvironment:'github-actions-or-local-node',cloudServerProvisioned:false,physicalHardwareOwned:false,checks,passed:checks.filter(x=>x.status==='passed').length,failed:checks.filter(x=>x.status==='failed').length,planned:checks.filter(x=>x.status==='planned').length,queue:planner.report(),labs:{collider:simulateRing(),energy:estimateSolar(),higgs:syntheticDemo()},note:'Only fixed repository tests execute. Lab inputs are synthetic or estimates. No live CERN data, trained model, physical collider or automatic deployment.'};
+ return {schema:1,kind:'rx-mega-cloud-computer',executionEnvironment:'github-actions-or-local-node',cloudServerProvisioned:false,physicalHardwareOwned:false,checks,passed:checks.filter(x=>x.status==='passed').length,failed:checks.filter(x=>x.status==='failed').length,planned:checks.filter(x=>x.status==='planned').length,totalTestDurationMs:checks.reduce((sum,x)=>sum+(x.durationMs||0),0),queue:planner.report(),labs:{collider:simulateRing(),energy:estimateSolar(),higgs:syntheticDemo()},note:'Only fixed repository tests execute. Lab inputs are synthetic or estimates. No live CERN data, trained model, physical collider or automatic deployment.'};
 }
 if(require.main===module){
  const report=runCloudComputer({execute:true});
