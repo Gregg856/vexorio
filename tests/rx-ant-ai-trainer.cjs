@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {train}=require('../rx-ant-ai-trainer.cjs');
+const r=train();
+assert.equal(r.modelTrained,true);
+assert.equal(r.languageModel,false);
+assert.equal(r.dataset,'synthetic-toy');
+assert.ok(r.trainingAccuracy>=0.8,'Expected trained classifier to learn toy examples');
+assert.ok(r.weights.every(Number.isFinite));
+assert.throws(()=>train({epochs:0}),/Invalid training/);
+assert.throws(()=>train({learningRate:Infinity}),/Invalid training/);
+console.log('PASS RX ANT AI TRAINER: learned weights, bounded training, truthful scope');
