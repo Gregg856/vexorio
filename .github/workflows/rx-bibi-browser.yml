@@ -17,6 +17,8 @@ on:
       - 'tests/rx-dna-store.cjs'
       - 'tests/rx-dna-core.cjs'
       - 'RX-DNA-BLACK-BOX.md'
+      - 'rx-cosmic-collider.cjs'
+      - 'tests/rx-cosmic-collider.cjs'
       - 'rx-higgs-lab.cjs'
       - 'tests/rx-higgs-lab.cjs'
       - 'rx-integration.cjs'
@@ -78,6 +80,10 @@ jobs:
         run: node tests/rx-money-engine.cjs
       - name: Sprawdź RX EVOLUTION i MONEY RADAR
         run: node tests/rx-evolution-radar.cjs
+      - name: Sprawdź RX COSMIC COLLIDER 10K
+        run: node tests/rx-cosmic-collider.cjs
+      - name: RX COSMIC COLLIDER — zapisz symulację
+        run: node rx-cosmic-collider.cjs
       - name: Sprawdź RX HIGGS LAB
         run: node tests/rx-higgs-lab.cjs
       - name: RX HIGGS LAB — zapisz histogram
