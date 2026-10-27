@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {allocate}=require('../rx-bibi-budget.cjs');
+const board={kind:'rx-ant-task-board',tasks:Array.from({length:40},(_,i)=>({action:'inspect',target:String(i)}))};
+const result=allocate(board,{maxTasks:30});
+assert.equal(result.planned.length,30);
+assert.equal(result.deferred.length,10);
+assert.equal(result.autoExecuted,0);
+assert.equal(result.actualProviderUsage,null);
+assert.throws(()=>allocate(board,{maxTasks:101}),/Invalid/);
+console.log('PASS RX BIBI BUDGET');
