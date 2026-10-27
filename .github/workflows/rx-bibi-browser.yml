@@ -191,10 +191,13 @@ jobs:
       - name: RX BIBI — testuj Screen Recorder
         run: node tests/rx-screen-recorder.cjs
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
+        id: studio
         if: always()
         run: node tests/rx-bibi-studio.cjs
       - name: RX BIBI — powtórz test eksportu po niepowodzeniu
-        if: failure()
+        if: failure() && steps.studio.outcome == 'failure'
+        env:
+          RX_STUDIO_RETRY: '1'
         run: node tests/rx-bibi-studio.cjs
       - name: RX MRÓWKI — testuj katalog w Chromium
         if: always()
