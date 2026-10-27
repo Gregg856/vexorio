@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {train}=require('../rx-ant-ai-trainer.cjs');
+const {accuracy,evaluate,VALIDATION}=require('../rx-ant-ai-evaluator.cjs');
+const first=evaluate();
+assert.equal(first.validationExamples,VALIDATION.length);
+assert.equal(first.previousAccuracy,null);
+assert.ok(first.candidateAccuracy>=0&&first.candidateAccuracy<=1);
+const second=evaluate({previous:first.selectedModel});
+assert.equal(second.previousAccuracy,accuracy(first.selectedModel));
+assert.ok(accuracy(second.selectedModel)>=second.previousAccuracy);
+assert.throws(()=>accuracy({weights:[NaN,0],bias:0}),/Invalid model/);
+assert.throws(()=>train({checkpoint:{schema:1,kind:'rx-ant-ai-trained-classifier',dataset:'synthetic-toy',weights:[Infinity,0],bias:0}}),/Invalid checkpoint/);
+console.log('PASS RX AI EVALUATOR: held-out validation and no model regression');
