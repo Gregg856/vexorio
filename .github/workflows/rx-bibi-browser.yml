@@ -17,6 +17,8 @@ on:
       - 'tests/rx-dna-store.cjs'
       - 'tests/rx-dna-core.cjs'
       - 'RX-DNA-BLACK-BOX.md'
+      - 'rx-mega-cloud-computer.cjs'
+      - 'tests/rx-mega-cloud-computer.cjs'
       - 'rx-energy-lab.cjs'
       - 'tests/rx-energy-lab.cjs'
       - 'rx-cosmic-collider.cjs'
@@ -82,6 +84,10 @@ jobs:
         run: node tests/rx-money-engine.cjs
       - name: Sprawdź RX EVOLUTION i MONEY RADAR
         run: node tests/rx-evolution-radar.cjs
+      - name: Sprawdź RX MEGA CLOUD COMPUTER
+        run: node tests/rx-mega-cloud-computer.cjs
+      - name: RX MEGA CLOUD COMPUTER — uruchom testy i zapisz raport
+        run: node rx-mega-cloud-computer.cjs
       - name: Sprawdź RX ENERGY LAB
         run: node tests/rx-energy-lab.cjs
       - name: RX ENERGY LAB — zapisz bilans energii
