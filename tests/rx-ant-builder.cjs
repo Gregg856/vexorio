@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {prepareBuildQueue,draftTestSpecification}=require('../rx-ant-builder.cjs');
+const task={source:'RX FAST',target:'rx-photo-motion.js',action:'Investigate empty video export',priority:'high',recurrent:true,historyOccurrences:3};
+const result=prepareBuildQueue({kind:'rx-ant-task-board',tasks:[task,{...task,target:'other.js',recurrent:false}]});
+assert.equal(result.total,1);
+assert.equal(result.queue[0].testDraft.kind,'test-specification');
+assert.equal(result.queue[0].testDraft.testCodeGenerated,false);
+assert.equal(result.queue[0].requiresApproval,true);
+assert.equal(result.autoChangesApplied,0);
+assert.equal(prepareBuildQueue({kind:'rx-ant-task-board',tasks:[]}).total,0);
+assert.throws(()=>prepareBuildQueue({kind:'bad',tasks:[]}),/Invalid/);
+assert.ok(!draftTestSpecification({...task,target:'test\\nmalicious'}).title.includes('\n'));
+console.log('PASS RX ANT BUILDER draft-only safety');
