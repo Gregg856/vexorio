@@ -274,6 +274,9 @@ jobs:
       - name: RX ANT BUILDER — test szkiców i bezpieczeństwa
         if: always()
         run: node tests/rx-ant-builder.cjs
+      - name: RX UNIFIED — rejestr chmury komputera pamięci i skrzynki
+        if: always()
+        run: node tests/rx-capability-inventory.cjs
       - name: RX UNIFIED — test integracji raportów BIBI
         if: always()
         run: node tests/rx-bibi-unified-adapter.cjs
