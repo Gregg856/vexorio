@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {draftPatch,previewPatch}=require('../rx-patch-drafter.cjs');
+const {draftPatch,previewPatch,suggestPatch}=require('../rx-patch-drafter.cjs');
 const draft=draftPatch({target:'rx-photo-motion.js',oldText:'const speed = 1;',newText:'const speed = 2;',reason:'Correct speed default'});
 assert.equal(draft.applied,false);
 assert.equal(draft.requiresApproval,true);
@@ -11,4 +11,13 @@ assert.throws(()=>previewPatch(draft,'const speed = 1; const speed = 1;'),/ambig
 assert.throws(()=>draftPatch({target:'.github/workflows/deploy.js',oldText:'a',newText:'b',reason:'unsafe edit'}),/Invalid patch target/);
 assert.throws(()=>draftPatch({target:'../secrets.js',oldText:'a',newText:'b',reason:'unsafe edit'}),/Invalid patch target/);
 assert.throws(()=>draftPatch({target:'worker.js',oldText:'a',newText:'a',reason:'no-op'}),/Invalid patch contents/);
+const auto=suggestPatch({target:'src/example.js',source:'const a=1;\ndebugger;\nconst b=2;',rule:'remove-debugger'});
+assert.equal(auto.preview.preview,'const a=1;\n\nconst b=2;');
+assert.equal(auto.proposal.applied,false);
+assert.equal(auto.requiresApproval,true);
+assert.throws(()=>suggestPatch({target:'src/example.js',source:'debugger;\ndebugger;',rule:'remove-debugger'}),/ambiguous/);
+assert.throws(()=>suggestPatch({target:'src/example.js',source:'const x=1;',rule:'remove-debugger'}),/missing/);
+assert.throws(()=>suggestPatch({target:'src/example.js',source:'const x=1;',rule:'rewrite-all'}),/Unsupported/);
+const debug=suggestPatch({target:'src/example.js',source:'console.debug("test");',rule:'remove-console-debug'});
+assert.equal(debug.preview.preview,'');
 console.log('PASS RX PATCH DRAFTER preview-only and blocked paths');
