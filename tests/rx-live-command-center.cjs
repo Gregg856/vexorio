@@ -34,7 +34,7 @@ console.log('PASS Queen RX maps workflow failures to review-only module alerts')
 
 assert.match(html,/data-rx-queen-queue/);
 assert.ok(script.includes('rx-ant-review-queue.json'));
-assert.ok(script.includes('Brak opublikowanego raportu kolejki RX'));
+assert.ok(script.includes('nie został opublikowany jako plik strony'));
 assert.ok(script.includes('task.requiresApproval!==true'));
 assert.ok(script.includes('task.executed!==false'));
 console.log('PASS Queen queue UI requires actual read-only report and explicit approvals');
