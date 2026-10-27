@@ -42,12 +42,25 @@
  const summary=document.createElement('div');
  summary.id='rxProgramsLiveRuns';
  root.insertBefore(summary,list);
- fetch('/api/rx/direct?command=RX%20STATUS',{cache:'no-store'})
-  .then(r=>{if(!r.ok)throw Error('http_status');return r.json();})
-  .then(data=>{
+ const refresh=document.createElement('button');
+ refresh.type='button';
+ refresh.textContent='↻ Odśwież statusy';
+ refresh.style.cssText='margin:0 0 12px;padding:8px 12px;border:1px solid #478295;border-radius:9px;background:#123448;color:#b2edf1;cursor:pointer';
+ root.insertBefore(refresh,summary);
+ let loading=false;
+ async function loadStatuses(){
+  if(loading||document.visibilityState==='hidden')return;
+  loading=true;
+  refresh.disabled=true;
+  status.textContent='⏳ Sprawdzanie aktualnych testów RX…';
+  try{
+   const response=await fetch('/api/rx/direct?command=RX%20STATUS',{cache:'no-store'});
+   if(!response.ok)throw Error('http_status');
+   const data=await response.json();
    if(!Array.isArray(data.runs))throw Error('invalid_response');
-   const unavailable=data.runs.some(run=>run.status==='unavailable'||run.result===null);
-   status.textContent=data.degraded?'⚠️ Raport GitHub częściowo niedostępny':unavailable?'⚠️ Raport częściowy: nie wszystkie statusy są dostępne':'📡 Ostatnie uruchomienia GitHub Actions (nie status pracy ciągłej)';
+   const unavailable=data.runs.some(run=>run.status==='unavailable'||run.status==='unknown'||run.result===null&&run.status!=='queued'&&run.status!=='in_progress');
+   status.textContent=data.degraded||unavailable?'⚠️ Raport częściowy: nie wszystkie statusy są dostępne':'📡 Ostatnie uruchomienia GitHub Actions (nie status pracy ciągłej)';
+   const lines=document.createDocumentFragment();
    for(const run of data.runs){
     const line=document.createElement('p');
     const state=run.result==='success'?'🟢 Test OK':run.result==='failure'?'🔴 Błąd':run.status==='in_progress'?'🟡 W trakcie':run.status==='queued'?'⏳ W kolejce':run.status==='unavailable'?'⚪ Status niedostępny':'⚪ Brak danych';
@@ -55,8 +68,14 @@
     if(typeof run.link==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(run.link)){
      const a=document.createElement('a');a.href=run.link;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' · raport';line.append(a);
     }
-    summary.append(line);
+    lines.append(line);
    }
-  }).catch(()=>{status.textContent='⚠️ Nie udało się pobrać statusu testów. Katalog programów pozostaje dostępny.';});
-
+   summary.replaceChildren(lines);
+  }catch(_){status.textContent='⚠️ Nie udało się odświeżyć testów. Ostatnie wyniki pozostają widoczne.';}
+  finally{loading=false;refresh.disabled=false;}
+ }
+ refresh.addEventListener('click',loadStatuses);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadStatuses();});
+ setInterval(()=>{if(document.visibilityState==='visible')loadStatuses();},60000);
+ loadStatuses();
 })();
