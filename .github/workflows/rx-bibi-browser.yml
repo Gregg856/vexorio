@@ -7,6 +7,9 @@ on:
       - 'rx-bibi-manager.html'
       - 'rx-bibi-studio.html'
       - 'rx-photo-motion.js'
+      - 'rx-screen-recorder.js'
+      - 'rx-screen-recorder.html'
+      - 'tests/rx-screen-recorder.cjs'
       - 'rx-ai-director.js'
       - 'guard-lab.html'
       - 'guard-rx-programs.js'
@@ -183,6 +186,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node tests/rx-bibi-browser.cjs
+      - name: RX BIBI — sprawdź składnię Screen Recorder
+        run: node --check rx-screen-recorder.js
+      - name: RX BIBI — testuj Screen Recorder
+        run: node tests/rx-screen-recorder.cjs
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         if: always()
         run: node tests/rx-bibi-studio.cjs
