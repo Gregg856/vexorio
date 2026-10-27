@@ -49,9 +49,9 @@ export default {
       const runs=await Promise.all(modules.map(async module=>{
         try{
           const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+module.file+'/runs?branch=main&per_page=1',{
-            headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Strazak-Module-Reports'},signal:AbortSignal.timeout(7000)
+            headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Strazak-Module-Reports',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})},signal:AbortSignal.timeout(7000)
           });
-          if(!response.ok)return {...module,status:'unavailable',conclusion:null,reason:response.status===404?'workflow_not_found':'github_api_unavailable'};
+          if(!response.ok)return {...module,status:'unavailable',conclusion:null,reason:response.status===404?'workflow_not_found':response.status===403?'github_access_denied':'github_api_unavailable'};
           const data=await response.json();const run=data.workflow_runs?.[0];
           return run?{...module,status:run.status,conclusion:run.conclusion||null,number:run.run_number,link:run.html_url,updated_at:run.updated_at}:{...module,status:'no_runs',conclusion:null};
         }catch{return {...module,status:'unavailable',conclusion:null,reason:'github_api_unavailable'};}
