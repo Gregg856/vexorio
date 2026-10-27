@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {prepareHandoff}=require('../rx-two-chat-handoff.cjs');
+const base={id:'RXJOB-check-1',kind:'run_unit_tests',target:'tests/rx-cloud-computer.cjs',reviewedBy:'RX-review'};
+const draft=prepareHandoff(base);
+assert.equal(draft.state,'awaiting_owner_approval');
+assert.equal(draft.executed,false);
+assert.equal(draft.task.requiresApproval,true);
+const approved=prepareHandoff({...base,approved:true});
+assert.equal(approved.state,'approved_for_allowlisted_runner');
+assert.equal(approved.productionModified,false);
+assert.throws(()=>prepareHandoff({...base,kind:'deploy_production'}));
+assert.throws(()=>prepareHandoff({...base,target:'../secrets'}));
+assert.throws(()=>prepareHandoff({...base,reviewedBy:''}));
+console.log('PASS RX two-chat reviewed task handoff, approval gate and no execution');
