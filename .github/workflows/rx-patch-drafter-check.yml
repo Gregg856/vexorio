@@ -5,6 +5,8 @@ on:
       - 'rx-patch-drafter.cjs'
       - 'rx-developer-patch-bridge.cjs'
       - 'rx-unified-review.cjs'
+      - 'rx-bibi-unified-adapter.cjs'
+      - 'tests/rx-bibi-unified-adapter.cjs'
       - 'tests/rx-unified-review.cjs'
       - 'tests/rx-developer-patch-bridge.cjs'
       - 'tests/rx-patch-drafter.cjs'
@@ -26,3 +28,5 @@ jobs:
       - run: node tests/rx-developer-patch-bridge.cjs
       - run: node --check rx-unified-review.cjs
       - run: node tests/rx-unified-review.cjs
+      - run: node --check rx-bibi-unified-adapter.cjs
+      - run: node tests/rx-bibi-unified-adapter.cjs
