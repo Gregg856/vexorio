@@ -1,0 +1,19 @@
+name: RX PATCH DRAFTER — focused checks
+on:
+  pull_request:
+    paths:
+      - 'rx-patch-drafter.cjs'
+      - 'tests/rx-patch-drafter.cjs'
+      - '.github/workflows/rx-patch-drafter-check.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check rx-patch-drafter.cjs
+      - run: node --check tests/rx-patch-drafter.cjs
+      - run: node tests/rx-patch-drafter.cjs
