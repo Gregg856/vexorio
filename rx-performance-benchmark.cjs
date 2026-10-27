@@ -55,6 +55,27 @@ const largeSources=[1000,5000,15000].map(lines=>({lines,text:('const safe = 1;\n
 const developerScale=largeSources.map(({lines,text})=>({lines,bytes:Buffer.byteLength(text),...measure('RX Developer large source',()=>analyzeJavaScript(text),lines>=15000?5:lines>=5000?10:20)}));
 // Phase-level profiling: mask and full scan on identical inputs.
 // The remainder is estimated from independent medians, not a direct timer.
+// Paired masking comparison on identical inputs; no production source changes.
+const maskCoreText=fs.readFileSync(require.resolve('./guard/rx-developer-core.cjs'),'utf8');
+const optimizedFrame='const c=source[i],n=source[i+1],f=frames[frames.length-1];';
+assert(maskCoreText.includes(optimizedFrame),'Expected current optimized frame lookup');
+const legacyCore=maskCoreText.replace(" const emit=i=>{out[i]=source[i];};"," const top=()=>frames[frames.length-1];\n const emit=i=>{out[i]=source[i];};").replace(optimizedFrame,'const c=source[i],n=source[i+1],f=top();');
+const maskSandbox={module:{exports:{}}};
+vm.runInNewContext(legacyCore,maskSandbox,{timeout:1000});
+const legacyMask=maskSandbox.module.exports.maskJavaScript;
+const maskAB=largeSources.map(({lines,text})=>{
+ assert.equal(legacyMask(text),maskJavaScript(text),'Mask output must remain identical');
+ for(let i=0;i<20;i++){legacyMask(text);maskJavaScript(text);}
+ const oldSamples=[],newSamples=[];
+ const run=fn=>{const start=performance.now();for(let j=0;j<8;j++)fn(text);return (performance.now()-start)/8;};
+ for(let i=0;i<7;i++){
+  if(i%2===0){oldSamples.push(run(legacyMask));newSamples.push(run(maskJavaScript));}
+  else{newSamples.push(run(maskJavaScript));oldSamples.push(run(legacyMask));}
+ }
+ const median=x=>x.sort((a,b)=>a-b)[3];
+ const oldMs=median(oldSamples),newMs=median(newSamples);
+ return {lines,oldMs:Number(oldMs.toFixed(5)),newMs:Number(newMs.toFixed(5)),ratio:Number((newMs/oldMs).toFixed(3))};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -68,7 +89,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
