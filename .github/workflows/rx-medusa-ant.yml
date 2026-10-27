@@ -1,0 +1,39 @@
+name: RX Meduza and Ant Task Board — dedicated read-only CI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rx-medusa-engine.cjs'
+      - 'rx-ant-task-board.cjs'
+      - 'tests/rx-medusa-engine.cjs'
+      - 'tests/rx-ant-task-board.cjs'
+      - '.github/workflows/rx-medusa-ant.yml'
+  pull_request:
+    paths:
+      - 'rx-medusa-engine.cjs'
+      - 'rx-ant-task-board.cjs'
+      - 'tests/rx-medusa-engine.cjs'
+      - 'tests/rx-ant-task-board.cjs'
+      - '.github/workflows/rx-medusa-ant.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check module and test syntax
+        run: |
+          node --check rx-medusa-engine.cjs
+          node --check rx-ant-task-board.cjs
+          node --check tests/rx-medusa-engine.cjs
+          node --check tests/rx-ant-task-board.cjs
+      - name: Run isolated Meduza and Ant Task Board tests
+        run: |
+          node tests/rx-medusa-engine.cjs
+          node tests/rx-ant-task-board.cjs
