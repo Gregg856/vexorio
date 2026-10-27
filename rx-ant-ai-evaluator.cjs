@@ -23,8 +23,9 @@ function evaluate({previous=null}={}){
  const candidateAccuracy=accuracy(candidate);
  const previousAccuracy=previous?accuracy(previous):null;
  const improved=previousAccuracy===null||candidateAccuracy>previousAccuracy;
+ const accuracyDelta=previousAccuracy===null?null:Number((candidateAccuracy-previousAccuracy).toFixed(6));
  const selected=previousAccuracy!==null&&candidateAccuracy<=previousAccuracy?previous:candidate;
- return {schema:1,kind:'rx-ant-ai-evaluation',dataset:'synthetic-heldout-toy',validationExamples:VALIDATION.length,candidateAccuracy,previousAccuracy,improved,selectedModel:selected,modelChanged:selected===candidate,realWorldValidated:false,note:'Held-out synthetic examples only; no independent real-world dataset or LLM. Tie or regression retains previous model.'};
+ return {schema:1,kind:'rx-ant-ai-evaluation',dataset:'synthetic-heldout-toy',validationExamples:VALIDATION.length,candidateAccuracy,previousAccuracy,accuracyDelta,decision:previousAccuracy===null?'initial_model':improved?'promoted':'retained_previous',improved,selectedModel:selected,modelChanged:selected===candidate,realWorldValidated:false,note:'Held-out synthetic examples only; no independent real-world dataset or LLM. Tie or regression retains previous model.'};
 }
 if(require.main===module){
  const checkpointPath=path.join('rx-ai-checkpoints','latest.json');
@@ -35,6 +36,6 @@ if(require.main===module){
  fs.mkdirSync('rx-ai-checkpoints',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-ai-evaluation.json',JSON.stringify({...result,selectedModel:undefined},null,2)+'\n');
  fs.writeFileSync(checkpointPath,JSON.stringify(result.selectedModel,null,2)+'\n');
- console.log('RX AI EVALUATOR:',result.candidateAccuracy,'previous:',result.previousAccuracy,'model changed:',result.modelChanged);
+ console.log('RX AI EVALUATOR:',result.candidateAccuracy,'previous:',result.previousAccuracy,'decision:',result.decision);
 }
 module.exports={accuracy,evaluate,VALIDATION};
