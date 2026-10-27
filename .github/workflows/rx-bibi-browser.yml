@@ -31,6 +31,8 @@ on:
       - 'tests/rx-integration.cjs'
       - 'rx-cloud-computer.cjs'
       - 'tests/rx-cloud-computer.cjs'
+      - 'rx-ant-ai-trainer.cjs'
+      - 'tests/rx-ant-ai-trainer.cjs'
       - 'rx-ai-core.cjs'
       - 'tests/rx-ai-core.cjs'
       - 'rx-command-bridge.js'
@@ -110,6 +112,10 @@ jobs:
         run: node tests/rx-integration.cjs
       - name: Sprawdź RX CLOUD COMPUTER 1.0
         run: node tests/rx-cloud-computer.cjs
+      - name: RX MRÓWKI — sprawdź trening modelu AI
+        run: node tests/rx-ant-ai-trainer.cjs
+      - name: RX MRÓWKI — wytrenuj model i zapisz wagi
+        run: node rx-ant-ai-trainer.cjs
       - name: Sprawdź RX AI CORE 1.0
         run: node tests/rx-ai-core.cjs
       - name: Sprawdź RX ANT LAB
