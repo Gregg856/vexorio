@@ -27,6 +27,22 @@ function runCloudComputer({execute=false,selectedChecks=CHECKS,maxChecks=CHECKS.
  });
  return {schema:1,kind:'rx-mega-cloud-computer',executionEnvironment:'github-actions-or-local-node',cloudServerProvisioned:false,physicalHardwareOwned:false,checks,requested:selectedChecks.length,deferred:selectedChecks.length-selected.length,limit:maxChecks,executed:execute?checks.length:0,passed:checks.filter(x=>x.status==='passed').length,failed:checks.filter(x=>x.status==='failed').length,planned:checks.filter(x=>x.status==='planned').length,totalTestDurationMs:checks.reduce((sum,x)=>sum+(x.durationMs||0),0),queue:planner.report(),labs:{collider:simulateRing(),energy:estimateSolar(),higgs:syntheticDemo()},note:'Only fixed repository tests execute. Lab inputs are synthetic or estimates. No live CERN data, trained model, physical collider or automatic deployment.'};
 }
+
+function runAntQueue(queue,{approvedIds=[],execute=false,maxChecks=3}={}){
+ if(!queue||queue.kind!=='rx-cosmos-ant-queue'||queue.schema!==1||!Array.isArray(queue.planned)||queue.planned.length>20||!Array.isArray(approvedIds)||approvedIds.length>20||new Set(approvedIds).size!==approvedIds.length||!Number.isSafeInteger(maxChecks)||maxChecks<0||maxChecks>CHECKS.length)throw Error('Invalid RX ant queue budget or approvals');
+ const ids=new Set(), eligible=[];
+ for(const task of queue.planned){
+  if(!task||typeof task.id!=='string'||ids.has(task.id)||task.status!=='needs_review'||task.requiresApproval!==true||typeof task.action!=='string'||typeof task.target!=='string')throw Error('Invalid RX ant queue task');
+  ids.add(task.id);
+  if(task.action==='run_unit_tests'&&CHECKS.includes(task.target)&&!eligible.includes(task.target))eligible.push(task.target);
+ }
+ if(approvedIds.some(id=>typeof id!=='string'||!ids.has(id)))throw Error('Unknown RX ant approval');
+ const approved=queue.planned.filter(task=>approvedIds.includes(task.id)&&task.action==='run_unit_tests'&&CHECKS.includes(task.target));
+ const selected=[...new Set(approved.map(task=>task.target))];
+ const report=runCloudComputer({execute,selectedChecks:selected,maxChecks});
+ return {...report,kind:'rx-cosmos-ant-check-report',queueTasks:queue.planned.length,approvedTasks:approved.length,eligibleTasks:eligible.length,skippedTasks:queue.planned.length-approved.length,approvalRequired:true,executedTaskIds:execute?approved.slice(0,maxChecks).map(task=>task.id):[],note:'Only explicitly approved, fixed allowlisted Node checks can run. No arbitrary task execution, edits or deployments.'};
+}
+
 if(require.main===module){
  const report=runCloudComputer({execute:true});
  const file=path.join('rx-bibi-reports','rx-mega-cloud-computer.json');
@@ -35,4 +51,4 @@ if(require.main===module){
  console.log('RX MEGA CLOUD COMPUTER:',report.passed,'passed,',report.failed,'failed');
  if(report.failed)process.exitCode=1;
 }
-module.exports={runCloudComputer,CHECKS};
+module.exports={runCloudComputer,runAntQueue,CHECKS};
