@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('guard-lab.html','utf8');
+const js=fs.readFileSync('guard-rx-live-command-center.js','utf8');
+const markers=['id="rxLiveCommandCenter"','data-rx-live-state','data-rx-live-refresh','data-rx-live-grid','data-rx-queen-alerts','data-rx-queen-queue','data-rx-readiness','data-rx-live-time'];
+for(const marker of markers)assert.ok(html.includes(marker),'Missing HTML hook: '+marker);
+assert.equal((html.match(/id="rxLiveCommandCenter"/g)||[]).length,1);
+assert.equal((html.match(/<script src="\/guard-rx-live-command-center\.js\?v=1" defer><\/script>/g)||[]).length,1);
+assert.match(js,/rxLiveCommandCenter/);
+assert.match(js,/data-rx-queen-queue/);
+assert.match(js,/data-rx-readiness/);
+assert.doesNotMatch(js,/\bfetch\([^\n]*method\s*:\s*['"](?:POST|PUT|PATCH|DELETE)/);
+assert.doesNotMatch(js,/\b(?:localStorage|sessionStorage|eval)\b/);
+console.log('PASS Guard RX Command Center HTML/JS mounting and read-only safety');
