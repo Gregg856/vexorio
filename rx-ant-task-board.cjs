@@ -22,6 +22,23 @@ function buildBoard(supervisor,{maxTasks=50,medusa=null,memory=null}={}){
  const sorted=[...tasks.values()].sort((a,b)=>PRIORITY[a.priority]-PRIORITY[b.priority]||a.source.localeCompare(b.source)||a.action.localeCompare(b.action)||a.target.localeCompare(b.target));
  return {schema:1,kind:'rx-ant-task-board',tasks:sorted.slice(0,maxTasks),totalUnique:sorted.length,overflow:Math.max(0,sorted.length-maxTasks),autoFixesApplied:0,note:'Deduplicated recommendations only; no code changes, production access, or paid jobs.'};
 }
+// Deterministic review queue; approvals are recorded as requests, never executed.
+function buildReviewQueue(board,{previous=null,runId}={}){
+ if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100)throw Error('Invalid RX board');
+ if(typeof runId!=='string'||!/^[-a-zA-Z0-9_]{1,80}$/.test(runId))throw Error('Invalid RX run ID');
+ if(previous!==null&&(!previous||previous.kind!=='rx-ant-review-queue'||!Array.isArray(previous.tasks)||previous.tasks.length>100))throw Error('Invalid prior review queue');
+ const old=new Map();
+ for(const task of previous?.tasks||[]){if(typeof task.id!=='string'||typeof task.firstSeen!=='string'||!Number.isSafeInteger(task.occurrences)||task.occurrences<1)throw Error('Invalid prior queue item');old.set(task.id,task);}
+ const tasks=board.tasks.map(task=>{
+  const id=JSON.stringify([task.source,task.action,task.target]);
+  const prior=old.get(id);
+  return {id,source:task.source,action:task.action,target:task.target,priority:task.priority,
+   firstSeen:prior?.firstSeen||runId,lastSeen:runId,occurrences:prior?prior.occurrences+1:1,
+   status:'awaiting_review',requiresApproval:true,approved:false,executed:false};
+ });
+ return {schema:1,kind:'rx-ant-review-queue',runId,tasks,closedSincePrevious:[...old.keys()].filter(id=>!tasks.some(t=>t.id===id)).length,
+  requiresApproval:true,executions:0,productionModified:false,note:'History and review requests only; no approvals inferred and no execution.'};
+}
 if(require.main===module){
  const input=path.join('rx-bibi-reports','rx-queen-ant-supervisor.json');
  let medusa=null;
@@ -36,4 +53,4 @@ if(require.main===module){
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
 }
-module.exports={buildBoard};
+module.exports={buildBoard,buildReviewQueue};
