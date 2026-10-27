@@ -65,7 +65,7 @@ if(require.main===module){
    for(const task of reviewQueue.tasks.slice(0,20))lines.push('| '+safe(task.priority)+' | '+safe(task.source)+' | '+safe(task.action)+' → '+safe(task.target)+' | '+task.occurrences+' |');
    if(reviewQueue.tasks.length>20)lines.push('','Pozostałe zadania w artefakcie rx-bibi-mobile-report.');
   }else lines.push('- Brak oczekujących zadań w tym raporcie.');
-  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');
+  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
  }
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
 }
