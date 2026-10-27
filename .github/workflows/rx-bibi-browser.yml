@@ -10,6 +10,7 @@ on:
       - 'rx-ai-director.js'
       - 'guard-lab.html'
       - 'guard-rx-queen-panel.js'
+      - 'tests/rx-queen-panel-safety.cjs'
       - 'worker.js'
       - 'rx-million-hearts.js'
       - 'rx-dna-core.js'
@@ -76,6 +77,8 @@ jobs:
         run: node -e "require('playwright').chromium.executablePath() && console.log('Chromium gotowy')"
       - name: Sprawdź składnię panelu Królowej RX
         run: node --check guard-rx-queen-panel.js
+      - name: RX MRÓWKI — sprawdź błędy panelu Królowej
+        run: node tests/rx-queen-panel-safety.cjs
       - name: Sprawdź RX DNA CLOUD
         run: node tests/rx-dna-core.cjs
       - name: Sprawdź prywatny magazyn RX DNA
