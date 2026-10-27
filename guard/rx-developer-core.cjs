@@ -54,7 +54,7 @@ function maskJavaScript(source) {
 }
 
 const RULES=Object.freeze([
- {id:'RX001',severity:'high',pattern:/(?<![\w$])(?:globalThis\s*\.\s*)?eval\s*\(/g,message:'eval() wykonuje dynamiczny kod.',advice:'Zastąp eval() bezpieczną funkcją lub parserem.'},
+ {id:'RX001',severity:'high',pattern:/(?<![\w$.])(?:globalThis\s*\.\s*)?eval\s*\(/g,message:'eval() wykonuje dynamiczny kod.',advice:'Zastąp eval() bezpieczną funkcją lub parserem.'},
  {id:'RX002',severity:'medium',pattern:/(?:\binnerHTML\s*=|\[\s*['\"]innerHTML['\"]\s*\]\s*=)/g,message:'Przypisanie innerHTML wymaga kontroli danych.',advice:'Dla tekstu użyj textContent; HTML poddaj sanitizacji.'},
  {id:'RX003',severity:'medium',pattern:/\bouterHTML\s*=/g,message:'Przypisanie outerHTML wymaga kontroli danych.',advice:'Nie wstawiaj niezaufanego HTML.'},
  {id:'RX004',severity:'medium',pattern:/\binsertAdjacentHTML\s*\(/g,message:'insertAdjacentHTML() może wstrzyknąć HTML.',advice:'Waliduj i sanitizuj dane wejściowe.'},
@@ -108,6 +108,8 @@ function analyzeJavaScript(source){
   const escapeRegex=value=>value.replace(/[^A-Za-z0-9_$]/g,'');
   const name=escapeRegex(alias);
   if(new RegExp(String.raw`\b`+name+String.raw`\s*(?:=(?!=)|\+\+|--|\+=|-=)`).test(after))continue;
+  // Suppress aliases shadowed by same-named function parameters.
+  if(new RegExp(String.raw`\\bfunction\\s*[A-Za-z_$\\w]*\\s*\\([^)]*\\b`+name+String.raw`\\b[^)]*\\)`).test(after))continue;
   const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*\(`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
   let found;
   while((found=call.exec(after))!==null){
