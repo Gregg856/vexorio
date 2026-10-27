@@ -12,6 +12,34 @@
  const approveTask=document.getElementById('rxQueenTaskApprove');
  const taskResult=document.getElementById('rxQueenTaskResult');
  let proposedTask=null;
+
+ // Queen hub: honest inventory of modules; CI reports are evidence of tests, not uptime.
+ const hub=document.createElement('section');
+ if(hub.style)hub.style.cssText='margin:10px 0;padding:10px;border:1px solid #42798c;border-radius:12px';
+ const hubTitle=document.createElement('strong');hubTitle.textContent='👑 Centrum RX: Chmura · Komputer · Skrzynka';
+ const hubStatus=document.createElement('p');
+ if(hubStatus.style)hubStatus.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5';
+ hubStatus.textContent='☁️ Chmura: moduł kodu istnieje, stan pracy niepotwierdzony.\\n💻 Komputer: moduł kodu istnieje, stan pracy niepotwierdzony.\\n📬 Skrzynka RX: brak potwierdzonego połączenia.\\n🐜 Mrówki: status testów do sprawdzenia.';
+ const hubRefresh=document.createElement('button');hubRefresh.type='button';hubRefresh.textContent='↻ Sprawdź raporty modułów';
+ if(hubRefresh.style)hubRefresh.style.cssText='padding:9px;border-radius:9px;min-height:40px';
+ if(typeof hub.append==='function')hub.append(hubTitle,hubStatus,hubRefresh);
+ if(taskResult?.parentNode&&typeof taskResult.parentNode.insertBefore==='function')taskResult.parentNode.insertBefore(hub,taskResult);
+ hubRefresh.addEventListener('click',async()=>{
+  hubRefresh.disabled=true;hubStatus.textContent='Sprawdzam raporty CI…';
+  try{
+   const response=await fetch('/api/rx/modules',{cache:'no-store'});
+   if(!response.ok)throw Error('ci_unavailable');
+   const data=await response.json();
+   if(!Array.isArray(data.runs))throw Error('invalid_report');
+   const format=(id,label)=>{
+    const item=data.runs.find(x=>x.id===id);
+    return label+': '+(!item?'⚪ brak raportu':item.conclusion==='success'?'🟢 test OK (nie potwierdza pracy ciągłej)':item.conclusion==='failure'?'🔴 test nieudany':item.status==='in_progress'?'🟡 test trwa':'⚪ wynik niepotwierdzony');
+   };
+   hubStatus.textContent='☁️ Chmura: kod RX Cloud / Mega Cloud; stan pracy niepotwierdzony.\\n💻 Komputer: kod RX Computer; stan pracy niepotwierdzony.\\n📬 Skrzynka RX: połączenie niepotwierdzone.\\n'+format('rx-queen','👑 Królowa')+'\\n'+format('rx-ant-task-board','🐜 Mrówki');
+  }catch(_){hubStatus.textContent='⚪ Raporty chwilowo niedostępne. Nie można potwierdzić stanu modułów.';}
+  finally{hubRefresh.disabled=false;}
+ });
+
  // Queen CI triage: read-only evidence, never dispatches jobs or changes code.
  const ciButton=document.createElement('button');
  ciButton.type='button';
