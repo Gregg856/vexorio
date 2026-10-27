@@ -36,13 +36,13 @@
   const state=document.createElement('small');state.textContent=names[status];state.style.color='#84dce6';
   a.append(title,desc,state);list.append(a);
  }
- root.replaceChildren(catalog);
  // Mobile-first dashboard: keep monitoring accessible, collapse the long catalog.
  const catalog=document.createElement('details');
  const catalogTitle=document.createElement('summary');
  catalogTitle.textContent='🧩 Pokaż wszystkie programy RX ('+programs.length+')';
  if(catalogTitle.style)catalogTitle.style.cssText='cursor:pointer;padding:10px 4px;font-weight:700';
  if(typeof catalog.append==='function')catalog.append(catalogTitle,list);
+ root.replaceChildren(catalog);
  if(root.style)root.style.cssText='display:flex;flex-direction:column;gap:8px';
  const catalogSection=document.getElementById('rxProgramsCatalog');
  const hero=document.querySelector?.('.rx-bibi-hero');
