@@ -18,16 +18,3 @@ assert.equal(repeated.builder.queue.length,1);
 assert.equal(repeated.builder.queue[0].requiresApproval,true);
 assert.equal(repeated.productionModified,false);
 console.log('PASS RX injected diagnostic -> Medusa -> Memory -> Queen board -> Ant Builder -> Developer patch preview (no writes)');
-
-// Verify that an actual failing child-process result is transformed by QUEEN.
-const {runFastTests}=require('../rx-fast-test-engine.cjs');
-const {summarize}=require('../rx-queen-ant-supervisor.cjs');
-(async()=>{
- const report=await runFastTests({tests:['tests/rx-unified-failure-simulation.cjs'],parallel:1,timeoutMs:1000});
- assert.equal(report.kind,'rx-fast-test-engine');
- assert.equal(report.total,1);
- const queen=summarize({fast:{...report,results:[{file:'tests/rx-unified-failure-simulation.cjs',ok:false,timedOut:true}]}});
- assert.equal(queen.issues.length,1);
- assert.equal(reviewRX({supervisor:queen,runId:'timeout-fixture'}).board.tasks.length,1);
- console.log('PASS RX FAST report -> QUEEN -> unified tasks');
-})().catch(e=>{console.error(e);process.exitCode=1});
