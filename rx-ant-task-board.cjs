@@ -3,6 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const PRIORITY={critical:0,high:1,medium:2,low:3};
+const {allocate}=require('./rx-bibi-budget.cjs');
 function buildBoard(supervisor,{maxTasks=50}={}){
  if(!supervisor||supervisor.kind!=='rx-queen-ant-supervisor'||!Array.isArray(supervisor.issues)||supervisor.issues.length>500||!Number.isSafeInteger(maxTasks)||maxTasks<1||maxTasks>100)throw Error('Invalid supervisor report or task limit');
  const tasks=new Map();
@@ -19,8 +20,10 @@ function buildBoard(supervisor,{maxTasks=50}={}){
 if(require.main===module){
  const input=path.join('rx-bibi-reports','rx-queen-ant-supervisor.json');
  const board=buildBoard(JSON.parse(fs.readFileSync(input,'utf8')));
+ const budget=allocate(board);
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-task-board.json',JSON.stringify(board,null,2)+'\n');
+ fs.writeFileSync('rx-bibi-reports/rx-bibi-budget.json',JSON.stringify(budget,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow');
 }
