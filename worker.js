@@ -40,8 +40,8 @@ export default {
       const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
       if(request.method!=='GET')return new Response(JSON.stringify({ok:false,error:'method_not_allowed'}),{status:405,headers:{...headers,Allow:'GET'}});
       const modules=[
-        {id:'rx-medusa',name:'RX Meduza',file:'rx-bibi-unified.yml'},
-        {id:'rx-ant-task-board',name:'RX Mrówki',file:'rx-bibi-unified.yml'},
+        {id:'rx-medusa',name:'RX Meduza',file:'rx-medusa-ant.yml'},
+        {id:'rx-ant-task-board',name:'RX Mrówki',file:'rx-medusa-ant.yml'},
         {id:'rx-queen',name:'RX Queen',file:'rx-queen-dashboard.yml'},
         {id:'rx-bibi-ai',name:'RX BIBI AI',file:'rx-bibi-dashboard-summary.yml'},
         {id:'rx-cloud-computer',name:'RX Mega Cloud',file:'checks.yml'}
