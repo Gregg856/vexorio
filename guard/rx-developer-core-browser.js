@@ -80,7 +80,7 @@ function analyzeJavaScript(source){
  ];
  const extraMatches=[];
  for(const rule of computedWrites){
-  const rx=new RegExp('\\\\b([A-Za-z_$][\\\\w$]*)\\\\s*\\\\[\\\\s*([\\"\\\'])'+rule.property+'\\\\2\\\\s*\\\\]\\\\s*=', 'g');
+  const rx=new RegExp(String.raw`\b([A-Za-z_$][\w$]*)\s*\[\s*(['"])`+rule.property+String.raw`\2\s*\]\s*=`, 'g');
   let match;
   while((match=rx.exec(source))!==null){
    const at=match.index;
