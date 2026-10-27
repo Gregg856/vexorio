@@ -192,7 +192,7 @@ function analyzeJavaScript(source){
     const shadowPattern=new RegExp('\\b(?:const|let|var)\\s+'+shadowName+'\\s*=\\s*\\{');
     if(shadowPattern.test(prefix))continue;
     // A parameter with the same name shadows the browser global inside its function body.
-    const paramShadow=new RegExp(String.raw`\\bfunction\\s*[A-Za-z_$\\w]*\\s*\\([^)]*\\b`+shadowName+String.raw`\\b[^)]*\\)\\s*\\{`,'g');
+    const paramShadow=new RegExp(String.raw`\bfunction\s*[A-Za-z_$\w]*\s*\([^)]*\b`+shadowName+String.raw`\b[^)]*\)\s*\{`,'g');
     let localFunction,insideShadow=false;
     while((localFunction=paramShadow.exec(masked))!==null){
      const open=masked.indexOf('{',localFunction.index+localFunction[0].length-1);
