@@ -46,10 +46,11 @@
   .then(r=>{if(!r.ok)throw Error('http_status');return r.json();})
   .then(data=>{
    if(!Array.isArray(data.runs))throw Error('invalid_response');
-   status.textContent=data.degraded?'⚠️ Raport GitHub chwilowo niedostępny':'📡 Ostatnie uruchomienia GitHub Actions (nie status pracy ciągłej)';
+   const unavailable=data.runs.some(run=>run.status==='unavailable'||run.result===null);
+   status.textContent=data.degraded?'⚠️ Raport GitHub częściowo niedostępny':unavailable?'⚠️ Raport częściowy: nie wszystkie statusy są dostępne':'📡 Ostatnie uruchomienia GitHub Actions (nie status pracy ciągłej)';
    for(const run of data.runs){
     const line=document.createElement('p');
-    const state=run.result==='success'?'🟢 Test OK':run.result==='failure'?'🔴 Błąd':run.status==='in_progress'?'🟡 W trakcie':run.status==='queued'?'⏳ W kolejce':'⚪ Brak danych';
+    const state=run.result==='success'?'🟢 Test OK':run.result==='failure'?'🔴 Błąd':run.status==='in_progress'?'🟡 W trakcie':run.status==='queued'?'⏳ W kolejce':run.status==='unavailable'?'⚪ Status niedostępny':'⚪ Brak danych';
     line.textContent=state+' — '+String(run.name||'RX')+' #'+String(run.number||'—');
     if(typeof run.link==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(run.link)){
      const a=document.createElement('a');a.href=run.link;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' · raport';line.append(a);
