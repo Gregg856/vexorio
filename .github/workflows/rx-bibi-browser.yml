@@ -44,6 +44,8 @@ on:
       - 'rx-ant-ai-evaluator.cjs'
       - 'rx-queen-ant-supervisor.cjs'
       - 'rx-ant-task-board.cjs'
+      - 'rx-ant-builder.cjs'
+      - 'tests/rx-ant-builder.cjs'
       - 'rx-ant-academy-ci.cjs'
       - 'tests/rx-ant-academy-ci.cjs'
       - 'rx-bibi-budget.cjs'
@@ -259,6 +261,9 @@ jobs:
       - name: RX MRÓWKI — zaplanuj kolejne zadania
         if: always()
         run: node rx-ant-task-board.cjs
+      - name: RX ANT BUILDER — przygotuj zadania budowy bez wdrażania
+        if: always()
+        run: node rx-ant-builder.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:
