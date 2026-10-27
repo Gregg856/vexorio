@@ -13,3 +13,14 @@ Stan: plan do przeglądu, bez merge/deploy i bez zmiany reguł bezpieczeństwa.
 - BIBI: ostatni pełny przebieg niepotwierdzony, nie traktować pending/cancelled jako sukcesu.
 
 Kryteria zamknięcia: brak regresji w panelu; szybkie testy RX zielone; właściwy audyt Strażaka zielony; pełny BIBI potwierdzony; brak zmian produkcyjnych bez osobnej zgody.
+
+## Potwierdzona diagnoza workflow
+
+- Workflow: `.github/workflows/guard-worker.yml` (`Strazak GitHub Worker — safe audit`).
+- Trigger `pull_request.paths` obejmuje `guard-*.js`. W PR #36 zmieniony jest `guard-rx-live-command-center.js`, dlatego uruchomienie jest oczekiwane.
+- Krok `Verify pull request change boundaries` stosuje `github.rest.pulls.listFiles` do **całego PR**, nie tylko do plików Guard.
+- Allowlist obejmuje `guard-*.js`, `guard/**/*.js|cjs` oraz `tests/guard-*.test.js|cjs`. Pliki RX i `guard-lab.html` nie są dopuszczone.
+- Potwierdzenie: run `40491653385`, krok 3 zakończony błędem; dalsze kroki testowe pominięte. Nie jest to dowód awarii kodu RX.
+- Docelowy rozdział: osobny Guard-only PR z wyłącznie dopuszczonymi plikami; osobny RX PR bez plików wyzwalających Guard. Dla `guard-lab.html` należy jawnie ustalić osobny UI/integration PR i jego testy, bo nie jest na liście Guard.
+- Przenoszenie zmian wymaga zachowania zależności między HTML a JS. Najpierw przygotować niezależne commity/gałęzie i testy; dopiero później aktualizować PR #36. Nie usuwać plików z istniejącego PR bez sprawdzenia integracji.
+- Nie obchodzić walidacji przez zmianę nazw plików, ukrywanie zmian lub wyłączanie wymaganego checka.
