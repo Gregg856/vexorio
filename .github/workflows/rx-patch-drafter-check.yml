@@ -6,6 +6,8 @@ on:
       - 'rx-developer-patch-bridge.cjs'
       - 'rx-unified-review.cjs'
       - 'rx-bibi-unified-adapter.cjs'
+      - 'rx-source-reader.cjs'
+      - 'tests/rx-source-reader.cjs'
       - 'tests/rx-bibi-unified-adapter.cjs'
       - 'tests/rx-unified-review.cjs'
       - 'tests/rx-unified-security-audit.cjs'
@@ -32,3 +34,4 @@ jobs:
       - run: node --check rx-bibi-unified-adapter.cjs
       - run: node tests/rx-bibi-unified-adapter.cjs
       - run: node tests/rx-unified-security-audit.cjs
+      - run: node tests/rx-source-reader.cjs
