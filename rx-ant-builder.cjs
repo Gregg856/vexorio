@@ -9,7 +9,7 @@ function draftTestSpecification(task){
 function generateRegressionTestDraft(task){
  if(!task||typeof task.target!=='string'||typeof task.request!=='string')throw Error('Invalid draft task');
  const target=task.target.slice(0,120);
- const request=task.request.replace(/[^a-zA-Z0-9 .,:_-]/g,' ').replace(/\\s+/g,' ').slice(0,80);
+ const request=task.request.replace(/[^a-zA-Z0-9 .,:_-]/g,' ').replace(/\s+/g,' ').slice(0,80);
  // Generated code is a deliberately skipped test, not a fabricated passing assertion.
  const source=["'use strict';","const {test}=require('node:test');","test.skip("+JSON.stringify('RX draft: '+target)+",()=>{","  // TODO: reproduce "+request.replace(/[\r\n]/g,' '),"});",""].join(String.fromCharCode(10));
  return {filename:'rx-generated-regression-draft.cjs',source,status:'draft_requires_implementation',requiresApproval:true};
