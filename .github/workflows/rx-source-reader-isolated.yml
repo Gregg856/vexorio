@@ -1,0 +1,23 @@
+name: RX source reader isolated checks
+on:
+  push:
+    branches:
+      - rx/source-reader-isolated
+  pull_request:
+    paths:
+      - rx-source-reader.cjs
+      - tests/rx-source-reader-isolated.cjs
+      - .github/workflows/rx-source-reader-isolated.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: node --check rx-source-reader.cjs
+      - run: node --check tests/rx-source-reader-isolated.cjs
+      - run: node tests/rx-source-reader-isolated.cjs
