@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {inspectAndPropose}=require('../rx-developer-patch-bridge.cjs');
+const r=inspectAndPropose({target:'src/example.js',source:'const a=1;\ndebugger;\n'});
+assert.equal(r.productionModified,false);
+assert.equal(r.requiresApproval,true);
+assert.ok(Array.isArray(r.analysis.findings));
+assert.equal(r.suggestions.length,1);
+assert.equal(r.suggestions[0].rule,'remove-debugger');
+assert.equal(r.suggestions[0].preview.preview,'const a=1;\n\n');
+assert.equal(inspectAndPropose({target:'src/example.js',source:'const a=1;'}).suggestions.length,0);
+assert.equal(inspectAndPropose({target:'src/example.js',source:'debugger;\ndebugger;'}).suggestions.length,0);
+assert.equal(inspectAndPropose({target:'.github/workflows/test.js',source:'debugger;'}).suggestions.length,0);
+console.log('PASS RX unified diagnostics + review-only patch suggestions');
