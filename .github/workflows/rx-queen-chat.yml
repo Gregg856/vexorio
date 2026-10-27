@@ -1,0 +1,21 @@
+name: RX Queen Chat — isolated CI
+on:
+  pull_request:
+    paths:
+      - 'rx-queen-chat-router.cjs'
+      - 'tests/rx-queen-chat-router.cjs'
+      - '.github/workflows/rx-queen-chat.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check rx-queen-chat-router.cjs
+      - run: node tests/rx-queen-chat-router.cjs
