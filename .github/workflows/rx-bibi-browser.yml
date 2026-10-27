@@ -46,6 +46,7 @@ on:
       - 'rx-ant-task-board.cjs'
       - 'rx-ant-builder.cjs'
       - 'rx-unified-review.cjs'
+      - 'tests/rx-unified-failure-simulation.cjs'
       - 'rx-bibi-unified-adapter.cjs'
       - 'rx-developer-patch-bridge.cjs'
       - 'rx-patch-drafter.cjs'
@@ -274,6 +275,9 @@ jobs:
       - name: RX UNIFIED — test integracji raportów BIBI
         if: always()
         run: node tests/rx-bibi-unified-adapter.cjs
+      - name: RX UNIFIED — symulacja awarii i powracającego błędu
+        if: always()
+        run: node tests/rx-unified-failure-simulation.cjs
       - name: RX UNIFIED — przegląd raportów bez wdrażania
         if: always()
         run: node rx-bibi-unified-adapter.cjs
