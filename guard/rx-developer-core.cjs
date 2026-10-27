@@ -178,6 +178,17 @@ function analyzeJavaScript(source){
     const prefix=masked.slice(0,offset);
     const shadowPattern=new RegExp('\\b(?:const|let|var)\\s+'+shadowName+'\\s*=\\s*\\{');
     if(shadowPattern.test(prefix))continue;
+    // A parameter with the same name shadows the browser global inside its function body.
+    const paramShadow=new RegExp(String.raw`\\bfunction\\s*[A-Za-z_$\\w]*\\s*\\([^)]*\\b`+shadowName+String.raw`\\b[^)]*\\)\\s*\\{`,'g');
+    let localFunction,insideShadow=false;
+    while((localFunction=paramShadow.exec(masked))!==null){
+     const open=masked.indexOf('{',localFunction.index+localFunction[0].length-1);
+     if(open>=offset)continue;
+     let depth=1,end=open+1;
+     for(;end<masked.length&&depth;end++){if(masked[end]==='{')depth++;else if(masked[end]==='}')depth--;}
+     if(offset<end){insideShadow=true;break;}
+    }
+    if(insideShadow)continue;
    }
    // A method named eval on an object is not the global eval function.
    if(rule.id==='RX001'&&/^eval\s*\(/.test(match[0])){
