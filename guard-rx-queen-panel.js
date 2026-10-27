@@ -36,7 +36,7 @@
     const item=data.runs.find(x=>x.id===id);
     return label+': '+(!item?'⚪ brak raportu':item.conclusion==='success'?'🟢 test OK (nie potwierdza pracy ciągłej)':item.conclusion==='failure'?'🔴 test nieudany':item.status==='in_progress'?'🟡 test trwa':'⚪ wynik niepotwierdzony');
    };
-   hubStatus.textContent='☁️ Chmura: kod RX Cloud / Mega Cloud; stan pracy niepotwierdzony.\\n💻 Komputer: kod RX Computer; stan pracy niepotwierdzony.\\n📬 Skrzynka RX: połączenie niepotwierdzone.\\n'+format('rx-queen','👑 Królowa')+'\\n'+format('rx-ant-task-board','🐜 Mrówki');
+   hubStatus.textContent='☁️ Chmura: kod RX Cloud / Mega Cloud; stan pracy niepotwierdzony.\\n💻 Komputer: kod RX Computer; stan pracy niepotwierdzony.\\n📬 Skrzynka RX: połączenie niepotwierdzone.\\n'+format('rx-queen','👑 Królowa')+'\\n'+format('rx-medusa','🐙 Meduza')+'\\n'+format('rx-ant-task-board','🐜 Mrówki');
   }catch(_){hubStatus.textContent='⚪ Raporty chwilowo niedostępne. Nie można potwierdzić stanu modułów.';}
   finally{hubRefresh.disabled=false;}
  });
