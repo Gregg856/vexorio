@@ -47,8 +47,15 @@ if(require.main===module){
  try{memory=JSON.parse(fs.readFileSync(path.join('rx-bibi-reports','rx-signal-memory.json'),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;}
  const board=buildBoard(JSON.parse(fs.readFileSync(input,'utf8')),{medusa,memory});
  const budget=allocate(board);
+ const runId=String(process.env.GITHUB_RUN_ID||'local').replace(/[^-a-zA-Z0-9_]/g,'').slice(0,80)||'local';
+ let previous=null;
+ try{previous=JSON.parse(fs.readFileSync(path.join('rx-queue-cache','history.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}
+ const reviewQueue=buildReviewQueue(board,{previous,runId});
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-task-board.json',JSON.stringify(board,null,2)+'\n');
+ fs.writeFileSync('rx-bibi-reports/rx-ant-review-queue.json',JSON.stringify(reviewQueue,null,2)+'\n');
+ fs.mkdirSync('rx-queue-cache',{recursive:true});
+ fs.writeFileSync('rx-queue-cache/history.json',JSON.stringify(reviewQueue,null,2)+'\n');
  fs.writeFileSync('rx-bibi-reports/rx-bibi-budget.json',JSON.stringify(budget,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
