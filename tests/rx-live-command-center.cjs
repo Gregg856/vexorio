@@ -38,3 +38,9 @@ assert.ok(script.includes('nie został opublikowany jako plik strony'));
 assert.ok(script.includes('task.requiresApproval!==true'));
 assert.ok(script.includes('task.executed!==false'));
 console.log('PASS Queen queue UI requires actual read-only report and explicit approvals');
+
+assert.ok(script.includes('actions/runs/'));
+assert.ok(script.includes('rx-bibi-mobile-report'));
+assert.ok(script.includes('artifact.expired')||script.includes('!a.expired'));
+assert.ok(script.includes('Zawartość kolejki nie jest dostępna'));
+console.log('PASS Queen verifies GitHub BIBI artifact metadata without claiming report contents');
