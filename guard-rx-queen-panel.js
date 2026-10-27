@@ -43,6 +43,32 @@
   finally{hubRefresh.disabled=false;}
  });
 
+
+ // RX DIRECT: read-only public GitHub inbox. Commands are never executed or approved automatically.
+ const directButton=document.createElement('button');
+ directButton.type='button';directButton.textContent='📬 Pobierz polecenia od ChatGPT';
+ const directStatus=document.createElement('p');
+ directStatus.style.whiteSpace='pre-wrap';
+ directStatus.textContent='Skrzynka RX DIRECT: oczekuje na sprawdzenie.';
+ hub.append(directButton,directStatus);
+ directButton.addEventListener('click',async()=>{
+  directButton.disabled=true;directStatus.textContent='Sprawdzam skrzynkę RX…';
+  try{
+   const response=await fetch('/rx-direct-inbox.json',{cache:'no-store'});
+   if(!response.ok)throw Error('inbox_unavailable');
+   const data=await response.json();
+   if(data?.schema!==1||data.kind!=='rx-direct-inbox'||!Array.isArray(data.commands)||data.commands.length>20)throw Error('invalid_inbox');
+   const seen=new Set();
+   for(const item of data.commands){
+    if(!item||typeof item.id!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(item.id)||seen.has(item.id)||typeof item.description!=='string'||item.description.length<1||item.description.length>2000||item.status!=='needs_review')throw Error('invalid_command');
+    seen.add(item.id);
+   }
+   directStatus.textContent=data.commands.length?'📬 Polecenia do przejrzenia: '+data.commands.length+'\\n'+data.commands.map(x=>'• '+x.id+': '+x.description).join('\\n'):'📭 Skrzynka RX jest pusta.';
+   if(data.commands.length&&taskInput){taskInput.value=data.commands[0].description;resetTask();directStatus.textContent+='\\nPierwsze polecenie skopiowano do analizy. Kliknij Analizuj; niczego nie uruchomiono.';}
+  }catch(_){directStatus.textContent='⚪ Nie można potwierdzić skrzynki RX. Niczego nie wykonano.';}
+  finally{directButton.disabled=false;}
+ });
+
  // Refresh once on opening Queen's tab; keep the manual refresh available.
  let hubLoaded=false;
  const queenTab=document.getElementById('guardTabQueen');
