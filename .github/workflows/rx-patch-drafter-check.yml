@@ -4,6 +4,8 @@ on:
     paths:
       - 'rx-patch-drafter.cjs'
       - 'rx-developer-patch-bridge.cjs'
+      - 'rx-unified-review.cjs'
+      - 'tests/rx-unified-review.cjs'
       - 'tests/rx-developer-patch-bridge.cjs'
       - 'tests/rx-patch-drafter.cjs'
       - '.github/workflows/rx-patch-drafter-check.yml'
@@ -22,3 +24,5 @@ jobs:
 
       - run: node --check rx-developer-patch-bridge.cjs
       - run: node tests/rx-developer-patch-bridge.cjs
+      - run: node --check rx-unified-review.cjs
+      - run: node tests/rx-unified-review.cjs
