@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const {buildDeveloperReviewQueue}=require('../rx-queen-developer-queue.cjs');
+const root=fs.mkdtempSync(path.join(os.tmpdir(),'rx-queen-bridge-'));
+const src=path.join(root,'src');
+const board={kind:'rx-ant-task-board',tasks:[{target:'src/fixture.js',priority:'high',action:'inspect_failed_test'}]};
+try{
+ fs.mkdirSync(src);
+ const file=path.join(src,'fixture.js');
+ const original='const safe=true;\ndebugger;\n';
+ fs.writeFileSync(file,original);
+ const result=buildDeveloperReviewQueue({board,root});
+ assert.equal(result.reviews.length,1);
+ assert.equal(result.reviews[0].suggestions.length,1);
+ assert.equal(result.reviews[0].approved,false);
+ assert.equal(result.reviews[0].executed,false);
+ assert.equal(result.reviews[0].suggestions[0].preview.applied,false);
+ assert.equal(result.productionModified,false);
+ assert.equal(result.autoFixesApplied,0);
+ assert.equal(fs.readFileSync(file,'utf8'),original);
+ assert.throws(()=>buildDeveloperReviewQueue({board,root,maxReviews:21}),/Invalid RX task board/);
+ fs.rmSync(file);
+ fs.symlinkSync(path.join(os.tmpdir(),'rx-queen-outside.js'),file);
+ const blocked=buildDeveloperReviewQueue({board,root});
+ assert.equal(blocked.reviews.length,0);
+ assert.equal(blocked.sourceLoad.loaded,0);
+ console.log('PASS Queen -> Developer review queue, no writes, bounded, symlink-safe');
+}finally{fs.rmSync(root,{recursive:true,force:true});}

@@ -1,0 +1,25 @@
+name: RX Queen Developer Queue — isolated CI
+on:
+  pull_request:
+    paths:
+      - 'rx-queen-developer-queue.cjs'
+      - 'tests/rx-queen-developer-queue.cjs'
+      - '.github/workflows/rx-queen-developer-queue.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          node --check rx-queen-developer-queue.cjs
+          node --check tests/rx-queen-developer-queue.cjs
+      - name: Queen to Developer integration
+        run: node tests/rx-queen-developer-queue.cjs
