@@ -204,11 +204,11 @@
  // Mobile quick commands run only on explicit user click and use the normal safe chat handler.
  const quick=document.createElement('div');
  if(typeof quick.setAttribute==='function')quick.setAttribute('aria-label','Szybkie polecenia RX');
- if(quick.style)quick.style.cssText='display:flex;gap:7px;flex-wrap:wrap;margin:8px 0;padding:4px 0';
+ if(quick.style)quick.style.cssText='display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:4px 0;padding:0;width:100%;box-sizing:border-box';
  for(const [label,command] of [['👑 Raport Królowej','raport królowej'],['🐜 Status mrówek','status mrówek'],['🛡️ Diagnostyka RX','diagnostyka rx']]){
   const button=document.createElement('button');
   button.type='button';button.textContent=label;
-  if(button.style)button.style.cssText='border:1px solid #42798c;border-radius:12px;background:#143648;color:#e3faff;padding:10px 12px;min-height:42px;cursor:pointer;font-size:13px';
+  if(button.style)button.style.cssText='border:1px solid #42798c;border-radius:9px;background:#143648;color:#e3faff;padding:7px 4px;min-height:38px;cursor:pointer;font-size:clamp(10px,2.7vw,13px);line-height:1.25;white-space:normal;min-width:0';
   if(typeof button.addEventListener==='function')button.addEventListener('click',()=>{input.value=command;if(typeof form.requestSubmit==='function')form.requestSubmit();});
   if(typeof quick.append==='function')quick.append(button);
  }
