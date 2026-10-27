@@ -70,6 +70,8 @@ jobs:
         run: node tests/rx-money-engine.cjs
       - name: Sprawdź RX EVOLUTION i MONEY RADAR
         run: node tests/rx-evolution-radar.cjs
+      - name: Sprawdź RX AI CORE 1.0
+        run: node tests/rx-ai-core.cjs
       - name: Sprawdź RX ANT LAB
         run: node tests/rx-ant-lab.cjs
       - name: RX ANT LAB — eksperyment i raport
