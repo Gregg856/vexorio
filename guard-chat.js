@@ -213,6 +213,13 @@
   if(typeof quick.append==='function')quick.append(button);
  }
  if(messages.parentNode&&typeof messages.parentNode.insertBefore==='function')messages.parentNode.insertBefore(quick,messages);
+
+ // Mobile command center: show composer above long chat history without moving the desktop layout.
+ // CSS ordering keeps the original DOM/form semantics and the existing Android keyboard mode.
+ const mobileLayout=document.createElement('style');
+ mobileLayout.textContent='@media(max-width:700px){#guardPanelChat{display:flex;flex-direction:column}#guardPanelChat>.guard-chat-hint,#guardPanelChat>.guard-rx-status{display:none}#guardPanelChat>#guardChatForm{order:2;position:sticky;top:0;z-index:3;background:#0b1b2a;padding:6px 0;margin:4px 0}#guardPanelChat>#guardChatMessages{order:3;min-height:160px;max-height:55dvh;overflow-y:auto}#guardPanelChat>h2{order:0}#guardPanelChat>[aria-label="Szybkie polecenia RX"]{order:1}body.guard-rx-typing #guardPanelChat>#guardChatMessages{flex:1 1 auto;max-height:none;min-height:0}body.guard-rx-typing #guardPanelChat>#guardChatForm{position:static}}';
+ if(document.head&&typeof document.head.append==='function')document.head.append(mobileLayout);
+
  // RX alert watch runs only while this page is open; no hidden background monitoring.
  let lastAlertKey='';
  async function checkRXAlerts(){
