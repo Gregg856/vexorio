@@ -38,7 +38,7 @@ if(require.main===module){
  const cosmos=buildCosmosQueue(board);
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-task-board.json',JSON.stringify(board,null,2)+'\n');
- fs.writeFileSync('rx-bibi-reports/rx-cosmos-ant-queue.json',JSON.stringify(cosmos,null,2)+'\\n'.replace('\\\\n','\\n'));
+ fs.writeFileSync('rx-bibi-reports/rx-cosmos-ant-queue.json',JSON.stringify(cosmos,null,2)+'\n');
  fs.writeFileSync('rx-bibi-reports/rx-bibi-budget.json',JSON.stringify(budget,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
