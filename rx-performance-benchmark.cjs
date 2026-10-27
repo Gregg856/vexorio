@@ -76,6 +76,26 @@ const maskAB=largeSources.map(({lines,text})=>{
  const oldMs=median(oldSamples),newMs=median(newSamples);
  return {lines,oldMs:Number(oldMs.toFixed(5)),newMs:Number(newMs.toFixed(5)),ratio:Number((newMs/oldMs).toFixed(3))};
 });
+// Compare lexer behavior on diverse source syntax, not only repetitive safe lines.
+const syntaxCases=[
+ {name:'strings-and-comments',text:("const msg='// not a comment'; // eval(hidden)\nconst s=\"/* literal */\";\n").repeat(80)},
+ {name:'templates-and-interpolation',text:("const t=`hello ${value + 1} world`;\nconst nested=`x${{a:1}.a}y`;\n").repeat(80)},
+ {name:'regex-and-escapes',text:("const re=/https?:\\/\\/[^ ]+/g;\nconst escaped='\\\\n\\\\t';\n").repeat(80)},
+ {name:'mixed-risk-patterns',text:("eval(userInput); // eval(fake)\nconst value=localStorage.getItem('key');\n").repeat(80)}
+];
+const maskSyntaxAB=syntaxCases.map(({name,text})=>{
+ assert.equal(legacyMask(text),maskJavaScript(text),'Mask parity for '+name);
+ for(let i=0;i<20;i++){legacyMask(text);maskJavaScript(text);}
+ const oldSamples=[],newSamples=[];
+ const run=fn=>{const t=performance.now();for(let i=0;i<20;i++)fn(text);return (performance.now()-t)/20;};
+ for(let i=0;i<7;i++){
+  if(i%2===0){oldSamples.push(run(legacyMask));newSamples.push(run(maskJavaScript));}
+  else{newSamples.push(run(maskJavaScript));oldSamples.push(run(legacyMask));}
+ }
+ const median=a=>a.sort((x,y)=>x-y)[3];
+ const oldMs=median(oldSamples),newMs=median(newSamples);
+ return {name,bytes:Buffer.byteLength(text),oldMs:Number(oldMs.toFixed(5)),newMs:Number(newMs.toFixed(5)),ratio:Number((newMs/oldMs).toFixed(3))};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -89,7 +109,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
