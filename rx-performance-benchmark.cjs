@@ -142,6 +142,24 @@ const memoryRepresentation=memoryCases.map(({name,bytes})=>{
  assert.equal(child.status,0,'Representation probe failed: '+child.stderr);
  return {name,bytes,...JSON.parse(child.stdout),note:'Heap-only measurements do not include typed-array external backing memory; not a direct total-memory comparison.'};
 });
+// Measure heap and external memory together in separate processes, including text conversion.
+const memoryTotal=memoryCases.map(({name,bytes})=>{
+ const probe=kind=>{
+  const script=[
+   "const source=('const safe = 1;\\nconsole.debug(safe);\\n// eval(secret)\\n').repeat("+Math.floor(bytes/53)+");",
+   "for(let i=0;i<10;i++){const a="+(kind==='array'?"Array(source.length).fill(' ')":"new Uint16Array(source.length)")+";void a.length;}",
+   "if(global.gc)global.gc();",
+   "const before=process.memoryUsage();const start=performance.now();",
+   kind==='array'?"const buffer=Array(source.length).fill(' ');const result=buffer.join('');":"const buffer=new Uint16Array(source.length);buffer.fill(32);const result=Array.from(buffer,x=>String.fromCharCode(x)).join('');",
+   "const elapsedMs=performance.now()-start;const after=process.memoryUsage();",
+   "process.stdout.write(JSON.stringify({length:result.length,elapsedMs,heapDeltaBytes:after.heapUsed-before.heapUsed,externalDeltaBytes:after.external-before.external,arrayBufferDeltaBytes:after.arrayBuffers-before.arrayBuffers,rssDeltaBytes:after.rss-before.rss}));"
+  ].join('');
+  const child=spawnSync(process.execPath,['--expose-gc','-e',script],{cwd:process.cwd(),encoding:'utf8',timeout:15000,maxBuffer:1024*1024});
+  assert.equal(child.status,0,'Total memory probe failed: '+child.stderr);
+  return JSON.parse(child.stdout);
+ };
+ return {name,bytes,array:probe('array'),typed:probe('typed'),note:'One-shot allocation plus conversion; RSS and heap are noisy and overlap external/arrayBuffers, so do not sum these metrics.'};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -155,7 +173,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
