@@ -213,6 +213,21 @@
   if(typeof quick.append==='function')quick.append(button);
  }
  if(messages.parentNode&&typeof messages.parentNode.insertBefore==='function')messages.parentNode.insertBefore(quick,messages);
+
+ // On small screens keep the composer above the scrollable conversation.
+ // Move the existing form rather than cloning it, preserving submit listeners and accessibility.
+ if(typeof window.matchMedia==='function'&&window.matchMedia('(max-width:700px)').matches&&
+    messages.parentNode&&form.parentNode===messages.parentNode&&
+    typeof messages.parentNode.insertBefore==='function'){
+  messages.parentNode.insertBefore(form,messages);
+  if(messages.style){
+   messages.style.maxHeight='min(48dvh,420px)';
+   messages.style.overflowY='auto';
+   messages.style.minHeight='120px';
+  }
+  if(form.style)form.style.margin='6px 0 8px';
+ }
+
  // RX alert watch runs only while this page is open; no hidden background monitoring.
  let lastAlertKey='';
  async function checkRXAlerts(){
