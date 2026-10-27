@@ -92,6 +92,18 @@ function analyzeJavaScript(source){
   }
  }
 
+ // Computed calls: literal property strings are masked, so verify executable prefixes.
+ const computedCalls=[
+  {pattern:/\b(?:globalThis|window)\s*\[\s*(['"])eval\1\s*\]\s*\(/g,id:'RX001',severity:'high',message:'Pośrednie wywołanie eval() wykonuje kod.',advice:'Unikaj dynamicznego wykonywania tekstu.'},
+  {pattern:/\bdocument\s*\[\s*(['"])write\1\s*\]\s*\(/g,id:'RX006',severity:'medium',message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'},
+  {pattern:/\bconsole\s*\[\s*(['"])log\1\s*\]\s*\(/g,id:'RX005',severity:'low',message:'Logowanie może ujawnić dane.',advice:'Sprawdź logowanie sekretów.'}
+ ];
+ for(const rule of computedCalls){let m;while((m=rule.pattern.exec(source))!==null){
+  const opening=source.indexOf('[',m.index);
+  if(masked.slice(m.index,opening).trim()!==source.slice(m.index,opening).trim()||masked[opening]!=='[')continue;
+  extraMatches.push({offset:m.index,rule});
+ }}
+
  // Conservative detection of direct, unmodified aliases within the same source.
  // No interprocedural or control-flow claim: reassignment invalidates an alias.
  const indirectEval=/\(\s*0\s*,\s*eval\s*\)\s*\(/g;
