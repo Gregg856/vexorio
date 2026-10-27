@@ -33,4 +33,28 @@
   a.append(title,desc,state);list.append(a);
  }
  root.replaceChildren(list);
+ const status=document.createElement('p');
+ status.id='rxProgramsLiveStatus';
+ status.setAttribute('role','status');
+ status.textContent='⏳ Odczyt ostatnich testów RX…';
+ root.prepend(status);
+ const summary=document.createElement('div');
+ summary.id='rxProgramsLiveRuns';
+ root.insertBefore(summary,list);
+ fetch('/api/rx/direct?command=RX%20STATUS',{cache:'no-store'})
+  .then(r=>{if(!r.ok)throw Error('http_status');return r.json();})
+  .then(data=>{
+   if(!Array.isArray(data.runs))throw Error('invalid_response');
+   status.textContent=data.degraded?'⚠️ Raport GitHub chwilowo niedostępny':'📡 Ostatnie uruchomienia GitHub Actions (nie status pracy ciągłej)';
+   for(const run of data.runs){
+    const line=document.createElement('p');
+    const state=run.result==='success'?'🟢 Test OK':run.result==='failure'?'🔴 Błąd':run.status==='in_progress'?'🟡 W trakcie':run.status==='queued'?'⏳ W kolejce':'⚪ Brak danych';
+    line.textContent=state+' — '+String(run.name||'RX')+' #'+String(run.number||'—');
+    if(typeof run.link==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(run.link)){
+     const a=document.createElement('a');a.href=run.link;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' · raport';line.append(a);
+    }
+    summary.append(line);
+   }
+  }).catch(()=>{status.textContent='⚠️ Nie udało się pobrać statusu testów. Katalog programów pozostaje dostępny.';});
+
 })();
