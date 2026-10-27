@@ -4,10 +4,11 @@ const fs=require('node:fs');
 const path=require('node:path');
 const PRIORITY={critical:0,high:1,medium:2,low:3};
 const {allocate}=require('./rx-bibi-budget.cjs');
-function buildBoard(supervisor,{maxTasks=50}={}){
+function buildBoard(supervisor,{maxTasks=50,medusa=null}={}){
  if(!supervisor||supervisor.kind!=='rx-queen-ant-supervisor'||!Array.isArray(supervisor.issues)||supervisor.issues.length>500||!Number.isSafeInteger(maxTasks)||maxTasks<1||maxTasks>100)throw Error('Invalid supervisor report or task limit');
+ if(medusa&&(!Array.isArray(medusa.signals)||medusa.kind!=='rx-medusa-engine'||medusa.engine!=='RX'||medusa.signals.length>500))throw Error('Invalid RX MEDUSA report');
  const tasks=new Map();
- for(const issue of supervisor.issues){
+ for(const issue of medusa?medusa.signals:supervisor.issues){
   if(!issue||typeof issue.source!=='string'||typeof issue.action!=='string'||typeof issue.target!=='string'||!Object.hasOwn(PRIORITY,issue.priority))throw Error('Invalid issue');
   const source=issue.source.slice(0,40),action=issue.action.slice(0,80),target=issue.target.slice(0,120);
   const id=JSON.stringify([source,action,target]);
@@ -19,12 +20,14 @@ function buildBoard(supervisor,{maxTasks=50}={}){
 }
 if(require.main===module){
  const input=path.join('rx-bibi-reports','rx-queen-ant-supervisor.json');
- const board=buildBoard(JSON.parse(fs.readFileSync(input,'utf8')));
+ let medusa=null;
+ try{medusa=JSON.parse(fs.readFileSync(path.join('rx-bibi-reports','rx-medusa-signals.json'),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;}
+ const board=buildBoard(JSON.parse(fs.readFileSync(input,'utf8')),{medusa});
  const budget=allocate(board);
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-task-board.json',JSON.stringify(board,null,2)+'\n');
  fs.writeFileSync('rx-bibi-reports/rx-bibi-budget.json',JSON.stringify(budget,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
- console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow');
+ console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
 }
 module.exports={buildBoard};
