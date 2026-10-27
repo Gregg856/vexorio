@@ -50,6 +50,9 @@ function pairedBenchmark(rounds=9,iterations=60){
  return {name:'RX Developer indexing A/B',rounds,iterations,legacyMedianMs:Number(legacyMedianMs.toFixed(5)),currentMedianMs:Number(currentMedianMs.toFixed(5)),ratio:Number((currentMedianMs/legacyMedianMs).toFixed(3)),note:'Ratio below 1 suggests improvement; different-process benchmarks are not directly comparable.'};
 }
 const developerAB=pairedBenchmark();
+// Scale analysis with file size; cap iterations to keep CI inexpensive.
+const largeSources=[1000,5000,15000].map(lines=>({lines,text:('const safe = 1;\nconsole.debug(safe);\n// eval(secret)\n').repeat(lines/5)}));
+const developerScale=largeSources.map(({lines,text})=>({lines,bytes:Buffer.byteLength(text),...measure('RX Developer large source',()=>analyzeJavaScript(text),lines>=15000?5:lines>=5000?10:20)}));
 const results=[
  measure('RX FAST test selection',()=>selectFastTests(['rx-ant-task-board.cjs']),1000),
  measure('RX BIBI dashboard summary',()=>summarizeRxBibi(report),1000),
@@ -57,7 +60,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
