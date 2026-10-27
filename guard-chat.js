@@ -363,7 +363,16 @@
      'rx-cloud-computer':['RX Mega Cloud','rx-mega-cloud-computer.cjs','Ograniczone testy GitHub Actions']
     }[routing.module];
     if(moduleInfo){
-     append('RX Strażak',moduleInfo[0]+' — '+moduleInfo[2]+'.'+String.fromCharCode(10)+'Kod: '+moduleInfo[1]+String.fromCharCode(10)+'Stan uruchomienia: niezweryfikowany w tej sesji. To informacja o module, nie wynik testu ani wykonanie zadania.'+String.fromCharCode(10)+'Testy CI: https://github.com/Gregg856/vexorio/actions');
+     append('RX Strażak',moduleInfo[0]+' — '+moduleInfo[2]+'.'+String.fromCharCode(10)+'Kod: '+moduleInfo[1]+String.fromCharCode(10)+'Sprawdzam powiązany raport GitHub Actions…');
+     try{
+      const response=await fetch('/api/rx/modules',{cache:'no-store'});
+      if(!response.ok)throw Error('status_unavailable');
+      const data=await response.json();
+      const report=Array.isArray(data.runs)?data.runs.find(item=>item.id===routing.module):null;
+      if(!report)throw Error('missing_report');
+      const state=report.conclusion==='success'?'ostatni powiązany workflow zakończony sukcesem':report.conclusion==='failure'?'ostatni powiązany workflow zakończony błędem':report.status==='in_progress'?'powiązany workflow w trakcie':report.status==='no_runs'?'brak uruchomień':'brak potwierdzonego wyniku';
+      append('RX Strażak',moduleInfo[0]+' — '+state+'.'+String.fromCharCode(10)+'Źródło: GitHub Actions, workflow '+report.file+'.'+String.fromCharCode(10)+'Nie potwierdza to wykonania samego modułu ani jego ciągłej pracy.'+(typeof report.link==='string'?String.fromCharCode(10)+report.link:''));
+     }catch(_){append('RX Strażak','Nie udało się odczytać raportu CI. Stan '+moduleInfo[0]+' pozostaje niezweryfikowany.');}
      return;
     }
    }
