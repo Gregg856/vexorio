@@ -160,6 +160,28 @@ const memoryTotal=memoryCases.map(({name,bytes})=>{
  };
  return {name,bytes,array:probe('array'),typed:probe('typed'),note:'One-shot allocation plus conversion; RSS and heap are noisy and overlap external/arrayBuffers, so do not sum these metrics.'};
 });
+// Compare allocation strategies that preserve the existing string output.
+const maskOutputStrategies=memoryCases.map(({name,bytes})=>{
+ const sample=('const safe = 1;\nconsole.debug(safe);\n// eval(secret)\n').repeat(Math.floor(bytes/53));
+ const expected=maskJavaScript(sample);
+ const variants={
+  baseline:()=>maskJavaScript(sample),
+  chunkedJoin:()=>{
+   const chars=Array(sample.length).fill(' ');
+   for(let i=0;i<expected.length;i++)if(expected[i]!==' ')chars[i]=expected[i];
+   const chunks=[];
+   for(let i=0;i<chars.length;i+=4096)chunks.push(chars.slice(i,i+4096).join(''));
+   return chunks.join('');
+  },
+  sparseReplacement:()=>{
+   const chars=Array(sample.length).fill(' ');
+   for(let i=0;i<expected.length;i++)if(expected[i]!==' ')chars[i]=expected[i];
+   return chars.join('');
+  }
+ };
+ for(const [variant,fn] of Object.entries(variants))assert.equal(fn(),expected,'Output mismatch: '+variant);
+ return {name,bytes,variants:Object.entries(variants).map(([variant,fn])=>measure(variant,fn,30)),note:'Experimental output construction only; variants reuse precomputed mask, so timings are not full scanner alternatives.'};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -173,7 +195,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
