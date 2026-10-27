@@ -14,6 +14,32 @@
  }
  if(plugins && window.GuardCodeAuditPlugin && window.GuardDeveloperInspector) window.GuardCodeAuditPlugin.installCodeAudit(plugins, window.GuardDeveloperInspector.inspectSource);
  const healthBox=document.getElementById('guardRxHealth');
+ let ciRefreshId=0;
+ async function loadCIStatus(container,requestId){
+  try{
+   const response=await fetch('/api/rx/modules',{cache:'no-store'});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const data=await response.json();
+   if(!data||!Array.isArray(data.runs))throw Error('Invalid CI report');
+   if(requestId!==ciRefreshId||!container.isConnected)return;
+   container.replaceChildren();
+   const heading=document.createElement('strong');heading.textContent='GitHub Actions — raporty 5 modułów RX';
+   const list=document.createElement('ul');
+   for(const item of data.runs){
+    const li=document.createElement('li');
+    const name=typeof item.name==='string'?item.name.slice(0,80):'Moduł RX';
+    const state=item.conclusion==='success'?'OK (CI)':item.conclusion==='failure'?'BŁĄD (CI)':item.status==='in_progress'?'TRWA (CI)':item.status==='no_runs'?'BRAK TESTU':'NIEZWERYFIKOWANY';
+    li.textContent=name+' — '+state;
+    list.append(li);
+   }
+   const note=document.createElement('small');note.textContent='Wyniki powiązanych workflow na main; nie potwierdzają ciągłej pracy ani autonomii modułów.';
+   container.append(heading,list,note);
+  }catch(_){
+   if(requestId!==ciRefreshId||!container.isConnected)return;
+   container.textContent='GitHub Actions — brak aktualnego raportu CI. Nie można potwierdzić stanu modułów.';
+  }
+ }
+
  // Automatically exercise the three read-only plugins once per page load.
  async function autoCheckPlugins(){
   if(!plugins)return;
@@ -75,7 +101,8 @@
    adviceList.append(item);
   }
   if(!issues.length){const item=document.createElement('li');item.textContent=diagnosticsUnavailable?'Najpierw przywróć odczyt diagnostyki RX. Nie można ocenić stanu modułów.':'Brak otwartych problemów do zaproponowania naprawy.';adviceList.append(item);}
-  const note=document.createElement('small');note.textContent='Wyniki tylko z tej karty. To nie jest monitoring GitHub Actions.';
+  const note=document.createElement('small');note.textContent='Powyżej: lokalne wtyczki z tej karty. Poniżej: osobne wyniki GitHub Actions.';
+  const ciPanel=document.createElement('section');ciPanel.textContent='GitHub Actions — pobieranie raportów CI…';
   const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Odśwież stan';refresh.addEventListener('click',renderHealth);
   const run=document.createElement('button');run.type='button';run.textContent='Przetestuj 3 wtyczki';
   run.disabled=!plugins||reports.length!==3;
@@ -105,7 +132,8 @@
    try{await navigator.clipboard.writeText(lines.join(String.fromCharCode(10)));copy.textContent='Skopiowano';}
    catch(_){copy.textContent='Nie udało się skopiować';}
   });
-  healthBox.append(title,summary,list,issueTitle,issueList,adviceTitle,adviceList,note,refresh,run,copy);
+  healthBox.append(title,summary,list,issueTitle,issueList,adviceTitle,adviceList,note,ciPanel,refresh,run,copy);
+  loadCIStatus(ciPanel,++ciRefreshId);
  }
  const pluginCards=document.getElementById('guardPluginCards'),pluginCount=document.getElementById('guardPluginCount');
  function renderPlugins(){
