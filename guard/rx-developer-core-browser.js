@@ -97,7 +97,7 @@ function analyzeJavaScript(source){
  const computedCalls=[
   {pattern:/\b(?:globalThis|window)\s*\[\s*(['"])eval\1\s*\]\s*\(/g,id:'RX001',severity:'high',message:'Pośrednie wywołanie eval() wykonuje kod.',advice:'Unikaj dynamicznego wykonywania tekstu.'},
   {pattern:/\bdocument\s*\[\s*(['"])write\1\s*\]\s*\(/g,id:'RX006',severity:'medium',message:'document.write() może wstrzyknąć HTML.',advice:'Użyj bezpiecznych metod DOM.'},
-  {pattern:/\bconsole\s*\[\s*(['"])log\1\s*\]\s*\(/g,id:'RX005',severity:'low',message:'Logowanie może ujawnić dane.',advice:'Sprawdź logowanie sekretów.'}
+  {pattern:/\bconsole\s*\[\s*(['"])(?:log|error|warn|info|debug)\1\s*\]\s*\(/g,id:'RX005',severity:'low',message:'Logowanie może ujawnić dane.',advice:'Sprawdź logowanie sekretów.'}
  ];
  for(const rule of computedCalls){let m;while((m=rule.pattern.exec(source))!==null){
   const opening=source.indexOf('[',m.index);
