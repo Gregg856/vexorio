@@ -45,3 +45,8 @@ assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,schema:99},runId:'
 assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[{...queue1.tasks[0],approved:true}]},runId:'ci-4'}),/Invalid prior queue item/);
 assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[queue1.tasks[0],queue1.tasks[0]]},runId:'ci-4'}),/Invalid prior queue item/);
 console.log('PASS RX QUEEN rejects corrupt, duplicate or unauthorized prior approvals');
+
+assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[{...queue1.tasks[0],id:'wrong-id'}]},runId:'ci-4'}),/Invalid prior queue item/);
+assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[{...queue1.tasks[0],occurrences:Number.MAX_SAFE_INTEGER}]},runId:'ci-4'}),/Invalid prior queue item/);
+assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[{...queue1.tasks[0],firstSeen:'../../bad'}]},runId:'ci-4'}),/Invalid prior queue item/);
+console.log('PASS RX QUEEN rejects identity tampering and counter overflow');
