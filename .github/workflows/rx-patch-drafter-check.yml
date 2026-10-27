@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'rx-patch-drafter.cjs'
+      - 'rx-developer-patch-bridge.cjs'
+      - 'tests/rx-developer-patch-bridge.cjs'
       - 'tests/rx-patch-drafter.cjs'
       - '.github/workflows/rx-patch-drafter-check.yml'
   workflow_dispatch:
@@ -17,3 +19,6 @@ jobs:
       - run: node --check rx-patch-drafter.cjs
       - run: node --check tests/rx-patch-drafter.cjs
       - run: node tests/rx-patch-drafter.cjs
+
+      - run: node --check rx-developer-patch-bridge.cjs
+      - run: node tests/rx-developer-patch-bridge.cjs
