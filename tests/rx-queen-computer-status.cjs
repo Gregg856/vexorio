@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {summarizeRX}=require('../rx-queen-computer-status.cjs');
+const {runCloudComputer}=require('../rx-mega-cloud-computer.cjs');
+const p=summarizeRX(runCloudComputer());
+assert.equal(p.state,'pending');
+assert.equal(p.cloudServerProvisioned,false);
+const failed=summarizeRX({schema:1,kind:'rx-mega-cloud-computer',checks:[{file:'tests/x.cjs',status:'failed'}],labs:{}});
+assert.equal(failed.state,'needs_attention');
+assert.equal(failed.issues[0].priority,'high');
+assert.throws(()=>summarizeRX({checks:[]}),/Invalid RX report/);
+console.log('PASS RX QUEEN status summarizes reports without claiming real cloud VM');
