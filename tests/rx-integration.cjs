@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createRXIntegration}=require('../rx-integration.cjs');
+const report=createRXIntegration().planVexorioChecks();
+assert.equal(report.project,'VEXORIO');
+assert.equal(report.cloud.tasks.length,4);
+assert.equal(report.cloud.executed,0);
+assert.equal(report.ai.modelTrained,false);
+assert.equal(report.ai.verifiedCandidates,0);
+assert.equal(report.ai.candidates[0].source,'ci_unverified');
+assert.equal(report.productionModified,false);
+assert.equal(report.lab.testedVariants,3);
+console.log('PASS RX integration: cloud queue, AI ranking and synthetic ant lab joined safely');
