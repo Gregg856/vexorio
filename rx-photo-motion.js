@@ -40,7 +40,8 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   }
   let recorder;
   try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2500000})}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
-  const result=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=e=>reject(e.error||new Error('Błąd nagrywania'));recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||mime});if(!blob.size){reject(new Error('Nagranie jest puste. Spróbuj ponownie lub użyj innej przeglądarki.'));return}resolve(blob)}});
+  let chunkEvents=0;
+  const result=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{chunkEvents++;if(e.data&&e.data.size)chunks.push(e.data)};recorder.onerror=e=>reject(e.error||new Error('Błąd nagrywania'));recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||mime});if(!blob.size){reject(new Error('Nagranie jest puste (format: '+mime+', zdarzenia: '+chunkEvents+', fragmenty: '+chunks.length+', audio: '+Boolean(audioFile)+').'));return}resolve(blob)}});
   let frameId,stopped=false;
   function draw(t){
    const index=Math.min(loaded.length-1,Math.floor(t/duration*loaded.length));
