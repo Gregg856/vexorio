@@ -5,28 +5,30 @@
  const grid=root.querySelector('[data-rx-live-grid]');
  const refresh=root.querySelector('[data-rx-live-refresh]');
  const stamp=root.querySelector('[data-rx-live-time]');
- const capabilities=[
-  ['Królowa','tested'],['Komputer RX','tested'],['Planer chmury','tested'],['RX Mega Computer','tested'],
-  ['Cloud Gateway','adapter'],['Cloud Transport','adapter'],['Cloud Memory','adapter'],
-  ['Pamięć sygnałów','tested'],['Medusa','tested'],['Tablica mrówek','tested'],
-  ['Ant Builder','tested'],['Developer','tested'],['RX Unified','prototype'],
-  ['Adapter BIBI','prototype'],['Odczyt kodu','prototype'],['Skrzynka RX','missing']
- ];
  const readiness=root.querySelector('[data-rx-readiness]');
- if(readiness){
-  const legend=text('p','Rejestr możliwości RX — stan zadeklarowany w kodzie, nie odczyt działania na żywo.');
-  legend.className='note';
-  const summary=text('p','Przetestowane: '+capabilities.filter(x=>x[1]==='tested').length+' · Adaptery: '+capabilities.filter(x=>x[1]==='adapter').length+' · Prototypy: '+capabilities.filter(x=>x[1]==='prototype').length+' · Brakujące: '+capabilities.filter(x=>x[1]==='missing').length);
-  summary.className='note';
-  const list=document.createElement('div');list.className='rx-live-grid';
-  for(const [name,status] of capabilities){
-   const item=document.createElement('article');item.className='rx-live-card';
-   const label=text('strong',name);
-   const badge=text('span',({tested:'Testowany',adapter:'Adapter',prototype:'Prototyp',missing:'Nie znaleziono'})[status]);
-   badge.className='rx-live-badge rx-live-'+(status==='tested'?'success':'unknown');
-   item.append(label,badge);list.append(item);
-  }
-  readiness.replaceChildren(legend,summary,list);
+ async function loadReadiness(){
+  if(!readiness)return;
+  readiness.replaceChildren(text('p','Pobieram rejestr modułów RX…'));
+  try{
+   const response=await fetch('/rx-capability-public.json',{cache:'no-store'});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const data=await response.json();
+   if(data.schema!==1||data.kind!=='rx-capability-public-snapshot'||!Array.isArray(data.components)||data.components.length>100)throw Error('Nieprawidłowy rejestr');
+   const components=data.components;
+   const statuses={'tested':'Przetestowany','adapter-only':'Adapter','prototype':'Prototyp','not-identified':'Brakujący'};
+   const counts={tested:0,'adapter-only':0,prototype:0,'not-identified':0};
+   const list=document.createElement('div');list.className='rx-live-grid';
+   for(const item of components){
+    if(!item||typeof item.id!=='string'||!Object.hasOwn(statuses,item.status))throw Error('Nieprawidłowy moduł');
+    counts[item.status]++;
+    const card=document.createElement('article');card.className='rx-live-card';
+    const label=text('strong',item.id),badge=text('span',statuses[item.status]);
+    badge.className='rx-live-badge rx-live-'+(item.status==='tested'?'success':'unknown');
+    card.append(label,badge);list.append(card);
+   }
+   const note=text('p','Rejestr z pliku projektu (nie telemetria na żywo). Przetestowane: '+counts.tested+' · Adaptery: '+counts['adapter-only']+' · Prototypy: '+counts.prototype+' · Brakujące: '+counts['not-identified']);
+   note.className='note';readiness.replaceChildren(note,list);
+  }catch(_){readiness.replaceChildren(text('p','Brak aktualnego rejestru RX. Status modułów niepotwierdzony.'))}
  }
  const names=[['RX BIBI','rx-bibi-browser.yml'],['RX Monitor','guard-monitor.yml'],['RX Builder','rx-ant-builder-check.yml'],['RX Patch','rx-patch-drafter-check.yml']];
  const repo='Gregg856/vexorio';
@@ -66,6 +68,6 @@
    stamp.textContent='Odczyt: '+new Date().toLocaleString('pl-PL')+' · GitHub Actions, nie transmisja na żywo';
   }finally{clearTimeout(timeout);refresh.disabled=false}
  }
- refresh.addEventListener('click',load);
- load();
+ refresh.addEventListener('click',()=>{load();loadReadiness()});
+ load();loadReadiness();
 })();
