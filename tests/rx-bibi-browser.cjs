@@ -271,7 +271,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX QUEEN — katalog programów zwinięty na telefonie',layout.programsCollapsed,JSON.stringify(layout));
     record('RX QUEEN — Strażak nad katalogiem programów',!!layout.hero&&!!layout.catalog&&layout.hero.top<layout.catalog.top,JSON.stringify(layout));
     record('RX QUEEN — brak poziomego przewijania panelu',layout.documentWidth<=layout.viewportWidth+2,JSON.stringify(layout));
-    fs.writeFileSync(path.join(reportDir,'rx-queen-live-layout.json'),JSON.stringify({schema:1,kind:'rx-queen-mobile-layout',url:base+'/guard-lab.html',observedAt:new Date().toISOString(),...layout},null,2)+'\\n');
+    fs.writeFileSync(path.join(reportDir,'rx-queen-live-layout.json'),JSON.stringify({schema:1,kind:'rx-queen-mobile-layout',url:base+'/guard-lab.html',observedAt:new Date().toISOString(),...layout},null,2)+'\n');
     const guardTabs=guard.getByRole('tab');
     record('RX Strażak — cztery zakładki',await guardTabs.count()===4);
     const devTab=guard.getByRole('tab',{name:/Developer/});
