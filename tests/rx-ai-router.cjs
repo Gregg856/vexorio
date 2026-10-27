@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {route,report}=require('../rx-ai-router.cjs');
+assert.equal(report().version,'2.0');
+assert.equal(report().languageModel,false);
+assert.equal(report().capabilities.length,6);
+assert.equal(route('record screen').requiresApproval,true);
+assert.equal(route('inspect_tests').mode,'ci-report');
+assert.equal(route('unknown').supported,false);
+assert.throws(()=>route({}),/Invalid intent/);
+assert.throws(()=>route('a'.repeat(121)),/Invalid intent/);
+console.log('PASS RX AI 2.0 capability registry, consent and bounded routing');
