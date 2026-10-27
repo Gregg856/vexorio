@@ -265,9 +265,23 @@ jobs:
       - name: RX MRÓWKI — sprawdź katalog programów
         if: always()
         run: node tests/rx-programs-catalog.cjs
+      - name: RX QUEEN — odzyskaj historię kolejki zatwierdzeń
+        if: always()
+        uses: actions/cache/restore@v4
+        with:
+          path: rx-queue-cache/history.json
+          key: rx-queen-review-queue-${{ github.run_id }}
+          restore-keys: |
+            rx-queen-review-queue-
       - name: RX MRÓWKI — zaplanuj kolejne zadania
         if: always()
         run: node rx-ant-task-board.cjs
+      - name: RX QUEEN — zachowaj historię kolejki
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: rx-queue-cache/history.json
+          key: rx-queen-review-queue-${{ github.run_id }}
       - name: RX ANT BUILDER — przygotuj zadania budowy bez wdrażania
         if: always()
         run: node rx-ant-builder.cjs
