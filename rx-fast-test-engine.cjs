@@ -20,7 +20,7 @@ function selectFastTests(changedFiles){
  return selected.size?[...selected]:DEFAULT_TESTS.slice();
 }
 async function runFastTests({tests=DEFAULT_TESTS,parallel=3,timeoutMs=20000}={}){
- if(!Array.isArray(tests)||tests.length>50||!Number.isSafeInteger(parallel)||parallel<1||parallel>6||!Number.isSafeInteger(timeoutMs)||timeoutMs<1000||timeoutMs>120000)throw Error('Invalid test limits');
+ if(!Array.isArray(tests)||tests.length>50||new Set(tests).size!==tests.length||!Number.isSafeInteger(parallel)||parallel<1||parallel>6||!Number.isSafeInteger(timeoutMs)||timeoutMs<1000||timeoutMs>120000)throw Error('Invalid test limits');
  if(tests.some(t=>typeof t!=='string'||!/^tests\/[a-z0-9-]+\.cjs$/.test(t)||!fs.existsSync(path.resolve(t))))throw Error('Invalid test path');
  const suiteStarted=Date.now();let cursor=0;const results=new Array(tests.length);
  async function worker(){while(cursor<tests.length){const i=cursor++,file=tests[i],started=Date.now();results[i]=await new Promise(resolve=>{
