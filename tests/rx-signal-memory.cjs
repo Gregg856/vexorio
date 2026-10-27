@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {updateHistory}=require('../rx-signal-memory.cjs');
+const medusa={kind:'rx-medusa-engine',signals:[{source:'fast',action:'inspect_failed_test',target:'tests/a.cjs'}]};
+const first=updateHistory(null,medusa,'run1');
+assert.equal(first.entries[0].seen,1);
+assert.equal(first.recurring.length,0);
+assert.equal(updateHistory(first,medusa,'run1').entries[0].seen,1);
+const second=updateHistory(first,medusa,'run2');
+assert.equal(second.entries[0].seen,2);
+assert.equal(second.recurring.length,1);
+assert.equal(second.autoFixesApplied,0);
+assert.throws(()=>updateHistory(null,{kind:'wrong',signals:[]},'run1'),/Invalid Medusa/);
+console.log('PASS RX MEMORY: recurrence, idempotency, no autonomous fixes');
