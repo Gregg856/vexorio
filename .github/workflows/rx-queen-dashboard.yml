@@ -5,6 +5,12 @@ on:
       - 'rx-queen-dashboard-render.cjs'
       - 'tests/rx-queen-dashboard-render.cjs'
       - '.github/workflows/rx-queen-dashboard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'rx-queen-dashboard-render.cjs'
+      - 'tests/rx-queen-dashboard-render.cjs'
+      - '.github/workflows/rx-queen-dashboard.yml'
   workflow_dispatch:
 permissions:
   contents: read
