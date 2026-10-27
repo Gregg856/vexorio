@@ -9,6 +9,8 @@ on:
       - 'rx-photo-motion.js'
       - 'rx-ai-director.js'
       - 'guard-lab.html'
+      - 'guard-rx-programs.js'
+      - 'tests/rx-programs-catalog.cjs'
       - 'guard-rx-queen-panel.js'
       - 'tests/rx-queen-panel-safety.cjs'
       - 'tests/rx-queen-panel-browser.cjs'
@@ -187,6 +189,9 @@ jobs:
       - name: RX QUEEN — zbierz błędy chmury i AI
         if: always()
         run: node rx-queen-ant-supervisor.cjs
+      - name: RX MRÓWKI — sprawdź katalog programów
+        if: always()
+        run: node tests/rx-programs-catalog.cjs
       - name: RX MRÓWKI — testuj kolejkę priorytetów
         if: always()
         run: node tests/rx-ant-task-board.cjs
