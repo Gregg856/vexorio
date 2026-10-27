@@ -1,6 +1,7 @@
 'use strict';
 // RX PATCH DRAFTER 1.3: produces a bounded, review-only patch plan.
 // No filesystem writes, git pushes, or arbitrary execution.
+const {maskJavaScript}=require('./guard/rx-developer-core.cjs');
 const SAFE_TARGET=/^(?:[a-z0-9][a-z0-9._-]*\/)*[a-z0-9][a-z0-9._-]*\.(?:js|cjs|mjs)$/i;
 const BLOCKED=/(?:^|\/)(?:\.github|node_modules|secrets?|\.env)(?:\/|$)/i;
 function draftPatch({target,oldText,newText,reason}={}){
@@ -21,7 +22,12 @@ function suggestPatch({target,source,rule}={}){
  if(typeof source!=='string'||source.length>500000)throw Error('Invalid source');
  if(rule!=='remove-debugger'&&rule!=='remove-console-debug')throw Error('Unsupported safe rule');
  const pattern=rule==='remove-debugger'?/^([ \t]*)debugger;?[ \t]*$/gm:/^([ \t]*)console\.debug\([^\r\n]*\);?[ \t]*$/gm;
- const matches=[...source.matchAll(pattern)];
+ const masked=maskJavaScript(source);
+ const matches=[...source.matchAll(pattern)].filter(m=>{
+  const token=rule==='remove-debugger'?'debugger':'console.debug';
+  const offset=m.index+m[1].length;
+  return masked.slice(offset,offset+token.length)===token;
+ });
  if(matches.length!==1)throw Error('Rule match missing or ambiguous');
  const oldText=matches[0][0];
  const reason=rule==='remove-debugger'?'Remove standalone debugger statement':'Remove standalone console.debug statement';
