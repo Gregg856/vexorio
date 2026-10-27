@@ -26,7 +26,11 @@
    }
    if(!data.tasks.length)list.append(text('p','Raport nie zawiera oczekujących zadań.'));
    queenQueue.replaceChildren(header,list);
-  }catch(_){queenQueue.replaceChildren(text('p','Brak opublikowanego raportu kolejki RX. Nie można potwierdzić bieżących zadań.'))}
+  }catch(_){
+   const message=text('p','Raport kolejki jest archiwizowany w GitHub Actions, ale nie został opublikowany jako plik strony. Nie można potwierdzić bieżących zadań.');
+   const link=document.createElement('a');link.href='https://github.com/'+repo+'/actions/workflows/rx-bibi-browser.yml';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Otwórz raporty BIBI w GitHub Actions';
+   queenQueue.replaceChildren(message,link);
+  }
  }
 
  const workflowModules={'rx-bibi-browser.yml':['bibi-adapter'],'guard-monitor.yml':['queen'],'rx-ant-builder-check.yml':['ant-builder','ant-board'],'rx-patch-drafter-check.yml':['developer','unified','source-reader']};
