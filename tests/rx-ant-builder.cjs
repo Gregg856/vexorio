@@ -17,4 +17,7 @@ assert.ok(draft.source.includes(String.fromCharCode(10)));
 assert.doesNotThrow(()=>new (require('node:vm').Script)(draft.source));
 assert.equal(draft.requiresApproval,true);
 assert.equal(draft.status,'draft_requires_implementation');
+const injection=generateRegressionTestDraft({target:"x');process.exit(1);//",request:'hello\\n});process.exit(1);//'});
+assert.doesNotThrow(()=>new (require('node:vm').Script)(injection.source));
+assert.equal(injection.source.includes('process.exit(1)'),false,'Untrusted task text must not become executable code');
 console.log('PASS RX ANT BUILDER draft-only safety');
