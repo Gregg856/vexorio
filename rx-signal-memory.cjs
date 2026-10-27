@@ -19,9 +19,11 @@ function updateHistory(previous,medusa,runId){
 if(require.main===module){
  const dir='rx-bibi-reports',file=path.join(dir,'rx-signal-memory.json');
  const medusa=JSON.parse(fs.readFileSync(path.join(dir,'rx-medusa-signals.json'),'utf8'));
- let previous=null;try{previous=JSON.parse(fs.readFileSync(file,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;}
+ const cacheFile=path.join('rx-memory-cache','history.json');
+ let previous=null;try{previous=JSON.parse(fs.readFileSync(cacheFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;}
  const result=updateHistory(previous,medusa,process.env.GITHUB_RUN_ID||'local');
  fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(file,JSON.stringify(result,null,2)+'\n');
+ fs.mkdirSync('rx-memory-cache',{recursive:true});fs.writeFileSync(cacheFile,JSON.stringify(result,null,2)+'\n');
  console.log('RX MEMORY:',result.recurring.length,'recurring signals');
 }
 module.exports={updateHistory};
