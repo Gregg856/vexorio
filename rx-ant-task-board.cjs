@@ -4,6 +4,11 @@ const fs=require('node:fs');
 const path=require('node:path');
 const PRIORITY={critical:0,high:1,medium:2,low:3};
 const {allocate}=require('./rx-bibi-budget.cjs');
+function buildCosmosQueue(board,{maxTasks=9}={}){
+ if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(maxTasks)||maxTasks<0||maxTasks>20)throw Error('Invalid COSMOS queue');
+ const planned=board.tasks.slice(0,maxTasks).map((task,index)=>({id:'RXJOB-ant-'+index,source:task.source,action:task.action,target:task.target,priority:task.priority,status:'needs_review',requiresApproval:true}));
+ return {schema:1,kind:'rx-cosmos-ant-queue',planned,deferred:Math.max(0,board.tasks.length-planned.length),limit:maxTasks,executed:0,autoFixesApplied:0,note:'Read-only queue. Tasks require approval; no arbitrary commands, edits or deployments.'};
+}
 function buildBoard(supervisor,{maxTasks=50,medusa=null,memory=null}={}){
  if(!supervisor||supervisor.kind!=='rx-queen-ant-supervisor'||!Array.isArray(supervisor.issues)||supervisor.issues.length>500||!Number.isSafeInteger(maxTasks)||maxTasks<1||maxTasks>100)throw Error('Invalid supervisor report or task limit');
  if(medusa&&(!Array.isArray(medusa.signals)||medusa.kind!=='rx-medusa-engine'||medusa.engine!=='RX'||medusa.signals.length>500))throw Error('Invalid RX MEDUSA report');
@@ -30,10 +35,12 @@ if(require.main===module){
  try{memory=JSON.parse(fs.readFileSync(path.join('rx-bibi-reports','rx-signal-memory.json'),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;}
  const board=buildBoard(JSON.parse(fs.readFileSync(input,'utf8')),{medusa,memory});
  const budget=allocate(board);
+ const cosmos=buildCosmosQueue(board);
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-task-board.json',JSON.stringify(board,null,2)+'\n');
+ fs.writeFileSync('rx-bibi-reports/rx-cosmos-ant-queue.json',JSON.stringify(cosmos,null,2)+'\\n'.replace('\\\\n','\\n'));
  fs.writeFileSync('rx-bibi-reports/rx-bibi-budget.json',JSON.stringify(budget,null,2)+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
 }
-module.exports={buildBoard};
+module.exports={buildBoard,buildCosmosQueue};
