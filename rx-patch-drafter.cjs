@@ -15,4 +15,17 @@ function previewPatch(draft,source){
  if(first<0||source.indexOf(draft.oldText,first+draft.oldText.length)>=0)throw Error('Patch anchor missing or ambiguous');
  return {target:draft.target,preview:source.slice(0,first)+draft.newText+source.slice(first+draft.oldText.length),applied:false,requiresApproval:true};
 }
-module.exports={draftPatch,previewPatch};
+
+// Deterministic suggestions only: no AI execution, arbitrary edits, or writes.
+function suggestPatch({target,source,rule}={}){
+ if(typeof source!=='string'||source.length>500000)throw Error('Invalid source');
+ if(rule!=='remove-debugger'&&rule!=='remove-console-debug')throw Error('Unsupported safe rule');
+ const pattern=rule==='remove-debugger'?/^([ \t]*)debugger;?[ \t]*$/gm:/^([ \t]*)console\.debug\([^\r\n]*\);?[ \t]*$/gm;
+ const matches=[...source.matchAll(pattern)];
+ if(matches.length!==1)throw Error('Rule match missing or ambiguous');
+ const oldText=matches[0][0];
+ const reason=rule==='remove-debugger'?'Remove standalone debugger statement':'Remove standalone console.debug statement';
+ const proposal=draftPatch({target,oldText,newText:'',reason});
+ return {rule,proposal,preview:previewPatch(proposal,source),requiresApproval:true};
+}
+module.exports={draftPatch,previewPatch,suggestPatch};
