@@ -14,6 +14,12 @@ assert.doesNotMatch(script,/localStorage|sessionStorage|POST|DELETE/);
 console.log('PASS RX LIVE COMMAND CENTER mounted, read-only and missing-data aware');
 
 assert.match(html,/data-rx-readiness/);
-assert.match(script,/Skrzynka RX','missing'/);
-assert.match(script,/nie odczyt działania na żywo/);
+assert.match(script,/rx-capability-public\\.json/);
+assert.match(script,/nie telemetria na żywo/);
 console.log('PASS RX readiness map rendered with missing-inbox warning');
+
+const registry=JSON.parse(fs.readFileSync('rx-capability-public.json','utf8'));
+const {inventory}=require('../rx-capability-inventory.cjs');
+const source=inventory().components;
+assert.deepEqual(registry.components.map(x=>[x.id,x.file,x.role,x.status]),source.map(x=>[x.id,x.file,x.role,x.status]));
+assert.equal(registry.components.length,16);
