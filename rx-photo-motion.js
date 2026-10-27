@@ -8,7 +8,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
  const mime=candidates.find(x=>MediaRecorder.isTypeSupported(x));
  if(!mime)throw Error('Przeglądarka nie obsługuje eksportu wideo MP4 ani WebM.');
  duration=Math.min(30,Math.max(1,Math.round(Number(duration)||5)));
- const sizes={'9:16':[540,960],'16:9':[960,540],'1:1':[720,720],'4:5':[640,800]};
+ const sizes={'9:16':[360,640],'16:9':[640,360],'1:1':[480,480],'4:5':[400,500]};
  const [width,height]=sizes[ratio]||sizes['9:16'];
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
  const ctx=canvas.getContext('2d');
@@ -21,7 +21,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    try{const img=new Image();img.src=url;await img.decode();loaded.push(img)}finally{URL.revokeObjectURL(url)}
   }
   if(!loaded.length)throw Error('Nie udało się wczytać zdjęć.');
-  const stream=canvas.captureStream(0),chunks=[];
+  const stream=canvas.captureStream(24),chunks=[];
   // Use manually requested frames so the encoder receives only fully drawn canvas frames.
   // This avoids relying on a browser's automatic canvas frame scheduling.
   const videoTrack=stream.getVideoTracks()[0];
@@ -44,7 +44,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    }catch(error){await audioContext.close();stream.getTracks().forEach(track=>track.stop());throw Error('Nie można odczytać muzyki: '+error.message)}
   }
   let recorder;
-  try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2500000})}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
+  try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:1200000})}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   let chunkEvents=0;
   const result=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{chunkEvents++;if(e.data&&e.data.size)chunks.push(e.data)};recorder.onerror=e=>reject(e.error||new Error('Błąd nagrywania'));recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||mime});if(!blob.size){reject(new Error('Nagranie jest puste (format: '+mime+', zdarzenia: '+chunkEvents+', fragmenty: '+chunks.length+', audio: '+Boolean(audioFile)+').'));return}resolve(blob)}});
   let frameId,stopped=false;
