@@ -182,8 +182,8 @@
 
  function append(role,message){
   const p=document.createElement('p');p.className='guard-chat-message';
-  p.style.cssText='padding:11px 13px;border-radius:12px;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap;max-width:100%;box-sizing:border-box';
-  if(role==='RX Strażak')p.style.borderLeft='3px solid #51c6ce';
+  if(p.style)p.style.cssText='padding:11px 13px;border-radius:12px;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap;max-width:100%;box-sizing:border-box';
+  if(role==='RX Strażak'&&p.style)p.style.borderLeft='3px solid #51c6ce';
   const strong=document.createElement('strong');strong.textContent=role+': ';
   p.append(strong);
   const source=String(message);
@@ -194,7 +194,7 @@
    const link=document.createElement('a');
    link.href=match[0];link.target='_blank';link.rel='noopener noreferrer';
    link.textContent='🔗 Otwórz raport GitHub';
-   link.style.cssText='display:inline-block;max-width:100%;padding:4px 8px;border-radius:7px;background:#164454;color:#a7eff5;text-decoration:underline';
+   if(link.style)link.style.cssText='display:inline-block;max-width:100%;padding:4px 8px;border-radius:7px;background:#164454;color:#a7eff5;text-decoration:underline';
    p.append(link);
    offset=match.index+match[0].length;
   }
