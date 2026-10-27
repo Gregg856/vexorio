@@ -5,11 +5,10 @@ function maskJavaScript(source) {
  if(typeof source!=='string')throw new TypeError('Expected source text');
  const out=Array(source.length).fill(' ');
  const frames=[{type:'code',interpolation:false,braces:0}];
- const top=()=>frames[frames.length-1];
  const emit=i=>{out[i]=source[i];};
  const blank=i=>{if(source[i]==='\n'||source[i]==='\r')emit(i);};
  for(let i=0;i<source.length;){
-  const c=source[i],n=source[i+1],f=top();
+  const c=source[i],n=source[i+1],f=frames[frames.length-1];
   if(f.type==='line'){if(c==='\n'||c==='\r'){emit(i);frames.pop();}i++;continue;}
   if(f.type==='block'){if(c==='*'&&n==='/'){i+=2;frames.pop();continue;}blank(i++);continue;}
   if(f.type==='string'||f.type==='template'){
