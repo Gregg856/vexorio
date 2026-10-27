@@ -109,6 +109,25 @@ const maskStability=syntaxCases.map(({name,text})=>{
  const ratios=rounds.map(x=>x.newMs/x.oldMs).sort((a,b)=>a-b);
  return {name,rounds:ratios.length,medianRatio:Number(ratios[4].toFixed(3)),minRatio:Number(ratios[0].toFixed(3)),maxRatio:Number(ratios[8].toFixed(3)),note:'Paired local microbenchmarks; variation across rounds is expected.'};
 });
+// Memory footprint measurements are isolated in fresh child Node processes.
+// heapUsed deltas are approximate and GC/JIT-sensitive; never treat as retained memory.
+const {spawnSync}=require('node:child_process');
+const memoryCases=[{name:'small',bytes:10600},{name:'medium',bytes:53000},{name:'large',bytes:159000}];
+const maskMemory=memoryCases.map(({name,bytes})=>{
+ const script=[
+  "const {maskJavaScript}=require('./guard/rx-developer-core.cjs');",
+  "const source=('const safe = 1;\\nconsole.debug(safe);\\n// eval(secret)\\n').repeat("+Math.floor(bytes/53)+");",
+  "for(let i=0;i<20;i++)maskJavaScript(source);",
+  "if(global.gc)global.gc();",
+  "const before=process.memoryUsage().heapUsed;",
+  "const result=maskJavaScript(source);",
+  "const after=process.memoryUsage().heapUsed;",
+  "process.stdout.write(JSON.stringify({sourceBytes:Buffer.byteLength(source),outputLength:result.length,heapDeltaBytes:after-before}));"
+ ].join('');
+ const child=spawnSync(process.execPath,['--expose-gc','-e',script],{cwd:process.cwd(),encoding:'utf8',timeout:15000,maxBuffer:1024*1024});
+ assert.equal(child.status,0,'Memory probe failed: '+child.stderr);
+ return {name,...JSON.parse(child.stdout),note:'Approximate per-call heapUsed delta in isolated Node process; not retained heap or peak RSS.'};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -122,7 +141,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
