@@ -33,6 +33,7 @@ jobs:
           test -s public/guard/rx-developer-core-browser.js
           cp rx-bibi-studio.html public/rx-bibi-studio.html
           cp rx-ai-director.js public/rx-ai-director.js
+          cp rx-video-engine.js public/rx-video-engine.js
           cp rx-photo-motion.js public/rx-photo-motion.js
           test -s public/rx-bibi-studio.html
           cp rx-bibi-tester-status.js public/rx-bibi-tester-status.js
