@@ -182,6 +182,27 @@ const maskOutputStrategies=memoryCases.map(({name,bytes})=>{
  for(const [variant,fn] of Object.entries(variants))assert.equal(fn(),expected,'Output mismatch: '+variant);
  return {name,bytes,variants:Object.entries(variants).map(([variant,fn])=>measure(variant,fn,30)),note:'Experimental output construction only; variants reuse precomputed mask, so timings are not full scanner alternatives.'};
 });
+// Full-lexer A/B: identical scanner, different final output assembly.
+const joinSnippet="return out.join('');";
+assert(coreText.includes(joinSnippet),'RX mask output changed; update A/B benchmark deliberately');
+const chunkedCore=coreText.replace(joinSnippet,"const chunks=[];for(let k=0;k<out.length;k+=4096)chunks.push(out.slice(k,k+4096).join(''));return chunks.join('');");
+const chunkSandbox={module:{exports:{}},exports:{}};vm.runInNewContext(chunkedCore,chunkSandbox,{timeout:5000});
+const chunkedMask=chunkSandbox.module.exports.maskJavaScript;
+assert.equal(typeof chunkedMask,'function');
+const fullMaskAB=memoryCases.map(({name,bytes})=>{
+ const sample=('const safe = 1;\nconsole.debug(safe);\n// eval(secret)\n').repeat(Math.floor(bytes/53));
+ assert.equal(chunkedMask(sample),maskJavaScript(sample),'Full lexer output mismatch: '+name);
+ const rounds=[];
+ for(let i=0;i<9;i++){
+  const first=i%2===0?maskJavaScript:chunkedMask;
+  const second=i%2===0?chunkedMask:maskJavaScript;
+  const a=measure('first',()=>first(sample),20).medianMs;
+  const b=measure('second',()=>second(sample),20).medianMs;
+  rounds.push({baselineMs:i%2===0?a:b,chunkedMs:i%2===0?b:a});
+ }
+ const ratios=rounds.map(x=>x.chunkedMs/x.baselineMs).sort((a,b)=>a-b);
+ return {name,bytes,rounds:9,medianRatio:Number(ratios[4].toFixed(3)),minRatio:Number(ratios[0].toFixed(3)),maxRatio:Number(ratios[8].toFixed(3)),note:'Paired full-scanner comparisons; lower than 1 means chunked is faster.'};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -195,7 +216,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,fullMaskAB,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
