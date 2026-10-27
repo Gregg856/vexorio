@@ -20,4 +20,6 @@ assert.throws(()=>suggestPatch({target:'src/example.js',source:'const x=1;',rule
 assert.throws(()=>suggestPatch({target:'src/example.js',source:'const x=1;',rule:'rewrite-all'}),/Unsupported/);
 const debug=suggestPatch({target:'src/example.js',source:'console.debug("test");',rule:'remove-console-debug'});
 assert.equal(debug.preview.preview,'');
+assert.throws(()=>suggestPatch({target:'src/example.js',source:'\x60debugger;\x60',rule:'remove-debugger'}),/missing/);
+assert.throws(()=>suggestPatch({target:'src/example.js',source:'/*\ndebugger;\n*/',rule:'remove-debugger'}),/missing/);
 console.log('PASS RX PATCH DRAFTER preview-only and blocked paths');
