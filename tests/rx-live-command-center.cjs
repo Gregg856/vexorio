@@ -12,3 +12,8 @@ assert.match(script,/kind:'unknown'/);
 assert.doesNotMatch(script,/innerHTML\s*=/);
 assert.doesNotMatch(script,/localStorage|sessionStorage|POST|DELETE/);
 console.log('PASS RX LIVE COMMAND CENTER mounted, read-only and missing-data aware');
+
+assert.match(html,/data-rx-readiness/);
+assert.match(script,/Skrzynka RX','missing'/);
+assert.match(script,/nie odczyt działania na żywo/);
+console.log('PASS RX readiness map rendered with missing-inbox warning');
