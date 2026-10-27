@@ -18,3 +18,15 @@
 - Raportować osobno błędy produktu, błędy testów i chwilowe błędy środowiska.
 - Nie maskować czerwonych wyników przez ignorowanie błędów.
 - Nie wykonywać automatycznych zmian produkcji przez mrówki bez zatwierdzenia.
+
+
+## Audyt audio — rozszerzenie zakresu
+- **Nagrywanie**: uprawnienia mikrofonu, start/stop/pauza, brak danych i błędy MediaRecorder; obsługa Android/Chrome i odmowy uprawnień.
+- **Odtwarzanie**: uruchomienie dźwięku po interakcji użytkownika, wyciszenie, głośność, seek, cleanup URL.createObjectURL.
+- **Eksport audio i wideo z muzyką**: niepusty Blob, MIME/codec wspierany przez przeglądarkę, długość i rozmiar pliku, zdarzenia ondataavailable/onstop, błędy podczas zatrzymania, synchronizacja obrazu i dźwięku.
+- **Źródła dźwięku**: wgrywany plik, muzyka podkładowa, mikrofon; nie zakładać, że ścieżka audio istnieje.
+- **Testy regresji**: osobno czysty dźwięk, wideo bez muzyki, wideo z muzyką, brak dostępu do mikrofonu, brak wsparcia kodeka; test rzeczywistego eksportu nie może przechodzić przy pustym pliku.
+- **Raportowanie**: przy każdym błędzie zapisać etap, MIME, rozmiar bajtów, liczbę fragmentów, czas nagrywania, przeglądarkę i kod błędu, bez utrwalania prywatnej treści nagrań.
+- **Bezpieczeństwo i prywatność**: żadnego automatycznego włączania mikrofonu, przesyłania nagrań do zewnętrznych usług ani publikowania prywatnego audio.
+
+Stan: **zakres audytu dodany, testy audio wymagają wykonania**. Nie oznaczać jako naprawione bez zielonego testu przeglądarkowego i prawidłowego niepustego pliku wynikowego.
