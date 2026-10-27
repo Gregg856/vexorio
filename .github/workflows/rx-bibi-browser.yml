@@ -36,6 +36,8 @@ on:
       - 'rx-ant-ai-trainer.cjs'
       - 'rx-ant-ai-evaluator.cjs'
       - 'rx-queen-ant-supervisor.cjs'
+      - 'rx-ant-task-board.cjs'
+      - 'tests/rx-ant-task-board.cjs'
       - 'tests/rx-queen-ant-supervisor.cjs'
       - 'tests/rx-ant-ai-evaluator.cjs'
       - 'tests/rx-ant-ai-trainer.cjs'
@@ -185,6 +187,12 @@ jobs:
       - name: RX QUEEN — zbierz błędy chmury i AI
         if: always()
         run: node rx-queen-ant-supervisor.cjs
+      - name: RX MRÓWKI — testuj kolejkę priorytetów
+        if: always()
+        run: node tests/rx-ant-task-board.cjs
+      - name: RX MRÓWKI — zaplanuj kolejne zadania
+        if: always()
+        run: node rx-ant-task-board.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:
