@@ -21,9 +21,9 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    try{const img=new Image();img.src=url;await img.decode();loaded.push(img)}finally{URL.revokeObjectURL(url)}
   }
   if(!loaded.length)throw Error('Nie udało się wczytać zdjęć.');
-  const stream=canvas.captureStream(24),chunks=[];
-  // Chromium can emit an empty WebM when a canvas stream starts before its first frame.
-  // Force an initial frame for manual-frame capture streams when supported.
+  const stream=canvas.captureStream(0),chunks=[];
+  // Use manually requested frames so the encoder receives only fully drawn canvas frames.
+  // This avoids relying on a browser's automatic canvas frame scheduling.
   const videoTrack=stream.getVideoTracks()[0];
   if(!videoTrack)throw Error('Nie można przechwycić obrazu z canvas.');
   // Keep video and audio tracks alive until MediaRecorder has emitted its final data.
