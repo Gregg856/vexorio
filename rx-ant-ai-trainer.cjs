@@ -30,8 +30,7 @@ if(require.main===module){
   try{checkpoint=JSON.parse(fs.readFileSync(checkpointFile,'utf8'));}catch(e){throw Error('Invalid checkpoint JSON: '+e.message);}
  }
  const report=train({checkpoint});
- fs.mkdirSync('rx-ai-checkpoints',{recursive:true});
- fs.writeFileSync(checkpointFile,JSON.stringify(report,null,2)+'\n');
+
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync(path.join('rx-bibi-reports','rx-ant-ai-training.json'),JSON.stringify(report,null,2)+'\n');
  console.log('RX ANT AI TRAINER:',report.datasetSize,'examples, training accuracy',report.trainingAccuracy);
