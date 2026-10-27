@@ -128,6 +128,20 @@ const maskMemory=memoryCases.map(({name,bytes})=>{
  assert.equal(child.status,0,'Memory probe failed: '+child.stderr);
  return {name,...JSON.parse(child.stdout),note:'Approximate per-call heapUsed delta in isolated Node process; not retained heap or peak RSS.'};
 });
+// Compare memory footprint of current character array with a Uint16Array buffer.
+// This is an allocation experiment only; no production lexer change.
+const memoryRepresentation=memoryCases.map(({name,bytes})=>{
+ const script=[
+  "const source=('const safe = 1;\\nconsole.debug(safe);\\n// eval(secret)\\n').repeat("+Math.floor(bytes/53)+");",
+  "const measure=fn=>{if(global.gc)global.gc();const before=process.memoryUsage().heapUsed;const value=fn();return {heapDeltaBytes:process.memoryUsage().heapUsed-before,length:value.length};};",
+  "const array=measure(()=>Array(source.length).fill(' '));",
+  "const typed=measure(()=>new Uint16Array(source.length));",
+  "process.stdout.write(JSON.stringify({array,typed}));"
+ ].join('');
+ const child=spawnSync(process.execPath,['--expose-gc','-e',script],{cwd:process.cwd(),encoding:'utf8',timeout:15000,maxBuffer:1024*1024});
+ assert.equal(child.status,0,'Representation probe failed: '+child.stderr);
+ return {name,bytes,...JSON.parse(child.stdout),note:'Heap-only measurements do not include typed-array external backing memory; not a direct total-memory comparison.'};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -141,7 +155,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
