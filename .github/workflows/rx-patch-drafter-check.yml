@@ -35,3 +35,4 @@ jobs:
       - run: node tests/rx-bibi-unified-adapter.cjs
       - run: node tests/rx-unified-security-audit.cjs
       - run: node tests/rx-source-reader.cjs
+      - run: node tests/rx-capability-inventory.cjs
