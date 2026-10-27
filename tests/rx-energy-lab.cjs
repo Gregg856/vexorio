@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {estimateSolar}=require('../rx-energy-lab.cjs');
+const r=estimateSolar();
+assert.equal(r.dailyKWh,12);
+assert.equal(r.panels,9);
+assert.equal(r.usableBatteryKWh,6);
+assert.equal(r.energyProduced,false);
+assert.equal(r.hardwareInstalled,false);
+assert.throws(()=>estimateSolar({peakSunHours:0}),/Invalid solar/);
+assert.throws(()=>estimateSolar({systemEfficiency:1.2}),/Invalid solar/);
+assert.throws(()=>estimateSolar({computerWatts:Infinity}),/Invalid solar/);
+console.log('PASS RX ENERGY LAB: bounded solar estimate and truthful status');
