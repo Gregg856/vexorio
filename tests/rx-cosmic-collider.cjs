@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {simulateRing}=require('../rx-cosmic-collider.cjs');
+const r=simulateRing();
+assert.equal(r.circumferenceKm,10000);
+assert.ok(Math.abs(r.diameterKm-10000/Math.PI)<1e-9);
+assert.ok(r.turnsPerSecond>29&&r.turnsPerSecond<30);
+assert.equal(r.physicalCollider,false);
+assert.equal(r.energyComputed,false);
+assert.throws(()=>simulateRing({speedFraction:1}),/Invalid ring/);
+assert.throws(()=>simulateRing({circumferenceKm:-1}),/Invalid ring/);
+assert.throws(()=>simulateRing({seconds:Infinity}),/Invalid ring/);
+console.log('PASS RX COSMIC COLLIDER 10K: bounded ring geometry and kinematics');
