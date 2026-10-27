@@ -203,7 +203,7 @@
  }
  // Mobile quick commands run only on explicit user click and use the normal safe chat handler.
  const quick=document.createElement('div');
- quick.setAttribute('aria-label','Szybkie polecenia RX');
+ if(typeof quick.setAttribute==='function')quick.setAttribute('aria-label','Szybkie polecenia RX');
  quick.style.cssText='display:flex;gap:7px;flex-wrap:wrap;margin:8px 0;padding:4px 0';
  for(const [label,command] of [['👑 Raport Królowej','raport królowej'],['🐜 Status mrówek','status mrówek'],['🛡️ Diagnostyka RX','diagnostyka rx']]){
   const button=document.createElement('button');
