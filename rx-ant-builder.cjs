@@ -3,7 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 function draftTestSpecification(task){
- const safe=x=>String(x).replace(/[\\r\\n\\t]/g,' ').slice(0,120);
+ const safe=x=>String(x).replace(/[\r\n\t]/g,' ').slice(0,120);
  return {kind:'test-specification',status:'draft_only',title:'Verify '+safe(task.target),scenario:'Reproduce: '+safe(task.request),checks:['Reproduce failure in isolated test','Assert expected behavior after proposed change','Run regression suite before review'],testCodeGenerated:false,requiresApproval:true};
 }
 function generateRegressionTestDraft(task){
@@ -11,7 +11,7 @@ function generateRegressionTestDraft(task){
  const target=task.target.slice(0,120);
  const request=task.request.slice(0,80);
  // Generated code is a deliberately skipped test, not a fabricated passing assertion.
- const source="'use strict';\\nconst {test}=require('node:test');\\ntest.skip("+JSON.stringify('RX draft: '+target)+",()=>{\\n  // TODO: reproduce "+request.replace(/[\\r\\n]/g,' ')+"\\n});\\n";
+ const source="'use strict';\nconst {test}=require('node:test');\ntest.skip("+JSON.stringify('RX draft: '+target)+",()=>{\n  // TODO: reproduce "+request.replace(/[\r\n]/g,' ')+"\n});\n";
  return {filename:'rx-generated-regression-draft.cjs',source,status:'draft_requires_implementation',requiresApproval:true};
 }
 function prepareBuildQueue(board,{limit=10}={}){
