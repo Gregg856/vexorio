@@ -21,9 +21,9 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
    try{const img=new Image();img.src=url;await img.decode();loaded.push(img)}finally{URL.revokeObjectURL(url)}
   }
   if(!loaded.length)throw Error('Nie udało się wczytać zdjęć.');
-  // Use explicit frame requests: an image must reach the encoder even when
+  // For audio+video, use a clocked capture track to keep Chromium's muxer fed.\n  // For silent clips use explicit frame requests: an image must reach the encoder even when
   // Chromium throttles automatic canvas capture in headless/background tabs.
-  const stream=canvas.captureStream(0);
+  const stream=canvas.captureStream(audioFile?30:0);
   const videoTrack=stream.getVideoTracks()[0];
   if(!videoTrack)throw Error('Nie można przechwycić obrazu z canvas.');
   // Keep video and audio tracks alive until MediaRecorder has emitted its final data.
