@@ -3,14 +3,14 @@
 const fs=require('node:fs');
 const path=require('node:path');
 function summarizeRX(report){
- if(!report||report.schema!==1||report.kind!=='rx-mega-cloud-computer'||!Array.isArray(report.checks)||report.checks.length>100||!report.checks.every(x=>x&&typeof x.file==='string'&&['passed','failed','planned'].includes(x.status)))throw Error('Invalid RX report');
+ if(!report||report.schema!==1||!['rx-mega-cloud-computer','rx-cosmos-ant-check-report'].includes(report.kind)||!Array.isArray(report.checks)||report.checks.length>100||!report.checks.every(x=>x&&typeof x.file==='string'&&['passed','failed','planned'].includes(x.status)))throw Error('Invalid RX report');
  const passed=report.checks.filter(x=>x.status==='passed').length;
  const failed=report.checks.filter(x=>x.status==='failed').length;
  const planned=report.checks.filter(x=>x.status==='planned').length;
  const slowestChecks=report.checks.filter(x=>Number.isSafeInteger(x.durationMs)&&x.durationMs>=0).map(x=>({file:x.file,durationMs:x.durationMs})).sort((a,b)=>b.durationMs-a.durationMs||a.file.localeCompare(b.file)).slice(0,5);
  const totalTestDurationMs=report.checks.reduce((n,x)=>n+(Number.isSafeInteger(x.durationMs)&&x.durationMs>=0?x.durationMs:0),0);
  const issues=report.checks.filter(x=>x.status==='failed').map(x=>({component:x.file,priority:'high',action:'inspect_test_logs'}));
- return {schema:1,kind:'rx-queen-computer-status',state:failed?'needs_attention':planned?'pending':'checks_passed',passed,failed,planned,totalTestDurationMs,slowestChecks,issues,cloudServerProvisioned:report.cloudServerProvisioned===true,experiments:{colliderSimulation:!!report.labs?.collider,higgsSynthetic:report.labs?.higgs?.realCERNData===false,solarEstimate:!!report.labs?.energy},note:'Based on local report only. Checks passed does not prove all VEXORIO features work; no external CI status fetched.'};
+ return {schema:1,kind:'rx-queen-computer-status',state:failed?'needs_attention':planned?'pending':'checks_passed',passed,failed,planned,totalTestDurationMs,slowestChecks,issues,antQueue:report.kind==='rx-cosmos-ant-check-report'?{queued:report.queueTasks||0,approved:report.approvedTasks||0,skipped:report.skippedTasks||0,executed:report.executed||0,approvalRequired:true}:null,cloudServerProvisioned:report.cloudServerProvisioned===true,experiments:{colliderSimulation:!!report.labs?.collider,higgsSynthetic:report.labs?.higgs?.realCERNData===false,solarEstimate:!!report.labs?.energy},note:'Based on local report only. Checks passed does not prove all VEXORIO features work; no external CI status fetched.'};
 }
 if(require.main===module){
  const source=path.join('rx-bibi-reports','rx-mega-cloud-computer.json');
