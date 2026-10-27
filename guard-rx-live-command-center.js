@@ -6,6 +6,8 @@
  const refresh=root.querySelector('[data-rx-live-refresh]');
  const stamp=root.querySelector('[data-rx-live-time]');
  const readiness=root.querySelector('[data-rx-readiness]');
+ const queenAlerts=root.querySelector('[data-rx-queen-alerts]');
+ const workflowModules={'rx-bibi-browser.yml':['bibi-adapter'],'guard-monitor.yml':['queen'],'rx-ant-builder-check.yml':['ant-builder','ant-board'],'rx-patch-drafter-check.yml':['developer','unified','source-reader']};
  async function loadReadiness(){
   if(!readiness)return;
   readiness.replaceChildren(text('p','Pobieram rejestr modułów RX…'));
@@ -63,6 +65,21 @@
     const meta=text('small','Gałąź testowa · Commit: '+item.sha+(item.updated?' · '+new Date(item.updated).toLocaleString('pl-PL'):''));
     const link=document.createElement('a');link.href='https://github.com/'+repo+'/actions/workflows/'+encodeURIComponent(item.workflow);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Raport GitHub';
     card.append(heading,badge,meta,link);grid.append(card);
+   }
+   if(queenAlerts){
+    const title=text('strong','Królowa RX — moduły do kontroli');
+    const items=document.createElement('div');items.className='rx-live-grid';
+    for(const item of rows){
+     if(item.kind==='success')continue;
+     const card=document.createElement('article');card.className='rx-live-card';
+     const label=text('strong',item.name);
+     const related=(workflowModules[item.workflow]||[]).join(', ');
+     const reason=item.kind==='failure'?'Test zakończony błędem':item.kind==='pending'?'Test w toku':'Wynik niepotwierdzony';
+     const detail=text('small',reason+' · Do sprawdzenia: '+related+' · To powiązanie diagnostyczne, nie dowód awarii modułu.');
+     card.append(label,detail);items.append(card);
+    }
+    if(!items.childElementCount)items.append(text('p','Wszystkie odczytane testy zaliczone. Nie potwierdza to pracy modułów na żywo.'));
+    queenAlerts.replaceChildren(title,items);
    }
    const failures=rows.filter(x=>x.kind==='failure').length,unknown=rows.filter(x=>x.kind==='unknown').length;
    state.textContent=failures?'Wykryto błędy: '+failures:unknown?'Niepełne dane — sprawdź raporty':'Raporty pobrane — wyniki widoczne poniżej';
