@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {analyzeEvents,syntheticDemo}=require('../rx-higgs-lab.cjs');
+const r=syntheticDemo();
+assert.equal(r.events,18);
+assert.equal(r.accepted,18);
+assert.equal(r.discoveryClaim,false);
+assert.equal(r.realCERNData,false);
+assert.equal(r.bins.reduce((n,b)=>n+b.count,0),18);
+assert.equal(analyzeEvents([{massGeV:125},{massGeV:200}]).accepted,1);
+assert.throws(()=>analyzeEvents([{massGeV:NaN}]),/Invalid event/);
+assert.throws(()=>analyzeEvents([], {binWidth:0}),/Invalid experiment/);
+assert.throws(()=>analyzeEvents([{massGeV:-1}]),/Invalid event/);
+console.log('PASS RX HIGGS LAB deterministic histogram, input validation and honest provenance');
