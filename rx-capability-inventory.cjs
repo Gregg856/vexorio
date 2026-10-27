@@ -24,5 +24,16 @@ function inventory({root=process.cwd()}={}){
  const base=fs.realpathSync(root);
  return {schema:1,kind:'rx-capability-inventory',components:COMPONENTS.map(x=>({...x,exists:x.file?fs.existsSync(path.join(base,x.file)):false})),notes:['An RX inbox module was not identified by repository path inventory.','Cloud computer is not a provisioned VM.','No deployment or autonomous source edits.'],productionModified:false};
 }
-module.exports={inventory};
+function summarizeCapabilities({root=process.cwd()}={}){
+ const data=inventory({root});
+ const summary={tested:0,prototype:0,adapterOnly:0,missing:0};
+ for(const component of data.components){
+  if(!component.exists)summary.missing++;
+  else if(component.status==='tested')summary.tested++;
+  else if(component.status==='adapter-only')summary.adapterOnly++;
+  else summary.prototype++;
+ }
+ return {schema:1,kind:'rx-capability-summary',summary,total:data.components.length,components:data.components,live:false,productionModified:false};
+}
+module.exports={inventory,summarizeCapabilities};
 if(require.main===module)console.log(JSON.stringify(inventory(),null,2));
