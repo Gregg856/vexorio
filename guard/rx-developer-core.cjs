@@ -129,7 +129,7 @@ function analyzeJavaScript(source){
   const alias=declaration[1],kind=declaration[2];
   const after=masked.slice(declaration.index+declaration[0].length);
   const name=alias;
-  const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*(?:\?\.)?\s*\(`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
+  const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*(?:\?\.)?\s*(?:\(|\.\s*(?:call|apply|bind)\s*\()`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
   const assignments=new RegExp(String.raw`\b`+name+String.raw`\s*(?:=(?!=)|\+\+|--|\+=|-=)`,'g');
   // Limit suppression to calls inside a function whose parameter shadows this alias.
   const shadowRanges=[];
