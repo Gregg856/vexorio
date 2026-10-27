@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {plan}=require('../rx-queen-ai-bridge.cjs');
+const result=plan({kind:'rx-queen-ant-supervisor',issues:[{source:'studio',action:'inspect_studio_test',target:'tests/rx-bibi-studio.cjs'},{source:'ai',action:'investigate_model_regression',target:'rx-ant-ai-trainer'},{source:'other',action:'not_known',target:'x'}]});
+assert.equal(result.aiVersion,'2.0');
+assert.equal(result.tasks.length,3);
+assert.equal(result.tasks[0].handler,'rx-queen-ant-supervisor.cjs');
+assert.equal(result.tasks[1].intent,'classify_task');
+assert.equal(result.tasks[2].supported,false);
+assert.equal(result.tasks.every(t=>t.requiresApproval&&t.status==='proposed'),true);
+assert.equal(result.autoExecuted,0);
+assert.throws(()=>plan({kind:'wrong',issues:[]}),/Invalid supervisor/);
+console.log('PASS RX QUEEN AI BRIDGE bounded safe task planning');
