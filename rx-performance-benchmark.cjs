@@ -56,10 +56,10 @@ const developerScale=largeSources.map(({lines,text})=>({lines,bytes:Buffer.byteL
 // Phase-level profiling: mask and full scan on identical inputs.
 // The remainder is estimated from independent medians, not a direct timer.
 // Paired masking comparison on identical inputs; no production source changes.
-const coreText=fs.readFileSync(require.resolve('./guard/rx-developer-core.cjs'),'utf8');
+const maskCoreText=fs.readFileSync(require.resolve('./guard/rx-developer-core.cjs'),'utf8');
 const optimizedFrame='const c=source[i],n=source[i+1],f=frames[frames.length-1];';
-assert(coreText.includes(optimizedFrame),'Expected current optimized frame lookup');
-const legacyCore=coreText.replace(" const emit=i=>{out[i]=source[i];};"," const top=()=>frames[frames.length-1];\n const emit=i=>{out[i]=source[i];};").replace(optimizedFrame,'const c=source[i],n=source[i+1],f=top();');
+assert(maskCoreText.includes(optimizedFrame),'Expected current optimized frame lookup');
+const legacyCore=maskCoreText.replace(" const emit=i=>{out[i]=source[i];};"," const top=()=>frames[frames.length-1];\n const emit=i=>{out[i]=source[i];};").replace(optimizedFrame,'const c=source[i],n=source[i+1],f=top();');
 const sandbox={module:{exports:{}}};
 vm.runInNewContext(legacyCore,sandbox,{timeout:1000});
 const legacyMask=sandbox.module.exports.maskJavaScript;
