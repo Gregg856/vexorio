@@ -1,0 +1,24 @@
+name: RX Performance Benchmark
+on:
+  pull_request:
+    paths:
+      - 'rx-performance-benchmark.cjs'
+      - '.github/workflows/rx-performance-benchmark.yml'
+  workflow_dispatch:
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Measure RX modules
+        run: node rx-performance-benchmark.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rx-performance-benchmark
+          path: rx-bibi-reports/rx-performance-benchmark.json
+          retention-days: 7
