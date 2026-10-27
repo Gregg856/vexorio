@@ -6,8 +6,19 @@ const PRIORITY={critical:0,high:1,medium:2,low:3};
 const {allocate}=require('./rx-bibi-budget.cjs');
 function buildCosmosQueue(board,{maxTasks=9}={}){
  if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(maxTasks)||maxTasks<0||maxTasks>20)throw Error('Invalid COSMOS queue');
- const planned=board.tasks.slice(0,maxTasks).map((task,index)=>({id:'RXJOB-ant-'+index,source:task.source,action:task.action,target:task.target,priority:task.priority,status:'needs_review',requiresApproval:true}));
- return {schema:1,kind:'rx-cosmos-ant-queue',planned,deferred:Math.max(0,board.tasks.length-planned.length),limit:maxTasks,executed:0,autoFixesApplied:0,note:'Read-only queue. Tasks require approval; no arbitrary commands, edits or deployments.'};
+ const seen=new Set();
+ const normalized=board.tasks.map(task=>{
+  if(!task||typeof task.source!=='string'||typeof task.action!=='string'||typeof task.target!=='string'||!Object.hasOwn(PRIORITY,task.priority)||task.requiresApproval!==true||task.source.length>40||task.action.length>80||task.target.length>120)throw Error('Invalid COSMOS task');
+  const key=JSON.stringify([task.source,task.action,task.target]);
+  if(seen.has(key))throw Error('Duplicate COSMOS task');
+  seen.add(key);
+  return {source:task.source,action:task.action,target:task.target,priority:task.priority};
+ });
+ normalized.sort((a,b)=>PRIORITY[a.priority]-PRIORITY[b.priority]||a.source.localeCompare(b.source)||a.action.localeCompare(b.action)||a.target.localeCompare(b.target));
+ const planned=normalized.slice(0,maxTasks).map((task,index)=>({id:'RXJOB-ant-'+index,...task,status:'needs_review',requiresApproval:true}));
+ const deferredTasks=normalized.slice(maxTasks).map(task=>({...task,status:'deferred',requiresApproval:true}));
+ const priorityCounts=Object.fromEntries(Object.keys(PRIORITY).map(key=>[key,normalized.filter(task=>task.priority===key).length]));
+ return {schema:1,kind:'rx-cosmos-ant-queue',planned,deferred:deferredTasks.length,deferredTasks,priorityCounts,limit:maxTasks,executed:0,autoFixesApplied:0,note:'Read-only queue. Tasks require approval; no arbitrary commands, edits or deployments.'};
 }
 function buildBoard(supervisor,{maxTasks=50,medusa=null,memory=null}={}){
  if(!supervisor||supervisor.kind!=='rx-queen-ant-supervisor'||!Array.isArray(supervisor.issues)||supervisor.issues.length>500||!Number.isSafeInteger(maxTasks)||maxTasks<1||maxTasks>100)throw Error('Invalid supervisor report or task limit');

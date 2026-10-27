@@ -28,7 +28,16 @@ assert.throws(()=>buildBoard({kind:'rx-queen-ant-supervisor',issues:[]},{memory:
 const cosmos=buildCosmosQueue(board,{maxTasks:1});
 assert.equal(cosmos.planned.length,1);
 assert.equal(cosmos.deferred,1);
+assert.equal(cosmos.deferredTasks.length,1);
+assert.equal(cosmos.deferredTasks[0].status,'deferred');
+assert.equal(cosmos.priorityCounts.high,2);
 assert.equal(cosmos.planned[0].requiresApproval,true);
 assert.equal(cosmos.executed,0);
 assert.throws(()=>buildCosmosQueue(board,{maxTasks:21}),/Invalid COSMOS queue/);
+const shuffled=buildCosmosQueue({kind:'rx-ant-task-board',tasks:[{source:'z',action:'inspect',target:'z.js',priority:'low',requiresApproval:true},{source:'a',action:'inspect',target:'a.js',priority:'critical',requiresApproval:true}]},{maxTasks:1});
+assert.equal(shuffled.planned[0].source,'a');
+assert.equal(shuffled.deferredTasks[0].source,'z');
+assert.deepEqual(buildCosmosQueue(board,{maxTasks:0}).planned,[]);
+assert.throws(()=>buildCosmosQueue({kind:'rx-ant-task-board',tasks:[{source:'x',action:'run',target:'x',priority:'high',requiresApproval:false}]}),/Invalid COSMOS task/);
+assert.throws(()=>buildCosmosQueue({kind:'rx-ant-task-board',tasks:[board.tasks[0],board.tasks[0]]}),/Duplicate COSMOS task/);
 console.log('PASS RX ANT TASK BOARD: priority, deduplication, bounded tasks');
