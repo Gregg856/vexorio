@@ -1,0 +1,32 @@
+'use strict';
+// End-to-end injected failure simulation; no source changes, no production access.
+const assert=require('node:assert/strict');
+const {reviewRX}=require('../rx-unified-review.cjs');
+const issue={source:'fast',priority:'high',action:'inspect_failed_test',target:'src/rx-fixture.js'};
+const supervisor={kind:'rx-queen-ant-supervisor',issues:[issue]};
+const sources={'src/rx-fixture.js':'const healthy=true;\ndebugger;\n'};
+const first=reviewRX({supervisor,runId:'rx-fixture-1',sources});
+assert.equal(first.medusa.signals.length,1);
+assert.equal(first.board.tasks.length,1);
+assert.equal(first.reviews.length,1);
+assert.equal(first.reviews[0].review.suggestions.length,1);
+assert.equal(first.reviews[0].review.suggestions[0].preview.applied,false);
+assert.equal(first.autoFixesApplied,0);
+const repeated=reviewRX({supervisor,previousMemory:first.memory,runId:'rx-fixture-2',sources});
+assert.equal(repeated.board.tasks[0].recurrent,true);
+assert.equal(repeated.builder.queue.length,1);
+assert.equal(repeated.builder.queue[0].requiresApproval,true);
+assert.equal(repeated.productionModified,false);
+console.log('PASS RX injected diagnostic -> Medusa -> Memory -> Queen board -> Ant Builder -> Developer patch preview (no writes)');
+
+const {summarize}=require('../rx-queen-ant-supervisor.cjs');
+const fastReport={kind:'rx-fast-test-engine',results:[{file:'tests/rx-ant-task-board.cjs',ok:false,timedOut:true,exitCode:null}]};
+const triage=summarize({fast:fastReport});
+assert.equal(triage.state,'attention_required');
+assert.equal(triage.issues[0].action,'inspect_test_timeout');
+assert.equal(triage.issues[0].target,'tests/rx-ant-task-board.cjs');
+const triageReview=reviewRX({supervisor:triage,runId:'rx-fast-timeout'});
+assert.equal(triageReview.board.tasks.length,1);
+assert.equal(triageReview.board.tasks[0].requiresApproval,true);
+assert.equal(triageReview.productionModified,false);
+console.log('PASS RX FAST timeout report -> QUEEN -> MEDUSA -> task board');

@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'rx-bibi-unified-adapter.cjs'
+      - 'rx-unified-review.cjs'
+      - 'tests/rx-unified-failure-simulation.cjs'
       - 'tests/rx-bibi-unified-adapter.cjs'
       - 'tests/rx-bibi-extra.cjs'
       - 'tests/verify-real-dependencies.cjs'
@@ -24,9 +26,12 @@ jobs:
       - name: Check syntax
         run: |
           node --check rx-bibi-unified-adapter.cjs
+          node --check rx-unified-review.cjs
+          node --check tests/rx-unified-failure-simulation.cjs
           node --check tests/rx-bibi-unified-adapter.cjs
           node --check tests/rx-bibi-extra.cjs
       - name: Run read-only integration tests
         run: |
           node tests/rx-bibi-unified-adapter.cjs
           node tests/rx-bibi-extra.cjs
+          node tests/rx-unified-failure-simulation.cjs
