@@ -3,7 +3,7 @@
 // Input reports are evidence, never commands; no source writes or deployments.
 const {routeSignals}=require('./rx-medusa-engine.cjs');
 const {updateHistory}=require('./rx-signal-memory.cjs');
-const {buildBoard,buildReviewQueue}=require('./rx-ant-task-board.cjs');
+const {buildBoard}=require('./rx-ant-task-board.cjs');
 const {prepareBuildQueue}=require('./rx-ant-builder.cjs');
 const {inspectAndPropose}=require('./rx-developer-patch-bridge.cjs');
 function reviewRX({supervisor,previousMemory=null,previousQueue=null,runId,sources={}}={}){
@@ -13,7 +13,7 @@ function reviewRX({supervisor,previousMemory=null,previousQueue=null,runId,sourc
  const memory=updateHistory(previousMemory,medusa,runId);
  const board=buildBoard(supervisor,{medusa,memory});
  const builder=prepareBuildQueue(board);
- const reviewQueue=buildReviewQueue(board,{previous:previousQueue,runId});
+ const reviewQueue={schema:1,kind:'rx-bibi-review-queue',runId,tasks:board.tasks.map(task=>({...task,status:'awaiting_review',approved:false,executed:false})),requiresApproval:true,productionModified:false};
  const reviews=[];
  for(const task of board.tasks.slice(0,20)){
   if(!Object.hasOwn(sources,task.target))continue;
