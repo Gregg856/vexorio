@@ -50,7 +50,7 @@ function maskJavaScript(source) {
   }
   emit(i++);
  }
- return out.join('');
+ const chunks=[];for(let k=0;k<out.length;k+=4096)chunks.push(out.slice(k,k+4096).join(''));return chunks.join('');
 }
 
 const RULES=Object.freeze([
