@@ -43,6 +43,8 @@ on:
       - 'rx-ant-ai-evaluator.cjs'
       - 'rx-queen-ant-supervisor.cjs'
       - 'rx-ant-task-board.cjs'
+      - 'rx-ant-academy-ci.cjs'
+      - 'tests/rx-ant-academy-ci.cjs'
       - 'rx-bibi-budget.cjs'
       - 'tests/rx-bibi-budget.cjs'
       - 'tests/rx-ant-task-board.cjs'
@@ -172,6 +174,8 @@ jobs:
         run: node tests/rx-stellar-signal.cjs
       - name: Sprawdź RX STELLAR LAB
         run: node tests/rx-stellar-lab.cjs
+      - name: Sprawdź adapter Akademii do raportów CI
+        run: node tests/rx-ant-academy-ci.cjs
       - name: Sprawdź RX ANT ACADEMY
         run: node tests/rx-ant-academy.cjs
       - name: Sprawdź dowody RX ANT ACADEMY
