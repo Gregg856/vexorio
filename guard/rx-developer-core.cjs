@@ -71,6 +71,27 @@ const RULES=Object.freeze([
 function analyzeJavaScript(source){
  const masked=maskJavaScript(source);
  const findings=[];
+ // Computed literal properties are masked by the lexer; inspect only narrow,
+ // known property writes in original source and verify they are in code context.
+ const computedWrites=[
+  {id:'RX002',property:'innerHTML',severity:'medium',message:'Przypisanie innerHTML wymaga kontroli danych.',advice:'Dla tekstu użyj textContent; HTML poddaj sanitizacji.'},
+  {id:'RX010',property:'href',severity:'medium',message:'Przekierowanie wymaga sprawdzenia źródła adresu.',advice:'Waliduj docelowy adres i dozwolone domeny.'}
+ ];
+ const extraMatches=[];
+ for(const rule of computedWrites){
+  const rx=new RegExp(String.raw`\b([A-Za-z_$][\w$]*)\s*\[\s*(['"])`+rule.property+String.raw`\2\s*\]\s*=`, 'g');
+  let match;
+  while((match=rx.exec(source))!==null){
+   const at=match.index;
+   // Require the object identifier and the opening bracket to be executable code.
+   if(masked.slice(at,at+match[1].length).trim()!==match[1])continue;
+   const bracket=source.indexOf('[',at+match[1].length);
+   if(bracket<0||masked[bracket]!=='[')continue;
+   if(rule.id==='RX010'&&match[1]!=='location')continue;
+   extraMatches.push({offset:at,rule});
+  }
+ }
+
  const lineStarts=[0];
  for(let i=source.indexOf('\n');i!==-1;i=source.indexOf('\n',i+1))lineStarts.push(i+1);
  const locate=offset=>{
@@ -89,6 +110,7 @@ function analyzeJavaScript(source){
    if(match[0].length===0)rule.pattern.lastIndex++;
   }
  }
+ for(const item of extraMatches){const {line,column}=locate(item.offset);findings.push({id:item.rule.id,severity:item.rule.severity,line,column,message:item.rule.message,advice:item.rule.advice});}
  // Rules are visited in priority order, but findings need source order.
  // Sort by numeric offset once, avoiding repeated line/column comparisons.
  findings.sort((a,b)=>a.line-b.line||a.column-b.column);
