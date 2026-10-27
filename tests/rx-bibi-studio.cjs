@@ -138,6 +138,6 @@ const {chromium,devices}=require('playwright');
 
   }else{check('Graceful unsupported-browser state',await page.locator('#render').isDisabled(),'No MediaRecorder MIME types supported')}
  }catch(error){check('Test execution',false,error.message)}
- finally{require('node:fs').mkdirSync('rx-bibi-reports',{recursive:true});require('node:fs').writeFileSync('rx-bibi-reports/studio-report.json',JSON.stringify(results,null,2));await browser.close()}
+ finally{require('node:fs').mkdirSync('rx-bibi-reports',{recursive:true});require('node:fs').writeFileSync('rx-bibi-reports/studio-report.json',JSON.stringify(results,null,2));require('node:fs').writeFileSync('rx-bibi-reports/rx-bibi-studio-check.json',JSON.stringify({schema:1,kind:'rx-bibi-studio',ok:!results.some(x=>!x.ok),failed:results.filter(x=>!x.ok).map(x=>({name:x.name,detail:String(x.detail||'').slice(0,500)}))},null,2));await browser.close()}
  if(results.some(x=>!x.ok))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
