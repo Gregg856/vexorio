@@ -36,3 +36,4 @@ jobs:
       - run: node tests/rx-unified-security-audit.cjs
       - run: node tests/rx-source-reader.cjs
       - run: node tests/rx-capability-inventory.cjs
+      - run: node tests/rx-two-chat-handoff.cjs
