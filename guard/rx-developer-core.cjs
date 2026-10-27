@@ -104,6 +104,14 @@ function analyzeJavaScript(source){
   extraMatches.push({offset:m.index,rule});
  }}
 
+ // Explicit global object access bypasses local aliases of document, console and location.
+ const explicitGlobals=[
+  {pattern:/\b(?:window|globalThis)\.document\.write\s*\(/g,id:'RX006',severity:'medium',message:'Global document.write() can inject HTML.',advice:'Use safe DOM APIs.'},
+  {pattern:/\bglobalThis\.console\.(?:log|debug|info|warn|error)\s*\(/g,id:'RX005',severity:'low',message:'Global console logging can expose secrets.',advice:'Review sensitive logs.'},
+  {pattern:/\bglobalThis\.location\.href\s*=/g,id:'RX010',severity:'medium',message:'Global location redirect needs validation.',advice:'Validate destination URLs.'}
+ ];
+ for(const rule of explicitGlobals){let match;while((match=rule.pattern.exec(masked))!==null)extraMatches.push({offset:match.index,rule});}
+
  // Additional narrow patterns: global eval indirection and static template property writes.
  const indirectGlobalEval=/\(\s*0\s*,\s*globalThis\.eval\s*\)\s*\(/g;
  let globalEvalMatch;
