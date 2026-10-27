@@ -12,6 +12,37 @@
  const approveTask=document.getElementById('rxQueenTaskApprove');
  const taskResult=document.getElementById('rxQueenTaskResult');
  let proposedTask=null;
+
+ // Queen CI bridge: read-only evidence and a suggested next task, never auto-execution.
+ const ciButton=document.createElement('button');
+ ciButton.type='button';
+ ciButton.textContent='👑 Sprawdź testy i przygotuj zadanie';
+ if(ciButton.style)ciButton.style.cssText='margin:8px 0;padding:10px 12px;border-radius:10px;border:1px solid #42798c;background:#143648;color:#e3faff;cursor:pointer;min-height:44px';
+ const ciReport=document.createElement('p');
+ if(ciReport.style)ciReport.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere';
+ if(taskResult?.parentNode&&typeof taskResult.parentNode.append==='function'){
+  taskResult.parentNode.append(ciButton,ciReport);
+  ciButton.addEventListener('click',async()=>{
+   ciButton.disabled=true;
+   ciReport.textContent='👑 Sprawdzam raporty CI…';
+   try{
+    const response=await fetch('/api/rx/modules',{cache:'no-store'});
+    if(!response.ok)throw Error('ci_unavailable');
+    const data=await response.json();
+    if(!Array.isArray(data.runs))throw Error('invalid_report');
+    const runs=data.runs.filter(x=>x&&typeof x.id==='string');
+    const failed=runs.filter(x=>x.conclusion==='failure');
+    const running=runs.filter(x=>x.status==='in_progress'||x.status==='queued');
+    const suggested=failed.length?'Zbadaj nieudany test RX: '+failed[0].id:running.length?'Sprawdź wynik trwającego testu RX: '+running[0].id:'Przejrzyj ostatnie zielone raporty CI i zaproponuj następne testy panelu RX';
+    const evidence=failed[0]||running[0];
+    const link=evidence&&typeof evidence.link==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(evidence.link)?'\\nRaport: '+evidence.link:'';
+    ciReport.textContent='👑 Raport CI: '+runs.length+' modułów, błędy '+failed.length+', w toku '+running.length+'.\\nPropozycja: '+suggested+link+'\\nTryb tylko do odczytu. Zadanie nie zostało uruchomione.';
+    if(taskInput){taskInput.value=suggested;resetTask();}
+   }catch(_){ciReport.textContent='⚪ Raport CI niedostępny. Nie przygotowano zadania bez potwierdzonych danych.';}
+   finally{ciButton.disabled=false;}
+  });
+ }
+
  const classifyTask=description=>{
   const text=description.toLocaleLowerCase('pl');
   const cells=[];
