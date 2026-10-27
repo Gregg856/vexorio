@@ -40,11 +40,11 @@ export default {
       const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
       if(request.method!=='GET')return new Response(JSON.stringify({ok:false,error:'method_not_allowed'}),{status:405,headers:{...headers,Allow:'GET'}});
       const modules=[
-        {id:'rx-medusa',name:'RX Meduza',file:'rx-bibi-unified-adapter.yml'},
-        {id:'rx-ant-task-board',name:'RX Mrówki',file:'rx-ant-task-board.yml'},
+        {id:'rx-medusa',name:'RX Meduza',file:'rx-bibi-unified.yml'},
+        {id:'rx-ant-task-board',name:'RX Mrówki',file:'rx-bibi-unified.yml'},
         {id:'rx-queen',name:'RX Queen',file:'rx-queen-dashboard.yml'},
-        {id:'rx-bibi-ai',name:'RX BIBI AI',file:'rx-bibi-ai.yml'},
-        {id:'rx-cloud-computer',name:'RX Mega Cloud',file:'rx-mega-cloud-computer.yml'}
+        {id:'rx-bibi-ai',name:'RX BIBI AI',file:'rx-bibi-dashboard-summary.yml'},
+        {id:'rx-cloud-computer',name:'RX Mega Cloud',file:'checks.yml'}
       ];
       const runs=await Promise.all(modules.map(async module=>{
         try{
@@ -56,7 +56,7 @@ export default {
           return run?{...module,status:run.status,conclusion:run.conclusion||null,number:run.run_number,link:run.html_url,updated_at:run.updated_at}:{...module,status:'no_runs',conclusion:null};
         }catch{return {...module,status:'unavailable',conclusion:null,reason:'github_api_unavailable'};}
       }));
-      return new Response(JSON.stringify({ok:true,source:'github-actions',scope:'latest-main-run-per-workflow',note:'CI evidence only; does not confirm continuous runtime, module autonomy or deployed availability.',runs}),{status:200,headers});
+      return new Response(JSON.stringify({ok:true,source:'github-actions',scope:'latest-main-run-per-related-workflow',note:'Related workflow CI evidence only; shared workflows do not prove that each module ran. No continuous runtime or autonomy is confirmed.',runs}),{status:200,headers});
     }
     if (url.pathname === '/api/rx/health') {
       if(request.method!=='GET')return new Response(null,{status:405,headers:{Allow:'GET','Cache-Control':'no-store'}});
