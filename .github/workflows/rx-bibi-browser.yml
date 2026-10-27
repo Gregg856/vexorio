@@ -2,7 +2,7 @@ name: RX BIBI Tester — mobile browser
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'rx/ant-builder-1-3-prototype']
     paths:
       - 'rx-bibi-manager.html'
       - 'rx-bibi-studio.html'
