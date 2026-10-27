@@ -53,7 +53,7 @@ export default {
           });
           if(!response.ok)return {...module,status:'unavailable',conclusion:null,reason:response.status===404?'workflow_not_found':response.status===403?'github_access_denied':'github_api_unavailable'};
           const data=await response.json();const run=data.workflow_runs?.[0];
-          return run?{...module,status:run.status,conclusion:run.conclusion||null,number:run.run_number,link:run.html_url,updated_at:run.updated_at}:{...module,status:'no_runs',conclusion:null};
+          return run?{...module,status:run.status,conclusion:run.conclusion||null,number:run.run_number,link:run.html_url,updated_at:run.updated_at}:{...module,status:'no_runs',conclusion:null,reason:'no_matching_main_run',note:'Related workflow uses manual dispatch or path-filtered pull requests; no matching main-branch run found. This is not a module failure.'};
         }catch{return {...module,status:'unavailable',conclusion:null,reason:'github_api_unavailable'};}
       }));
       return new Response(JSON.stringify({ok:true,source:'github-actions',scope:'latest-main-run-per-related-workflow',note:'Related workflow CI evidence only; shared workflows do not prove that each module ran. No continuous runtime or autonomy is confirmed.',runs}),{status:200,headers});
