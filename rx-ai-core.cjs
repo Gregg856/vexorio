@@ -12,7 +12,7 @@ function createRXAICore({maxCandidates=100}={}){
   const candidate=Object.freeze({id,parentId,metrics:Object.freeze({passed,total,errors}),source,score:Math.round(10000*(passed-errors)/total)/100,status:'awaiting_verified_evidence'});
   candidates.set(id,candidate);return structuredClone(candidate);
  }
- function rank(){return [...candidates.values()].sort((a,b)=>b.score-a.score||b.metrics.passed-a.metrics.passed||a.id.localeCompare(b.id)).map(structuredClone);}
+ function rank(){return [...candidates.values()].sort((a,b)=>b.score-a.score||b.metrics.passed-a.metrics.passed||a.id.localeCompare(b.id)).map(item=>structuredClone(item));}
  function report(){return {schema:1,kind:'rx-ai-core-candidate-ranking',modelTrained:false,verifiedCandidates:0,candidates:rank(),note:'Heuristic scoring only; no learned weights, authenticated CI attestations or automatic deployment'};}
  return Object.freeze({submit,rank,report});
 }
