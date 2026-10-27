@@ -73,7 +73,7 @@ function analyzeJavaScript(source){
  const masked=maskJavaScript(source);
  const findings=[];
  const lineStarts=[0];
- for(let i=0;i<source.length;i++)if(source[i]==='\n')lineStarts.push(i+1);
+ for(let i=source.indexOf('\n');i!==-1;i=source.indexOf('\n',i+1))lineStarts.push(i+1);
  const locate=offset=>{
   let low=0,high=lineStarts.length;
   while(low<high){const mid=(low+high)>>>1;if(lineStarts[mid]<=offset)low=mid+1;else high=mid;}
