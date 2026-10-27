@@ -13,6 +13,7 @@
  const taskResult=document.getElementById('rxQueenTaskResult');
  let proposedTask=null;
 
+ if(typeof document.createElement==='function'){
  // Queen hub: honest inventory of modules; CI reports are evidence of tests, not uptime.
  const hub=document.createElement('section');
  if(hub.style)hub.style.cssText='margin:10px 0;padding:10px;border:1px solid #42798c;border-radius:12px';
@@ -79,6 +80,7 @@
   }finally{ciBusy=false;ciButton.disabled=false;}
  });
 
+ }
  const classifyTask=description=>{
   const text=description.toLocaleLowerCase('pl');
   const cells=[];
