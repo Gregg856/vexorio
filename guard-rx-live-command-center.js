@@ -32,7 +32,8 @@
  }
  const names=[['RX BIBI','rx-bibi-browser.yml'],['RX Monitor','guard-monitor.yml'],['RX Builder','rx-ant-builder-check.yml'],['RX Patch','rx-patch-drafter-check.yml']];
  const repo='Gregg856/vexorio';
- const url=name=>'https://api.github.com/repos/'+repo+'/actions/workflows/'+name+'/runs?per_page=5';
+ const reviewBranch='rx/ant-builder-1-3-prototype';
+ const url=name=>'https://api.github.com/repos/'+repo+'/actions/workflows/'+name+'/runs?per_page=5&branch='+encodeURIComponent(reviewBranch);
  const text=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;return el};
  function classify(run){
   if(!run)return ['Brak danych','unknown'];
@@ -59,13 +60,13 @@
     const card=document.createElement('article');card.className='rx-live-card';
     const heading=text('strong',item.name),badge=text('span',item.label);
     badge.className='rx-live-badge rx-live-'+item.kind;
-    const meta=text('small','Commit: '+item.sha+(item.updated?' · '+new Date(item.updated).toLocaleString('pl-PL'):''));
+    const meta=text('small','Gałąź testowa · Commit: '+item.sha+(item.updated?' · '+new Date(item.updated).toLocaleString('pl-PL'):''));
     const link=document.createElement('a');link.href='https://github.com/'+repo+'/actions/workflows/'+encodeURIComponent(item.workflow);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Raport GitHub';
     card.append(heading,badge,meta,link);grid.append(card);
    }
    const failures=rows.filter(x=>x.kind==='failure').length,unknown=rows.filter(x=>x.kind==='unknown').length;
    state.textContent=failures?'Wykryto błędy: '+failures:unknown?'Niepełne dane — sprawdź raporty':'Raporty pobrane — wyniki widoczne poniżej';
-   stamp.textContent='Odczyt: '+new Date().toLocaleString('pl-PL')+' · GitHub Actions, nie transmisja na żywo';
+   stamp.textContent='Odczyt: '+new Date().toLocaleString('pl-PL')+' · gałąź testowa, GitHub Actions (nie telemetria na żywo)';
   }finally{clearTimeout(timeout);refresh.disabled=false}
  }
  refresh.addEventListener('click',()=>{load();loadReadiness()});
