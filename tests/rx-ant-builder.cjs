@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {prepareBuildQueue,draftTestSpecification}=require('../rx-ant-builder.cjs');
+const {prepareBuildQueue,draftTestSpecification,generateRegressionTestDraft}=require('../rx-ant-builder.cjs');
 const task={source:'RX FAST',target:'rx-photo-motion.js',action:'Investigate empty video export',priority:'high',recurrent:true,historyOccurrences:3};
 const result=prepareBuildQueue({kind:'rx-ant-task-board',tasks:[task,{...task,target:'other.js',recurrent:false}]});
 assert.equal(result.total,1);
@@ -11,4 +11,8 @@ assert.equal(result.autoChangesApplied,0);
 assert.equal(prepareBuildQueue({kind:'rx-ant-task-board',tasks:[]}).total,0);
 assert.throws(()=>prepareBuildQueue({kind:'bad',tasks:[]}),/Invalid/);
 assert.ok(!draftTestSpecification({...task,target:'test\\nmalicious'}).title.includes('\n'));
+const draft=generateRegressionTestDraft({target:'rx-photo-motion.js',request:'Investigate empty export'});
+assert.match(draft.source,/test\\.skip/);
+assert.equal(draft.requiresApproval,true);
+assert.equal(draft.status,'draft_requires_implementation');
 console.log('PASS RX ANT BUILDER draft-only safety');
