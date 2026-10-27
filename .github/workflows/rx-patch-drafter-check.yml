@@ -1,0 +1,42 @@
+name: RX PATCH DRAFTER — focused checks
+on:
+  pull_request:
+    paths:
+      - 'rx-patch-drafter.cjs'
+      - 'rx-developer-patch-bridge.cjs'
+      - 'rx-unified-review.cjs'
+      - 'rx-ant-task-board.cjs'
+      - 'tests/rx-ant-task-board.cjs'
+      - 'rx-bibi-unified-adapter.cjs'
+      - 'rx-source-reader.cjs'
+      - 'tests/rx-source-reader.cjs'
+      - 'tests/rx-bibi-unified-adapter.cjs'
+      - 'tests/rx-unified-review.cjs'
+      - 'tests/rx-unified-security-audit.cjs'
+      - 'tests/rx-developer-patch-bridge.cjs'
+      - 'tests/rx-patch-drafter.cjs'
+      - '.github/workflows/rx-patch-drafter-check.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check rx-patch-drafter.cjs
+      - run: node --check tests/rx-patch-drafter.cjs
+      - run: node tests/rx-patch-drafter.cjs
+
+      - run: node --check rx-developer-patch-bridge.cjs
+      - run: node tests/rx-developer-patch-bridge.cjs
+      - run: node --check rx-unified-review.cjs
+      - run: node tests/rx-unified-review.cjs
+      - run: node tests/rx-ant-task-board.cjs
+      - run: node --check rx-bibi-unified-adapter.cjs
+      - run: node tests/rx-bibi-unified-adapter.cjs
+      - run: node tests/rx-unified-security-audit.cjs
+      - run: node tests/rx-source-reader.cjs
+      - run: node tests/rx-capability-inventory.cjs
+      - run: node tests/rx-two-chat-handoff.cjs

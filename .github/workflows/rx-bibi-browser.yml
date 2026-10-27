@@ -2,7 +2,7 @@ name: RX BIBI Tester — mobile browser
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'rx/ant-builder-1-3-prototype']
     paths:
       - 'rx-bibi-manager.html'
       - 'rx-bibi-studio.html'
@@ -45,6 +45,13 @@ on:
       - 'rx-queen-ant-supervisor.cjs'
       - 'rx-ant-task-board.cjs'
       - 'rx-ant-builder.cjs'
+      - 'rx-unified-review.cjs'
+      - 'tests/rx-unified-failure-simulation.cjs'
+      - 'rx-bibi-unified-adapter.cjs'
+      - 'rx-source-reader.cjs'
+      - 'tests/rx-source-reader.cjs'
+      - 'rx-developer-patch-bridge.cjs'
+      - 'rx-patch-drafter.cjs'
       - 'tests/rx-ant-builder.cjs'
       - 'rx-ant-academy-ci.cjs'
       - 'tests/rx-ant-academy-ci.cjs'
@@ -258,15 +265,44 @@ jobs:
       - name: RX MRÓWKI — sprawdź katalog programów
         if: always()
         run: node tests/rx-programs-catalog.cjs
+      - name: RX QUEEN — odzyskaj historię kolejki zatwierdzeń
+        if: always()
+        uses: actions/cache/restore@v4
+        with:
+          path: rx-queue-cache/history.json
+          key: rx-queen-review-queue-${{ github.run_id }}
+          restore-keys: |
+            rx-queen-review-queue-
       - name: RX MRÓWKI — zaplanuj kolejne zadania
         if: always()
         run: node rx-ant-task-board.cjs
+      - name: RX QUEEN — zachowaj historię kolejki
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: rx-queue-cache/history.json
+          key: rx-queen-review-queue-${{ github.run_id }}
       - name: RX ANT BUILDER — przygotuj zadania budowy bez wdrażania
         if: always()
         run: node rx-ant-builder.cjs
       - name: RX ANT BUILDER — test szkiców i bezpieczeństwa
         if: always()
         run: node tests/rx-ant-builder.cjs
+      - name: RX UNIFIED — rejestr chmury komputera pamięci i skrzynki
+        if: always()
+        run: node tests/rx-capability-inventory.cjs
+      - name: RX UNIFIED — test integracji raportów BIBI
+        if: always()
+        run: node tests/rx-bibi-unified-adapter.cjs
+      - name: RX UNIFIED — symulacja awarii i powracającego błędu
+        if: always()
+        run: node tests/rx-unified-failure-simulation.cjs
+      - name: RX UNIFIED — test bezpiecznego odczytu kodu
+        if: always()
+        run: node tests/rx-source-reader.cjs
+      - name: RX UNIFIED — przegląd raportów bez wdrażania
+        if: always()
+        run: node rx-bibi-unified-adapter.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:

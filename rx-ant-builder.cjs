@@ -2,6 +2,7 @@
 // RX ANT BUILDER: safe, deterministic build plans. Never edits code or deploys.
 const fs=require('node:fs');
 const path=require('node:path');
+const {draftPatch,previewPatch,suggestPatch}=require('./rx-patch-drafter.cjs');
 function draftTestSpecification(task){
  const safe=x=>String(x).replace(/[\r\n\t]/g,' ').slice(0,120);
  return {kind:'test-specification',status:'draft_only',title:'Verify '+safe(task.target),scenario:'Reproduce: '+safe(task.request),checks:['Reproduce failure in isolated test','Assert expected behavior after proposed change','Run regression suite before review'],testCodeGenerated:false,requiresApproval:true};
@@ -19,6 +20,24 @@ function generatePatchProposal(task){
  const target=task.target.slice(0,120);
  const request=task.request.replace(/[^a-zA-Z0-9 .,:_-]/g,' ').replace(/\s+/g,' ').slice(0,80);
  return {kind:'patch-proposal',target,summary:'Investigate and patch: '+request,steps:['Inspect target and existing tests','Reproduce failure in isolated test','Prepare minimal diff on review branch','Run focused checks and request review'],diff:null,codeChangesGenerated:false,status:'needs_developer_or_agent_implementation',requiresApproval:true};
+}
+function prepareTaskPatchPreview(task,source,{oldText,newText}={}){
+ if(!task||typeof task.target!=='string'||typeof task.action!=='string')throw Error('Invalid task for patch');
+ const proposal=draftPatch({target:task.target,oldText,newText,reason:task.action.slice(0,200)});
+ return {proposal,preview:previewPatch(proposal,source),status:'review_only',requiresApproval:true};
+}
+function suggestTaskPatch(task,source){
+ if(!task||typeof task.target!=='string'||typeof task.action!=='string'||typeof source!=='string')throw Error('Invalid task suggestion');
+ const action=task.action.toLowerCase();
+ const rule=/\bdebugger\b/.test(action)?'remove-debugger':/console[.]debug/.test(action)?'remove-console-debug':null;
+ if(!rule)return {status:'unsupported_rule',requiresApproval:true,applied:false};
+ try{
+  const result=suggestPatch({target:task.target,source,rule});
+  return {status:'review_only',...result,applied:false};
+ }catch(error){
+  if(/Rule match missing or ambiguous|Invalid patch target/.test(error.message))return {status:'manual_review_required',reason:error.message,requiresApproval:true,applied:false};
+  throw error;
+ }
 }
 function prepareBuildQueue(board,{limit=10}={}){
  if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(limit)||limit<1||limit>20)throw Error('Invalid build queue input');
@@ -39,4 +58,4 @@ if(require.main===module){
  fs.writeFileSync(path.join(dir,'rx-ant-builder-queue.json'),JSON.stringify(result,null,2)+'\n');
  console.log('RX ANT BUILDER:',result.total,'proposals queued, no code changes');
 }
-module.exports={prepareBuildQueue,draftTestSpecification,generateRegressionTestDraft,generatePatchProposal};
+module.exports={prepareBuildQueue,draftTestSpecification,generateRegressionTestDraft,generatePatchProposal,prepareTaskPatchPreview,suggestTaskPatch};
