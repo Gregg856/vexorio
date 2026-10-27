@@ -182,9 +182,37 @@
 
  function append(role,message){
   const p=document.createElement('p');p.className='guard-chat-message';
+  p.style.cssText='padding:11px 13px;border-radius:12px;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap;max-width:100%;box-sizing:border-box';
+  if(role==='RX Strażak')p.style.borderLeft='3px solid #51c6ce';
   const strong=document.createElement('strong');strong.textContent=role+': ';
-  p.append(strong,document.createTextNode(message));messages.append(p);messages.scrollTop=messages.scrollHeight;
+  p.append(strong);
+  const source=String(message);
+  const linkPattern=/https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+/g;
+  let offset=0,match;
+  while((match=linkPattern.exec(source))!==null){
+   p.append(document.createTextNode(source.slice(offset,match.index)));
+   const link=document.createElement('a');
+   link.href=match[0];link.target='_blank';link.rel='noopener noreferrer';
+   link.textContent='🔗 Otwórz raport GitHub';
+   link.style.cssText='display:inline-block;max-width:100%;padding:4px 8px;border-radius:7px;background:#164454;color:#a7eff5;text-decoration:underline';
+   p.append(link);
+   offset=match.index+match[0].length;
+  }
+  p.append(document.createTextNode(source.slice(offset)));
+  messages.append(p);messages.scrollTop=messages.scrollHeight;
  }
+ // Mobile quick commands run only on explicit user click and use the normal safe chat handler.
+ const quick=document.createElement('div');
+ quick.setAttribute('aria-label','Szybkie polecenia RX');
+ quick.style.cssText='display:flex;gap:7px;flex-wrap:wrap;margin:8px 0;padding:4px 0';
+ for(const [label,command] of [['👑 Raport Królowej','raport królowej'],['🐜 Status mrówek','status mrówek'],['🛡️ Diagnostyka RX','diagnostyka rx']]){
+  const button=document.createElement('button');
+  button.type='button';button.textContent=label;
+  button.style.cssText='border:1px solid #42798c;border-radius:12px;background:#143648;color:#e3faff;padding:10px 12px;min-height:42px;cursor:pointer;font-size:13px';
+  button.addEventListener('click',()=>{input.value=command;form.requestSubmit();});
+  quick.append(button);
+ }
+ messages.parentNode.insertBefore(quick,messages);
  // RX alert watch runs only while this page is open; no hidden background monitoring.
  let lastAlertKey='';
  async function checkRXAlerts(){
