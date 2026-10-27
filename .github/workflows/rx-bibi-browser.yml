@@ -48,6 +48,8 @@ on:
       - 'tests/rx-ant-academy-ci.cjs'
       - 'rx-bibi-budget.cjs'
       - 'rx-fast-test-engine.cjs'
+      - 'rx-signal-memory.cjs'
+      - 'tests/rx-signal-memory.cjs'
       - 'rx-medusa-engine.cjs'
       - 'tests/rx-medusa-engine.cjs'
       - 'tests/rx-bibi-budget.cjs'
@@ -222,6 +224,12 @@ jobs:
       - name: RX MEDUSA — przekaz sygnałów do Królowej
         if: always()
         run: node rx-medusa-engine.cjs
+      - name: RX MEMORY — testuj pamięć powracających błędów
+        if: always()
+        run: node tests/rx-signal-memory.cjs
+      - name: RX MEMORY — zapisz sygnały
+        if: always()
+        run: node rx-signal-memory.cjs
       - name: RX QUEEN AI 2.0 — testuj kierowanie zadań
         if: always()
         run: node tests/rx-queen-ai-bridge.cjs
