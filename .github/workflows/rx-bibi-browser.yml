@@ -34,6 +34,8 @@ on:
       - 'tests/rx-cloud-computer.cjs'
       - 'rx-ant-ai-trainer.cjs'
       - 'rx-ant-ai-evaluator.cjs'
+      - 'rx-queen-ant-supervisor.cjs'
+      - 'tests/rx-queen-ant-supervisor.cjs'
       - 'tests/rx-ant-ai-evaluator.cjs'
       - 'tests/rx-ant-ai-trainer.cjs'
       - 'rx-ai-core.cjs'
@@ -174,6 +176,12 @@ jobs:
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         if: always()
         run: node tests/rx-bibi-studio.cjs
+      - name: RX MRÓWKI — testuj nadzorcę Królowej
+        if: always()
+        run: node tests/rx-queen-ant-supervisor.cjs
+      - name: RX QUEEN — zbierz błędy chmury i AI
+        if: always()
+        run: node rx-queen-ant-supervisor.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:
