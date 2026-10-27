@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {createRXAICore}=require('../rx-ai-core.cjs');
+const core=createRXAICore({maxCandidates:2});
+const a=core.submit({id:'RXDNA-a',metrics:{passed:9,total:10,errors:1}});
+const b=core.submit({id:'RXDNA-b',parentId:'RXDNA-a',metrics:{passed:10,total:10,errors:0},source:'ci_unverified'});
+assert.equal(a.score,80);
+assert.equal(b.score,100);
+assert.deepEqual(core.rank().map(x=>x.id),['RXDNA-b','RXDNA-a']);
+assert.equal(core.report().modelTrained,false);
+assert.equal(core.report().verifiedCandidates,0);
+assert.throws(()=>core.submit({id:'RXDNA-c',metrics:{passed:1,total:1,errors:0}}),/Invalid candidate/);
+assert.throws(()=>createRXAICore().submit({id:'RXDNA-x',metrics:{passed:2,total:1,errors:0}}),/Invalid metrics/);
+const copy=core.rank();copy[0].metrics.passed=0;assert.equal(core.rank()[0].metrics.passed,10);
+console.log('PASS RX AI CORE bounded deterministic ranking, input validation and no false training claims');
