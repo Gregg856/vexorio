@@ -35,6 +35,29 @@ export default {
         return new Response(JSON.stringify({ok:false,command:'RX STATUS',error:'status_temporarily_unavailable'}),{status:502,headers});
       }
     }
+    // Read-only CI evidence for existing RX modules. This does not run the modules.
+    if(url.pathname==='/api/rx/modules'){
+      const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+      if(request.method!=='GET')return new Response(JSON.stringify({ok:false,error:'method_not_allowed'}),{status:405,headers:{...headers,Allow:'GET'}});
+      const modules=[
+        {id:'rx-medusa',name:'RX Meduza',file:'rx-bibi-unified-adapter.yml'},
+        {id:'rx-ant-task-board',name:'RX Mrówki',file:'rx-ant-task-board.yml'},
+        {id:'rx-queen',name:'RX Queen',file:'rx-queen-dashboard.yml'},
+        {id:'rx-bibi-ai',name:'RX BIBI AI',file:'rx-bibi-ai.yml'},
+        {id:'rx-cloud-computer',name:'RX Mega Cloud',file:'rx-mega-cloud-computer.yml'}
+      ];
+      const runs=await Promise.all(modules.map(async module=>{
+        try{
+          const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+module.file+'/runs?branch=main&per_page=1',{
+            headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Strazak-Module-Reports'},signal:AbortSignal.timeout(7000)
+          });
+          if(!response.ok)return {...module,status:'unavailable',conclusion:null,reason:response.status===404?'workflow_not_found':'github_api_unavailable'};
+          const data=await response.json();const run=data.workflow_runs?.[0];
+          return run?{...module,status:run.status,conclusion:run.conclusion||null,number:run.run_number,link:run.html_url,updated_at:run.updated_at}:{...module,status:'no_runs',conclusion:null};
+        }catch{return {...module,status:'unavailable',conclusion:null,reason:'github_api_unavailable'};}
+      }));
+      return new Response(JSON.stringify({ok:true,source:'github-actions',scope:'latest-main-run-per-workflow',note:'CI evidence only; does not confirm continuous runtime, module autonomy or deployed availability.',runs}),{status:200,headers});
+    }
     if (url.pathname === '/api/rx/health') {
       if(request.method!=='GET')return new Response(null,{status:405,headers:{Allow:'GET','Cache-Control':'no-store'}});
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
