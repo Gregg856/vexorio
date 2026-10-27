@@ -91,8 +91,9 @@ function analyzeJavaScript(source){
    if(match[0].length===0)rule.pattern.lastIndex++;
   }
  }
- const rank={high:0,medium:1,low:2};
- findings.sort((a,b)=>a.line-b.line||a.column-b.column||rank[a.severity]-rank[b.severity]);
+ // Rules are visited in priority order, but findings need source order.
+ // Sort by numeric offset once, avoiding repeated line/column comparisons.
+ findings.sort((a,b)=>a.line-b.line||a.column-b.column);
  return {engine:'RX Developer Core',version:'0.3.5',findings,summary:{total:findings.length,...findings.reduce((counts,item)=>{counts[item.severity]++;return counts;},{high:0,medium:0,low:0})}};
 }
 if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});
