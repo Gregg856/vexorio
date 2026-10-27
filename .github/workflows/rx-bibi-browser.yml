@@ -45,6 +45,10 @@ on:
       - 'rx-queen-ant-supervisor.cjs'
       - 'rx-ant-task-board.cjs'
       - 'rx-ant-builder.cjs'
+      - 'rx-unified-review.cjs'
+      - 'rx-bibi-unified-adapter.cjs'
+      - 'rx-developer-patch-bridge.cjs'
+      - 'rx-patch-drafter.cjs'
       - 'tests/rx-ant-builder.cjs'
       - 'rx-ant-academy-ci.cjs'
       - 'tests/rx-ant-academy-ci.cjs'
@@ -267,6 +271,12 @@ jobs:
       - name: RX ANT BUILDER — test szkiców i bezpieczeństwa
         if: always()
         run: node tests/rx-ant-builder.cjs
+      - name: RX UNIFIED — test integracji raportów BIBI
+        if: always()
+        run: node tests/rx-bibi-unified-adapter.cjs
+      - name: RX UNIFIED — przegląd raportów bez wdrażania
+        if: always()
+        run: node rx-bibi-unified-adapter.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:
