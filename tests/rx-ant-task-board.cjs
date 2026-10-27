@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {buildBoard}=require('../rx-ant-task-board.cjs');
+const {buildBoard,buildCosmosQueue}=require('../rx-ant-task-board.cjs');
 const {allocate}=require('../rx-bibi-budget.cjs');
 const issues=[
  {source:'panel',action:'inspect',target:'panel.js',priority:'medium'},
@@ -25,4 +25,10 @@ assert.equal(prioritized.tasks[0].historyOccurrences,3);
 assert.equal(prioritized.tasks[0].recurrent,true);
 assert.equal(prioritized.tasks[0].requiresApproval,true);
 assert.throws(()=>buildBoard({kind:'rx-queen-ant-supervisor',issues:[]},{memory:{kind:'wrong',entries:[]}}),/Invalid RX MEMORY/);
+const cosmos=buildCosmosQueue(board,{maxTasks:1});
+assert.equal(cosmos.planned.length,1);
+assert.equal(cosmos.deferred,1);
+assert.equal(cosmos.planned[0].requiresApproval,true);
+assert.equal(cosmos.executed,0);
+assert.throws(()=>buildCosmosQueue(board,{maxTasks:21}),/Invalid COSMOS queue/);
 console.log('PASS RX ANT TASK BOARD: priority, deduplication, bounded tasks');
