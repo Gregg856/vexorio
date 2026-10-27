@@ -11,10 +11,12 @@ function summarizeRxBibi(report){
   if(!r||!Array.isArray(r.suggestions)||r.suggestions.length>20)throw Error('Invalid RX developer review');
   return n+r.suggestions.length;
  },0);
- const pending=report.reviewQueue.tasks.filter(t=>t&&t.approved===false&&t.executed===false).length;
+ let pending=0,recurring=0;
+ for(const task of report.reviewQueue.tasks)if(task&&task.approved===false&&task.executed===false)pending++;
+ for(const task of report.board.tasks)if(task&&task.recurrent===true)recurring++;
  return {schema:1,kind:'rx-bibi-dashboard-summary',runId:report.runId,
   signals:report.summary.signals,tasks:report.board.tasks.length,
-  recurring:report.board.tasks.filter(t=>t.recurrent===true).length,
+  recurring,
   reviewedFiles:reviews.length,proposedPatches:proposals,awaitingApproval:pending,
   requiresApproval:true,productionModified:false,autoFixesApplied:0,
   automaticDeployment:false};
