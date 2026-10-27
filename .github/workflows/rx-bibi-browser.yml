@@ -264,6 +264,9 @@ jobs:
       - name: RX ANT BUILDER — przygotuj zadania budowy bez wdrażania
         if: always()
         run: node rx-ant-builder.cjs
+      - name: RX ANT BUILDER — test szkiców i bezpieczeństwa
+        if: always()
+        run: node tests/rx-ant-builder.cjs
       - name: RX QUEEN — raport nocnej zmiany
         if: always()
         env:
