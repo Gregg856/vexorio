@@ -147,6 +147,8 @@ jobs:
         with:
           path: rx-ai-checkpoints/latest.json
           key: rx-ant-ai-checkpoint-${{ github.run_id }}
+      - name: RX AI 2.0 — testuj wspólny router funkcji
+        run: node tests/rx-ai-router.cjs
       - name: Sprawdź RX AI CORE 1.0
         run: node tests/rx-ai-core.cjs
       - name: Sprawdź RX ANT LAB
