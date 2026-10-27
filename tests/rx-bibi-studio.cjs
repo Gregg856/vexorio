@@ -5,6 +5,8 @@ const {chromium,devices}=require('playwright');
  const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
  const base=process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev';
  const results=[];
+ const expectedSha=process.env.GITHUB_SHA||'';
+ // Browser checks target the deployed site; record its source separately from the CI commit.
  const check=(name,ok,detail='')=>{results.push({name,ok,detail});console.log((ok?'PASS ':'FAIL ')+name+' '+detail)};
  try{
   const response=await page.goto(base+'/rx-bibi-studio.html',{waitUntil:'load',timeout:30000});
@@ -138,6 +140,6 @@ const {chromium,devices}=require('playwright');
 
   }else{check('Graceful unsupported-browser state',await page.locator('#render').isDisabled(),'No MediaRecorder MIME types supported')}
  }catch(error){check('Test execution',false,error.message)}
- finally{require('node:fs').mkdirSync('rx-bibi-reports',{recursive:true});require('node:fs').writeFileSync('rx-bibi-reports/studio-report.json',JSON.stringify(results,null,2));require('node:fs').writeFileSync('rx-bibi-reports/rx-bibi-studio-check.json',JSON.stringify({schema:1,kind:'rx-bibi-studio',ok:!results.some(x=>!x.ok),failed:results.filter(x=>!x.ok).map(x=>({name:x.name,detail:String(x.detail||'').slice(0,500)}))},null,2));await browser.close()}
+ finally{require('node:fs').mkdirSync('rx-bibi-reports',{recursive:true});require('node:fs').writeFileSync('rx-bibi-reports/studio-report.json',JSON.stringify(results,null,2));require('node:fs').writeFileSync('rx-bibi-reports/rx-bibi-studio-check.json',JSON.stringify({schema:1,kind:'rx-bibi-studio',testedUrl:base,ciCommit:expectedSha,ok:!results.some(x=>!x.ok),failed:results.filter(x=>!x.ok).map(x=>({name:x.name,detail:String(x.detail||'').slice(0,500)}))},null,2));await browser.close()}
  if(results.some(x=>!x.ok))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
