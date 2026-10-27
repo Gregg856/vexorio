@@ -7,6 +7,28 @@
  const stamp=root.querySelector('[data-rx-live-time]');
  const readiness=root.querySelector('[data-rx-readiness]');
  const queenAlerts=root.querySelector('[data-rx-queen-alerts]');
+ const queenQueue=root.querySelector('[data-rx-queen-queue]');
+ async function loadQueenQueue(){
+  if(!queenQueue)return;
+  queenQueue.replaceChildren(text('p','Sprawdzam dostępność raportu kolejki…'));
+  try{
+   const response=await fetch('/rx-bibi-reports/rx-ant-review-queue.json',{cache:'no-store'});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const data=await response.json();
+   if(data.kind!=='rx-ant-review-queue'||data.schema!==1||!Array.isArray(data.tasks)||data.tasks.length>100||data.executions!==0||data.productionModified!==false)throw Error('Nieprawidłowy raport');
+   const header=text('p','Raport kolejki RX · przebieg: '+String(data.runId||'nieznany').slice(0,80)+' · Zadań: '+data.tasks.length+' · Bez automatycznych wdrożeń');
+   const list=document.createElement('div');list.className='rx-live-grid';
+   for(const task of data.tasks){
+    if(!task||task.requiresApproval!==true||task.approved!==false||task.executed!==false)throw Error('Niezgodny stan zatwierdzenia');
+    const card=document.createElement('article');card.className='rx-live-card';
+    card.append(text('strong',String(task.target||'Nieznany cel').slice(0,120)),text('small','Do przeglądu · '+String(task.action||'').slice(0,80)+' · Wystąpienia: '+Number(task.occurrences||0)));
+    list.append(card);
+   }
+   if(!data.tasks.length)list.append(text('p','Raport nie zawiera oczekujących zadań.'));
+   queenQueue.replaceChildren(header,list);
+  }catch(_){queenQueue.replaceChildren(text('p','Brak opublikowanego raportu kolejki RX. Nie można potwierdzić bieżących zadań.'))}
+ }
+
  const workflowModules={'rx-bibi-browser.yml':['bibi-adapter'],'guard-monitor.yml':['queen'],'rx-ant-builder-check.yml':['ant-builder','ant-board'],'rx-patch-drafter-check.yml':['developer','unified','source-reader']};
  async function loadReadiness(){
   if(!readiness)return;
@@ -86,6 +108,6 @@
    stamp.textContent='Odczyt: '+new Date().toLocaleString('pl-PL')+' · gałąź testowa, GitHub Actions (nie telemetria na żywo)';
   }finally{clearTimeout(timeout);refresh.disabled=false}
  }
- refresh.addEventListener('click',()=>{load();loadReadiness()});
- load();loadReadiness();
+ refresh.addEventListener('click',()=>{load();loadReadiness();loadQueenQueue()});
+ load();loadReadiness();loadQueenQueue();
 })();
