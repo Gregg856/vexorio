@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {draftPatch,previewPatch}=require('../rx-patch-drafter.cjs');
+const draft=draftPatch({target:'rx-photo-motion.js',oldText:'const speed = 1;',newText:'const speed = 2;',reason:'Correct speed default'});
+assert.equal(draft.applied,false);
+assert.equal(draft.requiresApproval,true);
+const result=previewPatch(draft,'// test\nconst speed = 1;\n');
+assert.equal(result.preview,'// test\nconst speed = 2;\n');
+assert.equal(result.applied,false);
+assert.throws(()=>previewPatch(draft,'const speed = 1; const speed = 1;'),/ambiguous/);
+assert.throws(()=>draftPatch({target:'.github/workflows/deploy.js',oldText:'a',newText:'b',reason:'unsafe edit'}),/Invalid patch target/);
+assert.throws(()=>draftPatch({target:'../secrets.js',oldText:'a',newText:'b',reason:'unsafe edit'}),/Invalid patch target/);
+assert.throws(()=>draftPatch({target:'worker.js',oldText:'a',newText:'a',reason:'no-op'}),/Invalid patch contents/);
+console.log('PASS RX PATCH DRAFTER preview-only and blocked paths');
