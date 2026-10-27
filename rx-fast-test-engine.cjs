@@ -2,7 +2,7 @@
 const {spawn}=require('node:child_process');
 const fs=require('node:fs');
 const path=require('node:path');
-const DEFAULT_TESTS=['tests/rx-ant-academy.cjs','tests/rx-ant-academy-proof.cjs','tests/rx-ant-academy-ci.cjs','tests/rx-bibi-budget.cjs','tests/rx-ant-task-board.cjs'];
+const DEFAULT_TESTS=['tests/rx-ant-academy.cjs','tests/rx-ant-academy-proof.cjs','tests/rx-ant-academy-ci.cjs','tests/rx-bibi-budget.cjs','tests/rx-ant-task-board.cjs','tests/rx-medusa-engine.cjs'];
 async function runFastTests({tests=DEFAULT_TESTS,parallel=3,timeoutMs=20000}={}){
  if(!Array.isArray(tests)||tests.length>50||!Number.isSafeInteger(parallel)||parallel<1||parallel>6||!Number.isSafeInteger(timeoutMs)||timeoutMs<1000||timeoutMs>120000)throw Error('Invalid test limits');
  if(tests.some(t=>typeof t!=='string'||!/^tests\/[a-z0-9-]+\.cjs$/.test(t)||!fs.existsSync(path.resolve(t))))throw Error('Invalid test path');
@@ -18,5 +18,5 @@ async function runFastTests({tests=DEFAULT_TESTS,parallel=3,timeoutMs=20000}={})
  await Promise.all(Array.from({length:Math.min(parallel,tests.length)},worker));
  return {schema:1,kind:'rx-fast-test-engine',passed:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,total:results.length,elapsedMs:Date.now()-suiteStarted,slowest:results.filter(Boolean).slice().sort((a,b)=>b.ms-a.ms).slice(0,3).map(r=>({file:r.file,ms:r.ms,ok:r.ok})),results};
 }
-if(require.main===module)runFastTests().then(report=>{fs.mkdirSync('rx-bibi-reports',{recursive:true});fs.writeFileSync('rx-bibi-reports/rx-fast-tests.json',JSON.stringify(report,null,2)+'\n');for(const r of report.results)console.log((r.ok?'PASS ':'FAIL ')+r.file+' '+r.ms+'ms'+(r.ok?'':' '+(r.output||r.error||'')));console.log('RX FAST:',report.passed+'/'+report.total);if(report.failed)process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1});
+if(require.main===module)runFastTests().then(report=>{fs.mkdirSync('rx-bibi-reports',{recursive:true});fs.writeFileSync('rx-bibi-reports/rx-fast-tests.json',JSON.stringify(report,null,2)+'\n');for(const r of report.results)console.log((r.ok?'PASS ':'FAIL ')+r.file+' '+r.ms+'ms'+(r.ok?'':' '+(r.output||r.error||'')));console.log('RX FAST:',report.passed+'/'+report.total,'in',report.elapsedMs+'ms');if(process.env.GITHUB_STEP_SUMMARY){const lines=['## RX FAST — testy równoległe','- Wynik: '+report.passed+'/'+report.total,'- Czas całej serii: '+report.elapsedMs+' ms','- Najwolniejsze:'];for(const t of report.slowest)lines.push('  - '+t.file+': '+t.ms+' ms'+(t.ok?'':' (FAIL)'));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n')}if(report.failed)process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1});
 module.exports={runFastTests};
