@@ -96,6 +96,19 @@ const maskSyntaxAB=syntaxCases.map(({name,text})=>{
  const oldMs=median(oldSamples),newMs=median(newSamples);
  return {name,bytes:Buffer.byteLength(text),oldMs:Number(oldMs.toFixed(5)),newMs:Number(newMs.toFixed(5)),ratio:Number((newMs/oldMs).toFixed(3))};
 });
+// Repeated paired runs quantify noise before choosing another lexer change.
+const maskStability=syntaxCases.map(({name,text})=>{
+ const rounds=[];
+ const run=fn=>{const start=performance.now();for(let k=0;k<30;k++)fn(text);return (performance.now()-start)/30;};
+ for(let round=0;round<9;round++){
+  const firstLegacy=round%2===0;
+  const oldMs=firstLegacy?run(legacyMask):null;
+  const newMs=run(maskJavaScript);
+  rounds.push({oldMs:oldMs??run(legacyMask),newMs});
+ }
+ const ratios=rounds.map(x=>x.newMs/x.oldMs).sort((a,b)=>a-b);
+ return {name,rounds:ratios.length,medianRatio:Number(ratios[4].toFixed(3)),minRatio:Number(ratios[0].toFixed(3)),maxRatio:Number(ratios[8].toFixed(3)),note:'Paired local microbenchmarks; variation across rounds is expected.'};
+});
 const developerPhases=largeSources.map(({lines,text})=>{
  const iterations=lines>=15000?5:lines>=5000?10:20;
  const masking=measure('RX Developer masking',()=>maskJavaScript(text),iterations);
@@ -109,7 +122,7 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,results};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify(output,null,2));
