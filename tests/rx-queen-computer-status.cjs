@@ -14,4 +14,8 @@ assert.equal(timed.totalTestDurationMs,133);
 assert.deepEqual(timed.slowestChecks.map(x=>x.file),['b','a','c']);
 assert.equal(failed.issues[0].priority,'high');
 assert.throws(()=>summarizeRX({checks:[]}),/Invalid RX report/);
+const ants=summarizeRX({schema:1,kind:'rx-cosmos-ant-check-report',checks:[{file:'tests/rx-ai-core.cjs',status:'passed'}],queueTasks:3,approvedTasks:1,skippedTasks:2,executed:1,labs:{}});
+assert.equal(ants.state,'checks_passed');
+assert.deepEqual(ants.antQueue,{queued:3,approved:1,skipped:2,executed:1,approvalRequired:true});
+assert.equal(p.antQueue,null);
 console.log('PASS RX QUEEN status summarizes reports without claiming real cloud VM');
