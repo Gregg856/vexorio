@@ -117,16 +117,33 @@ function analyzeJavaScript(source){
  while((declaration=aliasDeclaration.exec(masked))!==null){
   const alias=declaration[1],kind=declaration[2];
   const after=masked.slice(declaration.index+declaration[0].length);
-  // Skip aliases that are reassigned or shadowed later in the file.
-  const escapeRegex=value=>value.replace(/[^A-Za-z0-9_$]/g,'');
-  const name=escapeRegex(alias);
-  if(new RegExp(String.raw`\b`+name+String.raw`\s*(?:=(?!=)|\+\+|--|\+=|-=)`).test(after))continue;
-  // Shadowed function parameters must not be mistaken for outer aliases.
-  const shadowedParameter=new RegExp(String.raw`\bfunction\s*[A-Za-z_$\w]*\s*\([^)]*\b`+name+String.raw`\b[^)]*\)`);
-  if(shadowedParameter.test(after))continue;
-  const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*\(`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
+  const name=alias;
+  const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*(?:\?\.)?\s*\(`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
+  const assignments=new RegExp(String.raw`\b`+name+String.raw`\s*(?:=(?!=)|\+\+|--|\+=|-=)`,'g');
+  // Limit suppression to calls inside a function whose parameter shadows this alias.
+  const shadowRanges=[];
+  const shadow=new RegExp(String.raw`\bfunction\s*[A-Za-z_$\w]*\s*\([^)]*\b`+name+String.raw`\b[^)]*\)\s*\{`,'g');
+  let fn;
+  while((fn=shadow.exec(after))!==null){
+   const opening=after.indexOf('{',fn.index+fn[0].length-1);
+   let depth=1,end=opening+1;
+   for(;end<after.length&&depth;end++){if(after[end]==='{')depth++;else if(after[end]==='}')depth--;}
+   shadowRanges.push([fn.index,end]);
+  }
+  const arrow=new RegExp(String.raw`\(\s*`+name+String.raw`\s*\)\s*=>\s*`,'g');
+  while((fn=arrow.exec(after))!==null){
+   const begin=fn.index,opening=arrow.lastIndex;
+   if(after[opening]==='{'){let depth=1,end=opening+1;for(;end<after.length&&depth;end++){if(after[end]==='{')depth++;else if(after[end]==='}')depth--;}shadowRanges.push([begin,end]);}
+   else {const end=after.indexOf(';',opening);shadowRanges.push([begin,end<0?after.length:end]);}
+  }
+  const inShadow=index=>shadowRanges.some(([start,end])=>index>=start&&index<end);
+  const reassignments=[];let assignment;
+  while((assignment=assignments.exec(after))!==null)if(!inShadow(assignment.index))reassignments.push(assignment.index);
   let found;
   while((found=call.exec(after))!==null){
+   if(inShadow(found.index))continue;
+   // A reassignment before a call invalidates the alias; later ones do not.
+   if(reassignments.some(index=>index<found.index))continue;
    extraMatches.push({offset:declaration.index+declaration[0].length+found.index,rule:kind==='eval'?{id:'RX001',severity:'high',message:'Alias eval() wykonuje dynamiczny kod.',advice:'Unikaj aliasowania eval() dla niezaufanego wejścia.'}:{id:'RX011',severity:'medium',message:'Alias localStorage.setItem() wymaga kontroli danych.',advice:'Nie przechowuj sekretów w localStorage.'}});
   }
  }
