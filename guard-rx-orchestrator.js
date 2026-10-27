@@ -13,7 +13,12 @@
    {pattern:/^(github|zmiany|raport github)$/iu,module:'changes-report',kind:'legacy'},
    {pattern:/^plan\s*:/iu,module:'task-analyzer',kind:'legacy'},
    {pattern:/^(wtyczki|plugins|wtyczka\s*:)/iu,module:'plugin-registry',kind:'legacy'},
-   {pattern:/^(historia|wyczyść historię)$/iu,module:'history',kind:'legacy'}
+   {pattern:/^(historia|wyczyść historię)$/iu,module:'history',kind:'legacy'},
+   {pattern:/^(meduza|rx meduza|sygnały meduzy)$/iu,module:'rx-medusa',kind:'module-status'},
+   {pattern:/^(mrówki|mrowki|rx ant|zadania mrówek|zadania mrowek)$/iu,module:'rx-ant-task-board',kind:'module-status'},
+   {pattern:/^(królowa|krolowa|rx queen)$/iu,module:'rx-queen',kind:'module-status'},
+   {pattern:/^(bibi ai|rx bibi ai|rx ai)$/iu,module:'rx-bibi-ai',kind:'module-status'},
+   {pattern:/^(komputer rx|rx mega cloud)$/iu,module:'rx-cloud-computer',kind:'module-status'}
   ];
   for(const entry of routes)if(entry.pattern.test(lower))return {kind:entry.kind,module:entry.module,requiresApproval:false};
   const natural=capabilities.conversation?.respondNatural?.(command,capabilities.analyzeTask);
@@ -50,10 +55,15 @@
    {id:'changes-report',role:'Raport GitHub',mode:'read-only'},
    {id:'developer-inspector',role:'Analiza kodu',mode:'read-only'},
    {id:'developer-diff',role:'Przegląd zmian',mode:'read-only'},
-   {id:'task-queue',role:'Lokalna kolejka zadań',mode:'approval-required'}
+   {id:'task-queue',role:'Lokalna kolejka zadań',mode:'approval-required'},
+   {id:'rx-medusa',role:'Analiza sygnałów w raportach CI',mode:'status-only'},
+   {id:'rx-ant-task-board',role:'Kolejka mrówek w raportach CI',mode:'status-only'},
+   {id:'rx-queen',role:'Nadzór nad raportami i zadaniami',mode:'status-only'},
+   {id:'rx-bibi-ai',role:'Router i narzędzia BIBI AI',mode:'status-only'},
+   {id:'rx-cloud-computer',role:'Ograniczone testy CI komputera RX',mode:'status-only'}
   ]);
  }
- const api={route,capabilities,createSession,version:'1.2.0'};
+ const api={route,capabilities,createSession,version:'1.3.0'};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  if(root)root.GuardRXOrchestrator=api;
 })(typeof window!=='undefined'?window:null);

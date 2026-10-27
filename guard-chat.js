@@ -354,6 +354,19 @@
     analyzeTask:window.GuardEngine2?.analyzeTask
    });
    if(routing.kind==='advisory'){rxSession?.remember(command);append('RX Strażak',routing.message);return;}
+   if(routing.kind==='module-status'){
+    const moduleInfo={
+     'rx-medusa':['RX Meduza','rx-medusa-engine.cjs','Grupowanie sygnałów z raportów CI'],
+     'rx-ant-task-board':['RX Mrówki','rx-ant-task-board.cjs','Kolejka propozycji zadań'],
+     'rx-queen':['RX Queen','rx-queen-ant-supervisor.cjs','Nadzór nad zadaniami i raportami'],
+     'rx-bibi-ai':['RX BIBI AI','rx-ai-router.cjs','Router i narzędzia AI'],
+     'rx-cloud-computer':['RX Mega Cloud','rx-mega-cloud-computer.cjs','Ograniczone testy GitHub Actions']
+    }[routing.module];
+    if(moduleInfo){
+     append('RX Strażak',moduleInfo[0]+' — '+moduleInfo[2]+'.'+String.fromCharCode(10)+'Kod: '+moduleInfo[1]+String.fromCharCode(10)+'Stan uruchomienia: niezweryfikowany w tej sesji. To informacja o module, nie wynik testu ani wykonanie zadania.'+String.fromCharCode(10)+'Testy CI: https://github.com/Gregg856/vexorio/actions');
+     return;
+    }
+   }
   }
   const answer=window.GuardCommands.respond(command);
   if(answer.kind==='plan'){
