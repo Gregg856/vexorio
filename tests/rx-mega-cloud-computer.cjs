@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {runCloudComputer,CHECKS}=require('../rx-mega-cloud-computer.cjs');
+const r=runCloudComputer();
+assert.equal(r.planned,CHECKS.length);
+assert.equal(r.passed,0);
+assert.equal(r.failed,0);
+assert.equal(r.cloudServerProvisioned,false);
+assert.equal(r.labs.higgs.realCERNData,false);
+assert.equal(r.labs.collider.physicalCollider,false);
+assert.equal(r.labs.energy.energyProduced,false);
+const executed=runCloudComputer({execute:true});
+assert.equal(executed.failed,0,JSON.stringify(executed.checks));
+assert.equal(executed.passed,CHECKS.length);
+console.log('PASS RX MEGA CLOUD COMPUTER bounded real test execution and lab reports');
