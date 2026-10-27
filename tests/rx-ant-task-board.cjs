@@ -40,3 +40,8 @@ assert.equal(queue2.productionModified,false);
 assert.equal(buildReviewQueue(buildBoard({kind:'rx-queen-ant-supervisor',issues:[]}),{previous:queue2,runId:'ci-3'}).closedSincePrevious,2);
 assert.throws(()=>buildReviewQueue(board,{runId:'../unsafe'}),/Invalid RX run ID/);
 console.log('PASS RX QUEEN review queue: history, closure, approval gate');
+
+assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,schema:99},runId:'ci-4'}),/Invalid prior review queue/);
+assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[{...queue1.tasks[0],approved:true}]},runId:'ci-4'}),/Invalid prior queue item/);
+assert.throws(()=>buildReviewQueue(board,{previous:{...queue1,tasks:[queue1.tasks[0],queue1.tasks[0]]},runId:'ci-4'}),/Invalid prior queue item/);
+console.log('PASS RX QUEEN rejects corrupt, duplicate or unauthorized prior approvals');
