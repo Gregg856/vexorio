@@ -128,8 +128,11 @@
   catch(_){result.textContent='Nie udało się wyczyścić lokalnej pamięci.';}
  });
  button.addEventListener('click',()=>{
-  const learned=document.getElementById('rxQueenLearned').value.trim();
-  const manual=document.getElementById('rxQueenMemory').value.trim();
+  const learnedField=document.getElementById('rxQueenLearned');
+  const manualField=document.getElementById('rxQueenMemory');
+  if(!learnedField||!manualField){result.textContent='Brakuje pól porównania RX. Zgłoś błąd panelu.';return;}
+  const learned=learnedField.value.trim();
+  const manual=manualField.value.trim();
   const snapshot=document.getElementById('rxQueenSnapshot')?.value.trim()||'';
   const cell=document.getElementById('rxQueenCell')?.value.trim()||'';
   const code=document.getElementById('rxQueenCode')?.value.trim()||'';
