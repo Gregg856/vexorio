@@ -30,3 +30,12 @@
 6. Dopiero wtedy rozważyć scalanie PR #35 i #36, we właściwej kolejności.
 
 **Nie oznaczać integracji jako ukończonej, dopóki kroki 1–5 nie zostaną zweryfikowane.**
+
+## Weryfikacja CI i zakres (27.10.2026)
+- Commit 1a4bf157: RX ANT BUILDER focused checks — success (run 40484728208).
+- Commit 1a4bf157: RX PATCH DRAFTER focused checks — success (run 40484728621).
+- Istniejący RX BIBI mobile browser: run 40480764565 na main — success; zawiera RX QUEEN i ANT BUILDER.
+- **Uwaga:** ten run BIBI jest starszy od integracji RX UNIFIED; nie potwierdza nowego adaptera.
+- Workflow RX BIBI jest ustawiony na push do main, ręczne workflow_dispatch i harmonogram. Zmiany w PR #36 nie uruchomiły jego pełnej wersji z nowymi krokami.
+- Adapter BIBI oraz pełny łańcuch przeszły focused checks na gałęzi testowej; nadal potrzebna walidacja pełnego workflow po scaleniu lub bezpiecznym ręcznym uruchomieniu na gałęzi.
+- Patch previews pozostają read-only; brak dowodu na autonomiczne naprawy lub deployment.
