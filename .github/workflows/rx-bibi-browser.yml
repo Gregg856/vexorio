@@ -192,6 +192,12 @@ jobs:
       - name: RX QUEEN — zbierz błędy chmury i AI
         if: always()
         run: node rx-queen-ant-supervisor.cjs
+      - name: RX QUEEN AI 2.0 — testuj kierowanie zadań
+        if: always()
+        run: node tests/rx-queen-ai-bridge.cjs
+      - name: RX QUEEN AI 2.0 — zaplanuj zadania mrówek
+        if: always()
+        run: node rx-queen-ai-bridge.cjs
       - name: RX MRÓWKI — testuj katalog w Chromium
         if: always()
         run: node tests/rx-programs-browser.cjs
