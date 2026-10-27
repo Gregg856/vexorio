@@ -48,6 +48,8 @@ on:
       - 'rx-unified-review.cjs'
       - 'tests/rx-unified-failure-simulation.cjs'
       - 'rx-bibi-unified-adapter.cjs'
+      - 'rx-source-reader.cjs'
+      - 'tests/rx-source-reader.cjs'
       - 'rx-developer-patch-bridge.cjs'
       - 'rx-patch-drafter.cjs'
       - 'tests/rx-ant-builder.cjs'
@@ -278,6 +280,9 @@ jobs:
       - name: RX UNIFIED — symulacja awarii i powracającego błędu
         if: always()
         run: node tests/rx-unified-failure-simulation.cjs
+      - name: RX UNIFIED — test bezpiecznego odczytu kodu
+        if: always()
+        run: node tests/rx-source-reader.cjs
       - name: RX UNIFIED — przegląd raportów bez wdrażania
         if: always()
         run: node rx-bibi-unified-adapter.cjs
