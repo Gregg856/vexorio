@@ -17,8 +17,8 @@ export default {
         ];
         const runs=await Promise.all(workflows.map(async ({name,file})=>{
           try{
-            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+file+'/runs?per_page=1',{
-              headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Direct-2076'},
+            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+file+'/runs?branch=main&per_page=1',{
+              headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Direct-2076',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})},
               signal:AbortSignal.timeout(8000)
             });
             if(!response.ok)return {name,status:'unavailable',result:null};
@@ -29,7 +29,7 @@ export default {
         }));
         // A temporary GitHub API outage must not make the RX status endpoint fail with 502.
         // Report degraded availability explicitly so the UI can show a warning.
-        const degraded=runs.every(run=>run.status==='unavailable');
+        const degraded=runs.some(run=>run.status==='unavailable'||run.status==='unknown');
         return new Response(JSON.stringify({ok:!degraded,command:'RX STATUS',source:'github-actions',degraded,runs}),{status:200,headers});
       }catch{
         return new Response(JSON.stringify({ok:false,command:'RX STATUS',error:'status_temporarily_unavailable'}),{status:502,headers});
