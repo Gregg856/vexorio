@@ -1,0 +1,30 @@
+name: RX Benchmark 3.0
+on:
+  push:
+    paths:
+      - 'rx-benchmark-3-0.cjs'
+      - '.github/workflows/rx-benchmark-3-0.yml'
+      - 'guard/rx-developer-core.cjs'
+      - 'guard/rx-developer-core-browser.js'
+  pull_request:
+    paths:
+      - 'rx-benchmark-3-0.cjs'
+      - '.github/workflows/rx-benchmark-3-0.yml'
+      - 'guard/rx-developer-core.cjs'
+      - 'guard/rx-developer-core-browser.js'
+  workflow_dispatch:
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run RX Benchmark 3.0
+        run: node rx-benchmark-3-0.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rx-benchmark-3-0
+          path: rx-bibi-reports/rx-benchmark-3-0.json
+          retention-days: 7
