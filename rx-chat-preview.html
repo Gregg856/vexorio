@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RX BIBI — Czat</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;background:#030e13;color:#e7f5f7}button,textarea{font:inherit}button{cursor:pointer}button:focus-visible,textarea:focus-visible{outline:3px solid #62ffc3}
+.app{max-width:1200px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;border-inline:1px solid #17414c}
+header{padding:18px;display:flex;align-items:center;gap:14px;background:#07151d;border-bottom:1px solid #16454b}
+.logo{font-size:clamp(27px,5vw,48px);font-weight:900;letter-spacing:-2px}.logo span{color:#15e884}.sub{color:#adc4cf}.status{margin-left:auto;border:1px solid #148e69;padding:10px;border-radius:15px;color:#92e5c1;font-size:13px}
+nav{display:flex;gap:8px;overflow-x:auto;padding:12px;background:#07131b}nav button,.shortcuts button{background:#102b3b;color:#d9f5ff;border:1px solid #2b586b;border-radius:14px;padding:13px;white-space:nowrap}nav button[aria-selected=true]{background:#056b48;border-color:#25ef95}
+main{display:grid;grid-template-columns:240px minmax(0,1fr);gap:14px;flex:1;padding:14px;min-height:400px}.mascot{background:radial-gradient(circle at 50% 30%,#064b33,#06171d 70%);border:1px solid #137e59;border-radius:22px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:16px;text-align:center}.mascot .emoji{font-size:95px;filter:drop-shadow(0 0 16px #16df7a)}.mascot strong{font-size:22px}
+.chat{background:#081c26;border:1px solid #24566b;border-radius:22px;display:flex;flex-direction:column;min-width:0}.messages{flex:1;min-height:270px;padding:18px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}.bubble{padding:13px 16px;border-radius:16px;max-width:88%;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}.assistant{align-self:flex-start;background:#12313e;border:1px solid #31596a}.user{align-self:flex-end;background:#074f87;border:1px solid #1288c4}
+form{display:flex;gap:8px;padding:12px;border-top:1px solid #275061}textarea{flex:1;resize:vertical;min-height:54px;max-height:180px;border:1px solid #33738a;border-radius:13px;background:#071e29;color:#fff;padding:12px;min-width:0}form button{background:#00b968;color:#001a0e;border:0;border-radius:13px;padding:0 22px;font-weight:800}
+.shortcuts{display:flex;gap:8px;overflow-x:auto;padding:12px}.hint{padding:0 16px 12px;color:#a5becb;font-size:12px}
+@media(max-width:700px){main{grid-template-columns:1fr}.mascot{flex-direction:row;gap:12px;padding:9px}.mascot .emoji{font-size:45px}.mascot strong{font-size:16px}.status{font-size:11px}header{padding:12px}.messages{min-height:38dvh}}
+</style></head><body><div class="app">
+<header><div class="logo">RX <span>BIBI</span></div><div class="sub">Twój asystent<br><small>RX Czat — centrum poleceń</small></div><div class="status">● Tryb demonstracyjny</div></header>
+<nav aria-label="Moduły RX"><button aria-selected="true" data-module="Czat">💬 Czat</button><button data-module="Developer">💻 Developer</button><button data-module="Tester">🧪 Tester</button><button data-module="Diagnostyka">🔎 Diagnostyka</button><button data-module="Historia">📚 Historia</button><button data-module="Plugins">🧩 Plugins</button><button data-module="Zadania">📋 Zadania</button><button data-module="Ustawienia">⚙️ Ustawienia</button></nav>
+<main><aside class="mascot"><div class="emoji" aria-hidden="true">👨‍🚒</div><div><strong>RX Strażak</strong><p>Bezpieczeństwo i diagnostyka</p></div></aside>
+<section class="chat" aria-label="Rozmowa RX Czat"><div class="messages" id="messages" role="log" aria-live="polite"><div class="bubble assistant">Cześć! 👋 Jestem RX Czat. To pierwszy interaktywny widok projektu. Mogę pokazać dostępne polecenia; prawdziwe raporty będą podłączone osobno.</div></div>
+<form id="chat-form"><textarea id="command" maxlength="500" aria-label="Polecenie do RX Czat" placeholder="Napisz polecenie do RX Czat..." required></textarea><button type="submit">➤ Wyślij</button></form>
+<div class="shortcuts"><button data-command="status">🛡️ Stan systemu</button><button data-command="błędy">🔎 Sprawdź błędy</button><button data-command="testy">🧪 Testy</button><button data-command="zadania">📋 Zadania</button></div>
+<div class="hint">Bez połączenia z API. Brak automatycznych zmian i fikcyjnych wyników testów.</div></section></main></div>
+<script>
+'use strict';
+const messages=document.getElementById('messages');
+const input=document.getElementById('command');
+function addMessage(value,kind){const el=document.createElement('div');el.className='bubble '+kind;el.textContent=value;messages.appendChild(el);el.scrollIntoView({block:'end'});}
+function reply(value){const q=value.trim().toLocaleLowerCase('pl-PL');if(/^(status|stan systemu|błędy|bledy|testy|zadania)$/.test(q))return 'Funkcja „'+q+'” jest przygotowana w interfejsie. Dane rzeczywiste wymagają podłączenia do bezpiecznego API RX.';return 'Otrzymałem polecenie. To wersja demonstracyjna RX Czat — nie uruchamiam narzędzi ani nie udaję modelu AI.';}
+function send(value){const clean=value.trim().slice(0,500);if(!clean)return;addMessage(clean,'user');addMessage(reply(clean),'assistant');}
+document.getElementById('chat-form').addEventListener('submit',event=>{event.preventDefault();send(input.value);input.value='';input.focus();});
+document.querySelectorAll('[data-command]').forEach(button=>button.addEventListener('click',()=>send(button.dataset.command)));
+document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-module]').forEach(item=>item.setAttribute('aria-selected',String(item===button)));if(button.dataset.module!=='Czat')addMessage('Moduł '+button.dataset.module+' — widok do podłączenia. RX Czat pozostaje centrum systemu.','assistant');}));
+</script></body></html>
