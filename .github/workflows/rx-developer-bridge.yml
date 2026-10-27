@@ -1,0 +1,27 @@
+name: RX Developer Bridge — isolated CI
+on:
+  pull_request:
+    paths:
+      - 'rx-patch-drafter.cjs'
+      - 'rx-developer-patch-bridge.cjs'
+      - 'tests/rx-developer-bridge-isolated.cjs'
+      - '.github/workflows/rx-developer-bridge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          node --check rx-patch-drafter.cjs
+          node --check rx-developer-patch-bridge.cjs
+          node --check tests/rx-developer-bridge-isolated.cjs
+      - name: Safe review-only integration
+        run: node tests/rx-developer-bridge-isolated.cjs
