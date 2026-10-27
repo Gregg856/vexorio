@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {buildBoard}=require('../rx-ant-task-board.cjs');
+const {buildBoard,buildReviewQueue}=require('../rx-ant-task-board.cjs');
 const {allocate}=require('../rx-bibi-budget.cjs');
 const issues=[
  {source:'panel',action:'inspect',target:'panel.js',priority:'medium'},
@@ -26,3 +26,17 @@ assert.equal(prioritized.tasks[0].recurrent,true);
 assert.equal(prioritized.tasks[0].requiresApproval,true);
 assert.throws(()=>buildBoard({kind:'rx-queen-ant-supervisor',issues:[]},{memory:{kind:'wrong',entries:[]}}),/Invalid RX MEMORY/);
 console.log('PASS RX ANT TASK BOARD: priority, deduplication, bounded tasks');
+
+const queue1=buildReviewQueue(board,{runId:'ci-1'});
+const queue2=buildReviewQueue(board,{previous:queue1,runId:'ci-2'});
+assert.equal(queue1.tasks.length,2);
+assert.equal(queue2.tasks[0].occurrences,2);
+assert.equal(queue2.tasks[0].firstSeen,'ci-1');
+assert.equal(queue2.tasks[0].lastSeen,'ci-2');
+assert.equal(queue2.tasks[0].approved,false);
+assert.equal(queue2.tasks[0].executed,false);
+assert.equal(queue2.executions,0);
+assert.equal(queue2.productionModified,false);
+assert.equal(buildReviewQueue(buildBoard({kind:'rx-queen-ant-supervisor',issues:[]}),{previous:queue2,runId:'ci-3'}).closedSincePrevious,2);
+assert.throws(()=>buildReviewQueue(board,{runId:'../unsafe'}),/Invalid RX run ID/);
+console.log('PASS RX QUEEN review queue: history, closure, approval gate');
