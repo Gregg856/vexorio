@@ -5,6 +5,12 @@ on:
       - 'rx-bibi-dashboard-summary.cjs'
       - 'tests/rx-bibi-dashboard-summary.cjs'
       - '.github/workflows/rx-bibi-dashboard-summary.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'rx-bibi-dashboard-summary.cjs'
+      - 'tests/rx-bibi-dashboard-summary.cjs'
+      - '.github/workflows/rx-bibi-dashboard-summary.yml'
   workflow_dispatch:
 permissions:
   contents: read
