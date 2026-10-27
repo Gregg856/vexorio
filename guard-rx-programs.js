@@ -3,6 +3,7 @@
  const root=document.getElementById('rxProgramsList');
  if(!root)return;
  const programs=[
+ ['🎥 RX Screen Recorder','Nagrywanie udostępnionego ekranu za zgodą','panel','/rx-screen-recorder.html'],
  ['🛡️ RX Strażak','Panel i kontrola treści','panel','#guardPanelModeration'],
  ['💬 RX Czat','Rozmowy i polecenia','panel','#guardPanelChat'],
  ['💻 RX Developer','Kod, analiza i propozycje napraw','panel','#guardPanelDeveloper'],
