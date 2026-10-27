@@ -186,6 +186,9 @@ jobs:
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         if: always()
         run: node tests/rx-bibi-studio.cjs
+      - name: RX MRÓWKI — testuj katalog w Chromium
+        if: always()
+        run: node tests/rx-programs-browser.cjs
       - name: RX MRÓWKI — testuj nadzorcę Królowej
         if: always()
         run: node tests/rx-queen-ant-supervisor.cjs
@@ -198,9 +201,6 @@ jobs:
       - name: RX QUEEN AI 2.0 — zaplanuj zadania mrówek
         if: always()
         run: node rx-queen-ai-bridge.cjs
-      - name: RX MRÓWKI — testuj katalog w Chromium
-        if: always()
-        run: node tests/rx-programs-browser.cjs
       - name: RX MRÓWKI — sprawdź katalog programów
         if: always()
         run: node tests/rx-programs-catalog.cjs
