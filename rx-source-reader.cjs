@@ -2,7 +2,6 @@
 // Read-only bounded source loader for RX diagnostics. No path escapes or writes.
 const fs=require('node:fs');
 const path=require('node:path');
-const {buildBoard}=require('./rx-ant-task-board.cjs');
 const SAFE=/^(?:[a-z0-9][a-z0-9._-]*\/)*[a-z0-9][a-z0-9._-]*\.(?:js|cjs|mjs)$/i;
 const BLOCKED=/(?:^|\/)(?:\.github|node_modules|secrets?|\.env)(?:\/|$)/i;
 function collectSources(board,{root=process.cwd(),limit=20,maxBytes=500000}={}){
