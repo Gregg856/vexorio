@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const core=fs.readFileSync('guard/rx-developer-core.cjs','utf8');
+const browser=fs.readFileSync('guard/rx-developer-core-browser.js','utf8');
+const marker='module.exports={maskJavaScript,analyzeJavaScript};';
+assert(core.includes(marker),'Core export marker must exist');
+const expected='// Browser adapter for RX Developer Core; do not edit independently.\n'+core.replace(marker,"if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});");
+assert.equal(browser,expected,'RX Developer browser adapter must match source core; synchronize both before merging');
+console.log('RX Developer browser/core parity OK');
