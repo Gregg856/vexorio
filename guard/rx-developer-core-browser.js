@@ -93,6 +93,29 @@ function analyzeJavaScript(source){
   }
  }
 
+ // Conservative detection of direct, unmodified aliases within the same source.
+ // No interprocedural or control-flow claim: reassignment invalidates an alias.
+ const indirectEval=/\\(\\s*0\\s*,\\s*eval\\s*\\)\\s*\\(/g;
+ let indirect;
+ while((indirect=indirectEval.exec(masked))!==null){
+  extraMatches.push({offset:indirect.index,rule:{id:'RX001',severity:'high',message:'Pośrednie eval() wykonuje dynamiczny kod.',advice:'Nie wykonuj niezaufanego tekstu jako kodu.'}});
+ }
+ const aliasDeclaration=/\\b(?:const|let|var)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*(eval|localStorage)\\b/g;
+ let declaration;
+ while((declaration=aliasDeclaration.exec(masked))!==null){
+  const alias=declaration[1],kind=declaration[2];
+  const after=masked.slice(declaration.index+declaration[0].length);
+  // Skip aliases that are reassigned or shadowed later in the file.
+  const escapeRegex=value=>value.replace(/[.*+?^\x24{}()|[\]\\]/g,'\\ const lineStarts=[0];');
+  const name=escapeRegex(alias);
+  if(new RegExp('\\\\b'+name+'\\\\s*(?:=(?!=)|\\\\+\\\\+|--|\\\\+=|-=)').test(after))continue;
+  const call=kind==='eval'?new RegExp('\\\\b'+name+'\\\\s*\\\\(','g'):new RegExp('\\\\b'+name+'\\\\s*\\\\.\\\\s*setItem\\\\s*\\\\(','g');
+  let found;
+  while((found=call.exec(after))!==null){
+   extraMatches.push({offset:declaration.index+declaration[0].length+found.index,rule:kind==='eval'?{id:'RX001',severity:'high',message:'Alias eval() wykonuje dynamiczny kod.',advice:'Unikaj aliasowania eval() dla niezaufanego wejścia.'}:{id:'RX011',severity:'medium',message:'Alias localStorage.setItem() wymaga kontroli danych.',advice:'Nie przechowuj sekretów w localStorage.'}});
+  }
+ }
+
  const lineStarts=[0];
  for(let i=source.indexOf('\n');i!==-1;i=source.indexOf('\n',i+1))lineStarts.push(i+1);
  const locate=offset=>{
