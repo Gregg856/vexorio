@@ -1,6 +1,0 @@
-{
-  "schema": 1,
-  "kind": "rx-direct-inbox",
-  "commands": [],
-  "note": "Public read-only command previews. No secrets, automatic execution or approval."
-}
