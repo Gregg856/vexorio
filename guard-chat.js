@@ -254,6 +254,26 @@
   // Keep conversation mode open after Send; the keyboard may close on Android.
   if(window.matchMedia?.('(max-width:700px)').matches)openComposer();
   append('Ty',command);input.value='';
+  // Queen and ants: live CI evidence, not autonomous task execution.
+  if(/^(?:raport królowej|raport krolowej|królowa raport|krolowa raport|status mrówek|status mrowek)$/iu.test(command)){
+   append('RX Strażak','👑 Królowa RX — odczytuję powiązane raporty CI dla Królowej i mrówek…');
+   try{
+    const response=await fetch('/api/rx/modules',{cache:'no-store'});
+    if(!response.ok)throw Error('ci_unavailable');
+    const data=await response.json();
+    if(!Array.isArray(data.runs))throw Error('invalid_report');
+    const names={'rx-queen':'👑 Królowa','rx-ant-task-board':'🐜 Mrówki'};
+    const lines=[];
+    for(const id of Object.keys(names)){
+     const item=data.runs.find(entry=>entry.id===id);
+     const state=!item?'⚪ brak raportu':item.conclusion==='success'?'🟢 ostatni test OK':item.conclusion==='failure'?'🔴 ostatni test nieudany':item.status==='in_progress'?'🟡 test trwa':item.status==='queued'?'⏳ test w kolejce':'⚪ wynik niepotwierdzony';
+     lines.push(names[id]+': '+state);
+     if(item&&typeof item.link==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/\d+$/.test(item.link))lines.push('Raport: '+item.link);
+    }
+    append('RX Strażak',lines.join(String.fromCharCode(10))+String.fromCharCode(10)+'Proponowane działanie: przy błędzie sprawdź raport i przygotuj zadanie do ręcznego zatwierdzenia. Statusy CI nie potwierdzają ciągłej pracy mrówek. Żadnych zmian nie wykonano.');
+   }catch(_){append('RX Strażak','Raport Królowej i mrówek jest chwilowo niedostępny. Nie potwierdzono ich stanu; żadnych zmian nie wykonano.');}
+   return;
+  }
   // Read-only live monitoring: never claim a check was executed by this chat.
   if(/^(?:sprawdź|sprawdz|sprawdź błędy|sprawdz bledy|monitoring|status monitoringu|status)$/iu.test(command)){
    append('RX Strażak','Pobieram ostatni wynik monitoringu GitHub Actions…');
