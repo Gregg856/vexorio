@@ -43,10 +43,9 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
     destination.stream.getAudioTracks().forEach(track=>stream.addTrack(track));
    }catch(error){await audioContext.close();stream.getTracks().forEach(track=>track.stop());throw Error('Nie można odczytać muzyki: '+error.message)}
   }
-  let recorder;
-  try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:1200000})}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
-  let chunkEvents=0;
-  const result=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{chunkEvents++;if(e.data&&e.data.size)chunks.push(e.data)};recorder.onerror=e=>reject(e.error||new Error('Błąd nagrywania'));recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||mime});if(!blob.size){reject(new Error('Nagranie jest puste (format: '+mime+', zdarzenia: '+chunkEvents+', fragmenty: '+chunks.length+', audio: '+Boolean(audioFile)+').'));return}resolve(blob)}});
+  if(!root.RXVideoEngine)throw Error('RX VIDEO ENGINE nie został załadowany.');
+  const recorder=root.RXVideoEngine.create(stream,mime,{bitrate:1200000});
+  const result=recorder.result;
   let frameId,stopped=false;
   function draw(t){
    const index=Math.min(loaded.length-1,Math.floor(t/duration*loaded.length));
@@ -94,7 +93,7 @@ async function render({files,duration=5,ratio='9:16',motion='zoom',transition='c
   if(audioContext&&audioContext.state==='suspended'){
    try{await audioContext.resume()}catch(error){throw Error('Nie można uruchomić dźwięku: '+error.message)}
   }
-  try{recorder.start(250)}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
+  try{recorder.start()}catch(error){stream.getTracks().forEach(track=>track.stop());throw error}
   if(audioSource){const offset=Math.max(0,Number(audioStart)||0)%audioSource.buffer.duration;audioSource.start(0,offset)}
   const start=performance.now();
   function frame(now){if(recorder.state==='inactive'){stopped=true;return}const t=Math.min(duration,(now-start)/1000);try{draw(t);if(typeof videoTrack.requestFrame==='function')videoTrack.requestFrame()}catch(error){stopped=true;if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(track=>track.stop());onProgress(0);return}if(t>=duration){stopped=true;/* Keep the canvas and audio tracks alive while the encoder flushes. */setTimeout(()=>{if(recorder.state==='recording'){try{draw(duration);if(typeof videoTrack.requestFrame==='function')videoTrack.requestFrame()}catch{}recorder.stop()}},500)}else frameId=requestAnimationFrame(frame)}
