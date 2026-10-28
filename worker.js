@@ -134,8 +134,9 @@ export default {
         if(topics.includes('diagnostyka'))tasks.push({module:'queen',role:'tests',action:'inspect_tests',status:'proposed',requiresApproval:true});
         if(topics.includes('chmura'))tasks.push({module:'cloud',role:'diagnostics',action:'plan_cloud_checks',status:'proposed',requiresApproval:true});
         if(topics.includes('model AI'))tasks.push({module:'ants',role:'memory',action:'classify_task',status:'proposed',requiresApproval:true});
+        const plan={kind:'rx-coordinated-chat-proposal',queen:{status:'awaiting_approval',requiresApproval:true},ants:tasks.filter(t=>t.module==='ants'),cloud:{executionConnected:false},executed:0};
         const answer=topics.length?'👑 Rozpoznane obszary: '+topics.join(', ')+'. Mogę przygotować plan testów. Żadna praca nie została uruchomiona.':'👑 Nie rozpoznaję jeszcze tego pytania. Zapytaj o testy, chmurę lub model AI.';
-        return new Response(JSON.stringify({ok:true,answer,topics,tasks,contextUsed:Boolean(followup&&last),executed:0,modelInferenceUsed:false}),{status:200,headers});
+        return new Response(JSON.stringify({ok:true,answer,topics,tasks,plan,contextUsed:Boolean(followup&&last),executed:0,modelInferenceUsed:false}),{status:200,headers});
       }
       let github;
       try{
