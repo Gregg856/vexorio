@@ -7,7 +7,17 @@ const password=process.env.RX_BIBI_TEST_PASSWORD;
 (async()=>{
  const report={kind:'rx-bibi-authenticated-e2e',mode:'DEDICATED_TEST_ADMIN',checks:[]};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
- if(!email||!password){report.status='SKIPPED_MISSING_TEST_CREDENTIALS';fs.writeFileSync('rx-bibi-reports/rx-auth-e2e.json',JSON.stringify(report,null,2));console.log('SKIP RX BIBI authenticated E2E: dedicated test account not configured');return;}
+ if(!email||!password){
+  report.status='BLOCKED_MISSING_TEST_CREDENTIALS';
+  report.requiredSecrets=['RX_BIBI_TEST_EMAIL','RX_BIBI_TEST_PASSWORD'];
+  report.queenChatVerified=false;
+  fs.writeFileSync('rx-bibi-reports/rx-auth-e2e.json',JSON.stringify(report,null,2));
+  const summary=process.env.GITHUB_STEP_SUMMARY;
+  if(summary)fs.appendFileSync(summary,'### RX BIBI — zalogowany czat Królowej: NIEZWERYFIKOWANY\\nBrak sekretów RX_BIBI_TEST_EMAIL lub RX_BIBI_TEST_PASSWORD. Test zalogowanego czatu nie został uruchomiony.\\n'.replace(/\\n/g,'\\n'));
+  console.log('BLOCKED RX BIBI authenticated E2E: missing dedicated test credentials; Queen chat NOT VERIFIED');
+  if(process.env.RX_REQUIRE_AUTH_E2E==='1')process.exitCode=1;
+  return;
+ }
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
