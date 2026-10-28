@@ -13,7 +13,7 @@ const SOURCES=Object.freeze({
  studio:'rx-bibi-studio-check.json',
  computer:'rx-mega-cloud-computer.json',
  medusa:'rx-medusa-signals.json',
- ai:'rx-ant-ai-evaluation.json'
+ ai:'rx-ant-ai-training.json'
 });
 function buildRXSystemStatus({directory=path.join(__dirname,'rx-bibi-reports')}={}){
  const modules={};
