@@ -68,6 +68,7 @@ on:
       - 'tests/rx-navigation-mobile.cjs'
       - 'tests/rx-admin-entry-mobile.cjs'
       - 'tests/rx-chat-mobile.cjs'
+      - 'tests/rx-visual-audit.cjs'
       - 'rx-admin-prototype.html'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
@@ -227,6 +228,8 @@ jobs:
         run: node tests/rx-admin-entry-mobile.cjs
       - name: RX BIBI — sprawdź czat RX na telefonie
         run: node tests/rx-chat-mobile.cjs
+      - name: RX BIBI — audyt wizualny wszystkich kategorii i czatu
+        run: node tests/rx-visual-audit.cjs
       - name: RX — testuj nawigację mobilną Centrum i powrót do VEXORIO
         if: always()
         run: node tests/rx-navigation-mobile.cjs
