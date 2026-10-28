@@ -43,19 +43,22 @@
       "report": "rx-bibi-studio-check.json"
     },
     "computer": {
-      "state": "missing",
+      "state": "reported",
+      "kind": "rx-mega-cloud-computer",
       "report": "rx-mega-cloud-computer.json"
     },
     "medusa": {
-      "state": "missing",
+      "state": "reported",
+      "kind": "rx-medusa-engine",
       "report": "rx-medusa-signals.json"
     },
     "ai": {
-      "state": "missing",
-      "report": "rx-ant-ai-evaluation.json"
+      "state": "reported",
+      "kind": "rx-ant-ai-trained-classifier",
+      "report": "rx-ant-ai-training.json"
     }
   },
-  "available": 8,
+  "available": 11,
   "total": 11,
   "reviewTasks": 0,
   "cosmosPlanned": 0,

@@ -1,0 +1,261 @@
+{
+  "schema": 1,
+  "kind": "rx-mega-cloud-computer",
+  "executionEnvironment": "github-actions-or-local-node",
+  "cloudServerProvisioned": false,
+  "physicalHardwareOwned": false,
+  "checks": [
+    {
+      "file": "tests/rx-ai-core.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-cloud-computer.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-integration.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-higgs-lab.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-cosmic-collider.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-energy-lab.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-ant-ai-trainer.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-ant-task-board.cjs",
+      "status": "planned"
+    },
+    {
+      "file": "tests/rx-medusa-engine.cjs",
+      "status": "planned"
+    }
+  ],
+  "requested": 9,
+  "deferred": 0,
+  "limit": 9,
+  "executed": 0,
+  "passed": 0,
+  "failed": 0,
+  "planned": 9,
+  "totalTestDurationMs": 0,
+  "queue": {
+    "schema": 1,
+    "kind": "rx-cloud-computer-plan",
+    "tasks": [
+      {
+        "id": "RXJOB-check-0",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-ai-core.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-1",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-cloud-computer.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-2",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-integration.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-3",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-higgs-lab.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-4",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-cosmic-collider.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-5",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-energy-lab.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-6",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-ant-ai-trainer.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-7",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-ant-task-board.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      },
+      {
+        "id": "RXJOB-check-8",
+        "kind": "run_unit_tests",
+        "target": "tests/rx-medusa-engine.cjs",
+        "status": "pending",
+        "requiresApproval": true
+      }
+    ],
+    "executed": 0,
+    "serverProvisioned": false,
+    "quantumHardware": false,
+    "note": "Task queue only. GitHub Actions runs CI separately; no remote command execution or automatic deployment."
+  },
+  "labs": {
+    "collider": {
+      "schema": 1,
+      "kind": "rx-cosmic-collider-simulation",
+      "circumferenceKm": 10000,
+      "radiusKm": 1591.5494309189535,
+      "diameterKm": 3183.098861837907,
+      "speedFraction": 0.999999,
+      "turnsPerSecond": 29.9792158207542,
+      "estimatedTurns": 29.9792158207542,
+      "seconds": 1,
+      "physicalCollider": false,
+      "energyComputed": false,
+      "note": "Idealized circular path and constant-speed kinematics only; no magnets, particle collisions, luminosity, beam losses or Higgs prediction."
+    },
+    "energy": {
+      "schema": 1,
+      "kind": "rx-energy-lab-estimate",
+      "inputs": {
+        "computerWatts": 500,
+        "hoursPerDay": 24,
+        "peakSunHours": 4,
+        "panelWatts": 450,
+        "systemEfficiency": 0.8,
+        "batteryAutonomyHours": 12
+      },
+      "dailyKWh": 12,
+      "panels": 9,
+      "nominalPanelKW": 4.05,
+      "usableBatteryKWh": 6,
+      "energyProduced": false,
+      "hardwareInstalled": false,
+      "note": "Illustrative energy budget; ignores weather variability, inverter losses beyond efficiency, thermal load, site constraints and battery usable-capacity margin."
+    },
+    "higgs": {
+      "schema": 1,
+      "kind": "rx-higgs-mass-histogram",
+      "unit": "GeV",
+      "events": 18,
+      "accepted": 18,
+      "range": [
+        110,
+        140
+      ],
+      "binWidth": 2,
+      "bins": [
+        {
+          "low": 110,
+          "high": 112,
+          "count": 1
+        },
+        {
+          "low": 112,
+          "high": 114,
+          "count": 0
+        },
+        {
+          "low": 114,
+          "high": 116,
+          "count": 1
+        },
+        {
+          "low": 116,
+          "high": 118,
+          "count": 1
+        },
+        {
+          "low": 118,
+          "high": 120,
+          "count": 1
+        },
+        {
+          "low": 120,
+          "high": 122,
+          "count": 2
+        },
+        {
+          "low": 122,
+          "high": 124,
+          "count": 1
+        },
+        {
+          "low": 124,
+          "high": 126,
+          "count": 5
+        },
+        {
+          "low": 126,
+          "high": 128,
+          "count": 2
+        },
+        {
+          "low": 128,
+          "high": 130,
+          "count": 1
+        },
+        {
+          "low": 130,
+          "high": 132,
+          "count": 0
+        },
+        {
+          "low": 132,
+          "high": 134,
+          "count": 1
+        },
+        {
+          "low": 134,
+          "high": 136,
+          "count": 0
+        },
+        {
+          "low": 136,
+          "high": 138,
+          "count": 1
+        },
+        {
+          "low": 138,
+          "high": 140,
+          "count": 1
+        }
+      ],
+      "peak": {
+        "low": 124,
+        "high": 126,
+        "count": 5
+      },
+      "discoveryClaim": false,
+      "significanceCalculated": false,
+      "note": "Histogram only: no background model, uncertainty, statistical significance or Higgs discovery claim.",
+      "dataset": "synthetic-demo-v1",
+      "realCERNData": false
+    }
+  },
+  "note": "Only fixed repository tests execute. Lab inputs are synthetic or estimates. No live CERN data, trained model, physical collider or automatic deployment."
+}

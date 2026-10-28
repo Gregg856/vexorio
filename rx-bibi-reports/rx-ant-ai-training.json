@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "kind": "rx-ant-ai-trained-classifier",
+  "modelType": "logistic-regression",
+  "modelTrained": true,
+  "languageModel": false,
+  "dataset": "synthetic-toy",
+  "datasetSize": 12,
+  "epochs": 600,
+  "continuedFromCheckpoint": false,
+  "weights": [
+    4.862378748759225,
+    5.1084229783594175
+  ],
+  "bias": -6.901225280084534,
+  "trainingAccuracy": 1,
+  "independentValidationAccuracy": null,
+  "source": "github-actions-or-local-node",
+  "note": "Real parameter optimization on tiny synthetic data. No language understanding, external validation, continual training, or autonomous self-improvement."
+}

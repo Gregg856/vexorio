@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "kind": "rx-medusa-engine",
+  "engine": "RX",
+  "signals": [],
+  "totalUnique": 0,
+  "overflow": 0,
+  "autoExecuted": 0,
+  "productionChanges": 0,
+  "note": "Signals are recommendations for RX QUEEN; no autonomous fixes or model training."
+}
