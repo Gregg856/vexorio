@@ -1,5 +1,11 @@
 name: RX Performance Benchmark
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'rx-math-core.cjs'
+      - 'rx-math-core-test.cjs'
+      - '.github/workflows/rx-performance-benchmark.yml'
   pull_request:
     paths:
       - 'rx-performance-benchmark.cjs'
