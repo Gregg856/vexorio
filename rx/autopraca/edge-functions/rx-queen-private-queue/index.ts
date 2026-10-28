@@ -14,7 +14,14 @@ Deno.serve(async(req:Request)=>{
  const supabaseUrl=required('SUPABASE_URL');
  const anonKey=required('SUPABASE_ANON_KEY');
  const dbUrl=required('RX_STAGING_DATABASE_URL');
+ const gatewayOrigin=required('RX_QUEEN_GATEWAY_ORIGIN');
+ const incomingOrigin=req.headers.get('Origin');
+ if(incomingOrigin && (!gatewayOrigin || incomingOrigin!==gatewayOrigin))return json(403,{ok:false,error:'origin_not_allowed'});
  if(!supabaseUrl||!anonKey||!dbUrl)return json(503,{ok:false,error:'gateway_not_configured'});
+ // Reject accidental use of production database credentials.
+ let database:URL;
+ try{database=new URL(dbUrl);}catch{return json(503,{ok:false,error:'invalid_database_url'});}
+ if(!['postgres:','postgresql:'].includes(database.protocol)||!database.hostname.endsWith('.supabase.com')||!database.hostname.includes(STAGING))return json(503,{ok:false,error:'staging_database_only'});
  let base:URL;
  try{base=new URL(supabaseUrl);}catch{return json(503,{ok:false,error:'invalid_configuration'});}
  if(base.origin!==`https://${STAGING}.supabase.co`||base.pathname!=='/')return json(503,{ok:false,error:'staging_only'});
