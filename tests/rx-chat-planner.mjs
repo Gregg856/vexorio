@@ -13,6 +13,10 @@ assert.match(planRXChat('Opowiedz o RX Neural Core').answer,/RX Neural Core/);
 assert.match(planRXChat('A jak działa?',['Opowiedz o RX Neural Core']).answer,/RX Neural Core/);
 assert.match(planRXChat('Co robi RX Math Core?').answer,/RX Math Core/);
 assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj:|Przypomnij:/i);
+assert.match(planRXChat('RX DOT: [1,2]; [3,4]').answer,/11/);
+assert.match(planRXChat('RX DOT: [1,2]; [3]').answer,/Nieprawidłowe/);
+assert.match(planRXChat('RX DOT: [1,2]; [abc,4]').answer,/Nieprawidłowe/);
+assert.equal(planRXChat('RX DOT: [1,2]; [3,4]').executed,0);
 console.log('RX chat planner OK');
 
 import catalog from '../rx-task-catalog.cjs';
