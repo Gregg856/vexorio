@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {prepareQueenHandoff} from '../rx-queen-approval.mjs';
+import {appendQueenReport} from '../rx-queen-history.mjs';
+import {exportQueenHistory,importQueenHistory} from '../rx-queen-history-export.mjs';
+const history=appendQueenReport([],prepareQueenHandoff('Sprawdź testy i chmurę'),'first');
+const exported=exportQueenHistory(history);
+const restored=importQueenHistory(exported);
+assert.deepEqual(restored,history);
+assert.equal(restored[0].report.summary.dispatched,0);
+assert.throws(()=>importQueenHistory('{"format":"other","entries":[]}'),TypeError);
+assert.throws(()=>importQueenHistory(exported.replace('"dispatched":0','"dispatched":1')),TypeError);
+console.log('RX queen history export OK');
