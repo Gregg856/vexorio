@@ -14,56 +14,56 @@
     },
     {
       "file": "tests/rx-cloud-computer.cjs",
-      "durationMs": 29,
+      "durationMs": 26,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-integration.cjs",
-      "durationMs": 30,
+      "durationMs": 31,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-higgs-lab.cjs",
-      "durationMs": 30,
+      "durationMs": 27,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-cosmic-collider.cjs",
-      "durationMs": 28,
+      "durationMs": 26,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-energy-lab.cjs",
-      "durationMs": 35,
+      "durationMs": 29,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-ant-ai-trainer.cjs",
-      "durationMs": 32,
+      "durationMs": 33,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-ant-task-board.cjs",
-      "durationMs": 38,
+      "durationMs": 37,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-medusa-engine.cjs",
-      "durationMs": 29,
+      "durationMs": 28,
       "status": "passed",
       "exitCode": 0,
       "error": null
@@ -76,7 +76,7 @@
   "passed": 9,
   "failed": 0,
   "planned": 0,
-  "totalTestDurationMs": 280,
+  "totalTestDurationMs": 266,
   "queue": {
     "schema": 1,
     "kind": "rx-cloud-computer-plan",
