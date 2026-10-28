@@ -178,7 +178,24 @@ export default {
               body:JSON.stringify({ref:'main'}),signal:AbortSignal.timeout(12000)
             });
             if(response.status!==204)return reply(502,'GitHub nie przyjął testów Mrówek (HTTP '+response.status+').');
-            return new Response(JSON.stringify({ok:true,answer:'👑🐜 GitHub przyjął uruchomienie istniejących testów RX Meduza i Mrówek. Wynik nie jest jeszcze znany. Wpisz „Raport Mrówek”, aby sprawdzić przebieg.',engine:'rx-queen-ant-test-dispatch',workflow:'rx-medusa-ant.yml',queued:true,executed:1,modelInferenceUsed:false}),{status:200,headers});
+            // Bounded status lookup: never confuse an earlier green run with this dispatch.
+            const dispatchedAt=Date.now();
+            let latest=null;
+            for(let attempt=0;attempt<3;attempt++){
+              if(attempt)await new Promise(resolve=>setTimeout(resolve,1500));
+              try{
+                const statusResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-medusa-ant.yml/runs?event=workflow_dispatch&branch=main&per_page=5',{
+                  headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Ant-Dispatch-Status'},signal:AbortSignal.timeout(5000)
+                });
+                if(!statusResponse.ok)continue;
+                const data=await statusResponse.json();
+                latest=(data.workflow_runs||[]).find(run=>Date.parse(run.created_at)>=dispatchedAt-5000)||null;
+                if(latest)break;
+              }catch{/* A status read failure never changes a successful dispatch. */}
+            }
+            const state=latest?(latest.status==='completed'?(latest.conclusion||'unknown'):latest.status):'queued';
+            const answer=latest?'👑🐜 Testy Mrówek uruchomione. GitHub: '+state+'. '+(latest.html_url||''):'👑🐜 GitHub przyjął testy Mrówek. Nowy przebieg jeszcze nie jest widoczny; wynik nie jest znany.';
+            return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-ant-test-dispatch',workflow:'rx-medusa-ant.yml',queued:state==='queued',runStatus:state,runId:latest?.id||null,runUrl:latest?.html_url||null,executed:1,modelInferenceUsed:false}),{status:200,headers});
           }catch{return reply(502,'Nie udało się zlecić testów Mrówek w GitHub.');}
         }
         // RX Queen ant report: read-only GitHub Actions evidence, no dispatch or code changes.
