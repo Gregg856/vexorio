@@ -37,10 +37,14 @@ function runAntQueue(queue,{approvedIds=[],execute=false,maxChecks=3}={}){
   if(task.action==='run_unit_tests'&&CHECKS.includes(task.target)&&!eligible.includes(task.target))eligible.push(task.target);
  }
  if(approvedIds.some(id=>typeof id!=='string'||!ids.has(id)))throw Error('Unknown RX ant approval');
+ // Never let unapproved tasks sharing a test target be reported as executed.
+ // Preserve the queue's explicit approval order and map each unique check to its approved task ID.
+ const approvedTargets=new Set();
  const approved=queue.planned.filter(task=>approvedIds.includes(task.id)&&task.action==='run_unit_tests'&&CHECKS.includes(task.target));
- const selected=[...new Set(approved.map(task=>task.target))];
+ const uniqueApproved=approved.filter(task=>{if(approvedTargets.has(task.target))return false;approvedTargets.add(task.target);return true;});
+ const selected=uniqueApproved.map(task=>task.target);
  const report=runCloudComputer({execute,selectedChecks:selected,maxChecks});
- return {...report,kind:'rx-cosmos-ant-check-report',queueTasks:queue.planned.length,approvedTasks:approved.length,eligibleTasks:eligible.length,skippedTasks:queue.planned.length-approved.length,approvalRequired:true,executedTaskIds:execute?approved.slice(0,maxChecks).map(task=>task.id):[],note:'Only explicitly approved, fixed allowlisted Node checks can run. No arbitrary task execution, edits or deployments.'};
+ return {...report,kind:'rx-cosmos-ant-check-report',queueTasks:queue.planned.length,approvedTasks:approved.length,eligibleTasks:eligible.length,skippedTasks:queue.planned.length-approved.length,approvalRequired:true,executedTaskIds:execute?uniqueApproved.slice(0,maxChecks).map(task=>task.id):[],note:'Only explicitly approved, fixed allowlisted Node checks can run. No arbitrary task execution, edits or deployments.'};
 }
 
 if(require.main===module){
