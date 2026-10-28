@@ -180,13 +180,19 @@ export default {
         }
         return new Response(JSON.stringify({...planned,engine:'rule-based-fallback',turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
       }
+      let coordinatorCommand='Sprawdź testy w chmurze i model AI';
+      if(url.pathname==='/api/rx/coordinator/run'){
+        let payload;try{payload=await request.json();}catch{return reply(400,'Wymagane polecenie w JSON.');}
+        if(typeof payload?.command!=='string'||payload.command.trim().length<3||payload.command.length>1000)return reply(400,'Polecenie musi mieć od 3 do 1000 znaków.');
+        coordinatorCommand=payload.command.trim();
+      }
       let github;
       try{
         const coordinator=url.pathname==='/api/rx/coordinator/run';
         github=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+(coordinator?'rx-coordinator-cloud.yml':'rx-bibi-browser.yml')+'/dispatches',{
           method:'POST',
           headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-BIBI-Manager','Content-Type':'application/json'},
-          body:JSON.stringify(coordinator?{ref:'main',inputs:{command:'Sprawdź testy w chmurze i model AI'}}:{ref:'main'}),signal:AbortSignal.timeout(12000)
+          body:JSON.stringify(coordinator?{ref:'main',inputs:{command:coordinatorCommand}}:{ref:'main'}),signal:AbortSignal.timeout(12000)
         });
       }catch{return reply(502,'Nie udało się połączyć z GitHub.');}
       if(github.status!==204)return reply(502,'GitHub odrzucił uruchomienie (HTTP '+github.status+').');
