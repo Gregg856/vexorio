@@ -53,10 +53,10 @@ export function planRXChat(message,history=[]){
  ];
  const selectedParts=multiParts.filter(x=>x.match);
  const multiIntent=selectedParts.length>=2;
- const requestedPoint=plain.match(/^(?:zrob|pokaz|omow|wyjasnij|sprawdz|przejdz do|punkt)\\s+(?:punkt\\s+)?(pierwszy|drugi|trzeci|czwarty|piaty|[1-5])(?:\\s+punkt)?[.!? ]*$/);
+ const requestedPoint=plain.match(/^(?:zrob|pokaz|omow|wyjasnij|sprawdz|przejdz do|punkt)\s+(?:punkt\s+)?(pierwszy|drugi|trzeci|czwarty|piaty|[1-5])(?:\s+punkt)?[.!? ]*$/);
  const pointIndex=requestedPoint?({'pierwszy':0,'drugi':1,'trzeci':2,'czwarty':3,'piaty':4,'1':0,'2':1,'3':2,'4':3,'5':4}[requestedPoint[1]]):-1;
- const priorPlan=history.slice().reverse().find(x=>/\\b1[.)]\\s/.test(x)&&/\\b2[.)]\\s/.test(x));
- const planItems=priorPlan?[...priorPlan.matchAll(/(?:^|\\n)\\s*([1-5])[.)]\\s*([^\\n]+)/g)].map(x=>x[2].trim()):[];
+ const priorPlan=history.slice().reverse().find(x=>/\b1[.)]\s/.test(x)&&/\b2[.)]\s/.test(x));
+ const planItems=priorPlan?[...priorPlan.matchAll(/(?:^|\n)\s*([1-5])[.)]\s*([^\n]+)/g)].map(x=>x[2].trim()):[];
  const selectedPoint=pointIndex>=0&&pointIndex<planItems.length?planItems[pointIndex]:null;
  let answer;
  if(requestedPoint&&selectedPoint)answer='👑 Punkt '+(pointIndex+1)+' z poprzedniego planu: '+selectedPoint+'\\n🔒 Mogę omówić ten krok, ale nie uruchamiam go bez zatwierdzenia.';
