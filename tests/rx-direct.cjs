@@ -3,7 +3,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 (async()=>{
  const source=fs.readFileSync('worker.js','utf8');
- const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+ const {pathToFileURL}=require('node:url');
+ const plannerUrl=pathToFileURL(require('node:path').resolve('rx-chat-planner.mjs')).href;
+ const testSource=source.replace("'./rx-chat-planner.mjs'",JSON.stringify(plannerUrl));
+ const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(testSource).toString('base64'));
  const base='https://example.test/api/rx/direct';
  const request=(url,method='GET')=>new Request(url,{method});
  let result=await worker.fetch(request(base+'?command=RX%20UNKNOWN'),{});
