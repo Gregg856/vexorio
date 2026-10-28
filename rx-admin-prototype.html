@@ -101,8 +101,8 @@ checkAdmin();
 
 const groups=[
  ['💬 Czat RX',['Główny czat','Odśwież raport RX Coordinator','Gotowość uruchamiania RX','Diagnostyka Królowej — wyniki','Uruchom testy RX Coordinator','Historia (w przygotowaniu)']],
- ['👑 Królowa',['Status systemów','Zadania do zatwierdzenia','BIBI — budżet']],
- ['🐜 Mrówki',['Kolejka','Testy','Raporty']],
+ ['👑 Królowa',['⚙️ RX Wirnik — ostatni przebieg','Status systemów','Zadania do zatwierdzenia','BIBI — budżet']],
+ ['🐜 Mrówki',['⚙️ RX Wirnik — ostatni przebieg','Kolejka','Testy','Raporty']],
  ['🧠 RX AI',['Model testowy','Trening','Walidacja']],
  ['💻 Komputer i chmura',['Wykonane testy','Plan komputera','Chmura','RX Coordinator — testy CI']],
  ['🌌 COSMOS',['Kolejka COSMOS','Laboratoria']],
@@ -112,7 +112,7 @@ const groups=[
 ];
 const menu=document.getElementById('menu'),sub=document.getElementById('sub'),heading=document.getElementById('heading'),messages=document.getElementById('messages');
 let selected=0;const activeModule=document.getElementById('activeModule');
-function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(label==='Diagnostyka Królowej — wyniki')loadQueenDiagnostics();else if(label==='Uruchom testy RX Coordinator')runApprovedCoordinator();else if(label==='Gotowość uruchamiania RX')loadExecutionReadiness();else if(label==='RX Coordinator — testy CI'||label==='Odśwież raport RX Coordinator')loadCoordinatorCI();else if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
+function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(label==='⚙️ RX Wirnik — ostatni przebieg')loadTurbineStatus();else if(label==='Diagnostyka Królowej — wyniki')loadQueenDiagnostics();else if(label==='Uruchom testy RX Coordinator')runApprovedCoordinator();else if(label==='Gotowość uruchamiania RX')loadExecutionReadiness();else if(label==='RX Coordinator — testy CI'||label==='Odśwież raport RX Coordinator')loadCoordinatorCI();else if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
 function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'})}
 const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json',bibi:'rx-bibi-budget.json'});
 async function readReport(name){
@@ -167,6 +167,29 @@ async function loadExecutionReadiness(){
   if(typeof data.ready!=='boolean')throw Error('Nieprawidłowa odpowiedź serwera.');
   add('bot',data.ready?'🟢 Serwer ma konfigurację do weryfikacji uprawnień. Uruchamianie RX Coordinator z czatu nie jest jeszcze podłączone.':'🟠 Serwer nie ma kompletnej konfiguracji uruchamiania testów. RX Coordinator pozostaje w trybie odczytu. Nie udostępniaj kluczy w czacie.');
  }catch(error){add('bot','Nie można potwierdzić gotowości wykonawcy: '+error.message);}
+}
+async function loadTurbineStatus(){
+ add('bot','⚙️ Sprawdzam ostatni zatwierdzony przebieg RX TURBINE POWER w GitHub Actions…');
+ try{
+  const base='https://api.github.com/repos/Gregg856/vexorio/actions';
+  const response=await fetch(base+'/workflows/rx-coordinator-cloud.yml/runs?event=workflow_dispatch&per_page=5',{cache:'no-store',signal:AbortSignal.timeout(12000)});
+  if(!response.ok)throw Error('GitHub HTTP '+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.workflow_runs))throw Error('Nieprawidłowa odpowiedź GitHub.');
+  const run=data.workflow_runs.find(x=>x.head_branch==='main');
+  if(!run){add('bot','Brak ręcznie zatwierdzonych przebiegów RX Wirnik w głównej gałęzi.');return;}
+  const state=run.status==='completed'?(run.conclusion==='success'?'🟢 Ukończony pomyślnie':'🔴 Zakończony: '+run.conclusion):'🟡 '+run.status;
+  let artifact='Raport wykonania: jeszcze niepotwierdzony.';
+  if(run.status==='completed'){
+   const ar=await fetch(base+'/runs/'+encodeURIComponent(run.id)+'/artifacts',{cache:'no-store',signal:AbortSignal.timeout(12000)});
+   if(ar.ok){
+    const ad=await ar.json();
+    const found=Array.isArray(ad.artifacts)&&ad.artifacts.some(x=>x.name==='rx-turbine-power-execution'&&!x.expired);
+    artifact=found?'📊 Raport wykonania zapisany w GitHub Actions. Szczegółowe liczby są w artefakcie przebiegu.':'Raport wykonania niedostępny.';
+   }
+  }
+  add('bot','👑 RX TURBINE POWER — ostatni przebieg\\n'+state+'\\nData: '+new Date(run.created_at).toLocaleString('pl-PL')+'\\nTryb: ręcznie zatwierdzone testy\\n'+artifact+'\\n'+run.html_url+'\\nTo ostatni zapisany przebieg, nie transmisja na żywo. Liczby wykonanych zadań wymagają odczytu raportu.');
+ }catch(error){add('bot','Nie udało się pobrać stanu wirnika: '+error.message);}
 }
 async function loadQueenDiagnostics(){
  add('bot','👑 Sprawdzam ostatnie automatyczne kontrole Królowej…');
