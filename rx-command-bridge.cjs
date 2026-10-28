@@ -2,12 +2,7 @@
 // RX COMMAND BRIDGE 1.0: one free-form request -> bounded coordinated plan.
 // No AI model inference, execution, deployment or network calls.
 const {route}=require('./rx-ai-router.cjs');
-const RULES=Object.freeze([
- {id:'inspect_tests',words:['test','błąd','blad','awari','sprawdź','sprawdz'],modules:['queen','ants','ci'],cost:5},
- {id:'plan_cloud_checks',words:['chmur','komputer','cloud'],modules:['queen','cloud'],cost:8},
- {id:'classify_task',words:['model','trening','uczen','uczeń','ai'],modules:['queen','brain','ants'],cost:10},
- {id:'rank_candidates',words:['porówn','porown','wybierz'],modules:['brain','queen'],cost:4}
-]);
+const {RULES}=require('./rx-task-catalog.cjs');
 function planCommand(input,{energyBalance=0}={}){
  if(typeof input!=='string'||input.trim().length<3||input.length>1000||!Number.isSafeInteger(energyBalance)||energyBalance<0||energyBalance>10000)throw Error('Invalid RX command');
  const normalized=input.toLocaleLowerCase('pl-PL');
