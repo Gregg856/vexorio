@@ -238,5 +238,5 @@ function analyzeJavaScript(source){
  findings.sort((a,b)=>a.line-b.line||a.column-b.column);
  return {engine:'RX Developer Core',version:'0.3.5',findings,summary:{total:findings.length,...findings.reduce((counts,item)=>{counts[item.severity]++;return counts;},{high:0,medium:0,low:0})}};
 }
-if(typeof window!=='undefined')window.RXDeveloperCore={maskJavaScript,analyzeJavaScript};
+if(typeof window!=='undefined')window.RXDeveloperCore=Object.freeze({maskJavaScript,analyzeJavaScript});
 
