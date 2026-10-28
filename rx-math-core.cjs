@@ -42,8 +42,27 @@ function matmulBlocked(a,b,m,k,n,out=new Float32Array(m*n),tile=32){
  }
  return out;
 }
+// Experimental transpose-based kernel: pretranspose B and use contiguous dot products.
+function matmulTransposed(a,b,m,k,n,out=new Float32Array(m*n)){
+ if(![m,k,n].every(x=>Number.isSafeInteger(x)&&x>0&&x<=4096)||m*k>4e6||k*n>4e6||m*n>4e6)throw Error('Invalid matrix shape');
+ if(!(a instanceof Float32Array)||!(b instanceof Float32Array)||!(out instanceof Float32Array)||a.length!==m*k||b.length!==k*n||out.length!==m*n||out===a||out===b)throw Error('Invalid matrix buffers');
+ const bt=new Float32Array(k*n);
+ for(let p=0;p<k;p++)for(let j=0;j<n;j++)bt[j*k+p]=b[p*n+j];
+ for(let i=0;i<m;i++)for(let j=0;j<n;j++){
+  let sum=0,ar=i*k,br=j*k;
+  for(let p=0;p<k;p++)sum+=a[ar+p]*bt[br+p];
+  out[i*n+j]=sum;
+ }
+ return out;
+}
+// Neural-network primitive: ReLU activation, optional separate output.
+function relu(a,out=new Float32Array(a.length)){
+ if(!(a instanceof Float32Array)||!(out instanceof Float32Array)||out.length!==a.length)throw Error('Invalid ReLU buffers');
+ for(let i=0;i<a.length;i++)out[i]=Math.max(0,a[i]);
+ return out;
+}
 function dot(a,b){
  if(!(a instanceof Float32Array)||!(b instanceof Float32Array)||a.length!==b.length)throw Error('Invalid vectors');
  let sum=0;for(let i=0;i<a.length;i++)sum+=a[i]*b[i];return sum;
 }
-module.exports={matmul,matmulBlocked,dot};
+module.exports={matmul,matmulBlocked,matmulTransposed,relu,dot};
