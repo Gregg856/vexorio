@@ -234,7 +234,7 @@ async function loadExecutionReadiness(){
   if(!response.ok)throw Error('HTTP '+response.status);
   const data=await response.json();
   if(typeof data.ready!=='boolean')throw Error('Nieprawidłowa odpowiedź serwera.');
-  add('bot',data.ready?'🟢 Serwer ma konfigurację do weryfikacji uprawnień. Uruchamianie RX Coordinator z czatu nie jest jeszcze podłączone.':'🟠 Serwer nie ma kompletnej konfiguracji uruchamiania testów. RX Coordinator pozostaje w trybie odczytu. Nie udostępniaj kluczy w czacie.');
+  add('bot',data.ready?'🟢 Serwer ma konfigurację do weryfikacji uprawnień. Z czatu można zlecić zatwierdzone testy RX Coordinator; wykonanie i wynik sprawdź w GitHub Actions.':'🟠 Serwer nie ma kompletnej konfiguracji uruchamiania testów. Uruchomienie z czatu może się nie udać. Nie udostępniaj kluczy w czacie.');
  }catch(error){add('bot','Nie można potwierdzić gotowości wykonawcy: '+error.message);}
 }
 async function loadTurbineStatus(){
