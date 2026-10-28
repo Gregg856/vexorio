@@ -148,6 +148,22 @@ async function loadQueenDiagnostics(){
   add('bot','👑 Diagnostyka Królowej — GitHub Actions\\n'+lines.join('\\n\\n')+'\\nWynik pokazuje stan przebiegu, a nie szczegóły poszczególnych testów.');
  }catch(error){add('bot','Nie udało się pobrać diagnostyki Królowej: '+error.message);}
 }
+const rxChatHistory=[];
+function answerBrainChat(question){
+ const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez)/i.test(question);
+ const previous=rxChatHistory.length?rxChatHistory[rxChatHistory.length-1]:'';
+ const request=(followup&&previous?previous+' ':'')+question;
+ rxChatHistory.push(question);
+ if(rxChatHistory.length>6)rxChatHistory.shift();
+ const q=request.toLocaleLowerCase('pl-PL');
+ const topics=[];
+ if(/test|błąd|blad|awari|sprawdź|sprawdz/.test(q))topics.push('testy i diagnostyka');
+ if(/chmur|komputer|cloud/.test(q))topics.push('chmura RX');
+ if(/model|trening|uczen|uczeń|\\bai\\b/.test(q))topics.push('model AI i mrówki');
+ if(/porówn|porown|wybierz/.test(q))topics.push('porównanie kandydatów');
+ if(!topics.length){add('bot','👑 RX Brain Chat 1.2: Nie rozpoznałam jeszcze tego tematu. Zapytaj o testy, chmurę lub model AI. To wstępny silnik reguł, bez modelu językowego.');return;}
+ add('bot','👑 RX Brain Chat 1.2\\nRozpoznane tematy: '+topics.join(', ')+'.\\nProponuję sprawdzić powiązane raporty i przygotować plan dla mrówek. Żadne testy ani zmiany nie zostały uruchomione.\\nTo lokalny adapter rozmowy; wykonanie wymaga osobnego zatwierdzenia.');
+}
 async function loadCoordinatorCI(){
  add('bot','🐜 Odczytuję ostatni wynik RX Coordinator z GitHub Actions…');
  try{
@@ -191,5 +207,5 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else add('bot','To jest prototyp czatu nawigacyjnego. Nie wysyłam wiadomości do modelu AI ani nie wykonuję poleceń. Wybierz kategorię lub wpisz „status”.')});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else answerBrainChat(q)});show(0);
 </script></body></html>
