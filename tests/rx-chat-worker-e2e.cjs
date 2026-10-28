@@ -9,7 +9,7 @@ const path=require('node:path');
  const source=fs.readFileSync('worker.js','utf8');
  const planner=pathToFileURL(path.resolve('rx-chat-planner.mjs')).href;
  const knowledge=pathToFileURL(path.resolve('rx-world-knowledge.mjs')).href;
- const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(source.replace("'./rx-chat-planner.mjs'",JSON.stringify(planner)).replace("'./rx-world-knowledge.mjs'",JSON.stringify(knowledge))).toString('base64'));
+ const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(source.replace("'./rx-chat-planner.mjs'",JSON.stringify(planner)).replace("'./rx-world-knowledge.mjs'",JSON.stringify(knowledge)).replace("'./rx-knowledge-base.mjs'",JSON.stringify(pathToFileURL(path.resolve('rx-knowledge-base.mjs')).href))).toString('base64'));
  const url='https://example.test/api/rx/chat';
  const env={RX_GITHUB_DISPATCH_TOKEN:'dummy',RX_ADMIN_USER_ID:'dummy',SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'dummy',RX_AI_ENABLED:'false'};
  const send=(message,extra={})=>worker.fetch(new Request(url,{method:'POST',headers:{Origin:'https://example.test',Authorization:'Bearer fake.test.token','Content-Type':'application/json',...extra.headers},body:JSON.stringify({message,history:[],...extra.body})}),env);

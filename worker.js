@@ -1,3 +1,4 @@
+import {findRXKnowledge} from './rx-knowledge-base.mjs';
 import {searchWorldKnowledge} from './rx-world-knowledge.mjs';
 import {planRXChat} from './rx-chat-planner.mjs';
 export default {
@@ -125,6 +126,10 @@ export default {
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
         const planned=planRXChat(message,history);
+        // Locally maintained RX facts take priority over external encyclopedia searches.
+        const localKnowledge=/^(co to jest|czym jest|opowiedz o|powiedz mi o|wyjasnij|wyjaśnij)\s+/i.test(message.trim())?findRXKnowledge(message):null;
+        if(localKnowledge)return new Response(JSON.stringify({...planned,answer:'📘 '+localKnowledge.title+'\n'+localKnowledge.summary+'\nŹródło: '+localKnowledge.source,knowledge:localKnowledge,engine:'rx-local-knowledge',modelInferenceUsed:false}),{status:200,headers});
+
         // External encyclopedia answers only factual questions outside RX's own operational domain.
         const factual=/^(co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+/i.test(message.trim());
         const internal=/\b(rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(message);

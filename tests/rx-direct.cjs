@@ -6,7 +6,7 @@ const fs=require('node:fs');
  const {pathToFileURL}=require('node:url');
  const plannerUrl=pathToFileURL(require('node:path').resolve('rx-chat-planner.mjs')).href;
  const knowledgeUrl=pathToFileURL(require('node:path').resolve('rx-world-knowledge.mjs')).href;
- const testSource=source.replace("'./rx-chat-planner.mjs'",JSON.stringify(plannerUrl)).replace("'./rx-world-knowledge.mjs'",JSON.stringify(knowledgeUrl));
+ const testSource=source.replace("'./rx-chat-planner.mjs'",JSON.stringify(plannerUrl)).replace("'./rx-world-knowledge.mjs'",JSON.stringify(knowledgeUrl)).replace("'./rx-knowledge-base.mjs'",JSON.stringify(pathToFileURL(require('node:path').resolve('rx-knowledge-base.mjs')).href));
  const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(testSource).toString('base64'));
  const base='https://example.test/api/rx/direct';
  const request=(url,method='GET')=>new Request(url,{method});
