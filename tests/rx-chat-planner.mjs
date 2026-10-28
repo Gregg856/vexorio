@@ -58,3 +58,9 @@ for(const [prompt,expected] of [
  assert.equal(result.modelInferenceUsed,false);
 }
 console.log('RX Brain ten additional intents OK');
+
+const focused=planRXChat('Dalej',['Opowiedz o mrówkach','Sprawdź testy','Jak działa wirnik?']);
+assert.ok(focused.answer.includes('Wirnik'),focused.answer);
+assert.ok(!focused.tasks.some(t=>t.action==='inspect_tests'),'Old test topic should not leak into follow-up');
+assert.equal(focused.contextUsed,true);
+console.log('RX focused conversation context OK');
