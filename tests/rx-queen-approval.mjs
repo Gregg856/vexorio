@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {prepareQueenHandoff,decideQueenTask} from '../rx-queen-approval.mjs';
+const proposal=prepareQueenHandoff('Sprawdź testy i chmurę');
+const approved=decideQueenTask(proposal,'rx-001','approve','owner');
+assert.equal(approved.tasks[0].status,'approved');
+assert.equal(approved.tasks[1].status,'awaiting_approval');
+assert.equal(proposal.tasks[0].status,'awaiting_approval');
+assert.equal(approved.executed,0);
+assert.equal(approved.executionConnected,false);
+assert.throws(()=>decideQueenTask(approved,'rx-001','approve','owner'),TypeError);
+assert.throws(()=>decideQueenTask(proposal,'rx-001','approve',''),TypeError);
+const reviewed=decideQueenTask(approved,'rx-002','reject','owner','Not needed');
+assert.equal(reviewed.status,'reviewed');
+assert.equal(reviewed.decisions.length,2);
+assert.equal(reviewed.executed,0);
+console.log('RX queen approval OK');
