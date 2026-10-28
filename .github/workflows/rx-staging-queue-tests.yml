@@ -1,0 +1,20 @@
+name: RX staging queue adapter tests
+on:
+  pull_request:
+    paths:
+      - 'rx/autopraca/staging-queue-adapter.cjs'
+      - 'tests/rx-autopraca-staging-adapter.cjs'
+      - '.github/workflows/rx-staging-queue-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/rx-autopraca-staging-adapter.cjs
