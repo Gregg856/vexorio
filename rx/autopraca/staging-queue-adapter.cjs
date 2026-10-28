@@ -9,10 +9,11 @@ const VALID_SOURCES = new Set(['queen_chat', 'tech_help', 'coordinator', 'admin'
 const VALID_WORKFLOW = 'rx-coordinator-cloud.yml';
 function assertTask(task) {
   if (!task || typeof task !== 'object' || Array.isArray(task)) throw Error('Invalid task');
+  if (Object.keys(task).some(k => !['source','task_type','title','payload'].includes(k))) throw Error('Unexpected task field');
   if (!VALID_SOURCES.has(task.source) || !VALID_TYPES.has(task.task_type)) throw Error('Task not allowlisted');
   if (typeof task.title !== 'string' || !task.title.trim() || task.title.length > 240) throw Error('Invalid title');
   const payload = task.payload ?? {};
-  if (!payload || Object.getPrototypeOf(payload) !== Object.prototype) throw Error('Invalid payload');
+  if (!payload || typeof payload !== 'object' || Object.getPrototypeOf(payload) !== Object.prototype) throw Error('Invalid payload');
   const keys = Object.keys(payload);
   const allowed = task.task_type === 'repository_audit' ? ['scope'] : ['workflow'];
   if (keys.some(k => !allowed.includes(k))) throw Error('Unknown payload key');
