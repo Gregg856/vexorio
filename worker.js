@@ -96,7 +96,10 @@ export default {
       if(request.headers.get('Origin')!==url.origin && request.headers.get('Origin')!==null)return reply(403,'Nieprawidłowe pochodzenie.');
       if(request.method==='POST' && request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
       // Fail closed until the owner configures both secrets in Cloudflare.
-      if(!env.RX_GITHUB_DISPATCH_TOKEN||!env.RX_ADMIN_USER_ID||!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Uruchamianie testów wymaga konfiguracji administratora.');
+      // Queue read and Queen chat must not depend on the GitHub dispatch token.
+      // Mutating test/coordinator endpoints retain the stricter configuration gate.
+      if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Brak konfiguracji Supabase.');
+      if((url.pathname==='/api/rx/run-test'||url.pathname==='/api/rx/coordinator/run')&&(!env.RX_GITHUB_DISPATCH_TOKEN||!env.RX_ADMIN_USER_ID))return reply(503,'Uruchamianie testów wymaga konfiguracji administratora.');
       const auth=request.headers.get('Authorization')||'';
       if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Zaloguj się jako administrator.');
       const base=new URL(env.SUPABASE_URL);
