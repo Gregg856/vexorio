@@ -75,7 +75,7 @@ assert.equal(multi.executed,0);
 assert.equal(planRXChat('Cześć').multiIntent,false);
 console.log('RX multi-intent conversation OK');
 
-const planReply=planRXChat('Zrób drugi punkt',['1. Sprawdź Mrówki\\n2. Odczytaj raport błędów\\n3. Przygotuj testy']);
+const planReply=planRXChat('Zrób drugi punkt',['1. Sprawdź Mrówki\n2. Odczytaj raport błędów\n3. Przygotuj testy']);
 assert.ok(planReply.answer.includes('Punkt 2'),planReply.answer);
 assert.ok(planReply.answer.includes('Odczytaj raport błędów'),planReply.answer);
 assert.equal(planReply.executed,0);
