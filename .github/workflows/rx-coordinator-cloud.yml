@@ -50,6 +50,16 @@ jobs:
         run: |
           node rx-coordinator-cloud.cjs "$RX_COMMAND"
           RX_TURBINE_APPROVED=true node rx-turbine-cloud-executor.cjs
+      - name: RX Mega Cloud Computer — approved ant tests
+        if: github.event_name == 'workflow_dispatch'
+        run: node rx-mega-cloud-computer.cjs
+      - name: Upload RX Mega Cloud Computer report
+        if: github.event_name == 'workflow_dispatch' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-mega-cloud-computer-execution
+          path: rx-bibi-reports/rx-mega-cloud-computer.json
+          if-no-files-found: warn
       - name: Upload measured turbine report
         if: github.event_name == 'workflow_dispatch' && always()
         uses: actions/upload-artifact@v4
