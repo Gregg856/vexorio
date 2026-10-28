@@ -47,7 +47,7 @@ const path=require('node:path');
   assert.equal(data.executed,0);
   assert.match(data.answer,/github\.com/);
   response=await send('Szukaj pomocy: x');
-  assert.equal((await response.json()).engine,'rule-based-fallback');
+  assert.equal((await response.json()).engine,'rx-local-planner');
   response=await send('status RX',{headers:{Origin:'https://evil.test'}});
   assert.equal(response.status,403);
   response=await worker.fetch(new Request(url,{method:'POST',headers:{Origin:'https://example.test','Content-Type':'application/json'},body:JSON.stringify({message:'status'})}),env);
