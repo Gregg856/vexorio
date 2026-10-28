@@ -12,6 +12,17 @@
  const approveTask=document.getElementById('rxQueenTaskApprove');
  const taskResult=document.getElementById('rxQueenTaskResult');
  let proposedTask=null;
+ // Session-only work overview. Never suggests that a plan was executed.
+ let plannedInSession=0,approvedInSession=0;
+ const workOverview=document.createElement('p');
+ workOverview.id='rxQueenWorkOverview';
+ workOverview.setAttribute('aria-live','polite');
+ if(workOverview.style)workOverview.style.cssText='white-space:pre-wrap;padding:10px;border:1px solid #42798c;border-radius:10px';
+ const refreshWorkOverview=()=>{
+  workOverview.textContent='🐜 Raport pracy mrówek (ta sesja)\\nPlany przygotowane: '+plannedInSession+'\\nPlany zatwierdzone do ręcznej realizacji: '+approvedInSession+'\\nOczekuje na decyzję: '+(proposedTask?1:0)+'\\nAutomatycznie wykonane: 0\\nTo podgląd działań w panelu, nie raport serwera ani historia pracy w tle.';
+ };
+ if(taskResult?.parentNode){taskResult.parentNode.insertBefore(workOverview,taskResult);refreshWorkOverview();}
+
 
  if(typeof document.createElement==='function'){
  // Queen hub: honest inventory of modules; CI reports are evidence of tests, not uptime.
@@ -125,20 +136,20 @@
   if(!cells.length)cells.push('diagnostics');
   return [...new Set(cells)];
  };
- const resetTask=()=>{proposedTask=null;if(approveTask)approveTask.disabled=true;};
+ const resetTask=()=>{proposedTask=null;if(approveTask)approveTask.disabled=true;refreshWorkOverview();};
  taskInput?.addEventListener('input',resetTask);
  analyzeTask?.addEventListener('click',()=>{
   const description=taskInput?.value.trim()||'';
   if(!description||description.length>2000){if(taskResult)taskResult.textContent='Wpisz zadanie (maksymalnie 2000 znaków).';resetTask();return;}
   const cells=classifyTask(description);
-  proposedTask={description,cells};
+  proposedTask={description,cells};plannedInSession++;refreshWorkOverview();
   if(approveTask)approveTask.disabled=false;
   if(taskResult)taskResult.textContent='🐜 Plan mrówek (reguły, bez modelu AI)\nZadanie: '+description+'\nKomórki: '+cells.join(', ')+'\nKroki: 1. Analiza 2. Testy 3. Raport dla Królowej 4. Ręczna decyzja\nStatus: OCZEKUJE NA ZATWIERDZENIE. Niczego nie wykonano.';
  });
  approveTask?.addEventListener('click',()=>{
   if(!proposedTask||taskInput?.value.trim()!==proposedTask.description)return;
   if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\nZadanie: '+proposedTask.description+'\nKomórki: '+proposedTask.cells.join(', ')+'\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
-  resetTask();
+  approvedInSession++;resetTask();refreshWorkOverview();
  });
 
  // RX NEURON 2.4: opt-in, local-only transfer of approved fixes.
