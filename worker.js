@@ -123,7 +123,21 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
-        return new Response(JSON.stringify(planRXChat(message,history)),{status:200,headers});
+        const planned=planRXChat(message,history);
+        // Existing RX planner remains the safe fallback. No commands are executed.
+        if(env.AI && typeof env.AI.run==='function'){
+          try{
+            const messages=[
+              {role:'system',content:'Jesteś RX Królową, polskojęzycznym asystentem administratora VEXORIO. Odpowiadaj jasno i zgodnie z prawdą. RX TURBINE, Mrówki i AI Core planują zadania; nie twierdź, że je wykonały, trenowały model lub zmieniły produkcję. Nie ujawniaj sekretów. Nie wykonuj poleceń; wymagają zgody właściciela.'},
+              ...history.slice(-8).map(text=>({role:'user',content:text.slice(0,2000)})),
+              {role:'user',content:message}
+            ];
+            const inference=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages,max_tokens:512,temperature:0.3});
+            const answer=typeof inference?.response==='string'?inference.response.trim():'';
+            if(answer)return new Response(JSON.stringify({...planned,answer:answer.slice(0,4000),modelInferenceUsed:true,engine:'cloudflare-workers-ai',turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
+          }catch(error){console.warn('RX AI provider unavailable:',String(error?.name||'provider_error'));}
+        }
+        return new Response(JSON.stringify({...planned,engine:'rule-based-fallback',turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
       }
       let github;
       try{
