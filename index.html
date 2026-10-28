@@ -3387,7 +3387,10 @@ async function sendMessage(listingId,sellerId,message){
 import {createQueenPanelController} from './rx-queen-panel.mjs';
 const root=document.getElementById('rxQueenLab');
 if(root){
- const client=window.supabase?.createClient?.('https://owkjdlpawczrnwyszduj.supabase.co',root.dataset.publishableKey||'');
+ const isStagingHost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname.startsWith('staging.');
+ const client=isStagingHost?window.supabase?.createClient?.('https://owkjdlpawczrnwyszduj.supabase.co',root.dataset.publishableKey||''):null;
+ root.hidden=!isStagingHost;
+ if(!isStagingHost) root.setAttribute('aria-hidden','true');
  const panel=createQueenPanelController(client);
  const output=root.querySelector('output');
  const message=root.querySelector('textarea');
