@@ -169,7 +169,8 @@ export default {
         }
         // Explicit owner-only ant test dispatch to an existing read-only workflow.
         if(/^uruchom testy mrówek$/i.test(message.trim())||/^uruchom testy mrowek$/i.test(message.trim())){
-          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Testy Mrówek może uruchamiać tylko właściciel RX.');
+          if(!env.RX_ADMIN_USER_ID)return reply(503,'Brak konfiguracji właściciela RX w Cloudflare.');
+          if(identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Konto administratora jest zalogowane, ale nie zgadza się z konfiguracją właściciela RX w Cloudflare. Nie uruchomiono testów.');
           if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji uruchamiania testów RX.');
           try{
             const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-medusa-ant.yml/dispatches',{
