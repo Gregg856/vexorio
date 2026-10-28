@@ -9,4 +9,7 @@ assert.deepEqual(restored,history);
 assert.equal(restored[0].report.summary.dispatched,0);
 assert.throws(()=>importQueenHistory('{"format":"other","entries":[]}'),TypeError);
 assert.throws(()=>importQueenHistory(exported.replace('"dispatched":0','"dispatched":1')),TypeError);
+assert.throws(()=>importQueenHistory(exported.replace('"pending":2','"pending":1')),TypeError);
+assert.throws(()=>importQueenHistory(exported.replace('"awaiting_approval"','"running"')),TypeError);
+assert.throws(()=>importQueenHistory(exported.replace('"rx-002"','"rx-001"')),TypeError);
 console.log('RX queen history export OK');
