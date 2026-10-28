@@ -75,7 +75,7 @@ const groups=[
 ];
 const menu=document.getElementById('menu'),sub=document.getElementById('sub'),heading=document.getElementById('heading'),messages=document.getElementById('messages');
 let selected=0;const activeModule=document.getElementById('activeModule');
-function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
+function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
 function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'})}
 const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json',bibi:'rx-bibi-budget.json'});
 async function readReport(name){
@@ -95,7 +95,13 @@ async function loadLiveStatus(module){
   const data=await response.json();
   if(module==='ants'){
    if(data.ok!==true||!data.board||!Array.isArray(data.board.tasks))throw Error('Brak wiarygodnej kolejki.');
-   add('bot','🐜 Kolejka Mrówek: '+data.board.tasks.length+' zadań do przeglądu\nŹródło: '+data.source+' (zapisany raport, nie praca na żywo).');
+   const tasks=data.board.tasks;
+   const details=tasks.slice(0,15).map((task,index)=>(index+1)+'. ['+task.priority+'] '+task.action+' — '+task.target+' (źródło: '+task.source+')');
+   add('bot','👑 Królowa / 🐜 Mrówki — kolejka do przeglądu\\n'+
+     (tasks.length?details.join('\\n'):'Brak zadań oczekujących na zatwierdzenie.')+
+     (tasks.length>15?'\\nPozostałe: '+(tasks.length-15):'')+
+     '\\nŁącznie: '+tasks.length+'; nadmiar: '+data.board.overflow+
+     '\\nŹródło: zapisany raport GitHub. Zatwierdzanie i uruchamianie zadań nie są jeszcze dostępne.');
    return;
   }
   if(!Array.isArray(data.runs))throw Error('Brak danych o testach.');
@@ -129,5 +135,5 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else add('bot','To jest prototyp czatu nawigacyjnego. Nie wysyłam wiadomości do modelu AI ani nie wykonuję poleceń. Wybierz kategorię lub wpisz „status”.')});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else add('bot','To jest prototyp czatu nawigacyjnego. Nie wysyłam wiadomości do modelu AI ani nie wykonuję poleceń. Wybierz kategorię lub wpisz „status”.')});show(0);
 </script></body></html>
