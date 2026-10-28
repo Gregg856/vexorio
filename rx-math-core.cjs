@@ -10,7 +10,14 @@ function matmul(a,b,m,k,n,out=new Float32Array(m*n)){
   const row=i*n;
   for(let p=0;p<k;p++){
    const v=a[i*k+p],brow=p*n;
-   for(let j=0;j<n;j++)out[row+j]+=v*b[brow+j];
+   let j=0;
+   for(;j+3<n;j+=4){
+    out[row+j]+=v*b[brow+j];
+    out[row+j+1]+=v*b[brow+j+1];
+    out[row+j+2]+=v*b[brow+j+2];
+    out[row+j+3]+=v*b[brow+j+3];
+   }
+   for(;j<n;j++)out[row+j]+=v*b[brow+j];
   }
  }
  return out;
