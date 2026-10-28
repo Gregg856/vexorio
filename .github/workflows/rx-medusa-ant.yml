@@ -37,3 +37,5 @@ jobs:
         run: |
           node tests/rx-medusa-engine.cjs
           node tests/rx-ant-task-board.cjs
+      - name: Verify Queen chat ant command contract
+        run: node --test tests/rx-queen-ant-command.cjs
