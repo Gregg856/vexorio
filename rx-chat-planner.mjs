@@ -11,7 +11,7 @@ export function planRXChat(message,history=[]){
  const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  // Use the most recent meaningful topic for short follow-ups; avoid mixing unrelated old intents.
  const normalizeRX=text=>text.toLocaleLowerCase('pl-PL').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/ł/g,'l');
- const recentTopic=previous.slice().reverse().find(x=>RULES.some(r=>r.words.some(w=>normalizeRX(x).includes(normalizeRX(w)))))||last;
+ const recentTopic=previous.slice().reverse().find(x=>(/(mrowk|wirnik|turbina|chmur|cloudflare|test|bled|blad|kolejk|pamiec|wiedz)/.test(normalizeRX(x))||RULES.some(r=>r.words.some(w=>normalizeRX(x).includes(normalizeRX(w))))))||last;
  const contextual=followup&&last?recentTopic+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const found=RULES.filter(r=>r.words.some(word=>q.includes(word)));
