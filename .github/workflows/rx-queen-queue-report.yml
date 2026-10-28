@@ -66,7 +66,7 @@ jobs:
           node --check rx-ant-ai-trainer.cjs
           node rx-ant-ai-trainer.cjs
           node --check rx-mega-cloud-computer.cjs
-          node -e "const fs=require('node:fs');const r=require('./rx-mega-cloud-computer.cjs').runCloudComputer({execute:false});fs.writeFileSync('rx-bibi-reports/rx-mega-cloud-computer.json',JSON.stringify(r,null,2)+'\\n')"
+          node rx-mega-cloud-computer.cjs
           node --check rx-system-status.cjs
           node rx-system-status.cjs
       - name: Validate queue and publish snapshot
@@ -84,6 +84,10 @@ jobs:
           const required=['queen','ants','cosmos','budget','browser','panel','programs','studio','computer','medusa','ai'];
           if(status.schema!==1||status.kind!=='rx-system-status'||status.productionTouched!==false||status.automaticActions!==0||status.total!==required.length||!status.modules||required.some(id=>!status.modules[id]||!['passed','reported','failed','missing','invalid'].includes(status.modules[id].state)))throw Error('Invalid unified RX system status');
           if(status.reviewTasks!==b.tasks.length||status.cosmosPlanned!==q.planned.length)throw Error('RX status is inconsistent with queue reports');
+          const computer=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-mega-cloud-computer.json','utf8'));
+          if(computer.kind!=='rx-mega-cloud-computer'||computer.executed!==9||computer.passed+computer.failed!==computer.executed||computer.planned!==0||computer.cloudServerProvisioned!==false||computer.physicalHardwareOwned!==false)throw Error('Invalid RX computer test results');
+          if(computer.failed!==0)throw Error('RX computer tests failed');
+          console.log('RX computer real checks:',computer.passed,'passed');
           console.log('RX system reports:',status.available+'/'+status.total);
           console.log('Read-only review tasks:',b.tasks.length,'COSMOS planned:',q.planned.length);
           NODE
