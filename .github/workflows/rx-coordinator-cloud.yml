@@ -5,6 +5,7 @@ on:
       - 'rx-coordinator*.cjs'
       - 'rx-command-bridge.cjs'
       - 'rx-turbine-engine.cjs'
+      - 'rx-turbine-cloud-executor.cjs'
       - 'rx-energy-core.cjs'
       - 'rx-dna-core.js'
       - 'tests/rx-coordinator*.cjs'
@@ -46,4 +47,13 @@ jobs:
         env:
           RX_COMMAND: ${{ inputs.command }}
           RX_CHECKS_APPROVED: 'true'
-        run: node rx-coordinator-cloud.cjs "$RX_COMMAND"
+        run: |
+          node rx-coordinator-cloud.cjs "$RX_COMMAND"
+          RX_TURBINE_APPROVED=true node rx-turbine-cloud-executor.cjs
+      - name: Upload measured turbine report
+        if: github.event_name == 'workflow_dispatch' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-turbine-power-execution
+          path: rx-bibi-reports/rx-turbine-power-execution.json
+          if-no-files-found: warn
