@@ -89,6 +89,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  fast:
+    name: RX FAST — szybka kontrola mózgu i czatu
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sprawdź składnię istniejących modułów
+        run: |
+          node --check worker.js
+          node --check rx-command-bridge.cjs
+          node --check rx-queen-ai-bridge.cjs
+          node --check rx-coordinator-cloud.cjs
+      - name: Szybkie testy RX Queen / Coordinator
+        run: |
+          node --test tests/rx-ai-router.cjs
+          node --test tests/rx-coordinator.cjs
+          node --test tests/rx-coordinator-cloud.cjs
   mobile:
     runs-on: ubuntu-latest
     container:
