@@ -11,7 +11,7 @@ concurrency:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +26,7 @@ jobs:
           mkdir -p rx-bibi-reports
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
+          rm -f rx-bibi-reports/rx-queen-panel-browser.json rx-bibi-reports/rx-queen-panel-check.json rx-bibi-reports/rx-programs-browser.json
           for module in browser programs; do
             if [ "$module" = browser ]; then script=tests/rx-queen-panel-browser.cjs; report=rx-queen-panel-browser.json; kind=rx-queen-panel-browser; else script=tests/rx-programs-browser.cjs; report=rx-programs-browser.json; kind=rx-programs-browser; fi
             log="$(mktemp)"
@@ -41,6 +42,9 @@ jobs:
           const log=fs.readFileSync(process.env.LOG,'utf8').slice(-3000);
           fs.writeFileSync('rx-bibi-reports/'+process.env.REPORT,JSON.stringify({schema:1,kind:process.env.KIND,ok:false,error:log||'Test failed',productionTouched:false},null,2)+'\\n');
           NODE
+            fi
+            if [ "$module" = browser ] && [ ! -s rx-bibi-reports/rx-queen-panel-check.json ]; then
+              node -e 'const fs=require("fs");fs.writeFileSync("rx-bibi-reports/rx-queen-panel-check.json",JSON.stringify({schema:1,kind:"rx-queen-panel-check",ok:false,error:"Panel report missing after browser checks",productionTouched:false},null,2)+"\n")'
             fi
             rm -f "$log"
           done
@@ -61,7 +65,7 @@ jobs:
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add rx-bibi-reports/rx-ant-task-board.json
+          git add rx-bibi-reports/rx-ant-task-board.json rx-bibi-reports/rx-queen-panel-browser.json rx-bibi-reports/rx-queen-panel-check.json rx-bibi-reports/rx-programs-browser.json
           if git diff --cached --quiet; then
             echo "No queue changes"
           else
