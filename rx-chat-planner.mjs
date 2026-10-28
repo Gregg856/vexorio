@@ -73,9 +73,38 @@ export function planRXChat(message,history=[]){
   const a=parseVector(dotRequest[1]),b=parseVector(dotRequest[2]);
   dotResult=a&&b&&a.length===b.length?math.dot(a,b):null;
  }
+ // Small matrices only (up to 4x4). RX MMUL uses the existing Float32 kernel.
+ const matrixRequest=message.trim().match(/^RX\s+(MADD|MMUL)\s*:\s*(.+)$/is);
+ let matrixResult=null;
+ if(matrixRequest){
+  const parseMatrix=raw=>{
+   try{
+    const value=JSON.parse(raw);
+    if(!Array.isArray(value)||value.length<1||value.length>4||!Array.isArray(value[0])||value[0].length<1||value[0].length>4)return null;
+    const cols=value[0].length;
+    if(value.some(row=>!Array.isArray(row)||row.length!==cols||row.some(n=>typeof n!=='number'||!Number.isFinite(n)||Math.abs(n)>1000000)))return null;
+    return {rows:value.length,cols,flat:new Float32Array(value.flat())};
+   }catch{return null;}
+  };
+  const parts=matrixRequest[2].split(';');
+  if(parts.length===2){
+   const a=parseMatrix(parts[0].trim()),b=parseMatrix(parts[1].trim());
+   if(a&&b){
+    const multiply=matrixRequest[1].toUpperCase()==='MMUL';
+    if((multiply&&a.cols===b.rows)||(!multiply&&a.rows===b.rows&&a.cols===b.cols)){
+     const out=multiply?math.matmul(a.flat,b.flat,a.rows,a.cols,b.cols):Float32Array.from(a.flat,(v,i)=>v+b.flat[i]);
+     if([...out].every(Number.isFinite)){
+      const cols=multiply?b.cols:a.cols;
+      matrixResult=Array.from({length:a.rows},(_,i)=>Array.from(out.slice(i*cols,(i+1)*cols)));
+     }
+    }
+   }
+  }
+ }
  let answer;
- if(dotRequest)answer=dotResult!==null&&Number.isFinite(dotResult)?'🧮 RX Math Core — iloczyn skalarny (Float32): '+dotResult+'. Obliczenie lokalne, bez zewnętrznego AI.':'🧮 Nieprawidłowe wektory. Użyj: RX DOT: [1,2]; [3,4] (po 1–16 liczb, jednakowa długość).';
- else if(requestedPoint&&selectedPoint)answer='👑 Punkt '+(pointIndex+1)+' z poprzedniego planu: '+selectedPoint+'\\n🔒 Mogę omówić ten krok, ale nie uruchamiam go bez zatwierdzenia.';
+ if(matrixRequest)answer=matrixResult?'🧮 RX Math Core — '+matrixRequest[1].toUpperCase()+' (Float32): '+JSON.stringify(matrixResult)+'. Obliczenie bez zewnętrznego AI.':'🧮 Nieprawidłowe macierze lub wymiary. Użyj: RX MADD: [[1,2],[3,4]]; [[5,6],[7,8]] albo RX MMUL: [[1,2]]; [[3],[4]] (maks. 4×4).';
+ if(!matrixRequest&&dotRequest)answer=dotResult!==null&&Number.isFinite(dotResult)?'🧮 RX Math Core — iloczyn skalarny (Float32): '+dotResult+'. Obliczenie lokalne, bez zewnętrznego AI.':'🧮 Nieprawidłowe wektory. Użyj: RX DOT: [1,2]; [3,4] (po 1–16 liczb, jednakowa długość).';
+ else if(!matrixRequest&&requestedPoint&&selectedPoint)answer='👑 Punkt '+(pointIndex+1)+' z poprzedniego planu: '+selectedPoint+'\\n🔒 Mogę omówić ten krok, ale nie uruchamiam go bez zatwierdzenia.';
  else if(requestedPoint)answer='👑 Nie widzę w ostatnich wiadomościach numerowanego planu z tym punktem. Wklej plan albo napisz, który krok masz na myśli.';
  else if(multiIntent)answer='👑 Rozumiem kilka spraw w jednym poleceniu:\\n'+selectedParts.map((x,i)=>(i+1)+'. '+x.label+': '+x.detail).join('\\n')+'\\n🔒 To plan odpowiedzi, nie uruchomienie zadań.';
  else if(greet)answer='👑 Cześć! Jestem Królowa RX. Możemy rozmawiać o Mrówkach, Wirniku, chmurze i budowie VEXORIO. Napisz, co chcesz sprawdzić albo zaplanować.';
