@@ -265,6 +265,17 @@ function queueChatProposal(message){
  catch{add('bot','⚠️ Nie udało się zapisać zadania. Sprawdź miejsce w przeglądarce.');}
  return true;
 }
+// Explicit confirmation required before research results become ant tasks.
+let rxLastTechHelp=null;
+function queueLastTechHelp(question){
+ if(!/^(?:dodaj wyniki do mrówek|dodaj wyniki do mrowek|przekaż wyniki mrówkom|przekaz wyniki mrowkom)$/i.test(question.trim()))return false;
+ if(!rxLastTechHelp?.sources?.length){add('bot','⚠️ Najpierw wpisz „Szukaj pomocy: opis błędu”. Brak wyników do przekazania.');return true;}
+ const details=rxLastTechHelp.sources.map((s,i)=>(i+1)+'. '+s.title+' — '+s.url).join('\n');
+ const task='Przeanalizuj publiczne zgłoszenia dotyczące: '+rxLastTechHelp.query+'\n'+details+'\nSprawdź zgodność z kodem VEXORIO, przygotuj propozycję poprawki i testów. Nie wykonuj zmian automatycznie.';
+ const result=queueChatProposal('Zadanie: '+task.slice(0,3900));
+ if(result)rxLastTechHelp=null;
+ return result;
+}
 const rxServerChatHistory=[];
 async function answerServerBrainChat(question){
  try{
@@ -281,6 +292,7 @@ async function answerServerBrainChat(question){
     add('bot','⚠️ Pamięć RX nie obsłużyła tego polecenia. Nie zapisano potwierdzonej informacji. Sprawdź aktualizację serwera RX; nie traktuj planu diagnostyki jako zapisu.');
     return;
   }
+  if(data.engine==='rx-tech-help'&&Array.isArray(data.sources)&&data.sources.length){rxLastTechHelp={query:question.replace(/^[^:]*:\s*/,''),sources:data.sources.filter(x=>typeof x.title==='string'&&typeof x.url==='string').slice(0,3)};}else rxLastTechHelp=null;
   const tasks=Array.isArray(data.tasks)?data.tasks:[];
   add('bot',data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
  }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
@@ -328,7 +340,7 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(!queueChatProposal(q))answerServerBrainChat(q)});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(!queueLastTechHelp(q)&&!queueChatProposal(q))answerServerBrainChat(q)});show(0);
 
 (function(){
  const name=document.getElementById('rxWorkName'),code=document.getElementById('rxWorkCode'),status=document.getElementById('rxWorkStatus');
