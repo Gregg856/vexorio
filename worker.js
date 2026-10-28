@@ -125,7 +125,7 @@ export default {
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
         const planned=planRXChat(message,history);
         // Existing RX planner remains the safe fallback. No commands are executed.
-        if(env.AI && typeof env.AI.run==='function'){
+        if(env.RX_AI_ENABLED==='true' && env.AI && typeof env.AI.run==='function'){
           try{
             const messages=[
               {role:'system',content:'Jesteś RX Królową, polskojęzycznym asystentem administratora VEXORIO. Odpowiadaj jasno i zgodnie z prawdą. RX TURBINE, Mrówki i AI Core planują zadania; nie twierdź, że je wykonały, trenowały model lub zmieniły produkcję. Nie ujawniaj sekretów. Nie wykonuj poleceń; wymagają zgody właściciela.'},
