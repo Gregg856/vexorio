@@ -133,6 +133,41 @@ jobs:
           node tests/rx-command-bridge.cjs
           node tests/rx-bibi-budget.cjs
           node tests/rx-queen-ai-bridge.cjs
+  ants:
+    name: RX MRÓWKI — trening i pamięć modelu
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Przywróć pamięć modelu
+        uses: actions/cache/restore@v4
+        with:
+          path: rx-ai-checkpoints/latest.json
+          key: rx-ant-ai-checkpoint-${{ github.run_id }}
+          restore-keys: |
+            rx-ant-ai-checkpoint-
+      - name: Mrówki — ucz model i porównaj z poprzednim
+        run: |
+          node tests/rx-ant-ai-trainer.cjs
+          node tests/rx-ant-ai-evaluator.cjs
+          node rx-ant-ai-evaluator.cjs
+      - name: Zapisz pamięć modelu
+        uses: actions/cache/save@v4
+        with:
+          path: rx-ai-checkpoints/latest.json
+          key: rx-ant-ai-checkpoint-${{ github.run_id }}
+      - name: Zachowaj raport rozwoju Królowej
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-queen-model-growth
+          path: |
+            rx-bibi-reports/rx-queen-model-growth.json
+            rx-bibi-reports/rx-ant-ai-evaluation.json
+            rx-ai-checkpoints/latest.json
+          retention-days: 14
   mobile:
     # Browser suite runs for UI changes, manual runs, and hourly audits.
     # Backend/AI-only pushes use the fast job and avoid Playwright startup.
