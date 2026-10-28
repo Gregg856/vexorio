@@ -1,4 +1,5 @@
 import catalog from './rx-task-catalog.cjs';
+import math from './rx-math-core.cjs';
 // RX chat planner: pure, read-only module for the Cloudflare Worker.
 // Intent identifiers match rx-command-bridge.cjs; no Node-only dependencies.
 const RULES=catalog.RULES;
@@ -58,8 +59,23 @@ export function planRXChat(message,history=[]){
  const priorPlan=history.slice().reverse().find(x=>/\b1[.)]\s/.test(x)&&/\b2[.)]\s/.test(x));
  const planItems=priorPlan?[...priorPlan.matchAll(/(?:^|\n)\s*([1-5])[.)]\s*([^\n]+)/g)].map(x=>x[2].trim()):[];
  const selectedPoint=pointIndex>=0&&pointIndex<planItems.length?planItems[pointIndex]:null;
+ // Explicit, bounded Float32 dot-product command. No eval, network or training.
+ const dotRequest=message.trim().match(/^rx\s+dot\s*:\s*\[([^\]]*)\]\s*;\s*\[([^\]]*)\]\s*$/i);
+ let dotResult=null;
+ if(dotRequest){
+  const parseVector=value=>{
+   const parts=value.split(',').map(x=>x.trim());
+   if(parts.length<1||parts.length>16||parts.some(x=>!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?$/i.test(x)))return null;
+   const numbers=parts.map(Number);
+   if(numbers.some(x=>!Number.isFinite(x)||Math.abs(x)>1000000))return null;
+   return new Float32Array(numbers);
+  };
+  const a=parseVector(dotRequest[1]),b=parseVector(dotRequest[2]);
+  dotResult=a&&b&&a.length===b.length?math.dot(a,b):null;
+ }
  let answer;
- if(requestedPoint&&selectedPoint)answer='👑 Punkt '+(pointIndex+1)+' z poprzedniego planu: '+selectedPoint+'\\n🔒 Mogę omówić ten krok, ale nie uruchamiam go bez zatwierdzenia.';
+ if(dotRequest)answer=dotResult!==null&&Number.isFinite(dotResult)?'🧮 RX Math Core — iloczyn skalarny (Float32): '+dotResult+'. Obliczenie lokalne, bez zewnętrznego AI.':'🧮 Nieprawidłowe wektory. Użyj: RX DOT: [1,2]; [3,4] (po 1–16 liczb, jednakowa długość).';
+ else if(requestedPoint&&selectedPoint)answer='👑 Punkt '+(pointIndex+1)+' z poprzedniego planu: '+selectedPoint+'\\n🔒 Mogę omówić ten krok, ale nie uruchamiam go bez zatwierdzenia.';
  else if(requestedPoint)answer='👑 Nie widzę w ostatnich wiadomościach numerowanego planu z tym punktem. Wklej plan albo napisz, który krok masz na myśli.';
  else if(multiIntent)answer='👑 Rozumiem kilka spraw w jednym poleceniu:\\n'+selectedParts.map((x,i)=>(i+1)+'. '+x.label+': '+x.detail).join('\\n')+'\\n🔒 To plan odpowiedzi, nie uruchomienie zadań.';
  else if(greet)answer='👑 Cześć! Jestem Królowa RX. Możemy rozmawiać o Mrówkach, Wirniku, chmurze i budowie VEXORIO. Napisz, co chcesz sprawdzić albo zaplanować.';
