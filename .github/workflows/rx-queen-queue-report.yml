@@ -1,0 +1,46 @@
+name: RX Queen — publish read-only ant queue snapshot
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 */6 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: rx-queen-queue-report
+  cancel-in-progress: false
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate deterministic review-only queue
+        run: |
+          node --check rx-queen-ant-supervisor.cjs
+          node --check rx-ant-task-board.cjs
+          node rx-queen-ant-supervisor.cjs
+          node rx-ant-task-board.cjs
+      - name: Validate queue and publish snapshot
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const p='rx-bibi-reports/rx-ant-task-board.json';
+          const b=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(b.schema!==1||b.kind!=='rx-ant-task-board'||!Array.isArray(b.tasks)||b.tasks.length>100||b.autoFixesApplied!==0||b.tasks.some(t=>t.status!=='needs_review'||t.requiresApproval!==true))throw Error('Unsafe queue snapshot');
+          console.log('Read-only review tasks:',b.tasks.length);
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rx-bibi-reports/rx-ant-task-board.json
+          if git diff --cached --quiet; then
+            echo "No queue changes"
+          else
+            git commit -m "chore(rx): publish read-only ant queue snapshot [skip ci]"
+            git push origin HEAD:main
+          fi
