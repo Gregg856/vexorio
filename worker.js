@@ -121,28 +121,11 @@ export default {
         isAdmin=(await adminResponse.json())===true;
       }catch{return reply(502,'Nie udało się sprawdzić uprawnień administratora.');}
       if(!isAdmin)return reply(403,'Brak uprawnień administratora.');
-      // RX AUTOPRACA 2.0: authenticated, read-only server queue.
-      // Disabled unless the server has a separate secret and the private schema is
-      // explicitly available to the trusted server. Never expose this key to HTML.
+      // RX AUTOPRACA 2.0: private queue access is intentionally disabled.
+      // The staging rx_private schema is not available to service_role via
+      // PostgREST. Do not expose the schema or loosen table permissions.
       if(url.pathname==='/api/rx/ants/tasks'){
-        if(base.hostname!=='owkjdlpawczrnwyszduj.supabase.co')return reply(503,'Kolejka dostępna wyłącznie na staging.');
-        if(!env.RX_SUPABASE_SERVICE_ROLE_KEY)return reply(503,'Kolejka serwerowa nie jest jeszcze skonfigurowana.');
-        try{
-          const endpoint=new URL('/rest/v1/ant_task_queue',base);
-          endpoint.searchParams.set('select','id,source,task_type,title,status,created_at,approved_at,finished_at');
-          endpoint.searchParams.set('order','created_at.desc');
-          endpoint.searchParams.set('limit','20');
-          const upstream=await fetch(endpoint,{
-            headers:{apikey:env.RX_SUPABASE_SERVICE_ROLE_KEY,
-              Authorization:'Bearer '+env.RX_SUPABASE_SERVICE_ROLE_KEY,
-              'Accept-Profile':'rx_private'},
-            signal:AbortSignal.timeout(8000)
-          });
-          if(!upstream.ok)return reply(503,'Prywatna kolejka nie jest dostępna przez serwer.');
-          const tasks=await upstream.json();
-          if(!Array.isArray(tasks)||tasks.length>20)return reply(502,'Nieprawidłowa odpowiedź kolejki.');
-          return new Response(JSON.stringify({ok:true,source:'supabase-staging',tasks}),{status:200,headers});
-        }catch{return reply(502,'Nie udało się odczytać kolejki.');}
+        return reply(503,'Kolejka prywatna wymaga osobnej bezpiecznej bramki serwerowej.');
       }
       if(url.pathname==='/api/rx/chat'){
         let payload;
