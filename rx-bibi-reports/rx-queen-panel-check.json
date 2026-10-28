@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "kind": "rx-queen-panel-check",
+  "ok": true,
+  "checks": [
+    "empty_comparison",
+    "matching_fixes",
+    "task_approval_reset",
+    "no_page_errors"
+  ],
+  "scope": "isolated-chromium-dom",
+  "productionTouched": false
+}

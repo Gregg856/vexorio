@@ -1,49 +1,8 @@
 {
   "schema": 1,
   "kind": "rx-ant-task-board",
-  "tasks": [
-    {
-      "source": "browser",
-      "action": "missing_browser_report",
-      "target": "rx-bibi-reports",
-      "priority": "medium",
-      "status": "needs_review",
-      "requiresApproval": true,
-      "historyOccurrences": 0,
-      "recurrent": false
-    },
-    {
-      "source": "panel",
-      "action": "missing_panel_report",
-      "target": "rx-bibi-reports",
-      "priority": "medium",
-      "status": "needs_review",
-      "requiresApproval": true,
-      "historyOccurrences": 0,
-      "recurrent": false
-    },
-    {
-      "source": "programs",
-      "action": "missing_programs_report",
-      "target": "rx-bibi-reports",
-      "priority": "medium",
-      "status": "needs_review",
-      "requiresApproval": true,
-      "historyOccurrences": 0,
-      "recurrent": false
-    },
-    {
-      "source": "studio",
-      "action": "missing_studio_report",
-      "target": "rx-bibi-reports",
-      "priority": "medium",
-      "status": "needs_review",
-      "requiresApproval": true,
-      "historyOccurrences": 0,
-      "recurrent": false
-    }
-  ],
-  "totalUnique": 4,
+  "tasks": [],
+  "totalUnique": 0,
   "overflow": 0,
   "autoFixesApplied": 0,
   "note": "Deduplicated recommendations only; no code changes, production access, or paid jobs."
