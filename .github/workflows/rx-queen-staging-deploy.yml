@@ -12,6 +12,13 @@ jobs:
     environment: rx-queen-staging
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: rx-queen-worker-queue-read
+          persist-credentials: false
+      - name: Confirm RX Queen code is present
+        run: |
+          grep -Fq '/api/rx/ants/tasks' worker.js || { echo '::error::RX Queen queue route missing'; exit 1; }
+          grep -Fq '/api/rx/chat' worker.js || { echo '::error::RX Queen chat route missing'; exit 1; }
       - name: Require isolated staging configuration
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
