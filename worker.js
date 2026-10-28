@@ -91,7 +91,8 @@ export default {
     if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat' || url.pathname === '/api/rx/ants/tasks') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
-      if(request.method!==(url.pathname==='/api/rx/ants/tasks'?'GET':'POST'))return reply(405,'Niedozwolona metoda.');
+      if(url.pathname==='/api/rx/ants/tasks' && request.method!=='GET')return reply(405,'Niedozwolona metoda.');
+      if(url.pathname!=='/api/rx/ants/tasks' && request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
       if(request.headers.get('Origin')!==url.origin && request.headers.get('Origin')!==null)return reply(403,'Nieprawidłowe pochodzenie.');
       if(request.method==='POST' && request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
       // Fail closed until the owner configures both secrets in Cloudflare.
