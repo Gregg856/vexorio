@@ -67,6 +67,8 @@ on:
       - 'rx-center.html'
       - 'tests/rx-navigation-mobile.cjs'
       - 'tests/rx-admin-entry-mobile.cjs'
+      - 'tests/rx-chat-mobile.cjs'
+      - 'rx-admin-prototype.html'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
       - 'tests/rx-bibi-encoder-diagnostic.cjs'
@@ -223,6 +225,8 @@ jobs:
       - name: RX — sprawdź wejście do panelu administratora VEXORIO
         if: always()
         run: node tests/rx-admin-entry-mobile.cjs
+      - name: RX BIBI — sprawdź czat RX na telefonie
+        run: node tests/rx-chat-mobile.cjs
       - name: RX — testuj nawigację mobilną Centrum i powrót do VEXORIO
         if: always()
         run: node tests/rx-navigation-mobile.cjs
