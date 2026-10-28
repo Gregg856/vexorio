@@ -20,6 +20,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Run real isolated Browser and Programs checks
+        shell: bash
+        run: |
+          mkdir -p rx-bibi-reports
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          for module in browser programs; do
+            if [ "$module" = browser ]; then script=tests/rx-queen-panel-browser.cjs; report=rx-queen-panel-browser.json; kind=rx-queen-panel-browser; else script=tests/rx-programs-browser.cjs; report=rx-programs-browser.json; kind=rx-programs-browser; fi
+            log="$(mktemp)"
+            if node "$script" >"$log" 2>&1; then
+              cat "$log"
+              if [ ! -s "rx-bibi-reports/$report" ]; then
+                node -e 'const fs=require("fs");fs.writeFileSync("rx-bibi-reports/"+process.argv[1],JSON.stringify({schema:1,kind:process.argv[2],ok:false,error:"Test exited successfully but report missing",productionTouched:false},null,2)+"\\n")' "$report" "$kind"
+              fi
+            else
+              cat "$log"
+              REPORT="$report" KIND="$kind" LOG="$log" node - <<'NODE'
+          const fs=require('fs');
+          const log=fs.readFileSync(process.env.LOG,'utf8').slice(-3000);
+          fs.writeFileSync('rx-bibi-reports/'+process.env.REPORT,JSON.stringify({schema:1,kind:process.env.KIND,ok:false,error:log||'Test failed',productionTouched:false},null,2)+'\\n');
+          NODE
+            fi
+            rm -f "$log"
+          done
       - name: Generate deterministic review-only queue
         run: |
           node --check rx-queen-ant-supervisor.cjs
