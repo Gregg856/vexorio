@@ -1,8 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const fs=require('node:fs');
 (async()=>{
- const source=fs.readFileSync('worker.js','utf8');
  const {pathToFileURL}=require('node:url');
  const {resolve}=require('node:path');
  const worker=(await import(pathToFileURL(resolve('worker.js')).href)).default;
