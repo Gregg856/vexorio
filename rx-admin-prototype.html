@@ -67,7 +67,7 @@ const groups=[
  ['👑 Królowa',['Status systemów','Zadania do zatwierdzenia','BIBI — budżet']],
  ['🐜 Mrówki',['Kolejka','Testy','Raporty']],
  ['🧠 RX AI',['Model testowy','Trening','Walidacja']],
- ['💻 Komputer i chmura',['Wykonane testy','Plan komputera','Chmura']],
+ ['💻 Komputer i chmura',['Wykonane testy','Plan komputera','Chmura','RX Coordinator — testy CI']],
  ['🌌 COSMOS',['Kolejka COSMOS','Laboratoria']],
  ['🐙 MEDUSA',['Sygnały','Audyt']],
  ['📊 Raporty',['Status 11 modułów','Wyniki testów']],
@@ -75,7 +75,7 @@ const groups=[
 ];
 const menu=document.getElementById('menu'),sub=document.getElementById('sub'),heading=document.getElementById('heading'),messages=document.getElementById('messages');
 let selected=0;const activeModule=document.getElementById('activeModule');
-function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
+function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(label==='RX Coordinator — testy CI')loadCoordinatorCI();else if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
 function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'})}
 const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json',bibi:'rx-bibi-budget.json'});
 async function readReport(name){
@@ -109,6 +109,23 @@ async function loadLiveStatus(module){
   add('bot','📡 Ostatnie stany GitHub Actions\n'+lines.join('\n')+'\n'+(data.degraded?'Uwaga: część źródeł niedostępna.':'To status CI, nie potwierdzenie pracy AI na żywo.'));
  }catch(error){add('bot','Nie udało się pobrać aktualnego statusu: '+error.message);}
 }
+async function loadCoordinatorCI(){
+ add('bot','🐜 Odczytuję ostatni wynik RX Coordinator z GitHub Actions…');
+ try{
+  const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-coordinator-cloud.yml/runs?per_page=5',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw Error('GitHub HTTP '+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.workflow_runs))throw Error('Brak wiarygodnych danych.');
+  const runs=data.workflow_runs.slice(0,5);
+  if(!runs.length){add('bot','Nie ma jeszcze zarejestrowanych przebiegów RX Coordinator.');return;}
+  const lines=runs.map(run=>{
+   const state=run.status==='completed'?(run.conclusion==='success'?'✅ sukces':run.conclusion==='failure'?'❌ błąd':run.conclusion||'zakończony'):'⏳ '+run.status;
+   const date=run.created_at?new Date(run.created_at).toLocaleString('pl-PL'):'brak daty';
+   return state+' · '+run.event+' · '+date+'\\n'+run.html_url;
+  });
+  add('bot','👑 RX Coordinator — ostatnie przebiegi\\n'+lines.join('\\n\\n')+'\\nŹródło: publiczny GitHub Actions. Wyniki CI nie oznaczają, że zadania zostały uruchomione z tego czatu.');
+ }catch(error){add('bot','Nie udało się odczytać RX Coordinator: '+error.message);}
+}
 async function loadStatus(module='status'){
  add('bot','Odczytuję zapisany raport '+module+'…');
  try{
@@ -135,5 +152,5 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else add('bot','To jest prototyp czatu nawigacyjnego. Nie wysyłam wiadomości do modelu AI ani nie wykonuję poleceń. Wybierz kategorię lub wpisz „status”.')});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else add('bot','To jest prototyp czatu nawigacyjnego. Nie wysyłam wiadomości do modelu AI ani nie wykonuję poleceń. Wybierz kategorię lub wpisz „status”.')});show(0);
 </script></body></html>
