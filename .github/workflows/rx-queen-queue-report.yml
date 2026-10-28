@@ -61,11 +61,15 @@ jobs:
           const p='rx-bibi-reports/rx-ant-task-board.json';
           const b=JSON.parse(fs.readFileSync(p,'utf8'));
           if(b.schema!==1||b.kind!=='rx-ant-task-board'||!Array.isArray(b.tasks)||b.tasks.length>100||b.autoFixesApplied!==0||b.tasks.some(t=>t.status!=='needs_review'||t.requiresApproval!==true))throw Error('Unsafe queue snapshot');
-          console.log('Read-only review tasks:',b.tasks.length);
+          const q=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-cosmos-ant-queue.json','utf8'));
+          const budget=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-bibi-budget.json','utf8'));
+          if(q.schema!==1||q.kind!=='rx-cosmos-ant-queue'||!Array.isArray(q.planned)||q.planned.length>20||q.executed!==0||q.autoFixesApplied!==0||q.planned.some(t=>t.status!=='needs_review'||t.requiresApproval!==true))throw Error('Unsafe COSMOS queue');
+          if(!budget||typeof budget!=='object'||Array.isArray(budget))throw Error('Invalid RX budget');
+          console.log('Read-only review tasks:',b.tasks.length,'COSMOS planned:',q.planned.length);
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add rx-bibi-reports/rx-ant-task-board.json rx-bibi-reports/rx-queen-panel-browser.json rx-bibi-reports/rx-queen-panel-check.json rx-bibi-reports/rx-programs-browser.json
+          git add rx-bibi-reports/rx-ant-task-board.json rx-bibi-reports/rx-cosmos-ant-queue.json rx-bibi-reports/rx-bibi-budget.json rx-bibi-reports/rx-queen-panel-browser.json rx-bibi-reports/rx-queen-panel-check.json rx-bibi-reports/rx-programs-browser.json
           if git diff --cached --quiet; then
             echo "No queue changes"
           else
