@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "kind": "rx-bibi-studio",
+  "testedUrl": "https://vexorio.grzegorzbub1985.workers.dev",
+  "ciCommit": "42c0f784d43465194259b02314edbbadbbb9a268",
+  "ok": true,
+  "failed": [],
+  "manualWorkflow": true,
+  "observedAt": "2026-10-28T07:51:45.742Z"
+}
