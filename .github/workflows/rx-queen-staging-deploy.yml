@@ -80,7 +80,7 @@ jobs:
           STAGING_ANON: ${{ secrets.RX_STAGING_SUPABASE_ANON_KEY }}
         run: |
           cat > wrangler.toml <<'EOF'
-          name = "vexorio-rx-queen-staging"
+          name = "vexorio-staging"
           compatibility_date = "2026-10-20"
           workers_dev = true
           main = "./worker.js"
@@ -106,5 +106,5 @@ jobs:
           command: deploy
       - name: Verify isolated staging URL
         run: |
-          echo "Staging Worker name: vexorio-rx-queen-staging" >> "$GITHUB_STEP_SUMMARY"
+          echo "Staging Worker name: vexorio-staging" >> "$GITHUB_STEP_SUMMARY"
           echo "Production Worker vexorio was not deployed." >> "$GITHUB_STEP_SUMMARY"
