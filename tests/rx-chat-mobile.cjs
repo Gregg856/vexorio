@@ -14,7 +14,8 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
   result.checks.push({name:'mobile_composer_8000',ok:true});
   if(!html.includes("rxServerChatHistory.slice(-20)")||!html.includes("rxServerChatHistory.length>20"))throw Error('RX history limit not deployed');
   result.checks.push({name:'history_20',ok:true});
-  if(!html.includes("else answerServerBrainChat(q)")||!html.includes("fetch('/api/rx/chat'"))throw Error('RX chat planner routing not deployed');
+  if(!html.includes("answerServerBrainChat(q)")||!html.includes("fetch('/api/rx/chat'"))throw Error('RX chat planner routing not deployed');
+  if(!html.includes("runApprovedCoordinator(q.replace(")||!html.includes("fetch('/api/rx/coordinator/run'"))throw Error('RX approved custom-command dispatch not deployed');
   result.checks.push({name:'freeform_routes_to_server',ok:true});
   const locked=await page.locator('#rxGate').isVisible();
   if(!locked)throw Error('Anonymous user bypassed RX access gate');
