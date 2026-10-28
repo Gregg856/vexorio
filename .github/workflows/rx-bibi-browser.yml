@@ -215,9 +215,25 @@ jobs:
       - name: RX BIBI — diagnostyka kodera wideo i audio
         if: always()
         run: node tests/rx-bibi-encoder-diagnostic.cjs
+      # Long video exports run only for Studio/PhotoMotion changes or manual full audit.
+      - name: RX FAST — wybierz czy potrzebny jest test eksportu wideo
+        id: video_scope
+        if: always()
+        env:
+          RX_BEFORE: ${{ github.event.before }}
+          RX_EVENT: ${{ github.event_name }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),cp=require('node:child_process');
+          const scope=['rx-bibi-studio.html','rx-photo-motion.js','rx-video-engine.js','rx-ai-director.js','tests/rx-bibi-studio.cjs','tests/rx-bibi-encoder-diagnostic.cjs','package.json','package-lock.json','.github/workflows/rx-bibi-browser.yml'];
+          let run=process.env.RX_EVENT!=='push';
+          if(!run){const before=process.env.RX_BEFORE||'';try{if(!/^[a-f0-9]{40}$/i.test(before))throw Error('unknown base');const files=cp.execFileSync('git',['diff','--name-only',before,'HEAD'],{encoding:'utf8'}).trim().split(/\r?\n/);run=files.some(f=>scope.includes(f));}catch{run=true;}}
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,'run_video='+String(run)+'\n');
+          console.log('RX BIBI full video export:',run?'YES':'SKIP (unrelated changes)');
+          NODE
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         id: studio
-        if: always()
+        if: always() && steps.video_scope.outputs.run_video == 'true'
         run: node tests/rx-bibi-studio.cjs
       - name: RX BIBI — powtórz test eksportu po niepowodzeniu
         if: failure() && steps.studio.outcome == 'failure'
