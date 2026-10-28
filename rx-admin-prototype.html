@@ -73,7 +73,7 @@ async function checkAdmin(){
  gate.hidden=false;app.hidden=true;gateText.textContent='Sprawdzam sesję i uprawnienia administratora VEXORIO…';
  try{
   if(!window.supabase?.createClient)throw Error('Nie udało się wczytać modułu logowania.');
-  rxClient??=window.supabase.createClient(RX_SUPABASE_URL,RX_SUPABASE_PUBLIC_KEY);
+  rxClient??=window.supabase.createClient(RX_SUPABASE_URL,RX_SUPABASE_PUBLIC_KEY,{auth:{storageKey:'sb-lfytoxcnutduahshbsko-auth-token',persistSession:true,autoRefreshToken:true}});
   const {data:{user},error}=await rxClient.auth.getUser();
   if(error||!user||user.is_anonymous)throw Error('Zaloguj się na swoje konto VEXORIO.');
   const {data:allowed,error:rpcError}=await rxClient.rpc('is_vexorio_admin');
