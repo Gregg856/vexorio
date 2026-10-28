@@ -164,14 +164,17 @@ function answerBrainChat(question){
  if(!topics.length){add('bot','👑 RX Brain Chat 1.2: Nie rozpoznałam jeszcze tego tematu. Zapytaj o testy, chmurę lub model AI. To wstępny silnik reguł, bez modelu językowego.');return;}
  add('bot','👑 RX Brain Chat 1.2\\nRozpoznane tematy: '+topics.join(', ')+'.\\nProponuję sprawdzić powiązane raporty i przygotować plan dla mrówek. Żadne testy ani zmiany nie zostały uruchomione.\\nTo lokalny adapter rozmowy; wykonanie wymaga osobnego zatwierdzenia.');
 }
+const rxServerChatHistory=[];
 async function answerServerBrainChat(question){
  try{
   const session=await rxClient.auth.getSession();
   const token=session.data?.session?.access_token;
   if(!token)throw Error('Zaloguj się jako administrator.');
-  const response=await fetch('/api/rx/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({message:question}),signal:AbortSignal.timeout(12000)});
+  const response=await fetch('/api/rx/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({message:question,history:rxServerChatHistory.slice(-6)}),signal:AbortSignal.timeout(12000)});
   const data=await response.json();
   if(!response.ok)throw Error(data.message||'Błąd serwera '+response.status);
+  rxServerChatHistory.push(question);
+  if(rxServerChatHistory.length>6)rxServerChatHistory.shift();
   add('bot',data.answer);
  }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
 }
