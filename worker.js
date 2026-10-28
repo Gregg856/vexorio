@@ -1,3 +1,4 @@
+import {searchWorldKnowledge} from './rx-world-knowledge.mjs';
 import {planRXChat} from './rx-chat-planner.mjs';
 export default {
   async fetch(request, env) {
@@ -124,6 +125,15 @@ export default {
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
         const planned=planRXChat(message,history);
+        // External encyclopedia answers only factual questions outside RX's own operational domain.
+        const factual=/^(co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\\s+/i.test(message.trim());
+        const internal=/\\b(rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\\b/i.test(message);
+        if(factual&&!internal){
+          try{
+            const knowledge=await searchWorldKnowledge(message);
+            if(knowledge)return new Response(JSON.stringify({...planned,answer:'📚 '+knowledge.title+'\\n'+knowledge.summary+'\\nŹródło: '+knowledge.url+' (Wikipedia; sprawdź aktualność informacji)',knowledge,engine:'rx-world-knowledge',modelInferenceUsed:false}),{status:200,headers});
+          }catch{/* Knowledge provider failure must never break the chat. */}
+        }
         // Existing RX planner remains the safe fallback. No commands are executed.
         if(env.RX_AI_ENABLED==='true' && env.AI && typeof env.AI.run==='function'){
           try{
