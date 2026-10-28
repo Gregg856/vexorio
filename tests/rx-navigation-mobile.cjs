@@ -19,8 +19,9 @@ const checks=[];
    if(!response||!response.ok())throw Error('HTTP error at '+pathname+': '+response?.status());
   };
   const expectPath=async expected=>{
-   await page.waitForURL(url=>url.pathname.replace(/\/$/,'')===expected.replace(/\/$/,''),{timeout:15000});
-   checks.push({path:expected,ok:true});
+   const canonical=p=>p.replace(/\.html$/,'').replace(/\/$/,'')||'/';
+   await page.waitForURL(url=>canonical(url.pathname)===canonical(expected),{timeout:15000,waitUntil:'commit'});
+   checks.push({path:expected,actual:new URL(page.url()).pathname,ok:true});
   };
   await go('/rx-center.html');
   await page.getByRole('link',{name:/Otwórz Strażaka/i}).click();
