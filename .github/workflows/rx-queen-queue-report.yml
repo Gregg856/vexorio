@@ -55,6 +55,32 @@ jobs:
             fi
             rm -f "$log"
           done
+      - name: Collect GitHub CI failures for RX Ants (read-only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const {triageCiFailures}=require('./rx-ant-task-board.cjs');
+          const output='rx-bibi-reports/rx-ant-ci-triage.json';
+          const url='https://api.github.com/repos/'+process.env.GITHUB_REPOSITORY+'/actions/runs?branch=main&per_page=50';
+          (async()=>{
+            let report;
+            try{
+              const response=await fetch(url,{headers:{Authorization:'Bearer '+process.env.GH_TOKEN,Accept:'application/vnd.github+json','User-Agent':'RX-Ants-CI-Triage'},signal:AbortSignal.timeout(10000)});
+              if(!response.ok)throw Error('GitHub API HTTP '+response.status);
+              const payload=await response.json();
+              if(!Array.isArray(payload.workflow_runs))throw Error('Invalid GitHub workflow list');
+              report=triageCiFailures(payload.workflow_runs,{maxTasks:10});
+              report.source='github-actions';report.checkedAt=new Date().toISOString();report.sourceAvailable=true;
+            }catch(error){
+              report={schema:1,kind:'rx-ant-ci-triage',tasks:[],executed:0,autoFixesApplied:0,sourceAvailable:false,error:String(error.message).slice(0,160)};
+            }
+            fs.mkdirSync('rx-bibi-reports',{recursive:true});
+            fs.writeFileSync(output,JSON.stringify(report,null,2)+'\\n');
+            console.log('RX Ant CI failure proposals:',report.tasks.length,'source available:',report.sourceAvailable);
+          })().catch(error=>{console.error(error);process.exitCode=1});
+          NODE
       - name: Generate deterministic review-only queue
         run: |
           node --check rx-queen-ant-supervisor.cjs
@@ -93,7 +119,7 @@ jobs:
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add rx-bibi-reports/rx-medusa-signals.json rx-bibi-reports/rx-ant-ai-training.json rx-bibi-reports/rx-mega-cloud-computer.json rx-bibi-reports/rx-system-status.json rx-bibi-reports/rx-ant-task-board.json rx-bibi-reports/rx-cosmos-ant-queue.json rx-bibi-reports/rx-bibi-budget.json rx-bibi-reports/rx-queen-panel-browser.json rx-bibi-reports/rx-queen-panel-check.json rx-bibi-reports/rx-programs-browser.json
+          git add rx-bibi-reports/rx-ant-ci-triage.json rx-bibi-reports/rx-medusa-signals.json rx-bibi-reports/rx-ant-ai-training.json rx-bibi-reports/rx-mega-cloud-computer.json rx-bibi-reports/rx-system-status.json rx-bibi-reports/rx-ant-task-board.json rx-bibi-reports/rx-cosmos-ant-queue.json rx-bibi-reports/rx-bibi-budget.json rx-bibi-reports/rx-queen-panel-browser.json rx-bibi-reports/rx-queen-panel-check.json rx-bibi-reports/rx-programs-browser.json
           if git diff --cached --quiet; then
             echo "No queue changes"
           else
