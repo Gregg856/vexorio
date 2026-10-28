@@ -36,8 +36,6 @@ jobs:
             echo "::error::Staging Queen gateway returned HTTP $status instead of 401"
             exit 1
           fi
-          if ! grep -q '"authentication_required"' "$response"; then
-            echo "::error::Staging Queen gateway did not return the expected auth guard"
-            exit 1
-          fi
-          echo "Staging Queen gateway auth smoke passed (HTTP 401)."
+          # Supabase's gateway can reject missing JWTs before Edge Function code runs.
+          # Either gateway 401 or function 401 is the desired unauthenticated denial.
+          echo "Staging Queen gateway denied unauthenticated GET (HTTP 401)."
