@@ -84,7 +84,7 @@ export default {
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
       return new Response(JSON.stringify({ready,configured:ready,service:'RX Tester',missing:['RX_GITHUB_DISPATCH_TOKEN','RX_ADMIN_USER_ID','SUPABASE_URL','SUPABASE_ANON_KEY'].filter(name=>!env[name]),note:ready?'Serwer gotowy do sprawdzania uprawnień.':'Wymagana konfiguracja po stronie Cloudflare.'}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
-    if (url.pathname === '/api/rx/run-test') {
+    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
       if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
@@ -117,10 +117,11 @@ export default {
       if(!isAdmin)return reply(403,'Brak uprawnień administratora.');
       let github;
       try{
-        github=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-bibi-browser.yml/dispatches',{
+        const coordinator=url.pathname==='/api/rx/coordinator/run';
+        github=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+(coordinator?'rx-coordinator-cloud.yml':'rx-bibi-browser.yml')+'/dispatches',{
           method:'POST',
           headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-BIBI-Manager','Content-Type':'application/json'},
-          body:JSON.stringify({ref:'main'}),signal:AbortSignal.timeout(12000)
+          body:JSON.stringify(coordinator?{ref:'main',inputs:{command:'Sprawdź testy w chmurze i model AI'}}:{ref:'main'}),signal:AbortSignal.timeout(12000)
         });
       }catch{return reply(502,'Nie udało się połączyć z GitHub.');}
       if(github.status!==204)return reply(502,'GitHub odrzucił uruchomienie (HTTP '+github.status+').');
