@@ -25,7 +25,7 @@ main{min-height:0;height:100%;max-height:100%;overflow:hidden}
  .composer{flex:0 0 auto;padding-bottom:max(8px,env(safe-area-inset-bottom))}
  .top .status{max-width:45%;text-align:right}
 }
-</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style></head><body><div id="rxGate" role="status" aria-live="polite"><div class="card"><h2>🔒 RX ADMIN — kontrola dostępu</h2><p id="rxGateText">Sprawdzam sesję i uprawnienia administratora VEXORIO…</p><p><a href="/">Przejdź do VEXORIO i zaloguj się</a></p><button id="rxRetry" type="button">Sprawdź ponownie</button></div></div><div class="layout" id="rxApp" hidden><aside class="side"><div class="brand">👑 RX ADMIN</div><p class="note">Prototyp panelu z kontrolą dostępu administratora. Czat działa wyłącznie informacyjnie.</p><nav class="menu" id="menu" aria-label="Kategorie RX"></nav><p class="note" id="activeModule" aria-live="polite">Wybrany moduł: Główny czat</p></aside><main><header class="top"><h1 id="heading">Główny czat RX</h1><span class="status">Wersja projektowa · tylko odczyt</span></header><div class="content"><div class="section"><div class="card"><h2 id="subheading">Podkategorie</h2><div class="sub" id="sub"></div></div><div class="card"><h2 id="chatheading">💬 Główny czat RX</h2><div class="chat" id="messages" aria-live="polite"><div class="msg bot">Witaj w RX ADMIN. Wybierz kategorię lub wpisz „status”, „testy”, „mrówki”. Ten czat obsługuje tylko lokalne polecenia informacyjne.</div></div><form class="composer" id="form"><input id="input" aria-label="Polecenie RX" maxlength="300" placeholder="Napisz do RX..." autocomplete="off"><button class="send" type="submit">Wyślij</button></form></div><p class="note">Raporty pochodzą z publicznego repozytorium GitHub. Dane nie są monitorowaniem na żywo. Żadne polecenie nie wykonuje zmian.</p></div></div></main></div>
+</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style></head><body><div id="rxGate" role="status" aria-live="polite"><div class="card"><h2>🔒 RX ADMIN — kontrola dostępu</h2><p id="rxGateText">Sprawdzam sesję i uprawnienia administratora VEXORIO…</p><p><a href="/">Przejdź do VEXORIO i zaloguj się</a></p><button id="rxRetry" type="button">Sprawdź ponownie</button></div></div><div class="layout" id="rxApp" hidden><aside class="side"><div class="brand">👑 RX ADMIN</div><p class="note">Prototyp panelu z kontrolą dostępu administratora. Czat działa wyłącznie informacyjnie.</p><nav class="menu" id="menu" aria-label="Kategorie RX"></nav><p class="note" id="activeModule" aria-live="polite">Wybrany moduł: Główny czat</p></aside><main><header class="top"><h1 id="heading">Główny czat RX</h1><span class="status">Wersja projektowa · tylko odczyt</span></header><div class="content"><div class="section"><div class="card"><h2 id="subheading">Podkategorie</h2><div class="sub" id="sub"></div></div><div class="card"><h2 id="chatheading">💬 Główny czat RX</h2><div class="chat" id="messages" aria-live="polite"><div class="msg bot">Witaj w RX ADMIN. Wybierz kategorię lub wpisz „status”, „testy”, „mrówki”, „BIBI”. Ten czat obsługuje tylko lokalne polecenia informacyjne.</div></div><form class="composer" id="form"><input id="input" aria-label="Polecenie RX" maxlength="300" placeholder="Napisz do RX..." autocomplete="off"><button class="send" type="submit">Wyślij</button></form></div><p class="note">Raporty pochodzą z publicznego repozytorium GitHub. Dane nie są monitorowaniem na żywo. Żadne polecenie nie wykonuje zmian.</p></div></div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script>
 'use strict';
 const RX_SUPABASE_URL="https://lfytoxcnutduahshbsko.supabase.co";
@@ -52,7 +52,7 @@ checkAdmin();
 
 const groups=[
  ['💬 Czat RX',['Główny czat','Historia (w przygotowaniu)']],
- ['👑 Królowa',['Status systemów','Zadania do zatwierdzenia']],
+ ['👑 Królowa',['Status systemów','Zadania do zatwierdzenia','BIBI — budżet']],
  ['🐜 Mrówki',['Kolejka','Testy','Raporty']],
  ['🧠 RX AI',['Model testowy','Trening','Walidacja']],
  ['💻 Komputer i chmura',['Wykonane testy','Plan komputera','Chmura']],
@@ -65,7 +65,7 @@ const menu=document.getElementById('menu'),sub=document.getElementById('sub'),he
 let selected=0;const activeModule=document.getElementById('activeModule');
 function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
 function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'})}
-const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json'});
+const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json',bibi:'rx-bibi-budget.json'});
 async function readReport(name){
  const file=REPORTS[name];if(!file)throw Error('Nieznany raport.');
  const response=await fetch('https://raw.githubusercontent.com/Gregg856/vexorio/main/rx-bibi-reports/'+file,{cache:'no-store'});
@@ -90,6 +90,7 @@ async function loadStatus(module='status'){
 }
 function commandModule(query){
  const q=query.toLocaleLowerCase('pl');
+ if(/bibi|budżet|budget/.test(q))return 'bibi';
  if(/medusa|sygnał/.test(q))return 'medusa';
  if(/cosmos|kosmos/.test(q))return 'cosmos';
  if(/komputer|chmur/.test(q))return 'computer';
