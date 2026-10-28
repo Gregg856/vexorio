@@ -66,6 +66,7 @@ on:
       - 'tests/rx-million-hearts.cjs'
       - 'rx-center.html'
       - 'tests/rx-navigation-mobile.cjs'
+      - 'tests/rx-admin-entry-mobile.cjs'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
       - 'tests/rx-bibi-encoder-diagnostic.cjs'
@@ -219,6 +220,9 @@ jobs:
         env:
           RX_STUDIO_RETRY: '1'
         run: node tests/rx-bibi-studio.cjs
+      - name: RX — sprawdź wejście do panelu administratora VEXORIO
+        if: always()
+        run: node tests/rx-admin-entry-mobile.cjs
       - name: RX — testuj nawigację mobilną Centrum i powrót do VEXORIO
         if: always()
         run: node tests/rx-navigation-mobile.cjs
