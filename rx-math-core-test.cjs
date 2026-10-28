@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const {performance}=require('node:perf_hooks');
-const {matmul,matmulBlocked,dot}=require('./rx-math-core.cjs');
+const {matmul,matmulBlocked,matmulTransposed,relu,dot}=require('./rx-math-core.cjs');
 function reference(a,b,m,k,n){const out=new Float32Array(m*n);for(let i=0;i<m;i++)for(let j=0;j<n;j++){let v=0;for(let p=0;p<k;p++)v+=a[i*k+p]*b[p*n+j];out[i*n+j]=v;}return out;}
 for(const [m,k,n] of [[1,1,1],[2,3,4],[8,5,7],[32,32,32]]){
  const a=Float32Array.from({length:m*k},(_,i)=>((i*17)%29-14)/16);
@@ -49,5 +49,22 @@ for(const n of [128,256]){
  }
 }
 console.log(JSON.stringify({kind:'rx-math-blocked-comparison',results:blockedResults,note:'Experimental tiled kernel only; no automatic promotion'},null,2));
+// Transpose kernel and neural activation correctness/performance.
+assert.deepEqual(Array.from(relu(new Float32Array([-3,-0,0,2.5]))),[0,0,0,2.5]);
+assert.throws(()=>relu(new Float32Array(2),new Float32Array(1)));
+const transposeResults=[];
+for(const n of [64,128,256]){
+ const a=Float32Array.from({length:n*n},(_,i)=>((i*7)%31-15)/31);
+ const b=Float32Array.from({length:n*n},(_,i)=>((i*13)%37-18)/37);
+ const expected=matmul(a,b,n,n,n),actual=matmulTransposed(a,b,n,n,n);
+ let maxAbsError=0;
+ for(let i=0;i<actual.length;i++)maxAbsError=Math.max(maxAbsError,Math.abs(actual[i]-expected[i]));
+ assert.ok(maxAbsError<0.001,'Transposed mismatch '+n+': '+maxAbsError);
+ const measure=fn=>{const times=[];for(let w=0;w<3;w++)fn();for(let r=0;r<5;r++){const t=performance.now();for(let z=0;z<3;z++)fn();times.push((performance.now()-t)/3);}return times.sort((x,y)=>x-y)[2];};
+ const baselineMs=measure(()=>matmul(a,b,n,n,n));
+ const transposeMs=measure(()=>matmulTransposed(a,b,n,n,n));
+ transposeResults.push({size:n,maxAbsError,baselineMs,transposeMs,ratio:transposeMs/baselineMs});
+}
+console.log(JSON.stringify({kind:'rx-math-transpose-comparison',results:transposeResults,note:'Experimental CI microbenchmark; no automatic promotion'},null,2));
 console.log(JSON.stringify({kind:'rx-math-turbo-test',results:turbo,note:'Bounded CI microbenchmarks, not proof of production throughput'},null,2));
 console.log(JSON.stringify({kind:'rx-math-core-benchmark',matrix:size,correctness:'passed',nativeMedianMs:nativeMs,referenceMedianMs:referenceMs,ratio:nativeMs/referenceMs,note:'Local Node microbenchmark, not production or cross-machine comparison'},null,2));
