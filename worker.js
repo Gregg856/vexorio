@@ -127,6 +127,24 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        // Owner-only explicit bridge: Queen chat -> existing bounded RX Coordinator workflow.
+        // No arbitrary shell commands, code writes, deployment, or automatic scheduling.
+        const runMatch=/^uruchom testy rx(?:\\s*:\\s*(.*))?$/i.exec(message.trim());
+        if(runMatch){
+          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Uruchamianie testów jest dostępne tylko dla właściciela RX.');
+          if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji uruchamiania testów RX.');
+          const command=(runMatch[1]||'Sprawdź testy w chmurze i model AI').trim();
+          if(command.length<3||command.length>1000)return reply(400,'Polecenie testowe musi mieć od 3 do 1000 znaków.');
+          let response;
+          try{
+            response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-coordinator-cloud.yml/dispatches',{
+              method:'POST',headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Chat','Content-Type':'application/json'},
+              body:JSON.stringify({ref:'main',inputs:{command}}),signal:AbortSignal.timeout(12000)
+            });
+          }catch{return reply(502,'Królowa nie mogła połączyć się z GitHub.');}
+          if(response.status!==204)return reply(502,'GitHub nie przyjął testu (HTTP '+response.status+').');
+          return new Response(JSON.stringify({ok:true,answer:'👑🐜 Zleciłam test do istniejącego RX Coordinator w GitHub Actions. To potwierdzenie przyjęcia zadania, nie wyniku. Sprawdź raport po zakończeniu.',engine:'rx-queen-coordinator-dispatch',executed:1,modelInferenceUsed:false,workflow:'rx-coordinator-cloud.yml',queued:true,requiresApproval:false}),{status:200,headers});
+        }
         const planned=planRXChat(message,history);
         if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
           try{
