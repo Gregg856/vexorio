@@ -64,3 +64,13 @@ assert.ok(focused.answer.includes('Wirnik'),focused.answer);
 assert.ok(!focused.tasks.some(t=>t.action==='inspect_tests'),'Old test topic should not leak into follow-up');
 assert.equal(focused.contextUsed,true);
 console.log('RX focused conversation context OK');
+
+const multi=planRXChat('Sprawdź mrówki, pokaż błędy i powiedz co dalej');
+assert.equal(multi.multiIntent,true);
+assert.deepEqual(multi.intents,['ants','errors','next']);
+assert.ok(multi.answer.includes('1. 🐜 Mrówki'));
+assert.ok(multi.answer.includes('2. 🔧 Błędy'));
+assert.ok(multi.answer.includes('3. 👑 Kolejne kroki'));
+assert.equal(multi.executed,0);
+assert.equal(planRXChat('Cześć').multiIntent,false);
+console.log('RX multi-intent conversation OK');
