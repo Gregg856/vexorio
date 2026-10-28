@@ -137,7 +137,7 @@ export default {
 
         // RX QUEEN: compare latest and previous CI evidence from existing modules.
         // This is a read-only trend, not a learned model or persistent memory.
-        if(/^(raport rx|raport królowej|raport krolowej|status modułów rx|status modulow rx|rozwój królowej|rozwoj krolowej)$/i.test(message.trim())){
+        if(/^(raport rx|raport królowej|raport krolowej|status modułów rx|status modulow rx|rozwój królowej|rozwoj krolowej|zapisz raport rx)$/i.test(message.trim())){
           const modules=[
             {name:'🪼 Meduza i Mrówki',file:'rx-medusa-ant.yml'},
             {name:'👑 Królowa',file:'rx-queen-dashboard.yml'},
@@ -157,6 +157,17 @@ export default {
               return {name:module.name,state,previous:prior,trend,updatedAt:current.updated_at||null,url:current.html_url||null};
             }catch{return {name:module.name,state:'unavailable',detail:'Brak dostępu do GitHub'};}
           }));
+          // Owner-requested snapshot only: save verified CI metadata, never assumptions about AI growth.
+          if(/^zapisz raport rx$/i.test(message.trim())){
+            const verified=results.filter(item=>item.url&&item.updatedAt&&item.state!=='unavailable');
+            if(verified.length!==modules.length)return new Response(JSON.stringify({...planned,answer:'⚠️ Nie zapisano raportu: nie udało się potwierdzić wszystkich trzech źródeł GitHub.',engine:'rx-workflow-report',executed:0,modelInferenceUsed:false}),{status:200,headers});
+            const snapshot=JSON.stringify({kind:'rx-ci-snapshot',capturedAt:new Date().toISOString(),scope:'latest-main-runs',results:verified.map(({name,state,previous,trend,updatedAt,url})=>({name,state,previous,trend,updatedAt,url})),note:'CI statuses only; not model quality or autonomous work'});
+            try{
+              const saved=await handleRXMemory('Zapamiętaj: ostatni raport rx | '+snapshot,{base,apikey:env.SUPABASE_ANON_KEY,auth,userId:identity.id});
+              if(!saved?.ok)throw Error('save_not_confirmed');
+              return new Response(JSON.stringify({...planned,answer:'🧠 Zapisałam potwierdzony raport CI w pamięci RX. Odczytasz go poleceniem „Przypomnij: ostatni raport rx”. To migawka statusów, nie dowód rozwoju inteligencji.',engine:'rx-persistent-memory',memoryAction:'saved',evidence:verified,executed:0,modelInferenceUsed:false}),{status:200,headers});
+            }catch{return reply(502,'Nie udało się zapisać raportu do pamięci RX. Nie potwierdzam zapisu.');}
+          }
           const lines=results.map(item=>item.name+': '+item.state+(item.previous?' (poprzednio: '+item.previous+'; '+item.trend+')':'')+(item.updatedAt?'; '+item.updatedAt.slice(0,16).replace('T',' ')+' UTC':'')+(item.url?'\n'+item.url:'')+(item.detail?'; '+item.detail:''));
           return new Response(JSON.stringify({...planned,answer:'👑 Raport RX i porównanie dwóch ostatnich przebiegów:\n'+lines.join('\n')+'\nPorównuję wyłącznie statusy CI. Sukces testów nie mierzy jakości odpowiedzi ani wzrostu inteligencji. Raport nie jest automatycznie zapisywany do pamięci. Nie uruchomiono zadań.',engine:'rx-workflow-report',evidence:results,executed:0,modelInferenceUsed:false}),{status:200,headers});
         }
