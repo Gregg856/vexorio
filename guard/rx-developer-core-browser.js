@@ -105,6 +105,23 @@ function analyzeJavaScript(source){
   extraMatches.push({offset:m.index,rule});
  }}
 
+ // Template-literal property names: validate the object and bracket are executable code.
+ const templateCalls=[
+  {pattern:/\bdocument\s*\[\s*`write`\s*\]\s*\(/g,id:'RX006',severity:'medium',message:'Computed document.write() may inject HTML.',advice:'Use safe DOM APIs.'}
+ ];
+ for(const rule of templateCalls){let match;while((match=rule.pattern.exec(source))!==null){
+  const bracket=source.indexOf('[',match.index);
+  if(masked.slice(match.index,bracket).trim()!==source.slice(match.index,bracket).trim()||masked[bracket]!=='[')continue;
+  extraMatches.push({offset:match.index,rule});
+ }}
+ const templateHref=/\blocation\s*\[\s*`href`\s*\]\s*=/g;
+ let hrefMatch;
+ while((hrefMatch=templateHref.exec(source))!==null){
+  const bracket=source.indexOf('[',hrefMatch.index);
+  if(masked.slice(hrefMatch.index,bracket).trim()!==source.slice(hrefMatch.index,bracket).trim()||masked[bracket]!=='[')continue;
+  extraMatches.push({offset:hrefMatch.index,rule:{id:'RX010',severity:'medium',message:'Computed location redirect needs validation.',advice:'Validate destination URLs.'}});
+ }
+
  // Explicit global object access bypasses local aliases of document, console and location.
  const explicitGlobals=[
   {pattern:/\b(?:window|globalThis)\.document\.write\s*\(/g,id:'RX006',severity:'medium',message:'Global document.write() can inject HTML.',advice:'Use safe DOM APIs.'},
