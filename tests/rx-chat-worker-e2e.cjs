@@ -27,7 +27,7 @@ const path=require('node:path');
   let data=await response.json();
   assert.equal(typeof data.answer,'string');
   assert.ok(data.answer.length>0);
-  assert.equal(data.engine,'rule-based-fallback');
+  assert.equal(data.engine,'rx-local-planner');
   assert.equal(data.executed,0);
   assert.ok(Array.isArray(data.tasks));
   assert.equal(data.turbine.executionConnected,false);
