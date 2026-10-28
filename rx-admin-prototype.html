@@ -63,7 +63,7 @@ document.getElementById('rxRetry').addEventListener('click',checkAdmin);
 checkAdmin();
 
 const groups=[
- ['💬 Czat RX',['Główny czat','Odśwież raport RX Coordinator','Gotowość uruchamiania RX','Uruchom testy RX Coordinator','Historia (w przygotowaniu)']],
+ ['💬 Czat RX',['Główny czat','Odśwież raport RX Coordinator','Gotowość uruchamiania RX','Diagnostyka Królowej — wyniki','Uruchom testy RX Coordinator','Historia (w przygotowaniu)']],
  ['👑 Królowa',['Status systemów','Zadania do zatwierdzenia','BIBI — budżet']],
  ['🐜 Mrówki',['Kolejka','Testy','Raporty']],
  ['🧠 RX AI',['Model testowy','Trening','Walidacja']],
@@ -75,7 +75,7 @@ const groups=[
 ];
 const menu=document.getElementById('menu'),sub=document.getElementById('sub'),heading=document.getElementById('heading'),messages=document.getElementById('messages');
 let selected=0;const activeModule=document.getElementById('activeModule');
-function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(label==='Uruchom testy RX Coordinator')runApprovedCoordinator();else if(label==='Gotowość uruchamiania RX')loadExecutionReadiness();else if(label==='RX Coordinator — testy CI'||label==='Odśwież raport RX Coordinator')loadCoordinatorCI();else if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
+function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(label==='Diagnostyka Królowej — wyniki')loadQueenDiagnostics();else if(label==='Uruchom testy RX Coordinator')runApprovedCoordinator();else if(label==='Gotowość uruchamiania RX')loadExecutionReadiness();else if(label==='RX Coordinator — testy CI'||label==='Odśwież raport RX Coordinator')loadCoordinatorCI();else if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
 function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'})}
 const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json',bibi:'rx-bibi-budget.json'});
 async function readReport(name){
@@ -130,6 +130,23 @@ async function loadExecutionReadiness(){
   if(typeof data.ready!=='boolean')throw Error('Nieprawidłowa odpowiedź serwera.');
   add('bot',data.ready?'🟢 Serwer ma konfigurację do weryfikacji uprawnień. Uruchamianie RX Coordinator z czatu nie jest jeszcze podłączone.':'🟠 Serwer nie ma kompletnej konfiguracji uruchamiania testów. RX Coordinator pozostaje w trybie odczytu. Nie udostępniaj kluczy w czacie.');
  }catch(error){add('bot','Nie można potwierdzić gotowości wykonawcy: '+error.message);}
+}
+async function loadQueenDiagnostics(){
+ add('bot','👑 Sprawdzam ostatnie automatyczne kontrole Królowej…');
+ try{
+  const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-queen-scheduled-diagnostics.yml/runs?per_page=5',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw Error('GitHub HTTP '+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.workflow_runs))throw Error('Brak danych GitHub Actions.');
+  const runs=data.workflow_runs.slice(0,5);
+  if(!runs.length){add('bot','Nie ma jeszcze wyników automatycznej diagnostyki. Harmonogram musi wykonać pierwszy przebieg.');return;}
+  const lines=runs.map(run=>{
+   const state=run.status==='completed'?(run.conclusion==='success'?'✅ testy zaliczone':run.conclusion==='failure'?'❌ wymaga sprawdzenia':'⚪ '+String(run.conclusion||'zakończono')):'⏳ '+run.status;
+   const date=run.created_at?new Date(run.created_at).toLocaleString('pl-PL'):'brak daty';
+   return state+' · '+run.event+' · '+date+'\\n'+run.html_url;
+  });
+  add('bot','👑 Diagnostyka Królowej — GitHub Actions\\n'+lines.join('\\n\\n')+'\\nWynik pokazuje stan przebiegu, a nie szczegóły poszczególnych testów.');
+ }catch(error){add('bot','Nie udało się pobrać diagnostyki Królowej: '+error.message);}
 }
 async function loadCoordinatorCI(){
  add('bot','🐜 Odczytuję ostatni wynik RX Coordinator z GitHub Actions…');
