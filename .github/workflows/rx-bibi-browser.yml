@@ -258,9 +258,6 @@ jobs:
         run: node --check rx-screen-recorder.js
       - name: RX BIBI — testuj Screen Recorder
         run: node tests/rx-screen-recorder.cjs
-      - name: RX BIBI — diagnostyka kodera wideo i audio
-        if: always()
-        run: node tests/rx-bibi-encoder-diagnostic.cjs
       # Long video exports run only for Studio/PhotoMotion changes or manual full audit.
       - name: RX FAST — wybierz czy potrzebny jest test eksportu wideo
         id: video_scope
@@ -277,6 +274,9 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_OUTPUT,'run_video='+String(run)+'\n');
           console.log('RX BIBI full video export:',run?'YES':'SKIP (unrelated changes)');
           NODE
+      - name: RX BIBI — diagnostyka kodera wideo i audio
+        if: always() && steps.video_scope.outputs.run_video == 'true'
+        run: node tests/rx-bibi-encoder-diagnostic.cjs
       - name: Przetestuj RX BIBI AI Studio i PhotoMotion
         id: studio
         if: always() && steps.video_scope.outputs.run_video == 'true'
