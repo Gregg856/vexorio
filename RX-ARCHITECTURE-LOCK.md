@@ -62,3 +62,29 @@ Podłączyć istniejący Command Bridge do kontrolowanego wykonawcy zatwierdzony
 - Wykorzystać istniejące RX Mrówki, BIBI, Neuron i raporty zamiast duplikowania paneli. Nie zastępować aktualnego czatu niedziałającym eksperymentem.
 - Zewnętrzne modele, jeżeli są skonfigurowane, nie stanowią własnego modelu RX. Przejście na własny model dopiero po sprawdzeniu jego jakości, wydajności i bezpieczeństwa.
 - Bez nowych płatnych usług, automatycznych wydatków i ryzykownych wdrożeń bez osobnego zatwierdzenia.
+
+
+## Stała mapa własnych programów i testów — 28.10.2026
+
+Właściciel wielokrotnie potwierdził: **najpierw nasze narzędzia RX, bez płatnego TinyFish i bez ponownego pytania o listę programów**. Przed proponowaniem zewnętrznej przeglądarki sprawdzić istniejące repozytorium, workflow i dostępne uprawnienia.
+
+| Własny program | Istniejący plik / punkt wejścia | Rzeczywisty zakres |
+| --- | --- | --- |
+| RX BIBI Tester / Chromium Playwright | `.github/workflows/rx-bibi-browser.yml`, `tests/rx-bibi-browser.cjs`, `tests/rx-queen-panel-browser.cjs` | Automatyczne testy przeglądarkowe i DOM w GitHub Actions |
+| RX FAST | `rx-fast-test-engine.cjs`, job `fast` w `rx-bibi-browser.yml` | Szybkie testy i składnia |
+| RX Cloud Computer | `rx-cloud-computer.cjs` | Planowanie dozwolonych zadań, nie pełna zdalna maszyna |
+| RX Mega Cloud Computer | `rx-mega-cloud-computer.cjs` | Kontrolowany moduł komputera i testy |
+| Królowa RX | `rx-admin-prototype.html`, `worker.js` /api/rx/chat | Istniejący czat i odpowiedzi serwera, wymaga autoryzacji |
+| RX Meduza | `rx-medusa-engine.cjs`, `.github/workflows/rx-medusa-ant.yml` | Analiza i kierowanie sygnałów |
+| RX Mrówki | `rx-ant-task-board.cjs`, `rx-queen-ant-supervisor.cjs` | Kolejka propozycji, bez samodzielnych napraw |
+| RX ALARM | `.github/workflows/rx-alarm.yml`, `tests/rx-alarm-simulation.cjs` | Alarmy CI i testy symulacyjne |
+| RX Developer | `guard/rx-developer-core-browser.js` | Kontrola kodu i diagnostyka |
+| RX BIBI Manager | `rx-bibi-manager.html` | Istniejący panel RX |
+
+**Ostatnie potwierdzenie:** RX BIBI Tester workflow #40775809962, VEXORIO checks #40775809965 i Deploy #40775809995 — sukces dla `dd42e264`. Zapisany raport `rx-bibi-reports/rx-ant-ci-triage.json` zawiera 0 propozycji, `sourceAvailable: true`, `executed: 0`.
+
+**Ważne ograniczenie:** zielony test izolowanego Chromium nie potwierdza zalogowanej sesji ani rzeczywistej odpowiedzi czatu Królowej na `Diagnostyka Mrówek`. Ten scenariusz należy dopisać do **istniejącego** RX BIBI Tester z odpowiednim, bezpiecznym środowiskiem testowym, bez obchodzenia autoryzacji. Nie twierdzić, że test live przeszedł, zanim istnieją dowody.
+
+**Koszty:** TinyFish miał brak środków; właściciel odmówił doładowania. Nie uruchamiać płatnych narzędzi ani nie proponować zakupów bez nowej wyraźnej prośby. Najpierw używać istniejącego RX i GitHub Actions.
+
+**Zasada kontynuacji:** przy każdym nowym czacie najpierw przeczytać ten dokument i aktualne workflow; nie budować kopii, nie powtarzać zamkniętych prac, nie prosić użytkownika ponownie o tę samą listę narzędzi.
