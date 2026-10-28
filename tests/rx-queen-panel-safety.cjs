@@ -8,7 +8,8 @@ const elements={
  rxQueenCompare:{addEventListener:(event,fn)=>handlers.set(event,fn)},
  rxQueenResult:{textContent:''}
 };
-const context={document:{getElementById:id=>elements[id]||null},localStorage:{getItem:()=>null},console};
+const createElement=tag=>({tagName:String(tag).toUpperCase(),style:{},textContent:'',setAttribute(){},addEventListener(){},append(){},insertBefore(){},parentNode:null});
+const context={document:{getElementById:id=>elements[id]||null,createElement},localStorage:{getItem:()=>null},console};
 assert.doesNotThrow(()=>vm.runInNewContext(code,context));
 assert.ok(handlers.has('click'),'Missing Queen compare handler');
 assert.doesNotThrow(()=>handlers.get('click')(),'Missing inputs must not crash panel');
