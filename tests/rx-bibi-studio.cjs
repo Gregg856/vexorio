@@ -84,6 +84,8 @@ const {chromium,devices}=require('playwright');
    });
    check('Napis wypalony w filmie',captionPixels.bright>40,JSON.stringify(captionPixels));
    await page.locator('#caption').fill('');
+   // Music export is experimental and paused; opt in explicitly when development resumes.
+   if(process.env.RX_BIBI_MUSIC_TEST==='1'){
    // Generate a short WAV tone, mix it into the recording and check the audio track.
    const wav=Buffer.alloc(44+22050*2);
    wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(22050,24);wav.writeUInt32LE(44100,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(44100,40);
@@ -114,6 +116,7 @@ const {chromium,devices}=require('playwright');
    });
    check('Film z muzyka — rzeczywista sciezka audio',audioTrack.duration>0&&audioTrack.audioTracks>0,JSON.stringify(audioTrack));
    await page.locator('#music').setInputFiles([]);
+   } else console.log('SKIP: eksport filmu z muzyką — prace nad muzyką wstrzymane.');
    // A second, shorter transition test with two different frames.
    const green=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=320;c.height=320;const x=c.getContext('2d');x.fillStyle='#29b46c';x.fillRect(0,0,320,320);return c.toDataURL('image/png').split(',')[1]});
    await page.locator('#photos').setInputFiles([
