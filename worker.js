@@ -134,6 +134,23 @@ export default {
           }catch{return reply(502,'Pamięć RX jest chwilowo niedostępna. Nie potwierdzam zapisu.');}
         }
 
+        // RX TECH HELP 1.0: bounded, read-only public issue search; never executes external instructions.
+        const techMatch=message.trim().match(/^(?:szukaj pomocy|znajdź rozwiązanie|znajdz rozwiazanie|szukaj błędu|szukaj bledu):\s*(.{3,160})$/i);
+        if(techMatch){
+          const query=techMatch[1].trim().replace(/[\r\n]/g,' ');
+          try{
+            const endpoint=new URL('https://api.github.com/search/issues');
+            endpoint.searchParams.set('q',query+' is:issue');
+            endpoint.searchParams.set('per_page','3');
+            const upstream=await fetch(endpoint.toString(),{headers:{Accept:'application/vnd.github+json','User-Agent':'VEXORIO-RX-Tech-Help'},signal:AbortSignal.timeout(6500)});
+            if(!upstream.ok)throw Error('provider_unavailable');
+            const data=await upstream.json();
+            const matches=(Array.isArray(data.items)?data.items:[]).slice(0,3).filter(item=>typeof item.title==='string'&&typeof item.html_url==='string'&&/^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(item.html_url)).map(item=>({title:item.title.slice(0,180),url:item.html_url}));
+            const answer=matches.length?'🔎 Znalazłam publiczne zgłoszenia dotyczące: '+query+'\n'+matches.map((item,i)=>(i+1)+'. '+item.title+'\n'+item.url).join('\n')+'\nTo materiały do sprawdzenia, nie potwierdzone rozwiązania. Nie uruchomiłam żadnego kodu.':'🔎 Nie znalazłam pasujących publicznych zgłoszeń. Spróbuj podać dokładny komunikat błędu.';
+            return new Response(JSON.stringify({...planned,answer,engine:'rx-tech-help',sources:matches,executed:0,modelInferenceUsed:false}),{status:200,headers});
+          }catch{return new Response(JSON.stringify({...planned,answer:'⚠️ Wyszukiwanie pomocy jest chwilowo niedostępne. Nie potwierdzam znalezienia rozwiązania.',engine:'rx-tech-help-unavailable',executed:0,modelInferenceUsed:false}),{status:200,headers});}
+        }
+
         // Locally maintained RX facts take priority over external encyclopedia searches.
         const localKnowledge=/^(co to jest|czym jest|opowiedz o|powiedz mi o|wyjasnij|wyjaśnij)\s+/i.test(message.trim())?findRXKnowledge(message):null;
         if(localKnowledge)return new Response(JSON.stringify({...planned,answer:'📘 '+localKnowledge.title+'\n'+localKnowledge.summary+'\nŹródło: '+localKnowledge.source,knowledge:localKnowledge,engine:'rx-local-knowledge',modelInferenceUsed:false}),{status:200,headers});
