@@ -88,13 +88,18 @@ export default {
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
       return new Response(JSON.stringify({ready,configured:ready,service:'RX Tester',missing:['RX_GITHUB_DISPATCH_TOKEN','RX_ADMIN_USER_ID','SUPABASE_URL','SUPABASE_ANON_KEY'].filter(name=>!env[name]),note:ready?'Serwer gotowy do sprawdzania uprawnień.':'Wymagana konfiguracja po stronie Cloudflare.'}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
-    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat') {
+    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat' || url.pathname === '/api/rx/ants/tasks') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
-      if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
-      if(request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      if(url.pathname==='/api/rx/ants/tasks' && request.method!=='GET')return reply(405,'Niedozwolona metoda.');
+      if(url.pathname!=='/api/rx/ants/tasks' && request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
+      if(request.headers.get('Origin')!==url.origin && request.headers.get('Origin')!==null)return reply(403,'Nieprawidłowe pochodzenie.');
+      if(request.method==='POST' && request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
       // Fail closed until the owner configures both secrets in Cloudflare.
-      if(!env.RX_GITHUB_DISPATCH_TOKEN||!env.RX_ADMIN_USER_ID||!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Uruchamianie testów wymaga konfiguracji administratora.');
+      // Queue read and Queen chat must not depend on the GitHub dispatch token.
+      // Mutating test/coordinator endpoints retain the stricter configuration gate.
+      if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Brak konfiguracji Supabase.');
+      if((url.pathname==='/api/rx/run-test'||url.pathname==='/api/rx/coordinator/run')&&(!env.RX_GITHUB_DISPATCH_TOKEN||!env.RX_ADMIN_USER_ID))return reply(503,'Uruchamianie testów wymaga konfiguracji administratora.');
       const auth=request.headers.get('Authorization')||'';
       if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Zaloguj się jako administrator.');
       const base=new URL(env.SUPABASE_URL);
@@ -119,6 +124,26 @@ export default {
         isAdmin=(await adminResponse.json())===true;
       }catch{return reply(502,'Nie udało się sprawdzić uprawnień administratora.');}
       if(!isAdmin)return reply(403,'Brak uprawnień administratora.');
+      // RX AUTOPRACA 2.0: private queue access is intentionally disabled.
+      // The staging rx_private schema is not available to service_role via
+      // PostgREST. Do not expose the schema or loosen table permissions.
+      if(url.pathname==='/api/rx/ants/tasks'){
+        // Staging only. No privileged database credentials in Worker or browser.
+        if(base.origin!=='https://owkjdlpawczrnwyszduj.supabase.co')
+          return reply(503,'Kolejka jest dostępna tylko w środowisku staging.');
+        try{
+          const response=await fetch(new URL('/functions/v1/rx-queen-private-queue',base),{
+            method:'GET',
+            headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},
+            signal:AbortSignal.timeout(8000)
+          });
+          if(!response.ok)return reply(503,'Prywatna bramka kolejki nie jest jeszcze gotowa.');
+          const result=await response.json();
+          if(result?.ok!==true||result?.source!=='supabase-staging'||!Array.isArray(result.tasks))
+            return reply(502,'Nieprawidłowa odpowiedź bramki kolejki.');
+          return new Response(JSON.stringify({ok:true,source:'supabase-staging',tasks:result.tasks}),{status:200,headers});
+        }catch{return reply(503,'Brak połączenia z prywatną bramką kolejki.');}
+      }
       if(url.pathname==='/api/rx/chat'){
         let payload;
         try{payload=await request.json();}catch{return reply(400,'Nieprawidłowe dane wiadomości.');}
@@ -126,6 +151,29 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        // Queen can inspect staging queue from chat, without direct database credentials.
+        if(/^(?:status mrówek|status mrowek|sprawdź kolejkę|sprawdz kolejke|kolejka mrówek|kolejka mrowek)$/i.test(message.trim())){
+          if(base.origin!=='https://owkjdlpawczrnwyszduj.supabase.co')return reply(503,'Podgląd kolejki działa wyłącznie na staging.');
+          try{
+            const gateway=await fetch(new URL('/functions/v1/rx-queen-private-queue',base),{
+              method:'GET',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},
+              signal:AbortSignal.timeout(8000)
+            });
+            if(!gateway.ok){
+              // Surface a bounded, non-sensitive gateway error for diagnosis.
+              let errorCode='gateway_http_'+gateway.status;
+              try{
+                const failure=await gateway.json();
+                if(typeof failure?.error==='string'&&/^[a-z_]{3,64}$/.test(failure.error))errorCode=failure.error;
+              }catch{}
+              return new Response(JSON.stringify({ok:false,engine:'rx-queen-queue',error:errorCode,message:'Nie udało się odczytać kolejki staging.',executed:0}),{status:503,headers});
+            }
+            const data=await gateway.json();
+            if(data?.ok!==true||data.source!=='supabase-staging'||!Array.isArray(data.tasks))return reply(502,'Nieprawidłowa odpowiedź kolejki.');
+            const tasks=data.tasks.slice(0,20).map(t=>({id:t.id,title:t.title,status:t.status,created_at:t.created_at}));
+            return new Response(JSON.stringify({ok:true,engine:'rx-queen-queue',message:tasks.length?'Królowa odczytała status kolejki Mrówek.':'Kolejka Mrówek jest pusta.',tasks,executed:0,modelInferenceUsed:false}),{status:200,headers});
+          }catch{return reply(503,'Nie udało się odczytać kolejki Królowej.');}
+        }
         const planned=planRXChat(message,history);
         if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
           try{

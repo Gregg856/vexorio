@@ -1,0 +1,19 @@
+name: RX Queen Worker queue security
+on:
+  pull_request:
+    paths:
+      - 'worker.js'
+      - 'tests/rx-queen-worker-queue.cjs'
+      - '.github/workflows/rx-queen-worker-queue.yml'
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/rx-queen-worker-queue.cjs
