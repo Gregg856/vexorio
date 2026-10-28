@@ -120,13 +120,18 @@ export default {
         try{payload=await request.json();}catch{return reply(400,'Nieprawidłowe dane wiadomości.');}
         const message=payload?.message;
         if(typeof message!=='string'||!message.trim()||message.length>1000)return reply(400,'Wiadomość musi mieć od 1 do 1000 znaków.');
-        const q=message.toLocaleLowerCase('pl-PL');
+        const history=payload?.history??[];
+        if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        const last=history.length?history[history.length-1]:'';
+        const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
+        const contextual=followup&&last?last+' '+message:message;
+        const q=contextual.toLocaleLowerCase('pl-PL');
         const topics=[];
         if(/test|błąd|blad|sprawdź|sprawdz/.test(q))topics.push('diagnostyka');
         if(/chmur|cloud|komputer/.test(q))topics.push('chmura');
         if(/model|trening|uczen|uczeń|ai/.test(q))topics.push('model AI');
         const answer=topics.length?'👑 Rozpoznane obszary: '+topics.join(', ')+'. Mogę przygotować plan testów. Żadna praca nie została uruchomiona.':'👑 Nie rozpoznaję jeszcze tego pytania. Zapytaj o testy, chmurę lub model AI.';
-        return new Response(JSON.stringify({ok:true,answer,topics,executed:0,modelInferenceUsed:false}),{status:200,headers});
+        return new Response(JSON.stringify({ok:true,answer,topics,contextUsed:Boolean(followup&&last),executed:0,modelInferenceUsed:false}),{status:200,headers});
       }
       let github;
       try{
