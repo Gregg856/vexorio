@@ -30,5 +30,6 @@ const {chromium}=require('playwright');
  }finally{await browser.close();}
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-panel-browser.json',JSON.stringify({schema:1,kind:'rx-queen-panel-browser',ok:true,checks,scope:'isolated-chromium-dom',productionTouched:false},null,2)+'\n');
+ fs.writeFileSync('rx-bibi-reports/rx-queen-panel-check.json',JSON.stringify({schema:1,kind:'rx-queen-panel-check',ok:true,checks,scope:'isolated-chromium-dom',productionTouched:false},null,2)+'\n');
  console.log('PASS RX QUEEN BROWSER:',checks.join(', '));
 })().catch(e=>{console.error(e);process.exitCode=1;});
