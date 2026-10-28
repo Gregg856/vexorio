@@ -148,6 +148,21 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        // Queen can inspect staging queue from chat, without direct database credentials.
+        if(/^(?:status mrówek|status mrowek|sprawdź kolejkę|sprawdz kolejke|kolejka mrówek|kolejka mrowek)$/i.test(message.trim())){
+          if(base.origin!=='https://owkjdlpawczrnwyszduj.supabase.co')return reply(503,'Podgląd kolejki działa wyłącznie na staging.');
+          try{
+            const gateway=await fetch(new URL('/functions/v1/rx-queen-private-queue',base),{
+              method:'GET',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},
+              signal:AbortSignal.timeout(8000)
+            });
+            if(!gateway.ok)return reply(503,'Kolejka Królowej nie jest jeszcze dostępna. Sprawdź połączenie staging.');
+            const data=await gateway.json();
+            if(data?.ok!==true||data.source!=='supabase-staging'||!Array.isArray(data.tasks))return reply(502,'Nieprawidłowa odpowiedź kolejki.');
+            const tasks=data.tasks.slice(0,20).map(t=>({id:t.id,title:t.title,status:t.status,created_at:t.created_at}));
+            return new Response(JSON.stringify({ok:true,engine:'rx-queen-queue',message:tasks.length?'Królowa odczytała status kolejki Mrówek.':'Kolejka Mrówek jest pusta.',tasks,executed:0,modelInferenceUsed:false}),{status:200,headers});
+          }catch{return reply(503,'Nie udało się odczytać kolejki Królowej.');}
+        }
         const planned=planRXChat(message,history);
         if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
           try{
