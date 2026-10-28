@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {prepareQueenHandoff,decideQueenTask} from '../rx-queen-approval.mjs';
+import {reportQueenTasks} from '../rx-queen-report.mjs';
+const plan=prepareQueenHandoff('Sprawdź testy i chmurę');
+const reviewed=decideQueenTask(plan,'rx-001','approve','owner');
+const report=reportQueenTasks(reviewed);
+assert.deepEqual(report.summary,{total:2,pending:1,ready:1,rejected:0,dispatched:0});
+assert.equal(report.tasks.length,2);
+assert.equal(report.executionConnected,false);
+assert.equal(report.alerts.length,1);
+assert.equal(plan.tasks[0].status,'awaiting_approval');
+console.log('RX queen report OK');
