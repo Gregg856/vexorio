@@ -66,9 +66,11 @@
  queueButton.addEventListener('click',async()=>{
   queueButton.disabled=true;queueStatus.textContent='Sprawdzam raport kolejki…';
   try{
-   const response=await fetch('/rx-bibi-reports/rx-ant-task-board.json',{cache:'no-store'});
+   const response=await fetch('/api/rx/queen/queue',{cache:'no-store'});
    if(!response.ok)throw Error('report_unavailable');
-   const board=await response.json();
+   const payload=await response.json();
+   if(payload?.ok!==true||payload.source!=='github-committed-report'||payload.live!==false)throw Error('invalid_source');
+   const board=payload.board;
    if(board?.schema!==1||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(board.totalUnique)||board.totalUnique<board.tasks.length||!Number.isSafeInteger(board.overflow)||board.overflow<0||board.autoFixesApplied!==0)throw Error('invalid_report');
    for(const task of board.tasks){
     if(!task||typeof task.source!=='string'||task.source.length>40||typeof task.action!=='string'||task.action.length>80||typeof task.target!=='string'||task.target.length>120||!['critical','high','medium','low'].includes(task.priority)||task.status!=='needs_review'||task.requiresApproval!==true)throw Error('invalid_task');
