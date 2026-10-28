@@ -252,7 +252,7 @@ function answerBrainChat(question){
 // RX AUTOPRACA 1.0: chat-to-local-review-queue bridge. No execution, network dispatch or code evaluation.
 const RX_CHAT_QUEUE_KEY='rx-queen-work-queue-v1';
 function queueChatProposal(message){
- const m=message.trim().match(/^(?:zadanie|dodaj zadanie|zleć mrówkom|zlec mrowkom):\\s*([\\s\\S]{3,4000})$/i);
+ const m=message.trim().match(/^(?:zadanie|dodaj zadanie|zleć mrówkom|zlec mrowkom):\s*([\s\S]{3,4000})$/i);
  if(!m)return false;
  const description=m[1].trim();
  if(!description){add('bot','⚠️ Podaj opis zadania po dwukropku.');return true;}
