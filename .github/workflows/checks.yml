@@ -32,6 +32,7 @@ jobs:
           node tests/rx-queen-history-export.mjs
           node tests/rx-queen-cloud.mjs
           node tests/rx-queen-panel.mjs
+          node tests/rx-queen-isolation.mjs
           node tests/rx-ai-builder.cjs
           node tests/rx-verified-dataset.cjs
           node tests/rx-evaluator.cjs
