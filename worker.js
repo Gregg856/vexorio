@@ -167,6 +167,26 @@ export default {
           const answer='👑 Aktualne wyniki GitHub Actions:\\n'+lines.join('\\n')+'\\n'+(failed.length?'⚠️ Wykryto nieudany przebieg. Otwórz jego link, aby sprawdzić szczegóły.':'Brak potwierdzonej awarii w odczytanych przebiegach. To nie jest pełny audyt.');
           return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-live-github-status',results,executed:0,modelInferenceUsed:false}),{status:200,headers});
         }
+        // RX Queen ant report: read-only GitHub Actions evidence, no dispatch or code changes.
+        if(/^(raport mrówek|raport mrowek|status mrówek|status mrowek)$/i.test(message.trim())){
+          const ghHeaders={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Ant-Report',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})};
+          const api='https://api.github.com/repos/Gregg856/vexorio';
+          try{
+            const runsResponse=await fetch(api+'/actions/workflows/rx-medusa-ant.yml/runs?branch=main&per_page=1',{headers:ghHeaders,signal:AbortSignal.timeout(8000)});
+            if(!runsResponse.ok)return reply(502,'Nie udało się pobrać raportu Mrówek (GitHub HTTP '+runsResponse.status+').');
+            const runsData=await runsResponse.json();
+            const run=runsData.workflow_runs?.[0];
+            if(!run)return new Response(JSON.stringify({ok:true,answer:'🐜 Brak przebiegów RX Meduza i Mrówki na gałęzi main.',engine:'rx-queen-ant-job-report',executed:0,modelInferenceUsed:false}),{status:200,headers});
+            const jobsResponse=await fetch(api+'/actions/runs/'+run.id+'/jobs?per_page=100',{headers:ghHeaders,signal:AbortSignal.timeout(8000)});
+            if(!jobsResponse.ok)return reply(502,'Nie udało się pobrać zadań Mrówek (GitHub HTTP '+jobsResponse.status+').');
+            const jobsData=await jobsResponse.json();
+            const jobs=Array.isArray(jobsData.jobs)?jobsData.jobs:[];
+            const state=x=>x.status==='completed'?(x.conclusion||'unknown'):x.status;
+            const lines=jobs.slice(0,30).map(j=>'• '+j.name+': '+state(j)+(j.html_url?'\\n'+j.html_url:''));
+            const answer='👑🐜 Raport Mrówek — ostatni przebieg RX Meduza\\nStatus: '+state(run)+'\\nZadania ('+jobs.length+'):\\n'+(lines.join('\\n')||'Brak zadań w przebiegu.')+(jobs.length>30?'\\nPokazano pierwsze 30 zadań.':'')+'\\nPrzebieg: '+run.html_url+'\\nTo status GitHub Actions, nie dowód samodzielnego programowania. Nie uruchomiono nowych zadań.';
+            return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-ant-job-report',workflow:'rx-medusa-ant.yml',runId:run.id,runStatus:state(run),jobs:jobs.map(j=>({name:j.name,status:state(j),url:j.html_url||null})),executed:0,modelInferenceUsed:false}),{status:200,headers});
+          }catch{return reply(502,'GitHub nie odpowiedział podczas odczytu raportu Mrówek.');}
+        }
         const planned=planRXChat(message,history);
         if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
           try{
