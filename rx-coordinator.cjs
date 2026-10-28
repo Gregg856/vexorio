@@ -5,12 +5,8 @@ const {planCommand}=require('./rx-command-bridge.cjs');
 const {createTurbine}=require('./rx-turbine-engine.cjs');
 const {createEnergyCore}=require('./rx-energy-core.cjs');
 const {createAntDNA}=require('./rx-dna-core.js');
-const TASKS=Object.freeze({
- inspect_tests:{kind:'inspect_ci',target:'github-actions',role:'tests'},
- plan_cloud_checks:{kind:'run_unit_tests',target:'tests/rx-cloud-computer.cjs',role:'diagnostics'},
- classify_task:{kind:'run_unit_tests',target:'tests/rx-ant-ai-trainer.cjs',role:'memory'},
- rank_candidates:{kind:'run_unit_tests',target:'tests/rx-ai-core.cjs',role:'code'}
-});
+const {RULES}=require('./rx-task-catalog.cjs');
+const TASKS=Object.fromEntries(RULES.map(r=>[r.id,{kind:r.kind,target:r.target,role:r.role}]));
 function coordinateRX(input,{initialCredits=0,maxParallel=2}={}){
  const energy=createEnergyCore({capacity:1000,initial:initialCredits});
  const command=planCommand(input,{energyBalance:energy.status().balance});
