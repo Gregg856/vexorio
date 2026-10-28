@@ -40,3 +40,9 @@ test('approval rejects invalid IDs',async()=>{
  const {client}=mockDb();
  await assert.rejects(queueClient(client).approve('oops','admin-1'));
 });
+
+test('rejects injected approval metadata and primitive payloads',()=>{
+ assert.throws(()=>assertTask({...valid,approved_by:'attacker'}));
+ assert.throws(()=>assertTask({...valid,payload:'rx-coordinator-cloud.yml'}));
+ assert.throws(()=>assertTask({...valid,payload:42}));
+});
