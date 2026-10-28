@@ -15,4 +15,21 @@ const size=64,a=Float32Array.from({length:size*size},(_,i)=>(i%19)/19),b=Float32
 function bench(fn){for(let i=0;i<8;i++)fn();const times=[];for(let r=0;r<7;r++){const t=performance.now();for(let i=0;i<12;i++)fn();times.push((performance.now()-t)/12);}times.sort((a,b)=>a-b);return times[3];}
 const nativeMs=bench(()=>matmul(a,b,size,size,size,out));
 const referenceMs=bench(()=>reference(a,b,size,size,size));
+// RX TURBO TEST: bounded stress cases and paired per-size performance checks.
+const turbo=[];
+for(const n of [64,128,256]){
+ const x=Float32Array.from({length:n*n},(_,i)=>((i*7)%31-15)/31);
+ const y=Float32Array.from({length:n*n},(_,i)=>((i*13)%37-18)/37);
+ const dest=new Float32Array(n*n);
+ const actual=matmul(x,y,n,n,n,dest),expected=reference(x,y,n,n,n);
+ let maxAbsError=0;
+ for(let i=0;i<actual.length;i++)maxAbsError=Math.max(maxAbsError,Math.abs(actual[i]-expected[i]));
+ assert.ok(maxAbsError<0.001,'RX TURBO numerical mismatch at '+n+': '+maxAbsError);
+ const rounds=n>=256?3:n>=128?5:9;
+ function timed(fn){const samples=[];for(let warm=0;warm<3;warm++)fn();for(let run=0;run<5;run++){const start=performance.now();for(let i=0;i<rounds;i++)fn();samples.push((performance.now()-start)/rounds);}samples.sort((a,b)=>a-b);return samples[2];}
+ const native=timed(()=>matmul(x,y,n,n,n,dest));
+ const baseline=timed(()=>reference(x,y,n,n,n));
+ turbo.push({size:n,correctness:'passed',maxAbsError,nativeMedianMs:native,referenceMedianMs:baseline,ratio:native/baseline});
+}
+console.log(JSON.stringify({kind:'rx-math-turbo-test',results:turbo,note:'Bounded CI microbenchmarks, not proof of production throughput'},null,2));
 console.log(JSON.stringify({kind:'rx-math-core-benchmark',matrix:size,correctness:'passed',nativeMedianMs:nativeMs,referenceMedianMs:referenceMs,ratio:nativeMs/referenceMs,note:'Local Node microbenchmark, not production or cross-machine comparison'},null,2));
