@@ -1,0 +1,40 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>RX Queen — staging only</title><style>body{font:16px system-ui;background:#0a1724;color:#f0f8ff;max-width:760px;margin:auto;padding:24px}input,textarea,button{display:block;max-width:100%;margin:12px 0;padding:12px;font:inherit}textarea{width:100%;min-height:110px}output{display:block;white-space:pre-wrap;overflow-wrap:anywhere}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body><h1>👑 RX Queen — staging lab</h1><p>Laboratorium dostępne tylko na odrębnym hoście staging. Nie publikować na produkcji.</p><section id="rxQueenLab" hidden aria-label="RX Królowa — laboratorium staging" data-publishable-key="sb_publishable_ok5FaQ2s3HqMKZNQoBisRQ_we9Tiszs"><h2>👑 RX Królowa — laboratorium staging</h2><p>Tryb testowy. Raporty nie uruchamiają zadań. Zaloguj się do stagingu przed zapisem.</p><input data-rx-email type="email" placeholder="E-mail testowy" autocomplete="email"><button type="button" data-rx-login>Wyślij link logowania</button><button type="button" data-rx-status>Sprawdź sesję</button><textarea placeholder="Polecenie dla RX" maxlength="1000"></textarea><input data-rx-label placeholder="Nazwa raportu" maxlength="100"><button type="button" data-rx-preview>Przygotuj raport</button><button type="button" data-rx-save>Zapisz w chmurze</button><input data-rx-id placeholder="ID raportu"><button type="button" data-rx-load>Wczytaj raport</button><output aria-live="polite"></output></section><script type="module">
+import {createQueenPanelController} from './rx-queen-panel.mjs';
+const root=document.getElementById('rxQueenLab');
+if(root){
+ const isStagingHost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname.startsWith('staging.');
+ const client=isStagingHost?window.supabase?.createClient?.('https://owkjdlpawczrnwyszduj.supabase.co',root.dataset.publishableKey||''):null;
+ root.hidden=!isStagingHost;
+ if(!isStagingHost) root.setAttribute('aria-hidden','true');
+ const panel=createQueenPanelController(client);
+ const output=root.querySelector('output');
+ const message=root.querySelector('textarea');
+ const label=root.querySelector('[data-rx-label]');
+ const savedId=root.querySelector('[data-rx-id]');
+ const show=(value)=>{output.textContent=value;};
+ root.querySelector('[data-rx-login]').addEventListener('click',async()=>{
+  if(!client){show('Panel działa wyłącznie na stagingu.');return;}
+  const email=root.querySelector('[data-rx-email]').value.trim();
+  if(!email){show('Podaj e-mail testowy.');return;}
+  const {error}=await client.auth.signInWithOtp({email,options:{shouldCreateUser:false}});
+  show(error?'Logowanie niedostępne: '+error.message:'Sprawdź skrzynkę e-mail, aby dokończyć logowanie.');
+ });
+ root.querySelector('[data-rx-status]').addEventListener('click',async()=>{
+  if(!client){show('Brak klienta staging.');return;}
+  const {data,error}=await client.auth.getUser();
+  show(error||!data?.user?'Nie zalogowano do stagingu.':'Zalogowano do stagingu.');
+ });
+ root.querySelector('[data-rx-preview]').addEventListener('click',()=>{
+  try{const entry=panel.preview(message.value,label.value||'RX report');show(JSON.stringify(entry.report.summary,null,2)+'\\nPropozycje nie są wykonywane automatycznie.');}
+  catch(e){show('Błąd danych: '+e.message);}
+ });
+ root.querySelector('[data-rx-save]').addEventListener('click',async()=>{
+  try{savedId.value=await panel.save(label.value||'RX report');show('Historia zapisana. ID: '+savedId.value);}
+  catch(e){show('Zapis niedostępny: '+e.message);}
+ });
+ root.querySelector('[data-rx-load]').addEventListener('click',async()=>{
+  try{const history=await panel.load(savedId.value);show('Wczytano raporty: '+history.length);}
+  catch(e){show('Odczyt niedostępny: '+e.message);}
+ });
+}
+</script></body></html>
