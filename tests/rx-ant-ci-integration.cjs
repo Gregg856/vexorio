@@ -1,0 +1,50 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {triageCiFailures}=require('../rx-ant-task-board.cjs');
+const {routeSignals}=require('../rx-medusa-engine.cjs');
+const {buildBoard}=require('../rx-ant-task-board.cjs');
+const failed={id:101,name:'RX Meduza and Ant Task Board',conclusion:'failure'};
+const cancelled={id:102,name:'Deploy VEXORIO',conclusion:'cancelled'};
+const duplicate={id:100,name:failed.name,conclusion:'failure'};
+const green={id:103,name:'VEXORIO checks',conclusion:'success'};
+test('GitHub failures become bounded, deduplicated review-only proposals',()=>{
+ const report=triageCiFailures([failed,duplicate,cancelled,green],{maxTasks:10});
+ assert.equal(report.kind,'rx-ant-ci-triage');
+ assert.equal(report.tasks.length,2);
+ assert.deepEqual(report.tasks.map(t=>t.runId),[101,102]);
+ assert.equal(report.tasks[0].priority,'high');
+ assert.equal(report.executed,0);
+ assert.equal(report.autoFixesApplied,0);
+ assert.ok(report.tasks.every(t=>t.requiresApproval&&t.status==='needs_review'));
+});
+test('Meduza routes CI findings to Queen without editing production',()=>{
+ const report=triageCiFailures([failed,cancelled,green]);
+ const supervisor={kind:'rx-queen-ant-supervisor',issues:report.tasks.map(t=>({source:t.source,action:t.action,target:t.target,priority:t.priority}))};
+ const medusa=routeSignals(supervisor);
+ const board=buildBoard(supervisor,{medusa});
+ assert.equal(medusa.signals.length,2);
+ assert.equal(board.tasks.length,2);
+ assert.equal(medusa.autoExecuted,0);
+ assert.equal(medusa.productionChanges,0);
+ assert.equal(board.autoFixesApplied,0);
+ assert.ok(board.tasks.every(t=>t.requiresApproval&&t.status==='needs_review'));
+});
+test('Queen chat exposes real CI report read-only with strict validation',()=>{
+ const worker=fs.readFileSync('worker.js','utf8');
+ const workflow=fs.readFileSync('.github/workflows/rx-queen-queue-report.yml','utf8');
+ assert.match(worker,/diagnostyka mrówek/);
+ assert.match(worker,/rx-ant-ci-triage\.json\?ref=main/);
+ assert.match(worker,/report\.autoFixesApplied!==0/);
+ assert.match(worker,/requiresApproval===true/);
+ assert.match(worker,/engine:'rx-ant-ci-triage'/);
+ assert.match(workflow,/triageCiFailures\(payload\.workflow_runs/);
+ assert.match(workflow,/git add rx-bibi-reports\/rx-ant-ci-triage\.json/);
+ assert.match(workflow,/GH_TOKEN:/);
+});
+test('Bad CI input and bounds fail closed',()=>{
+ assert.throws(()=>triageCiFailures(null),/Invalid CI runs/);
+ assert.throws(()=>triageCiFailures([], {maxTasks:21}),/Invalid CI runs/);
+ assert.equal(triageCiFailures([green]).tasks.length,0);
+});
