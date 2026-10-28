@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {prepareQueenHandoff} from '../rx-queen-handoff.mjs';
+const result = prepareQueenHandoff('Sprawdź testy i chmurę');
+assert.equal(result.kind, 'rx-queen-handoff-v2');
+assert.equal(result.status, 'awaiting_approval');
+assert.equal(result.tasks.length, 2);
+assert.deepEqual(result.tasks.map(t=>t.action), ['inspect_tests','plan_cloud_checks']);
+assert.ok(result.tasks.every(t=>t.requiresApproval && t.status==='awaiting_approval'));
+assert.equal(result.executed,0);
+assert.equal(result.executionConnected,false);
+assert.throws(()=>prepareQueenHandoff('x'.repeat(1001)),TypeError);
+console.log('RX queen handoff OK');
