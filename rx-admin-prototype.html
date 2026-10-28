@@ -82,6 +82,7 @@ const RX_SUPABASE_URL="https://lfytoxcnutduahshbsko.supabase.co";
 const RX_SUPABASE_PUBLIC_KEY="sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz";
 const gate=document.getElementById('rxGate'),app=document.getElementById('rxApp'),gateText=document.getElementById('rxGateText');
 let rxClient=null;
+let rxActiveUserId=null;
 async function checkAdmin(){
  gate.hidden=false;app.hidden=true;gateText.textContent='Sprawdzam sesję i uprawnienia administratora VEXORIO…';
  try{
@@ -94,8 +95,10 @@ async function checkAdmin(){
   const {data:{user:confirmed},error:checkError}=await rxClient.auth.getUser();
   if(checkError||confirmed?.id!==user.id)throw Error('Sesja zmieniła się. Zaloguj się ponownie.');
   if(!confirmed||confirmed.id!==user.id)throw Error('Nieprawidłowa sesja.');
+  if(rxActiveUserId&&rxActiveUserId!==user.id){rxServerChatHistory.length=0;document.getElementById('rxCheckChatResult').textContent='🔄 Zmieniono konto — historia czatu w tej karcie została wyczyszczona.';}
+  rxActiveUserId=user.id;
   gate.hidden=true;app.hidden=false;
- }catch(e){gateText.textContent=e.message||'Brak dostępu.';}
+ }catch(e){rxActiveUserId=null;gateText.textContent=e.message||'Brak dostępu.';}
 }
 document.getElementById('rxBibiScreenshot').addEventListener('click',async()=>{
  const button=document.getElementById('rxBibiScreenshot');
