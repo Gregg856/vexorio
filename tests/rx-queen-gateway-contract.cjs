@@ -42,3 +42,11 @@ const chatChecks=[
 ];
 for(const [label,re] of chatChecks)assert.match(worker,re,label);
 console.log('Queen chat queue static checks passed:',chatChecks.length);
+
+const gatewaySource=src.toLowerCase();
+const workerQueueSection=worker.slice(worker.indexOf("if(url.pathname==='/api/rx/ants/tasks')"),worker.indexOf("if(url.pathname==='/api/rx/chat')"));
+assert.ok(workerQueueSection.length>100,'queue endpoint exists');
+assert.doesNotMatch(workerQueueSection,/method:\s*['"](?:post|put|patch|delete)['"]/i,'queue endpoint must not write');
+assert.doesNotMatch(src,/\b(?:insert\s+into|update\s+rx_private|delete\s+from|truncate\s+table)\b/i,'gateway must not mutate queue');
+assert.match(worker,/if\(!isAdmin\)return reply\(403/,'admin authorization required before queue route');
+console.log('Queen read-only and admin-route invariants passed.');
