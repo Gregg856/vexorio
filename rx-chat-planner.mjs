@@ -18,8 +18,10 @@ export function planRXChat(message,history=[]){
  const plain=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
  const greet=/^(czesc|hej|halo|witaj|dzien dobry|siema|bibi|krolowa|rx)[!.? ]*$/.test(plain);
  const thanks=/^(dzieki|dziekuje|super|dobrze|ok|gotowe)[!.? ]*$/.test(plain);
- const asksAnts=/(mrowk|ants)/.test(plain);
- const asksTurbine=/(wirnik|wirnika|turbine|turbina|silnik)/.test(plain);
+ const contextPlain=contextual.toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
+ const followupContext=Boolean(followup&&last);
+ const asksAnts=/(mrowk|ants)/.test(contextPlain);
+ const asksTurbine=/(wirnik|wirnika|turbine|turbina|silnik)/.test(contextPlain);
  const asksBuilding=/(buduj|buduje|budow|rozwij|ulepsz|pracuj|dzialaj)/.test(plain);
  const asksStatus=/(status|co robisz|jak idzie|co teraz|co potrafisz)/.test(plain);
  const asksHelp=/(pomoc|pomoz|jak rozmawiac|co moge napisac)/.test(plain);
@@ -34,5 +36,5 @@ export function planRXChat(message,history=[]){
  else if(topics.length)answer='👑 Rozumiem temat: '+[...new Set(topics)].join(', ')+'. Mogę pomóc przygotować plan testów i wyjaśnić kolejne kroki. Niczego nie uruchomiłam bez zatwierdzenia.';
  else answer='👑 Chcę dobrze zrozumieć. Czy pytasz o Mrówki, Wirnik, model RX czy o konkretny błąd? Napisz jednym zdaniem, co mam sprawdzić lub wyjaśnić.';
 
- return {ok:true,answer,topics,tasks,plan,contextUsed:Boolean(followup&&last),executed:0,modelInferenceUsed:false};
+ return {ok:true,answer,topics,tasks,plan,contextUsed:followupContext,executed:0,modelInferenceUsed:false};
 }

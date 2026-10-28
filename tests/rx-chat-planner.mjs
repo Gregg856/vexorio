@@ -28,3 +28,14 @@ for(const [prompt,expected] of [
  assert.equal(result.plan.queen.requiresApproval,true);
 }
 console.log('RX natural dialogue intents OK');
+
+for(const [question,history,expected] of [
+ ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
+ ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
+ ['Dalej',['Jak działa wirnik?'],'Wirnik']
+]){
+ const result=planRXChat(question,history);
+ assert.equal(result.contextUsed,true);
+ assert.ok(result.answer.includes(expected),question+' -> '+result.answer);
+ assert.equal(result.executed,0);
+}
