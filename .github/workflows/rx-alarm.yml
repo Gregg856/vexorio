@@ -5,13 +5,15 @@ on:
       - VEXORIO checks
       - Deploy VEXORIO
       - RX BIBI Tester — mobile browser
+      - RX Meduza and Ant Task Board — dedicated read-only CI
+      - RX Queen — publish read-only ant queue snapshot
     types: [completed]
 permissions:
   contents: read
   issues: write
 jobs:
   notify:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    if: ${{ contains(fromJSON('["failure","timed_out","action_required"]'), github.event.workflow_run.conclusion) }}
     runs-on: ubuntu-latest
     steps:
       - name: Register RX alarm in GitHub Issues
@@ -28,6 +30,8 @@ jobs:
               '- Uruchomienie: #' + run.run_number + '\n' +
               '- Commit: ' + run.head_sha + '\n' +
               '- Logi: ' + run.html_url + '\n\n' +
+              'Diagnostyka Mrówek: https://github.com/' + owner + '/' + repo + '/blob/main/rx-bibi-reports/rx-ant-ci-triage.json\\n' +
+              'Królowa RX: polecenie „Diagnostyka Mrówek” po odświeżeniu raportu.\\n\\n' +
               'RX nie naprawia i nie publikuje zmian automatycznie.';
             const issues = await github.paginate(github.rest.issues.listForRepo, {
               owner,repo,state:'open',per_page:100
