@@ -84,7 +84,7 @@ export default {
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
       return new Response(JSON.stringify({ready,configured:ready,service:'RX Tester',missing:['RX_GITHUB_DISPATCH_TOKEN','RX_ADMIN_USER_ID','SUPABASE_URL','SUPABASE_ANON_KEY'].filter(name=>!env[name]),note:ready?'Serwer gotowy do sprawdzania uprawnień.':'Wymagana konfiguracja po stronie Cloudflare.'}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
-    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run') {
+    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
       if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
@@ -115,6 +115,19 @@ export default {
         isAdmin=(await adminResponse.json())===true;
       }catch{return reply(502,'Nie udało się sprawdzić uprawnień administratora.');}
       if(!isAdmin)return reply(403,'Brak uprawnień administratora.');
+      if(url.pathname==='/api/rx/chat'){
+        let payload;
+        try{payload=await request.json();}catch{return reply(400,'Nieprawidłowe dane wiadomości.');}
+        const message=payload?.message;
+        if(typeof message!=='string'||!message.trim()||message.length>1000)return reply(400,'Wiadomość musi mieć od 1 do 1000 znaków.');
+        const q=message.toLocaleLowerCase('pl-PL');
+        const topics=[];
+        if(/test|błąd|blad|sprawdź|sprawdz/.test(q))topics.push('diagnostyka');
+        if(/chmur|cloud|komputer/.test(q))topics.push('chmura');
+        if(/model|trening|uczen|uczeń|ai/.test(q))topics.push('model AI');
+        const answer=topics.length?'👑 Rozpoznane obszary: '+topics.join(', ')+'. Mogę przygotować plan testów. Żadna praca nie została uruchomiona.':'👑 Nie rozpoznaję jeszcze tego pytania. Zapytaj o testy, chmurę lub model AI.';
+        return new Response(JSON.stringify({ok:true,answer,topics,executed:0,modelInferenceUsed:false}),{status:200,headers});
+      }
       let github;
       try{
         const coordinator=url.pathname==='/api/rx/coordinator/run';
