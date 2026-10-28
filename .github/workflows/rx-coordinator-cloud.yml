@@ -1,5 +1,24 @@
-name: RX Coordinator — approved cloud checks
+name: RX Coordinator — cloud checks
 on:
+  pull_request:
+    paths:
+      - 'rx-coordinator*.cjs'
+      - 'rx-command-bridge.cjs'
+      - 'rx-turbine-engine.cjs'
+      - 'rx-energy-core.cjs'
+      - 'rx-dna-core.js'
+      - 'tests/rx-coordinator*.cjs'
+      - '.github/workflows/rx-coordinator-cloud.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'rx-coordinator*.cjs'
+      - 'rx-command-bridge.cjs'
+      - 'rx-turbine-engine.cjs'
+      - 'rx-energy-core.cjs'
+      - 'rx-dna-core.js'
+      - 'tests/rx-coordinator*.cjs'
+      - '.github/workflows/rx-coordinator-cloud.yml'
   workflow_dispatch:
     inputs:
       command:
@@ -18,9 +37,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Coordinator tests
-        run: node --test tests/rx-coordinator-cloud.cjs
-      - name: Approved bounded checks
+      - name: Coordinator integration tests
+        run: |
+          node --test tests/rx-coordinator.cjs
+          node --test tests/rx-coordinator-cloud.cjs
+      - name: Approved bounded checks (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
         env:
           RX_COMMAND: ${{ inputs.command }}
           RX_CHECKS_APPROVED: 'true'
