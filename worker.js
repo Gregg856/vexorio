@@ -190,7 +190,7 @@ export default {
                 if(!statusResponse.ok)continue;
                 const data=await statusResponse.json();
                 latest=(data.workflow_runs||[]).find(run=>Date.parse(run.created_at)>=dispatchedAt-5000)||null;
-                if(latest)break;
+                if(latest&&latest.status==='completed')break;
               }catch{/* A status read failure never changes a successful dispatch. */}
             }
             const state=latest?(latest.status==='completed'?(latest.conclusion||'unknown'):latest.status):'queued';
