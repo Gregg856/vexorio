@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "kind": "rx-ant-ci-triage",
+  "tasks": [],
+  "executed": 0,
+  "autoFixesApplied": 0,
+  "note": "Proposals only. Human approval required before any code change.",
+  "source": "github-actions",
+  "checkedAt": "2026-10-28T21:45:26.730Z",
+  "sourceAvailable": true
+}\n
