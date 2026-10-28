@@ -357,7 +357,8 @@ async function answerServerBrainChat(question){
   }
   if(data.engine==='rx-tech-help'&&Array.isArray(data.sources)&&data.sources.length){rxLastTechHelp={query:question.replace(/^[^:]*:\s*/,''),sources:data.sources.filter(x=>typeof x.title==='string'&&typeof x.url==='string').slice(0,3)};}else rxLastTechHelp=null;
   const tasks=Array.isArray(data.tasks)?data.tasks:[];
-  add('bot',data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
+  const engineLabel=data.engine==='cloudflare-workers-ai'?'🧠 Model językowy Cloudflare AI':data.engine==='rx-persistent-memory'?'🧠 Pamięć RX':data.engine==='rule-based-fallback'?'⚙️ Silnik reguł RX':data.engine==='rx-tech-help'?'🔎 Wyszukiwanie pomocy':'⚙️ '+String(data.engine||'RX').slice(0,60);
+  add('bot','['+engineLabel+']\n'+data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
  }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
 }
 async function loadCoordinatorCI(){
