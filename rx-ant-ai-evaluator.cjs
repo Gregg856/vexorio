@@ -36,6 +36,9 @@ if(require.main===module){
  fs.mkdirSync('rx-ai-checkpoints',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-ai-evaluation.json',JSON.stringify({...result,selectedModel:undefined},null,2)+'\n');
  fs.writeFileSync(checkpointPath,JSON.stringify(result.selectedModel,null,2)+'\n');
+ const growth={schema:1,kind:'rx-queen-model-growth',modelType:'logistic-regression',dataset:'synthetic-heldout-toy',previousAccuracy:result.previousAccuracy,candidateAccuracy:result.candidateAccuracy,accuracyDelta:result.accuracyDelta,decision:result.decision,modelChanged:result.modelChanged,continuedFromCheckpoint:previous!==null,realWorldValidated:false,languageModel:false,measuredAt:new Date().toISOString(),note:'Measured growth of toy classifier only. This does not measure Queen language intelligence.'};
+ fs.writeFileSync('rx-bibi-reports/rx-queen-model-growth.json',JSON.stringify(growth,null,2)+'\\n');
+ if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## 👑 RX Królowa — rzeczywisty postęp modelu\\n- Model: regresja logistyczna (dane syntetyczne)\\n- Poprzednia trafność: '+(growth.previousAccuracy===null?'brak':(growth.previousAccuracy*100).toFixed(1)+'%')+'\\n- Kandydat: '+(growth.candidateAccuracy*100).toFixed(1)+'%\\n- Decyzja: '+growth.decision+'\\n- Kontynuacja z checkpointu: '+(growth.continuedFromCheckpoint?'tak':'nie')+'\\n- To nie jest pomiar inteligencji językowej Królowej.\\n');
  console.log('RX AI EVALUATOR:',result.candidateAccuracy,'previous:',result.previousAccuracy,'decision:',result.decision);
 }
 module.exports={accuracy,evaluate,VALIDATION};
