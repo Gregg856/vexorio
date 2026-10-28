@@ -125,7 +125,21 @@ export default {
       // The staging rx_private schema is not available to service_role via
       // PostgREST. Do not expose the schema or loosen table permissions.
       if(url.pathname==='/api/rx/ants/tasks'){
-        return reply(503,'Kolejka prywatna wymaga osobnej bezpiecznej bramki serwerowej.');
+        // Staging only. No privileged database credentials in Worker or browser.
+        if(base.origin!=='https://owkjdlpawczrnwyszduj.supabase.co')
+          return reply(503,'Kolejka jest dostępna tylko w środowisku staging.');
+        try{
+          const response=await fetch(new URL('/functions/v1/rx-queen-private-queue',base),{
+            method:'GET',
+            headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},
+            signal:AbortSignal.timeout(8000)
+          });
+          if(!response.ok)return reply(503,'Prywatna bramka kolejki nie jest jeszcze gotowa.');
+          const result=await response.json();
+          if(result?.ok!==true||result?.source!=='supabase-staging'||!Array.isArray(result.tasks))
+            return reply(502,'Nieprawidłowa odpowiedź bramki kolejki.');
+          return new Response(JSON.stringify({ok:true,source:'supabase-staging',tasks:result.tasks}),{status:200,headers});
+        }catch{return reply(503,'Brak połączenia z prywatną bramką kolejki.');}
       }
       if(url.pathname==='/api/rx/chat'){
         let payload;
