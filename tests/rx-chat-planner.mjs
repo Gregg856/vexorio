@@ -9,6 +9,10 @@ assert.doesNotThrow(()=>planRXChat('x'.repeat(8000)));
 assert.throws(()=>planRXChat('x'.repeat(8001)),TypeError);
 assert.doesNotThrow(()=>planRXChat('test',Array(20).fill('poprzednia wiadomość')));
 assert.throws(()=>planRXChat('test',Array(21).fill('poprzednia wiadomość')),TypeError);
+assert.match(planRXChat('Opowiedz o RX Neural Core').answer,/RX Neural Core/);
+assert.match(planRXChat('A jak działa?',['Opowiedz o RX Neural Core']).answer,/RX Neural Core/);
+assert.match(planRXChat('Co robi RX Math Core?').answer,/RX Math Core/);
+assert.match(planRXChat('Jak działa pamięć RX?').answer,/pamięci|pamięć/i);
 console.log('RX chat planner OK');
 
 import catalog from '../rx-task-catalog.cjs';
