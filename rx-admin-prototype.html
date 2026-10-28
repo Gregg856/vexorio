@@ -359,7 +359,31 @@ async function answerServerBrainChat(question){
   const tasks=Array.isArray(data.tasks)?data.tasks:[];
   const engineLabel=data.engine==='cloudflare-workers-ai'?'🧠 Model językowy Cloudflare AI':data.engine==='rx-persistent-memory'?'🧠 Pamięć RX':data.engine==='rule-based-fallback'?'⚙️ Silnik reguł RX':data.engine==='rx-tech-help'?'🔎 Wyszukiwanie pomocy':'⚙️ '+String(data.engine||'RX').slice(0,60);
   add('bot','['+engineLabel+']\n'+data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
+  if(data.engine==='rx-queen-ant-test-dispatch'&&Number.isSafeInteger(data.runId)&&data.runId>0&&data.runStatus!=='success'&&data.runStatus!=='failure'){
+    void watchAntRunCompletion(data.runId);
+  }
  }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
+}
+async function watchAntRunCompletion(runId){
+ // Poll only while the RX panel is open. No stored credentials or background service.
+ for(let attempt=0;attempt<12;attempt++){
+  await new Promise(resolve=>setTimeout(resolve,5000));
+  if(document.hidden)continue;
+  try{
+   const session=await rxClient.auth.getSession();
+   const token=session.data?.session?.access_token;
+   if(!token)return;
+   const response=await fetch('/api/rx/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({message:'Raport Mrówek',history:[]}),signal:AbortSignal.timeout(10000)});
+   if(!response.ok)return;
+   const report=await response.json();
+   if(report.engine!=='rx-queen-ant-job-report'||report.runId!==runId)continue;
+   if(['success','failure','cancelled','timed_out'].includes(report.runStatus)){
+    add('bot','👑🐜 Automatyczny wynik testów Mrówek #'+runId+': '+report.runStatus+'\\n'+(report.answer||''));
+    return;
+   }
+  }catch{/* Keep the original dispatch confirmation; do not invent a result. */}
+ }
+ add('bot','🐜 Testy Mrówek #'+runId+': nie potwierdzono wyniku końcowego w ciągu około minuty. Wynik możesz później odczytać poleceniem „Raport Mrówek”.');
 }
 async function loadCoordinatorCI(){
  add('bot','🐜 Odczytuję ostatni wynik RX Coordinator z GitHub Actions…');
