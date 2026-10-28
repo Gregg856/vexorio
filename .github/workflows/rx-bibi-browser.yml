@@ -69,6 +69,7 @@ on:
       - 'tests/rx-admin-entry-mobile.cjs'
       - 'tests/rx-chat-mobile.cjs'
       - 'tests/rx-visual-audit.cjs'
+      - 'tests/rx-admin-auth-e2e.cjs'
       - 'rx-admin-prototype.html'
       - 'tests/rx-bibi-browser.cjs'
       - 'tests/rx-bibi-studio.cjs'
@@ -230,6 +231,11 @@ jobs:
         run: node tests/rx-chat-mobile.cjs
       - name: RX BIBI — audyt wizualny wszystkich kategorii i czatu
         run: node tests/rx-visual-audit.cjs
+      - name: RX BIBI — prawdziwe logowanie konta testowego administratora
+        env:
+          RX_BIBI_TEST_EMAIL: ${{ secrets.RX_BIBI_TEST_EMAIL }}
+          RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
+        run: node tests/rx-admin-auth-e2e.cjs
       - name: RX — testuj nawigację mobilną Centrum i powrót do VEXORIO
         if: always()
         run: node tests/rx-navigation-mobile.cjs
