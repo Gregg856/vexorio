@@ -39,3 +39,10 @@ jobs:
           # Supabase's gateway can reject missing JWTs before Edge Function code runs.
           # Either gateway 401 or function 401 is the desired unauthenticated denial.
           echo "Staging Queen gateway denied unauthenticated GET (HTTP 401)."
+          {
+            echo "### RX Queen — live staging check"
+            echo "- Unauthenticated GET: HTTP 401 (expected)"
+            echo "- Private data exposure: no unauthenticated read"
+            echo "- Authenticated database read: not tested (requires admin session)"
+            echo "- Production: not contacted"
+          } >> "$GITHUB_STEP_SUMMARY"
