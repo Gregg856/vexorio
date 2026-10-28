@@ -25,7 +25,7 @@ main{min-height:0;height:100%;max-height:100%;overflow:hidden}
  .composer{flex:0 0 auto;padding-bottom:max(8px,env(safe-area-inset-bottom))}
  .top .status{max-width:45%;text-align:right}
 }
-</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style></head><body><div id="rxGate" role="status" aria-live="polite"><div class="card"><h2>🔒 RX ADMIN — kontrola dostępu</h2><p id="rxGateText">Sprawdzam sesję i uprawnienia administratora VEXORIO…</p><p><a href="/">Przejdź do VEXORIO i zaloguj się</a></p><button id="rxRetry" type="button">Sprawdź ponownie</button></div></div><div class="layout" id="rxApp" hidden><aside class="side"><div class="brand">👑 RX ADMIN</div><p class="note">Prototyp interfejsu. Nie jest zabezpieczonym panelem administratora ani aktywnym czatem AI.</p><nav class="menu" id="menu" aria-label="Kategorie RX"></nav><p class="note" id="activeModule" aria-live="polite">Wybrany moduł: Główny czat</p></aside><main><header class="top"><h1 id="heading">Główny czat RX</h1><span class="status">Wersja projektowa · tylko odczyt</span></header><div class="content"><div class="section"><div class="card"><h2 id="subheading">Podkategorie</h2><div class="sub" id="sub"></div></div><div class="card"><h2 id="chatheading">💬 Główny czat RX</h2><div class="chat" id="messages" aria-live="polite"><div class="msg bot">Witaj w RX ADMIN. Wybierz kategorię lub wpisz „status”, „testy”, „mrówki”. Ten czat obsługuje tylko lokalne polecenia informacyjne.</div></div><form class="composer" id="form"><input id="input" aria-label="Polecenie RX" maxlength="300" placeholder="Napisz do RX..." autocomplete="off"><button class="send" type="submit">Wyślij</button></form></div><p class="note">Raporty pochodzą z publicznego repozytorium GitHub. Dane nie są monitorowaniem na żywo. Żadne polecenie nie wykonuje zmian.</p></div></div></main></div>
+</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style></head><body><div id="rxGate" role="status" aria-live="polite"><div class="card"><h2>🔒 RX ADMIN — kontrola dostępu</h2><p id="rxGateText">Sprawdzam sesję i uprawnienia administratora VEXORIO…</p><p><a href="/">Przejdź do VEXORIO i zaloguj się</a></p><button id="rxRetry" type="button">Sprawdź ponownie</button></div></div><div class="layout" id="rxApp" hidden><aside class="side"><div class="brand">👑 RX ADMIN</div><p class="note">Prototyp panelu z kontrolą dostępu administratora. Czat działa wyłącznie informacyjnie.</p><nav class="menu" id="menu" aria-label="Kategorie RX"></nav><p class="note" id="activeModule" aria-live="polite">Wybrany moduł: Główny czat</p></aside><main><header class="top"><h1 id="heading">Główny czat RX</h1><span class="status">Wersja projektowa · tylko odczyt</span></header><div class="content"><div class="section"><div class="card"><h2 id="subheading">Podkategorie</h2><div class="sub" id="sub"></div></div><div class="card"><h2 id="chatheading">💬 Główny czat RX</h2><div class="chat" id="messages" aria-live="polite"><div class="msg bot">Witaj w RX ADMIN. Wybierz kategorię lub wpisz „status”, „testy”, „mrówki”. Ten czat obsługuje tylko lokalne polecenia informacyjne.</div></div><form class="composer" id="form"><input id="input" aria-label="Polecenie RX" maxlength="300" placeholder="Napisz do RX..." autocomplete="off"><button class="send" type="submit">Wyślij</button></form></div><p class="note">Raporty pochodzą z publicznego repozytorium GitHub. Dane nie są monitorowaniem na żywo. Żadne polecenie nie wykonuje zmian.</p></div></div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script>
 'use strict';
 const RX_SUPABASE_URL="https://lfytoxcnutduahshbsko.supabase.co";
@@ -80,12 +80,12 @@ async function loadStatus(module='status'){
   const data=await readReport(module);
   if(module==='status'){
    const t=data.computerTests;
-   add('bot','👑 Raporty RX: '+data.available+'/'+data.total+'\\n💻 Testy komputera: '+(t&&Number.isSafeInteger(t.executed)&&Number.isSafeInteger(t.passed)&&Number.isSafeInteger(t.failed)?t.passed+'/'+t.executed+' zaliczone, '+t.failed+' błędów':'brak potwierdzenia')+'\\n🐜 Zadania do przeglądu: '+(data.reviewTasks??'brak danych')+'\\n🌌 Plan COSMOS: '+(data.cosmosPlanned??'brak danych')+'\\nŹródło: zapisany raport GitHub, nie monitoring na żywo.');
+   add('bot','👑 Raporty RX: '+data.available+'/'+data.total+'\n💻 Testy komputera: '+(t&&Number.isSafeInteger(t.executed)&&Number.isSafeInteger(t.passed)&&Number.isSafeInteger(t.failed)?t.passed+'/'+t.executed+' zaliczone, '+t.failed+' błędów':'brak potwierdzenia')+'\n🐜 Zadania do przeglądu: '+(data.reviewTasks??'brak danych')+'\n🌌 Plan COSMOS: '+(data.cosmosPlanned??'brak danych')+'\nŹródło: zapisany raport GitHub, nie monitoring na żywo.');
    return;
   }
   const fields=['executed','passed','failed','planned','reviewTasks','total','ok','kind'];
   const lines=fields.filter(k=>Object.hasOwn(data,k)&&['string','number','boolean'].includes(typeof data[k])).map(k=>k+': '+String(data[k]));
-  add('bot','📄 '+module.toUpperCase()+' — raport GitHub\\n'+(lines.length?lines.join('\\n'):'Raport dostępny; brak podstawowych liczników.')+'\\nOdczyt nie uruchamia testów ani mrówek.');
+  add('bot','📄 '+module.toUpperCase()+' — raport GitHub\n'+(lines.length?lines.join('\n'):'Raport dostępny; brak podstawowych liczników.')+'\nOdczyt nie uruchamia testów ani mrówek.');
  }catch(e){add('bot','Nie udało się odczytać raportu: '+e.message);}
 }
 function commandModule(query){
@@ -93,7 +93,7 @@ function commandModule(query){
  if(/medusa|sygnał/.test(q))return 'medusa';
  if(/cosmos|kosmos/.test(q))return 'cosmos';
  if(/komputer|chmur/.test(q))return 'computer';
- if(/trening|model|\\bai\\b/.test(q))return 'ai';
+ if(/trening|model|\bai\b/.test(q))return 'ai';
  if(/mrów|kolejk|zadani/.test(q))return 'ants';
  if(/królow|queen/.test(q))return 'queen';
  if(/status|test|raport|system/.test(q))return 'status';
