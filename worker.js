@@ -35,6 +35,27 @@ export default {
         return new Response(JSON.stringify({ok:false,command:'RX STATUS',error:'status_temporarily_unavailable'}),{status:502,headers});
       }
     }
+    // Read-only Queen queue endpoint. Source is a committed report, not a running ant worker.
+    if(url.pathname==='/api/rx/queen/queue'){
+      const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+      const reply=(status,payload)=>new Response(JSON.stringify(payload),{status,headers});
+      if(request.method!=='GET')return reply(405,{ok:false,error:'method_not_allowed'});
+      try{
+        const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/contents/rx-bibi-reports/rx-ant-task-board.json?ref=main',{
+          headers:{Accept:'application/vnd.github.raw+json','User-Agent':'RX-Queen-Queue-Reader',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})},
+          signal:AbortSignal.timeout(7000)
+        });
+        if(!response.ok)return reply(503,{ok:false,error:'queue_report_unavailable',note:'No verified committed queue report; ants are not confirmed running.'});
+        const body=await response.text();
+        if(body.length>100000)return reply(502,{ok:false,error:'queue_report_too_large'});
+        const board=JSON.parse(body);
+        if(board?.schema!==1||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(board.totalUnique)||board.totalUnique<board.tasks.length||!Number.isSafeInteger(board.overflow)||board.overflow<0||board.autoFixesApplied!==0)return reply(502,{ok:false,error:'invalid_queue_report'});
+        for(const task of board.tasks){
+          if(!task||typeof task.source!=='string'||task.source.length>40||typeof task.action!=='string'||task.action.length>80||typeof task.target!=='string'||task.target.length>120||!['critical','high','medium','low'].includes(task.priority)||task.status!=='needs_review'||task.requiresApproval!==true)return reply(502,{ok:false,error:'invalid_queue_task'});
+        }
+        return reply(200,{ok:true,source:'github-committed-report',live:false,generatedAt:null,note:'Read-only snapshot; no autonomous activity verified.',board});
+      }catch{return reply(503,{ok:false,error:'queue_report_unavailable'});}
+    }
     // Read-only CI evidence for existing RX modules. This does not run the modules.
     if(url.pathname==='/api/rx/modules'){
       const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
