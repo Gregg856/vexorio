@@ -249,6 +249,22 @@ function answerBrainChat(question){
  if(!topics.length){add('bot','👑 RX Brain Chat 1.2: Nie rozpoznałam jeszcze tego tematu. Zapytaj o testy, chmurę lub model AI. To wstępny silnik reguł, bez modelu językowego.');return;}
  add('bot','👑 RX Brain Chat 1.2\\nRozpoznane tematy: '+topics.join(', ')+'.\\nProponuję sprawdzić powiązane raporty i przygotować plan dla mrówek. Żadne testy ani zmiany nie zostały uruchomione.\\nTo lokalny adapter rozmowy; wykonanie wymaga osobnego zatwierdzenia.');
 }
+// RX AUTOPRACA 1.0: chat-to-local-review-queue bridge. No execution, network dispatch or code evaluation.
+const RX_CHAT_QUEUE_KEY='rx-queen-work-queue-v1';
+function queueChatProposal(message){
+ const m=message.trim().match(/^(?:zadanie|dodaj zadanie|zleć mrówkom|zlec mrowkom):\\s*([\\s\\S]{3,4000})$/i);
+ if(!m)return false;
+ const description=m[1].trim();
+ if(!description){add('bot','⚠️ Podaj opis zadania po dwukropku.');return true;}
+ let queue;
+ try{queue=JSON.parse(localStorage.getItem(RX_CHAT_QUEUE_KEY)||'[]');if(!Array.isArray(queue))throw Error('invalid');}
+ catch{add('bot','⚠️ Nie mogę odczytać lokalnej kolejki. Pobierz kopię i napraw dane przed dodaniem zadania.');return true;}
+ if(queue.length>=20){add('bot','⚠️ Kolejka jest pełna (20/20). Pobierz ją lub wyczyść w Warsztacie.');return true;}
+ const task={schema:1,kind:'rx-queen-proposal',filename:'rx-chat-task-'+Date.now()+'.md',description,code:description,createdAt:new Date().toISOString(),approved:false,executed:false};
+ try{localStorage.setItem(RX_CHAT_QUEUE_KEY,JSON.stringify([...queue,task]));document.getElementById('rxWorkQueueList')?.dispatchEvent(new Event('rx-queue-changed'));add('bot','🐜 Dodałam opis zadania do lokalnej kolejki ('+(queue.length+1)+'/20). Rozwiń Warsztat Królowej, by je przejrzeć i wyeksportować. Nic nie zostało uruchomione.');}
+ catch{add('bot','⚠️ Nie udało się zapisać zadania. Sprawdź miejsce w przeglądarce.');}
+ return true;
+}
 const rxServerChatHistory=[];
 async function answerServerBrainChat(question){
  try{
@@ -312,7 +328,7 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else answerServerBrainChat(q)});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(!queueChatProposal(q))answerServerBrainChat(q)});show(0);
 
 (function(){
  const name=document.getElementById('rxWorkName'),code=document.getElementById('rxWorkCode'),status=document.getElementById('rxWorkStatus');
@@ -342,6 +358,7 @@ document.getElementById('form').addEventListener('submit',e=>{e.preventDefault()
  const queueKey='rx-queen-work-queue-v1';
  const loadQueue=()=>{try{const q=JSON.parse(localStorage.getItem(queueKey)||'[]');return Array.isArray(q)?q.filter(x=>x&&x.kind==='rx-queen-proposal').slice(-20):[];}catch{return [];}};
  const renderQueue=()=>{const q=loadQueue();const list=document.getElementById('rxWorkQueueList');list.textContent='🐜 Kolejka robocza: '+q.length+' / 20 zadań (tylko na tym urządzeniu).';for(const item of q){const p=document.createElement('p');p.textContent='• '+item.filename+' — '+item.createdAt+' — oczekuje na przegląd';list.appendChild(p);}};
+ document.getElementById('rxWorkQueueList').addEventListener('rx-queue-changed',renderQueue);
  const download=(filename,data)=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  document.getElementById('rxWorkQueue').addEventListener('click',()=>{if(!valid())return;const queue=loadQueue();if(queue.length>=20){status.textContent='⚠️ Limit 20 zadań. Najpierw pobierz lub wyczyść kolejkę.';return;}const task={schema:1,kind:'rx-queen-proposal',filename:safeName(),description:'Przejrzyj kod i zatwierdź przed wykonaniem.',code:code.value,createdAt:new Date().toISOString(),approved:false,executed:false};try{localStorage.setItem(queueKey,JSON.stringify([...queue,task]));renderQueue();status.textContent='🐜 Dodano do lokalnej kolejki. Niczego nie uruchomiono.';}catch{status.textContent='⚠️ Brak miejsca w przeglądarce. Pobierz plik zamiast dodawać do kolejki.';}});
  document.getElementById('rxPackageImport').addEventListener('click',()=>{
