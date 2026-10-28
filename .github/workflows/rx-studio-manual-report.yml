@@ -1,0 +1,58 @@
+name: RX Studio — manual evidence report
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: rx-studio-manual-report
+  cancel-in-progress: false
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Chromium test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Run existing Studio test (manual only)
+        id: studio
+        continue-on-error: true
+        run: node tests/rx-bibi-studio.cjs
+      - name: Publish verified Studio evidence for Queen
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p rx-bibi-reports
+          if [ ! -s rx-bibi-reports/rx-bibi-studio-check.json ]; then
+            node - <<'NODE'
+          const fs=require('node:fs');
+          fs.writeFileSync('rx-bibi-reports/rx-bibi-studio-check.json',JSON.stringify({schema:1,kind:'rx-bibi-studio',ok:false,failed:[{name:'Studio execution',detail:'No Studio report generated; inspect workflow logs'}]},null,2)+'\n');
+          NODE
+          fi
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const p='rx-bibi-reports/rx-bibi-studio-check.json';
+          const d=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(d.schema!==1||d.kind!=='rx-bibi-studio'||typeof d.ok!=='boolean')throw Error('Invalid Studio report');
+          if(process.env.STUDIO_OUTCOME!=='success'&&d.ok===true){d.ok=false;d.failed=[...(d.failed||[]),{name:'Studio runner',detail:'Runner exited unsuccessfully'}];}
+          d.manualWorkflow=true;
+          d.observedAt=new Date().toISOString();
+          fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rx-bibi-reports/rx-bibi-studio-check.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test(rx): publish manually verified Studio report [skip ci]"
+            git push origin HEAD:main
+          fi
+        env:
+          STUDIO_OUTCOME: ${{ steps.studio.outcome }}
