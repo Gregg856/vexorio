@@ -73,7 +73,7 @@
    for(const task of board.tasks){
     if(!task||typeof task.source!=='string'||task.source.length>40||typeof task.action!=='string'||task.action.length>80||typeof task.target!=='string'||task.target.length>120||!['critical','high','medium','low'].includes(task.priority)||task.status!=='needs_review'||task.requiresApproval!==true)throw Error('invalid_task');
    }
-   queueStatus.textContent='🐜 Raport RX ANT TASK BOARD (odczyt, nie praca na żywo)\\nZadań: '+board.tasks.length+' / '+board.totalUnique+'\\nPoza limitem: '+board.overflow+'\\nWszystkie wymagają zatwierdzenia. Wykonane automatycznie: 0.\\n'+board.tasks.slice(0,12).map((t,i)=>(i+1)+'. ['+t.priority+'] '+t.action+' — '+t.target).join('\\n')+'\\nBrak potwierdzenia czasu utworzenia raportu.';
+   queueStatus.textContent='🐜 Raport RX ANT TASK BOARD (odczyt, nie praca na żywo)\nZadań: '+board.tasks.length+' / '+board.totalUnique+'\nPoza limitem: '+board.overflow+'\nWszystkie wymagają zatwierdzenia. Wykonane automatycznie: 0.\n'+board.tasks.slice(0,12).map((t,i)=>(i+1)+'. ['+t.priority+'] '+t.action+' — '+t.target).join('\n')+'\nBrak potwierdzenia czasu utworzenia raportu.';
   }catch(_){queueStatus.textContent='⚪ Nie ma dostępnego, zweryfikowanego raportu kolejki na serwerze. Nie pokazuję fikcyjnych zadań ani statusu pracy mrówek.';}
   finally{queueButton.disabled=false;}
  });
