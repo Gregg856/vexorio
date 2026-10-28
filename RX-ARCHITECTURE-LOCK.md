@@ -45,3 +45,11 @@ Podłączyć istniejący Command Bridge do kontrolowanego wykonawcy zatwierdzony
 - Priorytet po zamknięciu prac benchmarkowych: Królowa ma odpowiadać tekstowo na zwykłe pytania, przekazywać zadania do istniejących modułów i jasno oznaczać propozycje versus wykonanie. Utrzymywać pamięć zatwierdzonych rezultatów. Nie zakładać, że dowolne polecenia już są wykonywane.
 - Bez nowych paneli, kont, równoległych mózgów, automatycznych wdrożeń produkcyjnych, płatności i niekontrolowanego uruchamiania kodu.
 - Prace benchmarkowe uznajemy za zamknięte na poziomie planu integracji; realizację i sprawdzenie jakości odpowiedzi Królowej należy potwierdzić osobno.
+
+## Zatwierdzone: jeden ośrodek Królowej RX
+
+- Meduza, Mrówki, Developer, Neuron, Chmura, Coordinator, BIBI i benchmarki pozostają częścią RX.
+- Każdy moduł ma przekazywać do Królowej raport ze źródłem, statusem i wynikiem. Królowa korzysta z potwierdzonych informacji, nie z samych propozycji.
+- Królowa ma prowadzić rozmowę tekstową i przekazywać polecenia do istniejących modułów. Operacje zmieniające kod, produkcję lub dane wymagają zatwierdzenia.
+- Nie dodajemy nowych paneli ani kopii mózgu. Benchmarki oceniają postęp, ale nie zastępują uczenia modelu.
+- To wymagania architektury; pełnego działania integracji nie potwierdzono jeszcze testem na żywo.
