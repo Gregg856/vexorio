@@ -175,7 +175,8 @@ async function answerServerBrainChat(question){
   if(!response.ok)throw Error(data.message||'Błąd serwera '+response.status);
   rxServerChatHistory.push(question);
   if(rxServerChatHistory.length>6)rxServerChatHistory.shift();
-  add('bot',data.answer);
+  const tasks=Array.isArray(data.tasks)?data.tasks:[];
+  add('bot',data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
  }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
 }
 async function loadCoordinatorCI(){
