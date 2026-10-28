@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {prepareQueenHandoff,decideQueenTask} from '../rx-queen-approval.mjs';
+import {buildQueenQueue} from '../rx-queen-queue.mjs';
+const initial=prepareQueenHandoff('Sprawdź testy i chmurę');
+const reviewed=decideQueenTask(decideQueenTask(initial,'rx-001','approve','owner'),'rx-002','reject','owner');
+const queue=buildQueenQueue(reviewed);
+assert.equal(queue.ready,1);
+assert.equal(queue.rejected,1);
+assert.equal(queue.pending,0);
+assert.equal(queue.dispatched,0);
+assert.equal(queue.executionConnected,false);
+assert.equal(queue.tasks[0].status,'ready_for_manual_dispatch');
+assert.equal(reviewed.tasks[0].status,'approved');
+assert.throws(()=>buildQueenQueue({kind:'rx-queen-handoff-v2',tasks:[{id:'x',action:'y',status:'running'}]}),TypeError);
+console.log('RX queen queue OK');
