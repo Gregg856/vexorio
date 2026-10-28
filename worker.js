@@ -167,6 +167,19 @@ export default {
           const answer='👑 Aktualne wyniki GitHub Actions:\\n'+lines.join('\\n')+'\\n'+(failed.length?'⚠️ Wykryto nieudany przebieg. Otwórz jego link, aby sprawdzić szczegóły.':'Brak potwierdzonej awarii w odczytanych przebiegach. To nie jest pełny audyt.');
           return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-live-github-status',results,executed:0,modelInferenceUsed:false}),{status:200,headers});
         }
+        // Explicit owner-only ant test dispatch to an existing read-only workflow.
+        if(/^uruchom testy mrówek$/i.test(message.trim())||/^uruchom testy mrowek$/i.test(message.trim())){
+          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Testy Mrówek może uruchamiać tylko właściciel RX.');
+          if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji uruchamiania testów RX.');
+          try{
+            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-medusa-ant.yml/dispatches',{
+              method:'POST',headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Ant-Dispatch','Content-Type':'application/json'},
+              body:JSON.stringify({ref:'main'}),signal:AbortSignal.timeout(12000)
+            });
+            if(response.status!==204)return reply(502,'GitHub nie przyjął testów Mrówek (HTTP '+response.status+').');
+            return new Response(JSON.stringify({ok:true,answer:'👑🐜 GitHub przyjął uruchomienie istniejących testów RX Meduza i Mrówek. Wynik nie jest jeszcze znany. Wpisz „Raport Mrówek”, aby sprawdzić przebieg.',engine:'rx-queen-ant-test-dispatch',workflow:'rx-medusa-ant.yml',queued:true,executed:1,modelInferenceUsed:false}),{status:200,headers});
+          }catch{return reply(502,'Nie udało się zlecić testów Mrówek w GitHub.');}
+        }
         // RX Queen ant report: read-only GitHub Actions evidence, no dispatch or code changes.
         if(/^(raport mrówek|raport mrowek|status mrówek|status mrowek)$/i.test(message.trim())){
           const ghHeaders={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Ant-Report',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})};
