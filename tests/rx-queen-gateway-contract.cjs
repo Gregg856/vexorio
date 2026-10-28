@@ -16,7 +16,7 @@ const checks=[
  ['admin membership verified',/\/rest\/v1\/rpc\/is_vexorio_admin/],
  ['anonymous denied',/is_anonymous===true/],
  ['origin guard',/origin_not_allowed/],
- ['parameterized SQL client',/sql`select id, source/],
+ ['parameterized SQL client',/tx`select id, source/],
  ['private table read',/rx_private\.ant_task_queue/],
  ['bounded results',/limit 20/],
  ['connection cleanup',/await sql\.end/],
