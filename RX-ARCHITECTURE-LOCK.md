@@ -53,3 +53,12 @@ Podłączyć istniejący Command Bridge do kontrolowanego wykonawcy zatwierdzony
 - Królowa ma prowadzić rozmowę tekstową i przekazywać polecenia do istniejących modułów. Operacje zmieniające kod, produkcję lub dane wymagają zatwierdzenia.
 - Nie dodajemy nowych paneli ani kopii mózgu. Benchmarki oceniają postęp, ale nie zastępują uczenia modelu.
 - To wymagania architektury; pełnego działania integracji nie potwierdzono jeszcze testem na żywo.
+
+## Decyzja właściciela: własny model RX od podstaw
+
+- Docelowy model językowy Królowej ma być rozwijany jako własny model RX, a nie jako przemianowany model Meta/Llama lub API zewnętrznego dostawcy.
+- Istniejący rx-ant-ai-trainer.cjs to własna regresja logistyczna na 12 przykładach syntetycznych (2 cechy); nie jest modelem językowym. Nie nazywać jego postępu rozwojem rozmowy Królowej.
+- Najpierw zdefiniować mały, mierzalny eksperyment językowy: tokenizator, zbiór danych z prawami do użycia, bazowy model, trening, niezależna walidacja, checkpoint i porównanie z bazą. Nie udawać jakości LLM.
+- Wykorzystać istniejące RX Mrówki, BIBI, Neuron i raporty zamiast duplikowania paneli. Nie zastępować aktualnego czatu niedziałającym eksperymentem.
+- Zewnętrzne modele, jeżeli są skonfigurowane, nie stanowią własnego modelu RX. Przejście na własny model dopiero po sprawdzeniu jego jakości, wydajności i bezpieczeństwa.
+- Bez nowych płatnych usług, automatycznych wydatków i ryzykownych wdrożeń bez osobnego zatwierdzenia.
