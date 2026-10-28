@@ -135,6 +135,28 @@ export default {
           }catch{return reply(502,'Pamięć RX jest chwilowo niedostępna. Nie potwierdzam zapisu.');}
         }
 
+        // RX QUEEN: factual CI handoff from existing Medusa, Ants and Queen workflows.
+        // Read-only evidence; workflow success does not prove autonomous execution.
+        if(/^(raport rx|raport królowej|raport krolowej|status modułów rx|status modulow rx)$/i.test(message.trim())){
+          const modules=[
+            {name:'🪼 Meduza i Mrówki',file:'rx-medusa-ant.yml'},
+            {name:'👑 Królowa',file:'rx-queen-dashboard.yml'},
+            {name:'🐜 Trening Mrówek / BIBI',file:'rx-bibi-browser.yml'}
+          ];
+          const results=await Promise.all(modules.map(async module=>{
+            try{
+              const endpoint='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+module.file+'/runs?branch=main&per_page=1';
+              const response=await fetch(endpoint,{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Report',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})},signal:AbortSignal.timeout(6500)});
+              if(!response.ok)return module.name+': brak danych (HTTP '+response.status+')';
+              const data=await response.json(),run=data.workflow_runs?.[0];
+              if(!run)return module.name+': brak przebiegu na main';
+              const state=run.status==='completed'?(run.conclusion||'zakończony'):run.status;
+              return module.name+': '+state+'; '+(run.updated_at||'brak daty')+'; '+run.html_url;
+            }catch{return module.name+': chwilowo brak dostępu do raportu';}
+          }));
+          return new Response(JSON.stringify({...planned,answer:'👑 Raport RX z GitHub Actions:\n'+results.join('\n')+'\nTo ostatnie przebiegi CI, a nie dowód pracy ciągłej ani wzrostu inteligencji. Żadnych zadań nie uruchomiono.',engine:'rx-workflow-report',executed:0,modelInferenceUsed:false}),{status:200,headers});
+        }
+
         // RX TECH HELP 1.0: bounded, read-only public issue search; never executes external instructions.
         const techMatch=message.trim().match(/^(?:szukaj pomocy|znajdź rozwiązanie|znajdz rozwiazanie|szukaj błędu|szukaj bledu):\s*(.{3,160})$/i);
         if(techMatch){
