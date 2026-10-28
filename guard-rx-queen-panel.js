@@ -55,6 +55,29 @@
  });
 
 
+ // One verified, read-only RX system inventory from our own GitHub reports.
+ const systemButton=document.createElement('button');
+ systemButton.type='button';systemButton.textContent='🧠 Sprawdź wszystkie systemy RX';
+ const systemStatus=document.createElement('p');
+ systemStatus.setAttribute('aria-live','polite');
+ systemStatus.style.whiteSpace='pre-wrap';
+ systemStatus.style.overflowWrap='anywhere';
+ systemStatus.textContent='RX SYSTEM STATUS: raport jeszcze niepobrany.';
+ hub.append(systemButton,systemStatus);
+ systemButton.addEventListener('click',async()=>{
+  systemButton.disabled=true;systemStatus.textContent='Sprawdzam własny raport RX…';
+  try{
+   const response=await fetch('https://raw.githubusercontent.com/Gregg856/vexorio/main/rx-bibi-reports/rx-system-status.json',{cache:'no-store'});
+   if(!response.ok)throw Error('report_unavailable');
+   const data=await response.json();
+   if(data?.schema!==1||data.kind!=='rx-system-status'||!data.modules||typeof data.modules!=='object'||!Number.isSafeInteger(data.available)||!Number.isSafeInteger(data.total))throw Error('invalid_status');
+   const labels={queen:'👑 Królowa',ants:'🐜 Mrówki',cosmos:'🌌 COSMOS',budget:'💰 BIBI',browser:'🌐 Browser',panel:'🖥️ Panel',programs:'🧩 Programs',studio:'🎨 Studio',computer:'💻 Komputer',medusa:'🐙 MEDUSA',ai:'🧠 AI'};
+   const states={passed:'🟢 test OK',reported:'📄 raport dostępny',failed:'🔴 test nieudany',missing:'⚪ brak raportu',invalid:'🔴 błędny raport'};
+   systemStatus.textContent='RX SYSTEM STATUS — raport z GitHuba (nie monitoring na żywo)\\nRaporty dostępne: '+data.available+' / '+data.total+'\\n'+Object.entries(labels).map(([id,label])=>label+': '+(states[data.modules[id]?.state]||'⚪ nieznany')).join('\\n')+'\\nZadania Królowej: '+(data.reviewTasks??'brak danych')+'; COSMOS: '+(data.cosmosPlanned??'brak danych')+'\\nOdczyt nie uruchamia mrówek ani testów.';
+  }catch(_){systemStatus.textContent='⚪ Wspólny raport RX jeszcze niedostępny lub niepoprawny. Nie pokazuję wymyślonych wyników.';}
+  finally{systemButton.disabled=false;}
+ });
+
  // Read-only view of actual RX ANT TASK BOARD report, not session counters.
  const queueButton=document.createElement('button');
  queueButton.type='button';queueButton.textContent='🐜 Sprawdź rzeczywistą kolejkę mrówek';
