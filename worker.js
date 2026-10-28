@@ -1,3 +1,4 @@
+import {planRXChat} from './rx-chat-planner.mjs';
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -122,21 +123,7 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>1000)return reply(400,'Wiadomość musi mieć od 1 do 1000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000))return reply(400,'Nieprawidłowa historia rozmowy.');
-        const last=history.length?history[history.length-1]:'';
-        const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
-        const contextual=followup&&last?last+' '+message:message;
-        const q=contextual.toLocaleLowerCase('pl-PL');
-        const topics=[];
-        if(/test|błąd|blad|sprawdź|sprawdz/.test(q))topics.push('diagnostyka');
-        if(/chmur|cloud|komputer/.test(q))topics.push('chmura');
-        if(/model|trening|uczen|uczeń|ai/.test(q))topics.push('model AI');
-        const tasks=[];
-        if(topics.includes('diagnostyka'))tasks.push({module:'queen',role:'tests',action:'inspect_tests',status:'proposed',requiresApproval:true});
-        if(topics.includes('chmura'))tasks.push({module:'cloud',role:'diagnostics',action:'plan_cloud_checks',status:'proposed',requiresApproval:true});
-        if(topics.includes('model AI'))tasks.push({module:'ants',role:'memory',action:'classify_task',status:'proposed',requiresApproval:true});
-        const plan={kind:'rx-coordinated-chat-proposal',queen:{status:'awaiting_approval',requiresApproval:true},ants:tasks.filter(t=>t.module==='ants'),cloud:{executionConnected:false},executed:0};
-        const answer=topics.length?'👑 Rozpoznane obszary: '+topics.join(', ')+'. Mogę przygotować plan testów. Żadna praca nie została uruchomiona.':'👑 Nie rozpoznaję jeszcze tego pytania. Zapytaj o testy, chmurę lub model AI.';
-        return new Response(JSON.stringify({ok:true,answer,topics,tasks,plan,contextUsed:Boolean(followup&&last),executed:0,modelInferenceUsed:false}),{status:200,headers});
+        return new Response(JSON.stringify(planRXChat(message,history)),{status:200,headers});
       }
       let github;
       try{
