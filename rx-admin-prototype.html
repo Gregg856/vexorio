@@ -256,6 +256,11 @@ async function answerServerBrainChat(question){
   if(!response.ok)throw Error(data.message||'Błąd serwera '+response.status);
   rxServerChatHistory.push(question);
   if(rxServerChatHistory.length>20)rxServerChatHistory.shift();
+  const memoryCommand=/^(zapamiętaj|przypomnij):/i.test(question.trim());
+  if(memoryCommand&&data.engine!=='rx-persistent-memory'){
+    add('bot','⚠️ Pamięć RX nie obsłużyła tego polecenia. Nie zapisano potwierdzonej informacji. Sprawdź aktualizację serwera RX; nie traktuj planu diagnostyki jako zapisu.');
+    return;
+  }
   const tasks=Array.isArray(data.tasks)?data.tasks:[];
   add('bot',data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
  }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
