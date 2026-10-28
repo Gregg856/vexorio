@@ -135,9 +135,9 @@ export default {
           }catch{return reply(502,'Pamięć RX jest chwilowo niedostępna. Nie potwierdzam zapisu.');}
         }
 
-        // RX QUEEN: factual CI handoff from existing Medusa, Ants and Queen workflows.
-        // Read-only evidence; workflow success does not prove autonomous execution.
-        if(/^(raport rx|raport królowej|raport krolowej|status modułów rx|status modulow rx)$/i.test(message.trim())){
+        // RX QUEEN: compare latest and previous CI evidence from existing modules.
+        // This is a read-only trend, not a learned model or persistent memory.
+        if(/^(raport rx|raport królowej|raport krolowej|status modułów rx|status modulow rx|rozwój królowej|rozwoj krolowej)$/i.test(message.trim())){
           const modules=[
             {name:'🪼 Meduza i Mrówki',file:'rx-medusa-ant.yml'},
             {name:'👑 Królowa',file:'rx-queen-dashboard.yml'},
@@ -145,16 +145,20 @@ export default {
           ];
           const results=await Promise.all(modules.map(async module=>{
             try{
-              const endpoint='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+module.file+'/runs?branch=main&per_page=1';
+              const endpoint='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+module.file+'/runs?branch=main&per_page=2';
               const response=await fetch(endpoint,{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Report',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})},signal:AbortSignal.timeout(6500)});
-              if(!response.ok)return module.name+': brak danych (HTTP '+response.status+')';
-              const data=await response.json(),run=data.workflow_runs?.[0];
-              if(!run)return module.name+': brak przebiegu na main';
-              const state=run.status==='completed'?(run.conclusion||'zakończony'):run.status;
-              return module.name+': '+state+'; '+(run.updated_at||'brak daty')+'; '+run.html_url;
-            }catch{return module.name+': chwilowo brak dostępu do raportu';}
+              if(!response.ok)return {name:module.name,state:'unavailable',detail:'HTTP '+response.status};
+              const data=await response.json(),runs=Array.isArray(data.workflow_runs)?data.workflow_runs:[];
+              const current=runs[0],previous=runs[1];
+              if(!current)return {name:module.name,state:'missing',detail:'Brak przebiegu na main'};
+              const status=run=>run.status==='completed'?(run.conclusion||'completed'):run.status;
+              const state=status(current),prior=previous?status(previous):null;
+              const trend=prior===null?'brak porównania':state==='success'&&prior!=='success'?'poprawa statusu':state!=='success'&&prior==='success'?'pogorszenie statusu':state===prior?'bez zmiany statusu':'zmiana statusu';
+              return {name:module.name,state,previous:prior,trend,updatedAt:current.updated_at||null,url:current.html_url||null};
+            }catch{return {name:module.name,state:'unavailable',detail:'Brak dostępu do GitHub'};}
           }));
-          return new Response(JSON.stringify({...planned,answer:'👑 Raport RX z GitHub Actions:\n'+results.join('\n')+'\nTo ostatnie przebiegi CI, a nie dowód pracy ciągłej ani wzrostu inteligencji. Żadnych zadań nie uruchomiono.',engine:'rx-workflow-report',executed:0,modelInferenceUsed:false}),{status:200,headers});
+          const lines=results.map(item=>item.name+': '+item.state+(item.previous?' (poprzednio: '+item.previous+'; '+item.trend+')':'')+(item.updatedAt?'; '+item.updatedAt.slice(0,16).replace('T',' ')+' UTC':'')+(item.url?'\n'+item.url:'')+(item.detail?'; '+item.detail:''));
+          return new Response(JSON.stringify({...planned,answer:'👑 Raport RX i porównanie dwóch ostatnich przebiegów:\n'+lines.join('\n')+'\nPorównuję wyłącznie statusy CI. Sukces testów nie mierzy jakości odpowiedzi ani wzrostu inteligencji. Raport nie jest automatycznie zapisywany do pamięci. Nie uruchomiono zadań.',engine:'rx-workflow-report',evidence:results,executed:0,modelInferenceUsed:false}),{status:200,headers});
         }
 
         // RX TECH HELP 1.0: bounded, read-only public issue search; never executes external instructions.
