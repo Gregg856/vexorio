@@ -26,6 +26,7 @@ jobs:
           node tests/rx-chat-planner.mjs
           node tests/rx-queen-handoff.mjs
           node tests/rx-queen-approval.mjs
+          node tests/rx-queen-queue.mjs
           node tests/rx-ai-builder.cjs
           node tests/rx-verified-dataset.cjs
           node tests/rx-evaluator.cjs
