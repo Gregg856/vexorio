@@ -283,6 +283,28 @@ jobs:
           echo 'FAIL: Guard lab is not published; inspect Cloudflare deployment and asset routing'
           exit 1
 
+      - name: Sprawdz RX Centrum na Cloudflare
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.deployment-url }}
+        run: |
+          if [ -z "$DEPLOY_URL" ]; then DEPLOY_URL="https://vexorio.grzegorzbub1985.workers.dev"; fi
+          DEPLOY_URL="${DEPLOY_URL%/}"
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "$DEPLOY_URL/rx-center.html?release=${GITHUB_SHA}" -o /tmp/vexorio-rx-center.html &&
+               grep -q 'RX Centrum' /tmp/vexorio-rx-center.html &&
+               grep -q '/guard-lab.html' /tmp/vexorio-rx-center.html &&
+               grep -q '/rx-bibi-manager.html' /tmp/vexorio-rx-center.html &&
+               grep -q '/rx-bibi-studio.html' /tmp/vexorio-rx-center.html &&
+               grep -q '/rx-admin-prototype.html' /tmp/vexorio-rx-center.html; then
+              echo 'PASS: RX Centrum and navigation are published'
+              exit 0
+            fi
+            echo "RX Centrum unavailable, attempt $attempt/5"
+            sleep 5
+          done
+          echo 'FAIL: RX Centrum missing from Cloudflare deployment'
+          exit 1
+
       - name: Sprawdz opublikowana wersje
         run: |
           test -s public/guard-lab.html
