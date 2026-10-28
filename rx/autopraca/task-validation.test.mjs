@@ -26,3 +26,8 @@ test('requires explicit approval before starting', () => {
   assert.equal(canStartAntTask({ status: 'approved' }), false);
   assert.equal(canStartAntTask({ status: 'approved', approved_by: 'admin-id', approved_at: '2026-10-28T10:00:00Z' }), true);
 });
+
+test('rejects hidden execution metadata and unexpected top-level fields', () => {
+  assert.equal(validateAntTask({ ...base, approved_by: 'someone' }).ok, false);
+  assert.equal(validateAntTask({ ...base, payload: { workflow: 'rx-coordinator-cloud.yml', args: ['--deploy'] } }).ok, false);
+});
