@@ -8,5 +8,6 @@ assert.deepEqual(result.tasks.map(t=>t.action), ['inspect_tests','plan_cloud_che
 assert.ok(result.tasks.every(t=>t.requiresApproval && t.status==='awaiting_approval'));
 assert.equal(result.executed,0);
 assert.equal(result.executionConnected,false);
-assert.throws(()=>prepareQueenHandoff('x'.repeat(1001)),TypeError);
+assert.doesNotThrow(()=>prepareQueenHandoff('x'.repeat(8000)));
+assert.throws(()=>prepareQueenHandoff('x'.repeat(8001)),TypeError);
 console.log('RX queen handoff OK');
