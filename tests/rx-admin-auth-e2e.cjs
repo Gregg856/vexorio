@@ -38,6 +38,26 @@ const password=process.env.RX_BIBI_TEST_PASSWORD;
   const messages=await page.locator('#messages .msg').count();
   if(messages<3)throw Error('Chat did not show user and server response');
   report.checks.push({name:'authenticated_chat_submission',ok:true});
+  // RX Queen: real owner-authorized chat diagnostic, never bypass the gate.
+  const diagnostic='Diagnostyka Mrówek';
+  const apiResponses=[];
+  const onResponse=async response=>{
+   if(!response.url().includes('/api/rx/chat')||response.request().method()!=='POST')return;
+   try{
+    const body=await response.json();
+    apiResponses.push({httpStatus:response.status(),engine:body?.engine||null,answer:typeof body?.answer==='string'?body.answer:'',error:body?.error||null});
+   }catch{apiResponses.push({httpStatus:response.status(),parseError:true});}
+  };
+  page.on('response',onResponse);
+  await page.locator('#input').fill(diagnostic);
+  await page.getByRole('button',{name:'Wyślij'}).click();
+  await page.waitForTimeout(2500);
+  page.off('response',onResponse);
+  const diagnosticResponse=apiResponses.find(x=>x.engine==='rx-queen-ant-ci-triage'||x.engine==='rx-queen-ant-job-report'||x.answer.includes('Mrów'))||apiResponses.at(-1);
+  if(!diagnosticResponse)throw Error('Queen diagnostic: no /api/rx/chat response');
+  report.queenDiagnostic={httpStatus:diagnosticResponse.httpStatus,engine:diagnosticResponse.engine,answerReceived:!!diagnosticResponse.answer,authorizationDenied:[401,403].includes(diagnosticResponse.httpStatus)};
+  if(diagnosticResponse.httpStatus!==200||!diagnosticResponse.answer)throw Error('Queen diagnostic not available: HTTP '+diagnosticResponse.httpStatus+'; engine '+diagnosticResponse.engine);
+  report.checks.push({name:'authenticated_queen_ant_diagnostic',ok:true});
   report.status='PASS';
   // Screenshots are deliberately omitted in authenticated mode to avoid exposing private admin data.
   console.log('PASS RX BIBI authenticated admin E2E',report.checks.length);
