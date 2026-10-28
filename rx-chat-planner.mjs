@@ -18,11 +18,11 @@ export function planRXChat(message,history=[]){
  const plain=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
  const greet=/^(czesc|hej|halo|witaj|dzien dobry|siema|bibi|krolowa|rx)[!.? ]*$/.test(plain);
  const thanks=/^(dzieki|dziekuje|super|dobrze|ok|gotowe)[!.? ]*$/.test(plain);
- const asksAnts=/\\b(mrowk|mrowki|mrowek|ants)\\b/.test(plain);
- const asksTurbine=/\\b(wirnik|wirnika|turbine|turbina|silnik)\\b/.test(plain);
- const asksBuilding=/\\b(buduj|buduje|budow|rozwij|ulepsz|pracuj|dzialaj)\\b/.test(plain);
- const asksStatus=/\\b(status|co robisz|jak idzie|co teraz|co potrafisz)\\b/.test(plain);
- const asksHelp=/\\b(pomoc|pomoz|jak rozmawiac|co moge napisac)\\b/.test(plain);
+ const asksAnts=/(mrowk|ants)/.test(plain);
+ const asksTurbine=/(wirnik|wirnika|turbine|turbina|silnik)/.test(plain);
+ const asksBuilding=/(buduj|buduje|budow|rozwij|ulepsz|pracuj|dzialaj)/.test(plain);
+ const asksStatus=/(status|co robisz|jak idzie|co teraz|co potrafisz)/.test(plain);
+ const asksHelp=/(pomoc|pomoz|jak rozmawiac|co moge napisac)/.test(plain);
  let answer;
  if(greet)answer='👑 Cześć! Jestem Królowa RX. Możemy rozmawiać o Mrówkach, Wirniku, chmurze i budowie VEXORIO. Napisz, co chcesz sprawdzić albo zaplanować.';
  else if(thanks)answer='👑 Jasne! Jestem gotowa na kolejne pytanie. Możemy omówić Mrówki, Wirnik lub testy RX.';
