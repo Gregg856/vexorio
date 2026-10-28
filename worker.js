@@ -182,7 +182,7 @@ export default {
           }catch{return reply(502,'Nie udało się zlecić testów Mrówek w GitHub.');}
         }
         // RX Queen ant report: read-only GitHub Actions evidence, no dispatch or code changes.
-        if(/^(raport mrówek|raport mrowek|status mrówek|status mrowek)$/i.test(message.trim())){
+        if(/^(raport mrówek|raport mrowek|status mrówek|status mrowek|wyniki testów mrówek|wyniki testow mrowek|sprawdź testy mrówek|sprawdz testy mrowek)$/i.test(message.trim())){
           const ghHeaders={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Ant-Report',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})};
           const api='https://api.github.com/repos/Gregg856/vexorio';
           try{
