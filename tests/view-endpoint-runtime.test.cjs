@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const crypto=require('node:crypto').webcrypto;
-const source=fs.readFileSync('worker.js','utf8').replace('export default','module.exports =');
+const source=fs.readFileSync('worker.js','utf8').replace(/^import\s+\{planRXChat\}\s+from\s+['"]\.\/rx-chat-planner\.mjs['"];?\s*/m,'').replace('export default','module.exports =');
 const context={module:{exports:{}},URL,Response,Headers,TextEncoder,Uint8Array,crypto,fetch:async()=>{throw Error('Unexpected upstream request')}};
 vm.runInNewContext(source,context,{filename:'worker.js'});
 const worker=context.module.exports;
