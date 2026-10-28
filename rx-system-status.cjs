@@ -30,7 +30,9 @@ function buildRXSystemStatus({directory=path.join(__dirname,'rx-bibi-reports')}=
  }
  const board=modules.ants.state==='reported'?JSON.parse(fs.readFileSync(path.join(directory,SOURCES.ants),'utf8')):null;
  const cosmos=modules.cosmos.state==='reported'?JSON.parse(fs.readFileSync(path.join(directory,SOURCES.cosmos),'utf8')):null;
- return {schema:1,kind:'rx-system-status',modules,available:Object.values(modules).filter(x=>x.state!=='missing'&&x.state!=='invalid').length,total:Object.keys(modules).length,reviewTasks:Array.isArray(board?.tasks)?board.tasks.length:null,cosmosPlanned:Array.isArray(cosmos?.planned)?cosmos.planned.length:null,automaticActions:0,productionTouched:false,note:'Read-only report inventory; presence is not proof of live integration, cloud hardware or operational readiness.'};
+ const computer=modules.computer.state==='reported'?JSON.parse(fs.readFileSync(path.join(directory,SOURCES.computer),'utf8')):null;
+ const computerTests=computer&&Number.isSafeInteger(computer.executed)&&Number.isSafeInteger(computer.passed)&&Number.isSafeInteger(computer.failed)&&computer.executed>=0&&computer.passed>=0&&computer.failed>=0&&computer.passed+computer.failed<=computer.executed?{executed:computer.executed,passed:computer.passed,failed:computer.failed}:null;
+ return {schema:1,kind:'rx-system-status',modules,available:Object.values(modules).filter(x=>x.state!=='missing'&&x.state!=='invalid').length,total:Object.keys(modules).length,reviewTasks:Array.isArray(board?.tasks)?board.tasks.length:null,cosmosPlanned:Array.isArray(cosmos?.planned)?cosmos.planned.length:null,computerTests,automaticActions:0,productionTouched:false,note:'Read-only report inventory; presence is not proof of live integration, cloud hardware or operational readiness.'};
 }
 if(require.main===module){
  const report=buildRXSystemStatus();
