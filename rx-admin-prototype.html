@@ -121,9 +121,9 @@ async function loadCoordinatorCI(){
   const lines=runs.map(run=>{
    const state=run.status==='completed'?(run.conclusion==='success'?'✅ sukces':run.conclusion==='failure'?'❌ błąd':run.conclusion||'zakończony'):'⏳ '+run.status;
    const date=run.created_at?new Date(run.created_at).toLocaleString('pl-PL'):'brak daty';
-   return state+' · '+run.event+' · '+date+'\\n'+run.html_url;
+   return state+' · '+run.event+' · '+date+'\n'+run.html_url;
   });
-  add('bot','👑 RX Coordinator — ostatnie przebiegi\\n'+lines.join('\\n\\n')+'\\nŹródło: publiczny GitHub Actions. Wyniki CI nie oznaczają, że zadania zostały uruchomione z tego czatu.');
+  add('bot','👑 RX Coordinator — ostatnie przebiegi\n'+lines.join('\n\n')+'\nŹródło: publiczny GitHub Actions. Wyniki CI nie oznaczają, że zadania zostały uruchomione z tego czatu.');
  }catch(error){add('bot','Nie udało się odczytać RX Coordinator: '+error.message);}
 }
 async function loadStatus(module='status'){
