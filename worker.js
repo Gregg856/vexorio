@@ -156,7 +156,15 @@ export default {
               method:'GET',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},
               signal:AbortSignal.timeout(8000)
             });
-            if(!gateway.ok)return reply(503,'Kolejka Królowej nie jest jeszcze dostępna. Sprawdź połączenie staging.');
+            if(!gateway.ok){
+              // Surface a bounded, non-sensitive gateway error for diagnosis.
+              let errorCode='gateway_http_'+gateway.status;
+              try{
+                const failure=await gateway.json();
+                if(typeof failure?.error==='string'&&/^[a-z_]{3,64}$/.test(failure.error))errorCode=failure.error;
+              }catch{}
+              return new Response(JSON.stringify({ok:false,engine:'rx-queen-queue',error:errorCode,message:'Nie udało się odczytać kolejki staging.',executed:0}),{status:503,headers});
+            }
             const data=await gateway.json();
             if(data?.ok!==true||data.source!=='supabase-staging'||!Array.isArray(data.tasks))return reply(502,'Nieprawidłowa odpowiedź kolejki.');
             const tasks=data.tasks.slice(0,20).map(t=>({id:t.id,title:t.title,status:t.status,created_at:t.created_at}));
