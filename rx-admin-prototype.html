@@ -362,7 +362,9 @@ document.getElementById('rxCheckChat').addEventListener('click',async()=>{
   if(response.status===401||response.status===403)throw Error('Brak uprawnień do czatu RX (HTTP '+response.status+').');
   if(!response.ok)throw Error('Serwer RX: HTTP '+response.status+'.');
   if(typeof result?.answer!=='string'||!result.answer.trim())throw Error('Serwer odpowiedział, ale nie zwrócił treści czatu.');
-  output.textContent='✅ Czat RX działa — HTTP '+response.status+'; odpowiedź odebrana'+(result.engine?' ('+String(result.engine).slice(0,50)+')':'')+'.';
+  const reasons={ai_disabled:'AI wyłączone w konfiguracji',ai_binding_missing:'brak połączenia Workers AI',provider_error:'błąd dostawcy AI',empty_response:'AI zwróciło pustą odpowiedź',unknown:'nieustalona przyczyna'};
+  const fallback=result.engine==='rule-based-fallback';
+  output.textContent=(fallback?'⚠️ Czat działa w trybie awaryjnym':'✅ Czat RX działa')+' — HTTP '+response.status+'; odpowiedź odebrana'+(result.engine?' ('+String(result.engine).slice(0,50)+')':'')+(fallback?'; przyczyna: '+(reasons[result.aiDiagnostic?.reason]||'diagnostyka niedostępna'):'')+'.';
  }catch(error){
   output.textContent='⚠️ '+(error?.name==='TimeoutError'?'Przekroczono czas odpowiedzi serwera.':error?.message||'Nie udało się sprawdzić czatu.');
  }finally{button.disabled=false;}
