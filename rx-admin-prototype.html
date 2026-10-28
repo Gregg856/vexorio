@@ -37,7 +37,28 @@ main{min-height:0;height:100%;max-height:100%;overflow:hidden}
  .card{padding:12px;margin:4px 0}
  .chat{min-height:100px}
 }
-</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style></head><body><div id="rxGate" role="status" aria-live="polite"><div class="card"><h2>🔒 RX ADMIN — kontrola dostępu</h2><p id="rxGateText">Sprawdzam sesję i uprawnienia administratora VEXORIO…</p><p><a href="/">Przejdź do VEXORIO i zaloguj się</a></p><button id="rxRetry" type="button">Sprawdź ponownie</button></div></div><div class="layout" id="rxApp" hidden><aside class="side"><div class="brand">👑 RX ADMIN</div><p class="note">Prototyp panelu z kontrolą dostępu administratora. Czat działa wyłącznie informacyjnie.</p><nav class="menu" id="menu" aria-label="Kategorie RX"></nav><p class="note" id="activeModule" aria-live="polite">Wybrany moduł: Główny czat</p></aside><main><header class="top"><h1 id="heading">Główny czat RX</h1><button id="rxBibiSelfTest" type="button" style="border:1px solid #52d4e8;border-radius:9px;padding:9px;background:#183c50;color:white">🐜 BIBI — Testuj mój panel</button><span class="status">RX Chat · planowanie bez wykonywania</span></header><div class="content"><div class="section"><div class="card"><h2 id="subheading">Podkategorie</h2><div class="sub" id="sub"></div></div><div class="card"><h2 id="chatheading">💬 Główny czat RX</h2><div class="chat" id="messages" aria-live="polite"><div class="msg bot">Witaj w RX ADMIN. Wybierz kategorię, dotknij „Odśwież raport RX Coordinator” lub wpisz „status”, „testy”, „mrówki”, „BIBI”. Wiadomości trafiają do serwerowego planera RX. To jeszcze nie jest model językowy AI i nie wykonuje samodzielnie zadań.</div></div><form class="composer" id="form"><textarea id="input" aria-label="Polecenie RX" maxlength="8000" rows="3" placeholder="Napisz do RX... (do 8000 znaków)" autocomplete="off"></textarea><button class="send" type="submit">Wyślij</button></form></div><p class="note">Raporty pochodzą z publicznego repozytorium GitHub. Dane nie są monitorowaniem na żywo. Żadne polecenie nie wykonuje zmian.</p></div></div></main></div>
+</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style><style>
+/* Compact phone layout: chat first, readable composer, controls stay reachable. */
+@media(max-width:720px){
+ .top{padding:6px 12px;gap:8px;min-height:44px;flex-wrap:nowrap}
+ .top h1{font-size:.95rem;flex:0 1 auto;min-width:0;line-height:1.15}
+ .top .status{display:none}
+ #rxBibiSelfTest{font-size:.78rem!important;padding:7px 9px!important;line-height:1.2;max-width:145px;flex:0 0 auto}
+ .side{padding:5px 10px}
+ .brand{font-size:.9rem;margin-bottom:4px}
+ .nav{font-size:.85rem;padding:7px 9px}
+ .content{padding:6px 9px}
+ .section>.card:nth-child(2){padding:9px;min-height:0}
+ .section>.card:nth-child(2) h2{font-size:.95rem;margin:0 0 7px}
+ .msg{padding:9px;font-size:.9rem;line-height:1.4}
+ .composer{gap:6px;margin-top:8px;padding-top:7px}
+ .composer textarea{font-size:16px;min-height:46px;max-height:105px;resize:vertical;padding:10px}
+ .send{min-height:46px;padding:8px 10px}
+ .section>.card:nth-child(1){padding:8px}
+ .section>.card:nth-child(1) h2{font-size:.88rem}
+ .sub button{padding:7px 10px;font-size:.85rem}
+}
+</style></head><body><div id="rxGate" role="status" aria-live="polite"><div class="card"><h2>🔒 RX ADMIN — kontrola dostępu</h2><p id="rxGateText">Sprawdzam sesję i uprawnienia administratora VEXORIO…</p><p><a href="/">Przejdź do VEXORIO i zaloguj się</a></p><button id="rxRetry" type="button">Sprawdź ponownie</button></div></div><div class="layout" id="rxApp" hidden><aside class="side"><div class="brand">👑 RX ADMIN</div><p class="note">Prototyp panelu z kontrolą dostępu administratora. Czat działa wyłącznie informacyjnie.</p><nav class="menu" id="menu" aria-label="Kategorie RX"></nav><p class="note" id="activeModule" aria-live="polite">Wybrany moduł: Główny czat</p></aside><main><header class="top"><h1 id="heading">Główny czat RX</h1><button id="rxBibiSelfTest" type="button" style="border:1px solid #52d4e8;border-radius:9px;padding:9px;background:#183c50;color:white">🐜 BIBI — Testuj mój panel</button><span class="status">RX Chat · planowanie bez wykonywania</span></header><div class="content"><div class="section"><div class="card"><h2 id="subheading">Podkategorie</h2><div class="sub" id="sub"></div></div><div class="card"><h2 id="chatheading">💬 Główny czat RX</h2><div class="chat" id="messages" aria-live="polite"><div class="msg bot">Witaj w RX ADMIN. Wybierz kategorię, dotknij „Odśwież raport RX Coordinator” lub wpisz „status”, „testy”, „mrówki”, „BIBI”. Wiadomości trafiają do serwerowego planera RX. To jeszcze nie jest model językowy AI i nie wykonuje samodzielnie zadań.</div></div><form class="composer" id="form"><textarea id="input" aria-label="Polecenie RX" maxlength="8000" rows="3" placeholder="Napisz do RX... (do 8000 znaków)" autocomplete="off"></textarea><button class="send" type="submit">Wyślij</button></form></div><p class="note">Raporty pochodzą z publicznego repozytorium GitHub. Dane nie są monitorowaniem na żywo. Żadne polecenie nie wykonuje zmian.</p></div></div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script>
 'use strict';
 const RX_SUPABASE_URL="https://lfytoxcnutduahshbsko.supabase.co";
