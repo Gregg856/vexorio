@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "kind": "rx-system-status",
+  "modules": {
+    "queen": {
+      "state": "reported",
+      "kind": "rx-queen-ant-supervisor",
+      "report": "rx-queen-ant-supervisor.json"
+    },
+    "ants": {
+      "state": "reported",
+      "kind": "rx-ant-task-board",
+      "report": "rx-ant-task-board.json"
+    },
+    "cosmos": {
+      "state": "reported",
+      "kind": "rx-cosmos-ant-queue",
+      "report": "rx-cosmos-ant-queue.json"
+    },
+    "budget": {
+      "state": "reported",
+      "kind": "rx-bibi-budget",
+      "report": "rx-bibi-budget.json"
+    },
+    "browser": {
+      "state": "passed",
+      "kind": "rx-queen-panel-browser",
+      "report": "rx-queen-panel-browser.json"
+    },
+    "panel": {
+      "state": "passed",
+      "kind": "rx-queen-panel-check",
+      "report": "rx-queen-panel-check.json"
+    },
+    "programs": {
+      "state": "passed",
+      "kind": "rx-programs-browser",
+      "report": "rx-programs-browser.json"
+    },
+    "studio": {
+      "state": "passed",
+      "kind": "rx-bibi-studio",
+      "report": "rx-bibi-studio-check.json"
+    },
+    "computer": {
+      "state": "missing",
+      "report": "rx-mega-cloud-computer.json"
+    },
+    "medusa": {
+      "state": "missing",
+      "report": "rx-medusa-signals.json"
+    },
+    "ai": {
+      "state": "missing",
+      "report": "rx-ant-ai-evaluation.json"
+    }
+  },
+  "available": 8,
+  "total": 11,
+  "reviewTasks": 0,
+  "cosmosPlanned": 0,
+  "automaticActions": 0,
+  "productionTouched": false,
+  "note": "Read-only report inventory; presence is not proof of live integration, cloud hardware or operational readiness."
+}
