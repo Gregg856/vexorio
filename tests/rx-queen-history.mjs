@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {prepareQueenHandoff,decideQueenTask} from '../rx-queen-approval.mjs';
+import {appendQueenReport,compareQueenReports} from '../rx-queen-history.mjs';
+const initial=prepareQueenHandoff('Sprawdź testy i chmurę');
+const history1=appendQueenReport([],initial,'before review');
+const updated=decideQueenTask(initial,'rx-001','approve','owner');
+const history2=appendQueenReport(history1,updated,'after review');
+assert.equal(history1.length,1);
+assert.equal(history2.length,2);
+assert.equal(history2[1].sequence,2);
+assert.deepEqual(compareQueenReports(history1[0].report,history2[1].report),{pendingChange:-1,readyChange:1,rejectedChange:0,executed:0});
+assert.equal(history1[0].report.summary.pending,2);
+assert.throws(()=>appendQueenReport([],initial,''),TypeError);
+console.log('RX queen history OK');
