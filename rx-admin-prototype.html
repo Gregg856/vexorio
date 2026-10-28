@@ -134,6 +134,7 @@ document.getElementById('rxBibiSelfTest').addEventListener('click',async()=>{
  }catch(e){add('bot','🐜 BIBI: '+e.message);}
  finally{button.disabled=false;}
 });
+document.getElementById('rxAntQueueRefresh').addEventListener('click',()=>loadLiveStatus('ants'));
 document.getElementById('rxRetry').addEventListener('click',checkAdmin);
 checkAdmin();
 
