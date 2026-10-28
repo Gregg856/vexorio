@@ -19,7 +19,6 @@ on:
       - 'guard-rx-queen-panel.js'
       - 'tests/rx-queen-panel-safety.cjs'
       - 'tests/rx-queen-panel-browser.cjs'
-      - 'worker.js'
       - 'rx-million-hearts.js'
       - 'rx-dna-core.js'
       - 'rx-dna-store-server.cjs'
@@ -28,8 +27,6 @@ on:
       - 'RX-DNA-BLACK-BOX.md'
       - 'rx-queen-computer-status.cjs'
       - 'tests/rx-queen-computer-status.cjs'
-      - 'rx-mega-cloud-computer.cjs'
-      - 'tests/rx-mega-cloud-computer.cjs'
       - 'rx-energy-lab.cjs'
       - 'tests/rx-energy-lab.cjs'
       - 'rx-cosmic-collider.cjs'
@@ -38,8 +35,6 @@ on:
       - 'tests/rx-higgs-lab.cjs'
       - 'rx-integration.cjs'
       - 'tests/rx-integration.cjs'
-      - 'rx-cloud-computer.cjs'
-      - 'tests/rx-cloud-computer.cjs'
       - 'rx-ant-ai-trainer.cjs'
       - 'rx-ant-ai-evaluator.cjs'
       - 'rx-queen-ant-supervisor.cjs'
@@ -59,8 +54,6 @@ on:
       - 'tests/rx-queen-ant-supervisor.cjs'
       - 'tests/rx-ant-ai-evaluator.cjs'
       - 'tests/rx-ant-ai-trainer.cjs'
-      - 'rx-ai-core.cjs'
-      - 'tests/rx-ai-core.cjs'
       - 'rx-command-bridge.js'
       - 'tests/rx-command-bridge.cjs'
       - 'tests/rx-million-hearts.cjs'
@@ -77,8 +70,8 @@ on:
       - '.github/workflows/rx-bibi-browser.yml'
   workflow_dispatch:
   schedule:
-    # RX MILION SERC: monitoring przez całą dobę, raz na godzinę (UTC).
-    - cron: '23 * * * *'
+    # Pełny audyt Chromium co 6 godzin; lekkie kontrole pozostają w VEXORIO checks.
+    - cron: '23 */6 * * *'
 
 permissions:
   contents: read
@@ -86,7 +79,7 @@ permissions:
 
 concurrency:
   group: rx-bibi-browser-tests
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   fast:
@@ -169,13 +162,12 @@ jobs:
             rx-ai-checkpoints/latest.json
           retention-days: 14
   mobile:
-    # Browser suite runs for UI changes, manual runs, and hourly audits.
-    # Backend/AI-only pushes use the fast job and avoid Playwright startup.
-    # Run Chromium on every workflow trigger; avoid false green from a skipped mobile job.
+    # Browser suite on UI changes, manual requests and scheduled audits.
+    # Backend-only pushes do not need Chromium; fast checks run in VEXORIO checks.
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.56.1-noble
-    timeout-minutes: 8
+    timeout-minutes: 6
     steps:
       - name: Pobierz repozytorium
         uses: actions/checkout@v7
