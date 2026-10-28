@@ -3383,4 +3383,28 @@ async function sendMessage(listingId,sellerId,message){
  });
 })();
 </script>
-<script>/* Admin dashboard filter handlers are registered in the main application script. */</script></body></html>
+<section id="rxQueenLab" hidden aria-label="RX Królowa — laboratorium staging" data-publishable-key=""><h2>👑 RX Królowa — laboratorium staging</h2><p>Tryb testowy. Raporty nie uruchamiają zadań.</p><textarea placeholder="Polecenie dla RX" maxlength="1000"></textarea><input data-rx-label placeholder="Nazwa raportu" maxlength="100"><button type="button" data-rx-preview>Przygotuj raport</button><button type="button" data-rx-save>Zapisz w chmurze</button><input data-rx-id placeholder="ID raportu"><button type="button" data-rx-load>Wczytaj raport</button><output aria-live="polite"></output></section><script type="module">
+import {createQueenPanelController} from './rx-queen-panel.mjs';
+const root=document.getElementById('rxQueenLab');
+if(root){
+ const client=window.supabase?.createClient?.('https://owkjdlpawczrnwyszduj.supabase.co',root.dataset.publishableKey||'');
+ const panel=createQueenPanelController(client);
+ const output=root.querySelector('output');
+ const message=root.querySelector('textarea');
+ const label=root.querySelector('[data-rx-label]');
+ const savedId=root.querySelector('[data-rx-id]');
+ const show=(value)=>{output.textContent=value;};
+ root.querySelector('[data-rx-preview]').addEventListener('click',()=>{
+  try{const entry=panel.preview(message.value,label.value||'RX report');show(JSON.stringify(entry.report.summary,null,2)+'\\nPropozycje nie są wykonywane automatycznie.');}
+  catch(e){show('Błąd danych: '+e.message);}
+ });
+ root.querySelector('[data-rx-save]').addEventListener('click',async()=>{
+  try{savedId.value=await panel.save(label.value||'RX report');show('Historia zapisana. ID: '+savedId.value);}
+  catch(e){show('Zapis niedostępny: '+e.message);}
+ });
+ root.querySelector('[data-rx-load]').addEventListener('click',async()=>{
+  try{const history=await panel.load(savedId.value);show('Wczytano raporty: '+history.length);}
+  catch(e){show('Odczyt niedostępny: '+e.message);}
+ });
+}
+</script><script>/* Admin dashboard filter handlers are registered in the main application script. */</script></body></html>

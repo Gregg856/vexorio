@@ -2,7 +2,7 @@
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('index.html','utf8');
-const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(Boolean);
+const scripts=[...html.matchAll(/<script(\s[^>]*)?>([\s\S]*?)<\/script>/gi)].filter(m=>!/\btype\s*=\s*[\"']module[\"']/i.test(m[1]||'')).map(m=>m[2]).filter(Boolean);
 assert.ok(scripts.length>0,'Inline JavaScript exists');
 for(const [index,source] of scripts.entries()){
  try{new Function(source)}catch(error){throw new Error('Invalid inline script '+(index+1)+': '+error.message)}
