@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "kind": "rx-cosmos-ant-queue",
+  "planned": [],
+  "deferred": 0,
+  "deferredTasks": [],
+  "priorityCounts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "limit": 9,
+  "executed": 0,
+  "autoFixesApplied": 0,
+  "note": "Read-only queue. Tasks require approval; no arbitrary commands, edits or deployments."
+}
