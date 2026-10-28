@@ -16,3 +16,15 @@ for(const rule of catalog.RULES){
  const result=planRXChat(rule.words[0]);
  assert.ok(result.tasks.some(task=>task.action===rule.id&&task.module===rule.module&&task.role===rule.role), 'Catalog parity: '+rule.id);
 }
+
+for(const [prompt,expected] of [
+ ['Bibi','Cześć'],['Cześć','Cześć'],['Co robią mrówki?','Mrówki'],
+ ['Jak działa wirnik?','Wirnik'],['Buduj dalej','Rozwijamy'],
+ ['status RX','Czat RX'],['pomoc','Napisz']
+]){
+ const result=planRXChat(prompt);
+ assert.ok(result.answer.includes(expected),prompt+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.plan.queen.requiresApproval,true);
+}
+console.log('RX natural dialogue intents OK');
