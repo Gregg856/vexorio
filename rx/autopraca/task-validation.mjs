@@ -17,13 +17,17 @@ export function validateAntTask(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     return { ok: false, error: 'Zadanie musi być obiektem.' };
   }
+  if (Object.keys(input).some(key => !['source', 'task_type', 'title', 'payload'].includes(key))) {
+    return { ok: false, error: 'Niedozwolone pola zadania.' };
+  }
   const { source, task_type, title, payload = {} } = input;
   if (!RX_TASK_SOURCES.includes(source)) return { ok: false, error: 'Nieznane źródło zadania.' };
   if (!RX_TASK_TYPES.includes(task_type)) return { ok: false, error: 'Niedozwolony typ zadania.' };
   if (typeof title !== 'string' || title.trim().length < 1 || title.trim().length > 240) {
     return { ok: false, error: 'Tytuł musi mieć od 1 do 240 znaków.' };
   }
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload) ||
+      Object.getPrototypeOf(payload) !== Object.prototype) {
     return { ok: false, error: 'Parametry muszą być obiektem.' };
   }
   if (Object.keys(payload).some(key => !allowedPayloadKeys[task_type].includes(key))) {
