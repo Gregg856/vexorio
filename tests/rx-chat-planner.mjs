@@ -39,3 +39,22 @@ for(const [question,history,expected] of [
  assert.ok(result.answer.includes(expected),question+' -> '+result.answer);
  assert.equal(result.executed,0);
 }
+
+for(const [prompt,expected] of [
+ ['Jakie testy wykonać?','Mogę wskazać testy'],
+ ['Mam błąd','Opisz błąd'],
+ ['Pokaż kolejkę','Kolejka Warsztatu'],
+ ['Czy to bezpieczne?','Wykonanie zatwierdzonych'],
+ ['Czy to darmowe?','RX korzysta'],
+ ['Jak działa Wikipedia?','Mogę szukać faktów'],
+ ['Co z moimi danymi?','Dostęp do panelu'],
+ ['Co dalej?','Najpierw sprawdź'],
+ ['Co umiesz?','Mogę rozmawiać'],
+ ['Jak działa Cloudflare?','Cloudflare udostępnia']
+]){
+ const result=planRXChat(prompt);
+ assert.ok(result.answer.includes(expected),prompt+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX Brain ten additional intents OK');
