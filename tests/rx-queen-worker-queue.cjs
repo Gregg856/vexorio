@@ -41,6 +41,35 @@ const {pathToFileURL}=require('node:url');
   };
   res=await send();
   assert.equal(res.status,403);
-  console.log('RX Queen staging queue security checks passed');
+  // Successful read through the authenticated Edge Function; no direct private PostgREST.
+  let gatewayCalls=0;
+  global.fetch=async(input,options={})=>{
+   const url=String(input);
+   if(url.endsWith('/auth/v1/user'))return Response.json({id:'owner',is_anonymous:false});
+   if(url.endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
+   if(url.endsWith('/functions/v1/rx-queen-private-queue')){
+    gatewayCalls++;
+    assert.equal(options.method,'GET');
+    assert.equal(options.headers.Authorization,'Bearer mock.token.value');
+    return Response.json({ok:true,source:'supabase-staging',tasks:[{id:'test-task',status:'pending_approval'}]});
+   }
+   throw Error('Unexpected upstream '+url);
+  };
+  res=await send();
+  assert.equal(res.status,200);
+  assert.deepEqual((await res.json()).tasks,[{id:'test-task',status:'pending_approval'}]);
+  assert.equal(gatewayCalls,1);
+  assert.equal(privateReads,0);
+  // Reject malformed gateway success payloads.
+  global.fetch=async(input)=>{
+   const url=String(input);
+   if(url.endsWith('/auth/v1/user'))return Response.json({id:'owner',is_anonymous:false});
+   if(url.endsWith('/rest/v1/rpc/is_vexorio_admin'))return Response.json(true);
+   if(url.endsWith('/functions/v1/rx-queen-private-queue'))return Response.json({ok:true,tasks:[]});
+   throw Error('Unexpected upstream '+url);
+  };
+  res=await send();
+  assert.equal(res.status,502);
+  console.log('RX Queen staging queue security and gateway integration mocks passed');
  }finally{global.fetch=original;}
 })().catch(error=>{console.error(error);process.exitCode=1;});
