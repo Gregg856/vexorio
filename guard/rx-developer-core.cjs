@@ -159,7 +159,7 @@ function analyzeJavaScript(source){
   const alias=declaration[1],kind=declaration[2];
   const after=masked.slice(declaration.index+declaration[0].length);
   const name=alias;
-  const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*(?:\?\.)?\s*(?:\(|\.\s*(?:call|apply|bind)\s*\()`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
+  const call=kind==='eval'?new RegExp(String.raw`\b`+name+String.raw`\s*(?:\(\s*|\?\.\s*\(\s*|(?:\?|)\.\s*(?:call|apply|bind)\s*\()`,'g'):new RegExp(String.raw`\b`+name+String.raw`\s*\.\s*setItem\s*\(`,'g');
   const assignments=new RegExp(String.raw`\b`+name+String.raw`\s*(?:=(?!=)|\+\+|--|\+=|-=)`,'g');
   // Limit suppression to calls inside a function whose parameter shadows this alias.
   const shadowRanges=[];
@@ -177,7 +177,21 @@ function analyzeJavaScript(source){
    if(after[opening]==='{'){let depth=1,end=opening+1;for(;end<after.length&&depth;end++){if(after[end]==='{')depth++;else if(after[end]==='}')depth--;}shadowRanges.push([begin,end]);}
    else {const end=after.indexOf(';',opening);shadowRanges.push([begin,end<0?after.length:end]);}
   }
-  const inShadow=index=>shadowRanges.some(([start,end])=>index>=start&&index<end);
+  // Block-scoped shadow declarations must not invalidate an outer alias.
+  const blockShadows=[];
+  const shadowDecl=new RegExp(String.raw`\\b(?:const|let)\\s+`+name+String.raw`\\s*=`,'g');
+  let localDecl;
+  while((localDecl=shadowDecl.exec(after))!==null){
+   const before=after.slice(0,localDecl.index);
+   const openings=[];
+   for(let i=0;i<before.length;i++){if(before[i]==='{')openings.push(i);else if(before[i]==='}')openings.pop();}
+   if(!openings.length)continue;
+   const start=openings[openings.length-1];
+   let depth=1,end=start+1;
+   for(;end<after.length&&depth;end++){if(after[end]==='{')depth++;else if(after[end]==='}')depth--;}
+   blockShadows.push([localDecl.index,end]);
+  }
+  const inShadow=index=>shadowRanges.some(([start,end])=>index>=start&&index<end)||blockShadows.some(([start,end])=>index>=start&&index<end);
   const reassignments=[];let assignment;
   while((assignment=assignments.exec(after))!==null)if(!inShadow(assignment.index))reassignments.push(assignment.index);
   let found;
