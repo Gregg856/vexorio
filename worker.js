@@ -208,8 +208,15 @@ export default {
             const report=await response.json();
             if(report.kind!=='rx-ant-ci-triage'||!Array.isArray(report.tasks)||report.tasks.length>20||report.autoFixesApplied!==0)return reply(502,'Raport Mrówek ma nieprawidłową strukturę.');
             const tasks=report.tasks.filter(t=>t&&t.requiresApproval===true&&t.status==='needs_review').slice(0,10);
-            const lines=tasks.map((t,i)=>(i+1)+'. '+String(t.target||'test').slice(0,100)+' — '+String(t.action||'do sprawdzenia').slice(0,120)+' (GitHub #'+t.runId+')');
-            const answer='👑🐜 Diagnostyka CI Mrówek: '+tasks.length+' propozycji do sprawdzenia.\\n'+(lines.join('\\n')||'Brak wykrytych błędów w analizowanej próbce.')+'\\nŹródło: zapisany raport GitHub Actions. Nie wykonano napraw.';
+            if(report.sourceAvailable===false)return reply(502,'Raport diagnostyki Mrówek nie ma aktualnych danych GitHub: '+String(report.error||'nieznany problem').slice(0,120));
+            const hints={failure:['Test zakończył się błędem (dokładna przyczyna nieznana).','Otwórz logi przebiegu i znajdź pierwszy nieudany krok.'],timed_out:['Przekroczono limit czasu (przyczyna niepotwierdzona).','Sprawdź długość kroków i miejsce zatrzymania w logach.'],cancelled:['Przebieg został anulowany (powód niepotwierdzony).','Sprawdź kto lub co anulowało przebieg.'],action_required:['GitHub wymaga działania przed kontynuacją.','Otwórz przebieg i sprawdź wymagane zatwierdzenie lub konfigurację.']};
+            const lines=tasks.map((t,i)=>{
+              const id=Number.isSafeInteger(t.runId)&&t.runId>0?t.runId:null;
+              const status=String(t.action||'').split(': ').pop();
+              const hint=hints[status]||['Status wymaga ręcznej weryfikacji.','Sprawdź szczegóły przebiegu GitHub Actions.'];
+              return (i+1)+'. '+String(t.target||'test').slice(0,100)+'\\nStan: '+hint[0]+'\\nNastępny krok: '+hint[1]+(id?'\\nLogi: https://github.com/Gregg856/vexorio/actions/runs/'+id:'');
+            });
+            const answer='👑🐜 Diagnostyka CI Mrówek: '+tasks.length+' propozycji do sprawdzenia.\\n'+(lines.join('\\n\\n')||'Brak wykrytych błędów w analizowanej próbce.')+'\\nŹródło: zapisany raport GitHub Actions. Bez analizy logów nie można ustalić przyczyny źródłowej. Nie wykonano napraw.';
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-ant-ci-triage',tasks,executed:0,modelInferenceUsed:false}),{status:200,headers});
           }catch{return reply(502,'Nie udało się pobrać raportu diagnostyki Mrówek.');}
         }
