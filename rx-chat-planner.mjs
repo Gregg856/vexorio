@@ -4,11 +4,12 @@ import catalog from './rx-task-catalog.cjs';
 const RULES=catalog.RULES;
 
 export function planRXChat(message,history=[]){
- if(typeof message!=='string'||!message.trim()||message.length>1000)throw new TypeError('Invalid message');
- if(!Array.isArray(history)||history.length>6||history.some(x=>typeof x!=='string'||x.length>1000))throw new TypeError('Invalid history');
+ if(typeof message!=='string'||!message.trim()||message.length>8000)throw new TypeError('Invalid message');
+ if(!Array.isArray(history)||history.length>20||history.some(x=>typeof x!=='string'||x.length>8000))throw new TypeError('Invalid history');
  const last=history.at(-1)||'';
+ const previous=history.slice(-5).filter(x=>x.trim());
  const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
- const contextual=followup&&last?last+' '+message:message;
+ const contextual=followup&&last?previous.join(' ')+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const found=RULES.filter(r=>r.words.some(word=>q.includes(word)));
  const topics=found.map(r=>r.topic);

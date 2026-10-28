@@ -120,9 +120,9 @@ export default {
         let payload;
         try{payload=await request.json();}catch{return reply(400,'Nieprawidłowe dane wiadomości.');}
         const message=payload?.message;
-        if(typeof message!=='string'||!message.trim()||message.length>1000)return reply(400,'Wiadomość musi mieć od 1 do 1000 znaków.');
+        if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
-        if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
         return new Response(JSON.stringify(planRXChat(message,history)),{status:200,headers});
       }
       let github;
