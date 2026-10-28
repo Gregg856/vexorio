@@ -1,3 +1,4 @@
+import {handleRXMemory} from './rx-persistent-memory.mjs';
 import {findRXKnowledge} from './rx-knowledge-base.mjs';
 import {searchWorldKnowledge} from './rx-world-knowledge.mjs';
 import {planRXChat} from './rx-chat-planner.mjs';
@@ -126,6 +127,13 @@ export default {
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
         const planned=planRXChat(message,history);
+        if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
+          try{
+            const memory=await handleRXMemory(message,{base,apikey:env.SUPABASE_ANON_KEY,auth,userId:identity.id});
+            if(memory)return new Response(JSON.stringify({...planned,...memory,engine:'rx-persistent-memory',executed:0,modelInferenceUsed:false}),{status:memory.ok?200:400,headers});
+          }catch{return reply(502,'Pamięć RX jest chwilowo niedostępna. Nie potwierdzam zapisu.');}
+        }
+
         // Locally maintained RX facts take priority over external encyclopedia searches.
         const localKnowledge=/^(co to jest|czym jest|opowiedz o|powiedz mi o|wyjasnij|wyjaśnij)\s+/i.test(message.trim())?findRXKnowledge(message):null;
         if(localKnowledge)return new Response(JSON.stringify({...planned,answer:'📘 '+localKnowledge.title+'\n'+localKnowledge.summary+'\nŹródło: '+localKnowledge.source,knowledge:localKnowledge,engine:'rx-local-knowledge',modelInferenceUsed:false}),{status:200,headers});
