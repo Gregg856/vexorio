@@ -14,6 +14,6 @@ assert.match(worker,/request\.method!=='POST'/);
 assert.match(worker,/request\.headers\.get\('Origin'\)!==url\.origin/);
 assert.match(worker,/rpc\/is_vexorio_admin/);
 assert.match(worker,/planRXChat\(message,history\)/);
-assert.match(worker,/engine:'rule-based-fallback'/);
+assert.match(worker,/engine:localEngine/);
 assert.match(html,/data\.answer/);
 console.log('RX chat panel/server contract OK (without authenticated session)');
