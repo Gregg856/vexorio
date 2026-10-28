@@ -101,7 +101,7 @@ jobs:
           const fs = require('node:fs');
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html', 'utf8');
-          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]).filter(Boolean);
+          const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m => !/\btype\s*=\s*["']module["']/i.test(m[1])).map(m => m[2]).filter(Boolean);
           for (const [i, script] of scripts.entries()) new vm.Script(script, {filename: `inline-${i+1}.js`});
           for (const id of ['query', 'searchBtn', 'cards', 'myConversations']) {
             if (!html.includes(`id="${id}"`)) throw new Error(`Missing control: ${id}`);
