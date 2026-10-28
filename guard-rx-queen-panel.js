@@ -55,6 +55,29 @@
  });
 
 
+ // Read-only view of actual RX ANT TASK BOARD report, not session counters.
+ const queueButton=document.createElement('button');
+ queueButton.type='button';queueButton.textContent='🐜 Sprawdź rzeczywistą kolejkę mrówek';
+ const queueStatus=document.createElement('p');
+ queueStatus.setAttribute('aria-live','polite');
+ queueStatus.style.whiteSpace='pre-wrap';
+ queueStatus.textContent='🐜 Kolejka serwerowa: niezweryfikowana. Liczniki sesji powyżej nie są kolejką zadań.';
+ hub.append(queueButton,queueStatus);
+ queueButton.addEventListener('click',async()=>{
+  queueButton.disabled=true;queueStatus.textContent='Sprawdzam raport kolejki…';
+  try{
+   const response=await fetch('/rx-bibi-reports/rx-ant-task-board.json',{cache:'no-store'});
+   if(!response.ok)throw Error('report_unavailable');
+   const board=await response.json();
+   if(board?.schema!==1||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(board.totalUnique)||board.totalUnique<board.tasks.length||!Number.isSafeInteger(board.overflow)||board.overflow<0||board.autoFixesApplied!==0)throw Error('invalid_report');
+   for(const task of board.tasks){
+    if(!task||typeof task.source!=='string'||task.source.length>40||typeof task.action!=='string'||task.action.length>80||typeof task.target!=='string'||task.target.length>120||!['critical','high','medium','low'].includes(task.priority)||task.status!=='needs_review'||task.requiresApproval!==true)throw Error('invalid_task');
+   }
+   queueStatus.textContent='🐜 Raport RX ANT TASK BOARD (odczyt, nie praca na żywo)\\nZadań: '+board.tasks.length+' / '+board.totalUnique+'\\nPoza limitem: '+board.overflow+'\\nWszystkie wymagają zatwierdzenia. Wykonane automatycznie: 0.\\n'+board.tasks.slice(0,12).map((t,i)=>(i+1)+'. ['+t.priority+'] '+t.action+' — '+t.target).join('\\n')+'\\nBrak potwierdzenia czasu utworzenia raportu.';
+  }catch(_){queueStatus.textContent='⚪ Nie ma dostępnego, zweryfikowanego raportu kolejki na serwerze. Nie pokazuję fikcyjnych zadań ani statusu pracy mrówek.';}
+  finally{queueButton.disabled=false;}
+ });
+
  // RX DIRECT: read-only public GitHub inbox. Commands are never executed or approved automatically.
  const directButton=document.createElement('button');
  directButton.type='button';directButton.textContent='📬 Pobierz polecenia od ChatGPT';
