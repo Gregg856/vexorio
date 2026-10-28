@@ -21,7 +21,7 @@ Deno.serve(async(req:Request)=>{
  // Reject accidental use of production database credentials.
  let database:URL;
  try{database=new URL(dbUrl);}catch{return json(503,{ok:false,error:'invalid_database_url'});}
- if(!['postgres:','postgresql:'].includes(database.protocol)||!database.hostname.endsWith('.supabase.com')||!database.hostname.includes(STAGING))return json(503,{ok:false,error:'staging_database_only'});
+ if(!['postgres:','postgresql:'].includes(database.protocol)||database.hostname!==`db.${STAGING}.supabase.co`||database.username!=='rx_queen_queue_reader')return json(503,{ok:false,error:'staging_database_only'});
  let base:URL;
  try{base=new URL(supabaseUrl);}catch{return json(503,{ok:false,error:'invalid_configuration'});}
  if(base.origin!==`https://${STAGING}.supabase.co`||base.pathname!=='/')return json(503,{ok:false,error:'staging_only'});
@@ -38,7 +38,7 @@ Deno.serve(async(req:Request)=>{
    method:'POST',headers:{apikey:anonKey,Authorization:auth,'Content-Type':'application/json'},body:'{}',signal:controller.signal
   });
   if(!adminResponse.ok||await adminResponse.json()!==true)return json(403,{ok:false,error:'admin_required'});
-  const sql=postgres(dbUrl,{max:1,connect_timeout:5,ssl:'require',idle_timeout:1});
+  const sql=postgres(dbUrl,{max:1,connect_timeout:5,ssl:'require',idle_timeout:1,prepare:false});
   try{
    const rows=await sql`select id, source, task_type, title, status, created_at, approved_at, finished_at
     from rx_private.ant_task_queue order by created_at desc limit 20`;
