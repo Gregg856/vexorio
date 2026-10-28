@@ -1,9 +1,9 @@
 'use strict';
 const assert=require('node:assert/strict');
-const fs=require('node:fs');
 (async()=>{
- const source=fs.readFileSync('worker.js','utf8');
- const worker=(await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'))).default;
+ const {pathToFileURL}=require('node:url');
+ const {resolve}=require('node:path');
+ const worker=(await import(pathToFileURL(resolve('worker.js')).href)).default;
  const origin='https://vexorio.example';
  const env={ASSETS:{fetch:async()=>new Response('asset')}};
  const call=(method,headers={},extras={})=>worker.fetch(new Request(origin+'/api/rx/run-test',{method,headers}),{...env,...extras});
