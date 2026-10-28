@@ -131,9 +131,9 @@ export default {
         if(/chmur|cloud|komputer/.test(q))topics.push('chmura');
         if(/model|trening|uczen|uczeń|ai/.test(q))topics.push('model AI');
         const tasks=[];
-        if(topics.includes('diagnostyka'))tasks.push({module:'queen',role:'tests',action:'review_ci',status:'proposed',requiresApproval:true});
+        if(topics.includes('diagnostyka'))tasks.push({module:'queen',role:'tests',action:'inspect_tests',status:'proposed',requiresApproval:true});
         if(topics.includes('chmura'))tasks.push({module:'cloud',role:'diagnostics',action:'plan_cloud_checks',status:'proposed',requiresApproval:true});
-        if(topics.includes('model AI'))tasks.push({module:'ants',role:'memory',action:'review_model_tests',status:'proposed',requiresApproval:true});
+        if(topics.includes('model AI'))tasks.push({module:'ants',role:'memory',action:'classify_task',status:'proposed',requiresApproval:true});
         const answer=topics.length?'👑 Rozpoznane obszary: '+topics.join(', ')+'. Mogę przygotować plan testów. Żadna praca nie została uruchomiona.':'👑 Nie rozpoznaję jeszcze tego pytania. Zapytaj o testy, chmurę lub model AI.';
         return new Response(JSON.stringify({ok:true,answer,topics,tasks,contextUsed:Boolean(followup&&last),executed:0,modelInferenceUsed:false}),{status:200,headers});
       }
