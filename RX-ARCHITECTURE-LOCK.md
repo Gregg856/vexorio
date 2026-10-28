@@ -34,3 +34,14 @@ Ten dokument jest uzgodnioną zasadą pracy. Nie jest techniczną blokadą GitHu
 
 ## Jeden następny krok
 Podłączyć istniejący Command Bridge do kontrolowanego wykonawcy zatwierdzonych działań z trwałym stanem i raportem. Najpierw test staging, potem decyzja właściciela. Bez kolejnego routera.
+
+
+## Decyzja końcowa: benchmarki, Mrówki i odpowiedzi Królowej (28.10.2026)
+
+- Zachować istniejące RX Benchmark 1.0–5.0 oraz RX Performance Benchmark; nie tworzyć wersji 6.0 ani duplikatów.
+- Mrówki i RX Developer przygotowują propozycje oraz wykonują wyłącznie jawnie zatwierdzone, dozwolone zadania. Benchmarki porównują wynik z punktem odniesienia; pogorszenie nie jest awansem.
+- RX Ant AI Trainer/Evaluator uczy mały klasyfikator na danych syntetycznych, a nie model językowy. Checkpoint i raport wzrostu muszą wskazywać rzeczywisty zakres pomiaru.
+- Jedyny interfejs użytkownika pozostaje w rx-admin-prototype.html. Istniejący czat wywołuje /api/rx/chat z autoryzacją; odpowiedzi pochodzą z dostępnego silnika serwerowego. Nie przedstawiać tego jako ogólnej inteligencji lub pełnej autonomii.
+- Priorytet po zamknięciu prac benchmarkowych: Królowa ma odpowiadać tekstowo na zwykłe pytania, przekazywać zadania do istniejących modułów i jasno oznaczać propozycje versus wykonanie. Utrzymywać pamięć zatwierdzonych rezultatów. Nie zakładać, że dowolne polecenia już są wykonywane.
+- Bez nowych paneli, kont, równoległych mózgów, automatycznych wdrożeń produkcyjnych, płatności i niekontrolowanego uruchamiania kodu.
+- Prace benchmarkowe uznajemy za zamknięte na poziomie planu integracji; realizację i sprawdzenie jakości odpowiedzi Królowej należy potwierdzić osobno.
