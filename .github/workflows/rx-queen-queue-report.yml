@@ -40,7 +40,7 @@ jobs:
               REPORT="$report" KIND="$kind" LOG="$log" node - <<'NODE'
           const fs=require('fs');
           const log=fs.readFileSync(process.env.LOG,'utf8').slice(-3000);
-          fs.writeFileSync('rx-bibi-reports/'+process.env.REPORT,JSON.stringify({schema:1,kind:process.env.KIND,ok:false,error:log||'Test failed',productionTouched:false},null,2)+'\\n');
+          fs.writeFileSync('rx-bibi-reports/'+process.env.REPORT,JSON.stringify({schema:1,kind:process.env.KIND,ok:false,error:log||'Test failed',productionTouched:false},null,2)+'\n');
           NODE
             fi
             if [ "$module" = browser ] && [ ! -s rx-bibi-reports/rx-queen-panel-check.json ]; then
