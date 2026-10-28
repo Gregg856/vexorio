@@ -62,6 +62,11 @@
   "total": 11,
   "reviewTasks": 0,
   "cosmosPlanned": 0,
+  "computerTests": {
+    "executed": 9,
+    "passed": 9,
+    "failed": 0
+  },
   "automaticActions": 0,
   "productionTouched": false,
   "note": "Read-only report inventory; presence is not proof of live integration, cloud hardware or operational readiness."
