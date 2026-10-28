@@ -198,6 +198,21 @@ export default {
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-ant-test-dispatch',workflow:'rx-medusa-ant.yml',queued:state==='queued',runStatus:state,runId:latest?.id||null,runUrl:latest?.html_url||null,executed:1,modelInferenceUsed:false}),{status:200,headers});
           }catch{return reply(502,'Nie udało się zlecić testów Mrówek w GitHub.');}
         }
+        // RX Ants: show persisted CI failure proposals from the existing GitHub report.
+        if(/^(błędy mrówek|bledy mrowek|propozycje mrówek|propozycje mrowek|diagnostyka mrówek|diagnostyka mrowek)$/i.test(message.trim())){
+          try{
+            const ghHeaders={Accept:'application/vnd.github.raw+json','User-Agent':'RX-Queen-Ant-CI-Triage',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})};
+            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/contents/rx-bibi-reports/rx-ant-ci-triage.json?ref=main',{headers:ghHeaders,signal:AbortSignal.timeout(8000)});
+            if(response.status===404)return reply(404,'Raport diagnostyki Mrówek jeszcze nie został opublikowany.');
+            if(!response.ok)return reply(502,'Nie udało się odczytać diagnostyki Mrówek (HTTP '+response.status+').');
+            const report=await response.json();
+            if(report.kind!=='rx-ant-ci-triage'||!Array.isArray(report.tasks)||report.tasks.length>20||report.autoFixesApplied!==0)return reply(502,'Raport Mrówek ma nieprawidłową strukturę.');
+            const tasks=report.tasks.filter(t=>t&&t.requiresApproval===true&&t.status==='needs_review').slice(0,10);
+            const lines=tasks.map((t,i)=>(i+1)+'. '+String(t.target||'test').slice(0,100)+' — '+String(t.action||'do sprawdzenia').slice(0,120)+' (GitHub #'+t.runId+')');
+            const answer='👑🐜 Diagnostyka CI Mrówek: '+tasks.length+' propozycji do sprawdzenia.\\n'+(lines.join('\\n')||'Brak wykrytych błędów w analizowanej próbce.')+'\\nŹródło: zapisany raport GitHub Actions. Nie wykonano napraw.';
+            return new Response(JSON.stringify({ok:true,answer,engine:'rx-ant-ci-triage',tasks,executed:0,modelInferenceUsed:false}),{status:200,headers});
+          }catch{return reply(502,'Nie udało się pobrać raportu diagnostyki Mrówek.');}
+        }
         // RX Queen ant report: read-only GitHub Actions evidence, no dispatch or code changes.
         if(/^(raport mrówek|raport mrowek|status mrówek|status mrowek|wyniki testów mrówek|wyniki testow mrowek|sprawdź testy mrówek|sprawdz testy mrowek)$/i.test(message.trim())){
           const ghHeaders={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Ant-Report',...(env.RX_GITHUB_DISPATCH_TOKEN?{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN}:{})};
