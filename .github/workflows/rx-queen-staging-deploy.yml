@@ -25,10 +25,11 @@ jobs:
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           STAGING_ANON: ${{ secrets.RX_STAGING_SUPABASE_ANON_KEY }}
         run: |
-          test -n "$CF_TOKEN" && test -n "$CF_ACCOUNT" && test -n "$STAGING_ANON" || {
-            echo "::error::Missing Cloudflare or staging-only Supabase credentials"
-            exit 1
-          }
+          missing=0
+          if [ -z "$CF_TOKEN" ]; then echo "::error::Missing CLOUDFLARE_API_TOKEN"; missing=1; fi
+          if [ -z "$CF_ACCOUNT" ]; then echo "::error::Missing CLOUDFLARE_ACCOUNT_ID"; missing=1; fi
+          if [ -z "$STAGING_ANON" ]; then echo "::error::Missing RX_STAGING_SUPABASE_ANON_KEY"; missing=1; fi
+          exit "$missing"
       - name: Przygotuj strone
         run: |
           mkdir -p public
