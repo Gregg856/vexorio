@@ -124,6 +124,7 @@ export default {
       // Disabled unless the server has a separate secret and the private schema is
       // explicitly available to the trusted server. Never expose this key to HTML.
       if(url.pathname==='/api/rx/ants/tasks'){
+        if(base.hostname!=='owkjdlpawczrnwyszduj.supabase.co')return reply(503,'Kolejka dostępna wyłącznie na staging.');
         if(!env.RX_SUPABASE_SERVICE_ROLE_KEY)return reply(503,'Kolejka serwerowa nie jest jeszcze skonfigurowana.');
         try{
           const endpoint=new URL('/rest/v1/ant_task_queue',base);
