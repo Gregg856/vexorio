@@ -145,6 +145,28 @@ export default {
           if(response.status!==204)return reply(502,'GitHub nie przyjął testu (HTTP '+response.status+').');
           return new Response(JSON.stringify({ok:true,answer:'👑🐜 Zleciłam test do istniejącego RX Coordinator w GitHub Actions. To potwierdzenie przyjęcia zadania, nie wyniku. Sprawdź raport po zakończeniu.',engine:'rx-queen-coordinator-dispatch',executed:1,modelInferenceUsed:false,workflow:'rx-coordinator-cloud.yml',queued:true,requiresApproval:false}),{status:200,headers});
         }
+        // Read-only live result lookup: no dispatch, no extra permissions or AI inference.
+        if(/^(wynik testów rx|wyniki testów rx|status testów rx|sprawdź błędy rx|sprawdz bledy rx)$/i.test(message.trim())){
+          const workflows=[
+            {label:'RX Coordinator',file:'rx-coordinator-cloud.yml'},
+            {label:'VEXORIO checks',file:'vexorio-checks.yml'},
+            {label:'RX BIBI Tester',file:'rx-bibi-browser.yml'}
+          ];
+          const results=await Promise.all(workflows.map(async item=>{
+            try{
+              const endpoint='https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+item.file+'/runs?branch=main&per_page=1';
+              const response=await fetch(endpoint,{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Live-Status'},signal:AbortSignal.timeout(6500)});
+              if(!response.ok)return {...item,state:'unavailable',reason:'HTTP '+response.status};
+              const data=await response.json(),run=data.workflow_runs?.[0];
+              if(!run)return {...item,state:'missing'};
+              return {label:item.label,state:run.status==='completed'?(run.conclusion||'unknown'):run.status,url:run.html_url||null,createdAt:run.created_at||null,event:run.event||null};
+            }catch{return {...item,state:'unavailable',reason:'GitHub timeout or network error'};}
+          }));
+          const lines=results.map(x=>x.label+': '+(x.state==='success'?'🟢 sukces':x.state==='failure'?'🔴 błąd':x.state==='in_progress'?'🟡 trwa':x.state==='queued'?'🟡 kolejka':'⚪ '+x.state)+(x.url?'\\n'+x.url:''));
+          const failed=results.filter(x=>x.state==='failure'||x.state==='timed_out'||x.state==='cancelled');
+          const answer='👑 Aktualne wyniki GitHub Actions:\\n'+lines.join('\\n')+'\\n'+(failed.length?'⚠️ Wykryto nieudany przebieg. Otwórz jego link, aby sprawdzić szczegóły.':'Brak potwierdzonej awarii w odczytanych przebiegach. To nie jest pełny audyt.');
+          return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-live-github-status',results,executed:0,modelInferenceUsed:false}),{status:200,headers});
+        }
         const planned=planRXChat(message,history);
         if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
           try{
