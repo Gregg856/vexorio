@@ -1,5 +1,8 @@
 name: RX Queen gateway contract
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 8 * * *'
   pull_request:
     paths:
       - 'rx/autopraca/edge-functions/rx-queen-private-queue/**'
@@ -17,3 +20,24 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/rx-queen-gateway-contract.cjs
+
+  live-staging-auth-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify deployed staging Queen gateway rejects unauthenticated requests
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://owkjdlpawczrnwyszduj.supabase.co/functions/v1/rx-queen-private-queue'
+          response="$(mktemp)"
+          status="$(curl --silent --show-error --location --max-time 15 --output "$response" --write-out '%{http_code}' --request GET "$url")"
+          if [ "$status" != 401 ]; then
+            echo "::error::Staging Queen gateway returned HTTP $status instead of 401"
+            exit 1
+          fi
+          if ! grep -q '"authentication_required"' "$response"; then
+            echo "::error::Staging Queen gateway did not return the expected auth guard"
+            exit 1
+          fi
+          echo "Staging Queen gateway auth smoke passed (HTTP 401)."
