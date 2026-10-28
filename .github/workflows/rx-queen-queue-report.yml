@@ -74,6 +74,11 @@ jobs:
           const budget=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-bibi-budget.json','utf8'));
           if(q.schema!==1||q.kind!=='rx-cosmos-ant-queue'||!Array.isArray(q.planned)||q.planned.length>20||q.executed!==0||q.autoFixesApplied!==0||q.planned.some(t=>t.status!=='needs_review'||t.requiresApproval!==true))throw Error('Unsafe COSMOS queue');
           if(!budget||typeof budget!=='object'||Array.isArray(budget))throw Error('Invalid RX budget');
+          const status=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-system-status.json','utf8'));
+          const required=['queen','ants','cosmos','budget','browser','panel','programs','studio','computer','medusa','ai'];
+          if(status.schema!==1||status.kind!=='rx-system-status'||status.productionTouched!==false||status.automaticActions!==0||status.total!==required.length||!status.modules||required.some(id=>!status.modules[id]||!['passed','reported','failed','missing','invalid'].includes(status.modules[id].state)))throw Error('Invalid unified RX system status');
+          if(status.reviewTasks!==b.tasks.length||status.cosmosPlanned!==q.planned.length)throw Error('RX status is inconsistent with queue reports');
+          console.log('RX system reports:',status.available+'/'+status.total);
           console.log('Read-only review tasks:',b.tasks.length,'COSMOS planned:',q.planned.length);
           NODE
           git config user.name "github-actions[bot]"
