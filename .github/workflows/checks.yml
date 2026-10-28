@@ -24,6 +24,7 @@ jobs:
           node tests/push-service-worker.test.cjs
           node tests/rx-direct.cjs
           node tests/rx-chat-planner.mjs
+          node tests/rx-world-knowledge.mjs
           node tests/rx-chat-panel-contract.cjs
           node tests/rx-chat-worker-e2e.cjs
           node tests/rx-queen-handoff.mjs
