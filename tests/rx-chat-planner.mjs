@@ -17,6 +17,11 @@ assert.match(planRXChat('RX DOT: [1,2]; [3,4]').answer,/11/);
 assert.match(planRXChat('RX DOT: [1,2]; [3]').answer,/Nieprawidłowe/);
 assert.match(planRXChat('RX DOT: [1,2]; [abc,4]').answer,/Nieprawidłowe/);
 assert.equal(planRXChat('RX DOT: [1,2]; [3,4]').executed,0);
+assert.match(planRXChat('RX MADD: [[1,2],[3,4]]; [[5,6],[7,8]]').answer,/\[\[6,8\],\[10,12\]\]/);
+assert.match(planRXChat('RX MMUL: [[1,2]]; [[3],[4]]').answer,/\[\[11\]\]/);
+assert.match(planRXChat('RX MMUL: [[1,2]]; [[3,4]]').answer,/Nieprawidłowe/);
+assert.match(planRXChat('RX MADD: [[1,2]]; [[3]]').answer,/Nieprawidłowe/);
+assert.equal(planRXChat('RX MMUL: [[1,2]]; [[3],[4]]').executed,0);
 console.log('RX chat planner OK');
 
 import catalog from '../rx-task-catalog.cjs';
