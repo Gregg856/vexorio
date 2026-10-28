@@ -28,6 +28,8 @@ jobs:
           cp index.html public/index.html
           cp guard-lab.html public/guard-lab.html
           cp rx-bibi-manager.html public/rx-bibi-manager.html
+          cp rx-admin-prototype.html public/rx-admin-prototype.html
+          test -s public/rx-admin-prototype.html
           mkdir -p public/guard
           cp guard/rx-developer-core-browser.js public/guard/rx-developer-core-browser.js
           test -s public/guard/rx-developer-core-browser.js
