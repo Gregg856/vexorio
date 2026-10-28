@@ -11,3 +11,8 @@ assert.equal(await searchWorldKnowledge('',{fetcher}),null);
 assert.equal(await searchWorldKnowledge('a'.repeat(301),{fetcher}),null);
 assert.equal(await searchWorldKnowledge('Co to jest nieznane?',{fetcher:async()=>({ok:true,json:async()=>({query:{pages:{}}})})}),null);
 console.log('RX world knowledge source lookup PASS');
+
+const again=await searchWorldKnowledge('Co to jest Warszawa?',{fetcher});
+assert.equal(calls,1,'repeated query should use cache');
+assert.equal(again.cached,true);
+assert.equal(again.retrievedAt,result.retrievedAt);
