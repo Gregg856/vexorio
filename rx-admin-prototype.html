@@ -95,12 +95,12 @@ async function loadLiveStatus(module){
   const data=await response.json();
   if(module==='ants'){
    if(data.ok!==true||!data.board||!Array.isArray(data.board.tasks))throw Error('Brak wiarygodnej kolejki.');
-   add('bot','🐜 Kolejka Mrówek: '+data.board.tasks.length+' zadań do przeglądu\\nŹródło: '+data.source+' (zapisany raport, nie praca na żywo).');
+   add('bot','🐜 Kolejka Mrówek: '+data.board.tasks.length+' zadań do przeglądu\nŹródło: '+data.source+' (zapisany raport, nie praca na żywo).');
    return;
   }
   if(!Array.isArray(data.runs))throw Error('Brak danych o testach.');
   const lines=data.runs.map(run=>run.name+': '+(run.result||run.status||'nieznany'));
-  add('bot','📡 Ostatnie stany GitHub Actions\\n'+lines.join('\\n')+'\\n'+(data.degraded?'Uwaga: część źródeł niedostępna.':'To status CI, nie potwierdzenie pracy AI na żywo.'));
+  add('bot','📡 Ostatnie stany GitHub Actions\n'+lines.join('\n')+'\n'+(data.degraded?'Uwaga: część źródeł niedostępna.':'To status CI, nie potwierdzenie pracy AI na żywo.'));
  }catch(error){add('bot','Nie udało się pobrać aktualnego statusu: '+error.message);}
 }
 async function loadStatus(module='status'){
