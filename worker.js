@@ -333,7 +333,9 @@ export default {
           if(!rxAiFailure)rxAiFailure='empty_response';
         }
         const rxAiReason=!rxAiEnabled?'ai_disabled':!rxAiBound?'ai_binding_missing':rxAiFailure||'unknown';
-        return new Response(JSON.stringify({...planned,engine:'rule-based-fallback',aiDiagnostic:{reason:rxAiReason,configured:rxAiEnabled,bindingAvailable:rxAiBound,modelInferenceUsed:false},turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
+        // Our existing RX planner is the primary free, deterministic brain when external AI is disabled.
+        const localEngine=!rxAiEnabled?'rx-local-planner':'rule-based-fallback';
+        return new Response(JSON.stringify({...planned,engine:localEngine,aiDiagnostic:{reason:rxAiReason,configured:rxAiEnabled,bindingAvailable:rxAiBound,modelInferenceUsed:false,localPlannerActive:true},turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
       }
       let coordinatorCommand='Sprawdź testy w chmurze i model AI';
       if(url.pathname==='/api/rx/coordinator/run'){
