@@ -316,7 +316,10 @@ export default {
           }catch{/* Knowledge provider failure must never break the chat. */}
         }
         // Existing RX planner remains the safe fallback. No commands are executed.
-        if(env.RX_AI_ENABLED==='true' && env.AI && typeof env.AI.run==='function'){
+        const rxAiEnabled=env.RX_AI_ENABLED==='true';
+        const rxAiBound=!!(env.AI&&typeof env.AI.run==='function');
+        let rxAiFailure=null;
+        if(rxAiEnabled && rxAiBound){
           try{
             const messages=[
               {role:'system',content:'Jesteś RX Królową, polskojęzycznym asystentem administratora VEXORIO. Odpowiadaj jasno i zgodnie z prawdą. RX TURBINE, Mrówki i AI Core planują zadania; nie twierdź, że je wykonały, trenowały model lub zmieniły produkcję. Nie ujawniaj sekretów. Nie wykonuj poleceń; wymagają zgody właściciela.'},
@@ -326,9 +329,11 @@ export default {
             const inference=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages,max_tokens:512,temperature:0.3});
             const answer=typeof inference?.response==='string'?inference.response.trim():'';
             if(answer)return new Response(JSON.stringify({...planned,answer:answer.slice(0,4000),modelInferenceUsed:true,engine:'cloudflare-workers-ai',turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
-          }catch(error){console.warn('RX AI provider unavailable:',String(error?.name||'provider_error'));}
+          }catch(error){rxAiFailure='provider_error';console.warn('RX AI provider unavailable:',String(error?.name||'provider_error'));}
+          if(!rxAiFailure)rxAiFailure='empty_response';
         }
-        return new Response(JSON.stringify({...planned,engine:'rule-based-fallback',turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
+        const rxAiReason=!rxAiEnabled?'ai_disabled':!rxAiBound?'ai_binding_missing':rxAiFailure||'unknown';
+        return new Response(JSON.stringify({...planned,engine:'rule-based-fallback',aiDiagnostic:{reason:rxAiReason,configured:rxAiEnabled,bindingAvailable:rxAiBound,modelInferenceUsed:false},turbine:{connectedToPlanner:true,executionConnected:false,trainingConnected:false,requiresApproval:true}}),{status:200,headers});
       }
       let coordinatorCommand='Sprawdź testy w chmurze i model AI';
       if(url.pathname==='/api/rx/coordinator/run'){
