@@ -179,7 +179,7 @@ function analyzeJavaScript(source){
   }
   // Block-scoped shadow declarations must not invalidate an outer alias.
   const blockShadows=[];
-  const shadowDecl=new RegExp(String.raw`\\b(?:const|let)\\s+`+name+String.raw`\\s*=`,'g');
+  const shadowDecl=new RegExp(String.raw`\b(?:const|let)\s+`+name+String.raw`\s*=`,'g');
   let localDecl;
   while((localDecl=shadowDecl.exec(after))!==null){
    const before=after.slice(0,localDecl.index);
