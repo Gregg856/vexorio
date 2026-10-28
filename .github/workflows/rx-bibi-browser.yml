@@ -109,6 +109,30 @@ jobs:
           node --test tests/rx-ai-router.cjs
           node --test tests/rx-coordinator.cjs
           node --test tests/rx-coordinator-cloud.cjs
+      - name: RX BIBI — 20 dodatkowych kontroli istniejących modułów
+        run: |
+          # 10 kontroli składni: żaden wadliwy moduł nie przechodzi dalej.
+          node --check rx-medusa-engine.cjs
+          node --check rx-ant-task-board.cjs
+          node --check rx-mega-cloud-computer.cjs
+          node --check rx-ai-core.cjs
+          node --check rx-cloud-computer.cjs
+          node --check rx-ant-ai-trainer.cjs
+          node --check rx-queen-ant-supervisor.cjs
+          node --check rx-command-bridge.js
+          node --check rx-fast-test-engine.cjs
+          node --check rx-bibi-budget.cjs
+          # 10 testów funkcjonalnych: używamy istniejących testów, bez nowego silnika.
+          node tests/rx-medusa-engine.cjs
+          node tests/rx-ant-task-board.cjs
+          node tests/rx-mega-cloud-computer.cjs
+          node tests/rx-ai-core.cjs
+          node tests/rx-cloud-computer.cjs
+          node tests/rx-ant-ai-trainer.cjs
+          node tests/rx-queen-ant-supervisor.cjs
+          node tests/rx-command-bridge.cjs
+          node tests/rx-bibi-budget.cjs
+          node tests/rx-queen-ai-bridge.cjs
   mobile:
     runs-on: ubuntu-latest
     container:
