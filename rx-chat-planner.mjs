@@ -11,7 +11,7 @@ export function planRXChat(message,history=[]){
  const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez|a ten |a tamten |co z tym|co z nim|co z nimi|zrob drugi punkt|zrób drugi punkt)/i.test(message.trim());
  // Use the most recent meaningful topic for short follow-ups; avoid mixing unrelated old intents.
  const normalizeRX=text=>text.toLocaleLowerCase('pl-PL').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/ł/g,'l');
- const recentTopic=previous.slice().reverse().find(x=>(/(mrowk|wirnik|turbina|chmur|cloudflare|test|bled|blad|kolejk|pamiec|wiedz)/.test(normalizeRX(x))||RULES.some(r=>r.words.some(w=>normalizeRX(x).includes(normalizeRX(w))))))||last;
+ const recentTopic=previous.slice().reverse().find(x=>(/(mrowk|wirnik|turbina|chmur|cloudflare|test|bled|blad|kolejk|pamiec|wiedz|neural|math|matematyk|neuron|model)/.test(normalizeRX(x))||RULES.some(r=>r.words.some(w=>normalizeRX(x).includes(normalizeRX(w))))))||last;
  const contextual=followup&&last?recentTopic+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const found=RULES.filter(r=>r.words.some(word=>q.includes(word)));
@@ -75,7 +75,7 @@ export function planRXChat(message,history=[]){
  else if(asksKnowledge)answer='📚 Mogę szukać faktów przez moduł wiedzy świata z podaniem źródła. Nie oznacza to, że cała Wikipedia jest zapisana lokalnie.';
  else if(asksPrivacy)answer='🔐 Dostęp do panelu jest ograniczony do administratora. Trwała pamięć używa danych właściciela w Supabase; lokalne szkice Warsztatu pozostają w tej przeglądarce.';
  else if(asksNext)answer='👑 Najpierw sprawdź raport ostatnich testów, potem wybierz jedną poprawkę i przygotuj zadanie w Warsztacie. Wykonanie wymaga zatwierdzenia.';
- else if(/(?:rx\s*)?(?:neural|math|matematy|sie[cć]|sieci neuronow|model neuronow)/i.test(q))answer='🧠 RX Neural Core i RX Math Core to nasze istniejące moduły eksperymentalne: mała sieć neuronowa i operacje na macierzach Float32. Ich kod jest w repozytorium, ale nie są podłączone do generowania odpowiedzi czatu i nie zastępują modelu językowego. Mogę zaplanować testy integracji bez uruchamiania treningu ani dodatkowych kosztów.';
+ else if(/(?:rx\s*)?(?:neural|math|matematy|sie[cć]|sieci neuronow|model neuronow)/i.test(contextPlain))answer='🧠 RX Neural Core i RX Math Core to nasze istniejące moduły eksperymentalne: mała sieć neuronowa i operacje na macierzach Float32. Ich kod jest w repozytorium, ale nie są podłączone do generowania odpowiedzi czatu i nie zastępują modelu językowego. Mogę zaplanować testy integracji bez uruchamiania treningu ani dodatkowych kosztów.';
  else if(/(?:pami[eę][cć]|zapami[eę]t|histori[aę] rozmow)/i.test(q))answer='🧠 RX ma istniejący moduł pamięci oraz osobną pamięć rozmów po stronie serwera. Trwały zapis lub odczyt wykonuję tylko na wyraźne polecenie „zapamiętaj:” albo „przypomnij:”. Nie zapisuję automatycznie treści rozmowy do pamięci treningowej.';
  else if(asksCapabilities)answer='👑 Mogę rozmawiać o RX, proponować zadania, objaśniać testy, odczytywać wiedzę i korzystać z pamięci na wyraźne polecenie. Nie pracuję samodzielnie w tle.';
  else if(asksCloud)answer='☁️ Cloudflare udostępnia panel RX, a GitHub Actions uruchamia zatwierdzone testy. Status wdrożenia i raporty trzeba sprawdzać osobno; sam czat nie potwierdza publikacji.';
