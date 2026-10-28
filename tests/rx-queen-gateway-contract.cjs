@@ -27,3 +27,18 @@ assert.doesNotMatch(src,/grant\s+.+\s+to\s+(anon|authenticated)/i);
 assert.doesNotMatch(src,/create\s+function.+security\s+definer/is);
 console.log('Gateway static security checks passed:',checks.length);
 // Static contract only: does not prove deployment, database connectivity or runtime auth.
+
+const worker=fs.readFileSync('worker.js','utf8');
+const chatChecks=[
+ ['Queen chat route',/url\.pathname==='\/api\/rx\/chat'/],
+ ['Queue status chat command',/status mrówek\|status mrowek/],
+ ['Queue status staging lock',/Podgląd kolejki działa wyłącznie na staging/],
+ ['Queen private gateway called',/new URL\('\/functions\/v1\/rx-queen-private-queue',base\)/],
+ ['Bearer session forwarded',/Authorization:auth/],
+ ['Queen validates response origin',/data\.source!=='supabase-staging'/],
+ ['Queen validates task array',/!Array\.isArray\(data\.tasks\)/],
+ ['Queue results bounded',/data\.tasks\.slice\(0,20\)/],
+ ['Queue status does not execute tasks',/engine:'rx-queen-queue'.*executed:0/]
+];
+for(const [label,re] of chatChecks)assert.match(worker,re,label);
+console.log('Queen chat queue static checks passed:',chatChecks.length);
