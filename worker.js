@@ -88,11 +88,12 @@ export default {
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
       return new Response(JSON.stringify({ready,configured:ready,service:'RX Tester',missing:['RX_GITHUB_DISPATCH_TOKEN','RX_ADMIN_USER_ID','SUPABASE_URL','SUPABASE_ANON_KEY'].filter(name=>!env[name]),note:ready?'Serwer gotowy do sprawdzania uprawnień.':'Wymagana konfiguracja po stronie Cloudflare.'}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
-    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat') {
+    if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat' || url.pathname === '/api/rx/ants/tasks') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
-      if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
-      if(request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      if(request.method!==(url.pathname==='/api/rx/ants/tasks'?'GET':'POST'))return reply(405,'Niedozwolona metoda.');
+      if(request.headers.get('Origin')!==url.origin && request.headers.get('Origin')!==null)return reply(403,'Nieprawidłowe pochodzenie.');
+      if(request.method==='POST' && request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
       // Fail closed until the owner configures both secrets in Cloudflare.
       if(!env.RX_GITHUB_DISPATCH_TOKEN||!env.RX_ADMIN_USER_ID||!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Uruchamianie testów wymaga konfiguracji administratora.');
       const auth=request.headers.get('Authorization')||'';
@@ -119,6 +120,28 @@ export default {
         isAdmin=(await adminResponse.json())===true;
       }catch{return reply(502,'Nie udało się sprawdzić uprawnień administratora.');}
       if(!isAdmin)return reply(403,'Brak uprawnień administratora.');
+      // RX AUTOPRACA 2.0: authenticated, read-only server queue.
+      // Disabled unless the server has a separate secret and the private schema is
+      // explicitly available to the trusted server. Never expose this key to HTML.
+      if(url.pathname==='/api/rx/ants/tasks'){
+        if(!env.RX_SUPABASE_SERVICE_ROLE_KEY)return reply(503,'Kolejka serwerowa nie jest jeszcze skonfigurowana.');
+        try{
+          const endpoint=new URL('/rest/v1/ant_task_queue',base);
+          endpoint.searchParams.set('select','id,source,task_type,title,status,created_at,approved_at,finished_at');
+          endpoint.searchParams.set('order','created_at.desc');
+          endpoint.searchParams.set('limit','20');
+          const upstream=await fetch(endpoint,{
+            headers:{apikey:env.RX_SUPABASE_SERVICE_ROLE_KEY,
+              Authorization:'Bearer '+env.RX_SUPABASE_SERVICE_ROLE_KEY,
+              'Accept-Profile':'rx_private'},
+            signal:AbortSignal.timeout(8000)
+          });
+          if(!upstream.ok)return reply(503,'Prywatna kolejka nie jest dostępna przez serwer.');
+          const tasks=await upstream.json();
+          if(!Array.isArray(tasks)||tasks.length>20)return reply(502,'Nieprawidłowa odpowiedź kolejki.');
+          return new Response(JSON.stringify({ok:true,source:'supabase-staging',tasks}),{status:200,headers});
+        }catch{return reply(502,'Nie udało się odczytać kolejki.');}
+      }
       if(url.pathname==='/api/rx/chat'){
         let payload;
         try{payload=await request.json();}catch{return reply(400,'Nieprawidłowe dane wiadomości.');}
