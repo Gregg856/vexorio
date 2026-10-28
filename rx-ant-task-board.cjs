@@ -4,6 +4,23 @@ const fs=require('node:fs');
 const path=require('node:path');
 const PRIORITY={critical:0,high:1,medium:2,low:3};
 const {allocate}=require('./rx-bibi-budget.cjs');
+// Convert verified CI failures into review-only ant proposals. No execution privileges.
+function triageCiFailures(runs,{maxTasks=10}={}){
+ if(!Array.isArray(runs)||runs.length>100||!Number.isSafeInteger(maxTasks)||maxTasks<1||maxTasks>20)throw Error('Invalid CI runs');
+ const allowed=new Set(['failure','timed_out','cancelled','action_required']);
+ const seen=new Set();
+ const tasks=[];
+ for(const run of runs){
+  if(!run||!Number.isSafeInteger(run.id)||run.id<1||typeof run.name!=='string'||typeof run.conclusion!=='string')continue;
+  if(!allowed.has(run.conclusion))continue;
+  const key=run.name.slice(0,80);
+  if(seen.has(key))continue;
+  seen.add(key);
+  tasks.push({source:'github-actions',action:'Sprawdź nieudany przebieg CI: '+run.conclusion,target:key,priority:run.conclusion==='failure'?'high':'medium',runId:run.id,status:'needs_review',requiresApproval:true});
+  if(tasks.length>=maxTasks)break;
+ }
+ return {schema:1,kind:'rx-ant-ci-triage',tasks,executed:0,autoFixesApplied:0,note:'Proposals only. Human approval required before any code change.'};
+}
 function buildCosmosQueue(board,{maxTasks=9}={}){
  if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100||!Number.isSafeInteger(maxTasks)||maxTasks<0||maxTasks>20)throw Error('Invalid COSMOS queue');
  const seen=new Set();
@@ -55,4 +72,4 @@ if(require.main===module){
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX ANT TASK BOARD\n- Unikalne zadania: '+board.totalUnique+'\n- W kolejce: '+board.tasks.length+'\n- Wymagają zatwierdzenia: tak\n');
  console.log('RX ANT TASK BOARD:',board.tasks.length,'queued,',board.overflow,'overflow, source:',medusa?'RX MEDUSA':'RX QUEEN');
 }
-module.exports={buildBoard,buildCosmosQueue};
+module.exports={buildBoard,buildCosmosQueue,triageCiFailures};
