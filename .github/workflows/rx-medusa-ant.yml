@@ -8,6 +8,8 @@ on:
       - 'tests/rx-medusa-engine.cjs'
       - 'tests/rx-ant-task-board.cjs'
       - 'tests/rx-ant-ci-integration.cjs'
+      - 'tests/rx-alarm-simulation.cjs'
+      - '.github/workflows/rx-alarm.yml'
       - '.github/workflows/rx-medusa-ant.yml'
   pull_request:
     paths:
@@ -35,10 +37,12 @@ jobs:
           node --check tests/rx-medusa-engine.cjs
           node --check tests/rx-ant-task-board.cjs
           node --check tests/rx-ant-ci-integration.cjs
+          node --check tests/rx-alarm-simulation.cjs
       - name: Run isolated Meduza and Ant Task Board tests
         run: |
           node tests/rx-medusa-engine.cjs
           node tests/rx-ant-task-board.cjs
           node --test tests/rx-ant-ci-integration.cjs
+          node --test tests/rx-alarm-simulation.cjs
       - name: Verify Queen chat ant command contract
         run: node --test tests/rx-queen-ant-command.cjs
