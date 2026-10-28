@@ -21,7 +21,9 @@ function buildRXSystemStatus({directory=path.join(__dirname,'rx-bibi-reports')}=
   try{
    const raw=fs.readFileSync(path.join(directory,file),'utf8');
    const data=JSON.parse(raw);
-   modules[name]={state:data.ok===false?'failed':data.ok===true?'passed':'reported',kind:data.kind||null,report:file};
+   if(!data||typeof data!=='object'||Array.isArray(data)||data.schema!==1||typeof data.kind!=='string'||!data.kind.startsWith('rx-'))throw Error('Invalid RX report');
+   if(Object.hasOwn(data,'ok')&&typeof data.ok!=='boolean')throw Error('Invalid RX test result');
+   modules[name]={state:data.ok===false?'failed':data.ok===true?'passed':'reported',kind:data.kind,report:file};
   }catch(e){
    modules[name]={state:e.code==='ENOENT'?'missing':'invalid',report:file};
   }
