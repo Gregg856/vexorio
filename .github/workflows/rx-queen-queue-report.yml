@@ -1,6 +1,13 @@
 name: RX Queen — publish read-only ant queue snapshot
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'rx-system-status.cjs'
+      - 'rx-queen-ant-supervisor.cjs'
+      - 'rx-ant-task-board.cjs'
+      - '.github/workflows/rx-queen-queue-report.yml'
   schedule:
     - cron: '23 */6 * * *'
 permissions:
