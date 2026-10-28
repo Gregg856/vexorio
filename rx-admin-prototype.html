@@ -164,6 +164,17 @@ function answerBrainChat(question){
  if(!topics.length){add('bot','👑 RX Brain Chat 1.2: Nie rozpoznałam jeszcze tego tematu. Zapytaj o testy, chmurę lub model AI. To wstępny silnik reguł, bez modelu językowego.');return;}
  add('bot','👑 RX Brain Chat 1.2\\nRozpoznane tematy: '+topics.join(', ')+'.\\nProponuję sprawdzić powiązane raporty i przygotować plan dla mrówek. Żadne testy ani zmiany nie zostały uruchomione.\\nTo lokalny adapter rozmowy; wykonanie wymaga osobnego zatwierdzenia.');
 }
+async function answerServerBrainChat(question){
+ try{
+  const session=await rxClient.auth.getSession();
+  const token=session.data?.session?.access_token;
+  if(!token)throw Error('Zaloguj się jako administrator.');
+  const response=await fetch('/api/rx/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({message:question}),signal:AbortSignal.timeout(12000)});
+  const data=await response.json();
+  if(!response.ok)throw Error(data.message||'Błąd serwera '+response.status);
+  add('bot',data.answer);
+ }catch(error){add('bot','👑 Czat serwerowy jest niedostępny: '+error.message);}
+}
 async function loadCoordinatorCI(){
  add('bot','🐜 Odczytuję ostatni wynik RX Coordinator z GitHub Actions…');
  try{
@@ -207,5 +218,5 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else answerBrainChat(q)});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(module)loadStatus(module);else answerServerBrainChat(q)});show(0);
 </script></body></html>
