@@ -220,6 +220,18 @@ jobs:
           const triage=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-queen-bibi-triage.json','utf8'));
           memory.incidents=triage.incidents||[];
           memory.developerHandoff=triage.developerHandoff||[];
+          const reviewPath='rx-bibi-reports/rx-developer-review.json';
+          if(fs.existsSync(reviewPath)){
+            const review=JSON.parse(fs.readFileSync(reviewPath,'utf8'));
+            const id=review.incidentId;
+            const incident=memory.incidents.find(x=>x.id===id);
+            if(!id||!incident)throw Error('RX Developer review has no matching BIBI incident');
+            const candidates=Array.isArray(review.patchCandidates)?review.patchCandidates:[];
+            if(candidates.some(x=>x.incidentId!==id))throw Error('RX Developer candidate incident mismatch');
+            const evidence={incidentId:id,target:review.target||null,candidates:candidates.length,passed:candidates.filter(x=>x.functionalValidation==='passed').length,failed:candidates.filter(x=>x.functionalValidation==='failed'||x.bibiValidation==='failed').length,requiresApproval:true,changesApplied:false};
+            incident.developerReview=evidence;
+            memory.developerReviews=[evidence];
+          }
           fs.writeFileSync(file,JSON.stringify(memory,null,2)+'\n');
           NODE
       - name: RX BIBI SMART — prześlij raport do prywatnej skrzynki RX CLOUD
