@@ -95,6 +95,16 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
       composerVisible: (()=>{const r=document.querySelector('#rxChatCard .composer').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight+2;})(),
       keyboardClass:document.body.classList.contains('rx-keyboard-open')
     }));
+    const viewportChat=await page.evaluate(()=>{
+     const chat=document.getElementById('rxChatCard').getBoundingClientRect();
+     const composer=document.querySelector('#rxChatCard .composer').getBoundingClientRect();
+     const send=document.querySelector('#form button[type="submit"]').getBoundingClientRect();
+     const visible=window.visualViewport?.height||innerHeight;
+     return {chatTop:chat.top,chatBottom:chat.bottom,composerTop:composer.top,composerBottom:composer.bottom,sendBottom:send.bottom,visibleHeight:visible};
+    });
+    const overlayOk=viewportChat.chatTop>=-2&&viewportChat.chatBottom<=viewportChat.visibleHeight+2&&viewportChat.composerBottom<=viewportChat.visibleHeight+2&&viewportChat.sendBottom<=viewportChat.visibleHeight+2;
+    report.checks.push({name:'android-keyboard-chat-overlay',ok:overlayOk,scope:'ISOLATED_SIMULATED_KEYBOARD',layout:viewportChat});
+    if(!overlayOk)throw Error('Android chat overlay clipped by keyboard: '+JSON.stringify(viewportChat));
     const compactOk=keyboardActions.keyboardClass&&keyboardActions.hidden&&keyboardActions.composerVisible;
     report.checks.push({name:'android-keyboard-compact-chat',ok:compactOk,scope:'SIMULATED_RESIZE_NOT_REAL_KEYBOARD',layout:keyboardActions});
     if(!compactOk)throw Error('Android keyboard compact mode regression: '+JSON.stringify(keyboardActions));
