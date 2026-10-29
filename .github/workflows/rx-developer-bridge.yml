@@ -46,8 +46,6 @@ jobs:
         run: node tests/rx-developer-bridge-isolated.cjs
       - name: BIBI — runner syntax
         run: node --check rx-developer-review-runner.cjs
-      - name: Verify RX Developer runner syntax
-        run: node --check rx-developer-review-runner.cjs
       - name: Inspect selected RX module
         if: github.event_name == 'workflow_dispatch'
         env:
