@@ -7,7 +7,12 @@ const EXAMPLES=[
  ['cześć królowo','greeting'],['dzień dobry RX','greeting'],['hej witaj','greeting'],
  ['pokaż testy','tests'],['sprawdź wyniki testów','tests'],['czy testy są zielone','tests'],
  ['co pamiętasz','memory'],['przypomnij nasze ustalenia','memory'],['pamiętasz rozmowę','memory'],
- ['policz 2 plus 3','math'],['oblicz wynik','math'],['ile to 7 razy 8','math']
+ ['policz 2 plus 3','math'],['oblicz wynik','math'],['ile to 7 razy 8','math'],
+ // Additional training examples, distinct from the held-out evaluation set.
+ ['witaj przyjacielu','greeting'],['serdeczne pozdrowienia','greeting'],['miłego dnia','greeting'],
+ ['pokaż raport kontroli','tests'],['uruchom sprawdzanie','tests'],['jaki status testu','tests'],
+ ['zachowaj w pamięci','memory'],['przywołaj wspomnienia','memory'],['historia naszych wiadomości','memory'],
+ ['dodaj dwie liczby','math'],['wykonaj mnożenie','math'],['policz procent','math']
 ];
 const LABELS=Object.freeze(['greeting','tests','memory','math']);
 function vector(text){
