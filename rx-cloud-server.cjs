@@ -62,6 +62,29 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.end(JSON.stringify({ok:true,service:'rx-cloud-2',queenBridge:'connected',mode:'read-only',taskExecution:false,productionChanges:false}));
         return;
       }
+      // Private read-only learning feed for the RX Queen coordinator.
+      if(url.pathname==='/__rxcloud/bibi/learning'){
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('Content-Type','application/json');
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        const dir=path.resolve(process.env.RX_BIBI_INBOX_DIR||path.join(__dirname,'rx-cloud-private-inbox'));
+        let names=[];
+        try{names=(await fs.readdir(dir)).filter(n=>/^rx-bibi-[0-9]{1,30}\.json$/.test(n)).sort((a,b)=>BigInt(b.match(/[0-9]+/)[0])>BigInt(a.match(/[0-9]+/)[0])?1:-1);}catch(e){if(e.code!=='ENOENT')throw e;}
+        let feed={kind:'rx-queen-verified-learning',lessons:[],source:'NO_REPORT'};
+        for(const name of names.slice(0,10)){
+          try{
+            const data=JSON.parse(await fs.readFile(path.join(dir,name),'utf8'));
+            if(data.kind!=='rx-bibi-smart-error-memory'||!Array.isArray(data.developerHandoff))continue;
+            feed={kind:'rx-queen-verified-learning',source:'RX_BIBI_INBOX',runId:data.runId,lessons:data.developerHandoff.slice(0,10).filter(x=>x&&typeof x.problem==='string'&&typeof x.id==='string').map(x=>({incidentId:x.id,observation:x.problem.slice(0,240),panelArea:String(x.module||'RX').slice(0,90),verifiedResolution:false}))};
+            break;
+          }catch{}
+        }
+        res.writeHead(200);res.end(JSON.stringify(feed));return;
+      }
       // Private local RX BIBI report inbox: explicit token, bounded JSON, no public access.
       if(url.pathname==='/__rxcloud/bibi/inbox'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
