@@ -45,3 +45,27 @@ test('Queen reports skipped work instead of claiming execution without handlers'
  assert.equal(result.execution.executed,0);
  assert.ok(result.execution.results.every(item=>item.status==='skipped'));
 });
+
+test('Queen executes exactly the approved task snapshot',async()=>{
+ const command='Sprawdź testy w chmurze i model AI';
+ const expectedTasks=coordinateRX(command,{initialCredits:25,maxParallel:2}).turbine.waves.flat();
+ let calls=0;
+ const handlers=Object.fromEntries([...new Set(expectedTasks.map(t=>t.kind))].map(kind=>[kind,async()=>{calls++;return true;}]));
+ const result=await executeCoordinatedRX(command,{approved:true,expectedTasks,handlers,initialCredits:25,maxParallel:2});
+ assert.equal(result.execution.executed,expectedTasks.length);
+ assert.equal(calls,expectedTasks.length);
+});
+test('Queen rejects altered approved tasks without invoking any handlers',async()=>{
+ const command='Sprawdź testy w chmurze i model AI';
+ const original=coordinateRX(command,{initialCredits:25,maxParallel:2}).turbine.waves.flat();
+ assert.ok(original.length>0);
+ let calls=0;
+ const handlers=Object.fromEntries([...new Set(original.map(t=>t.kind))].map(kind=>[kind,async()=>{calls++;return true;}]));
+ for(const field of ['id','kind','target']){
+  const tampered=original.map(t=>({...t}));
+  tampered[0][field]='modified-value';
+  await assert.rejects(executeCoordinatedRX(command,{approved:true,expectedTasks:tampered,handlers,initialCredits:25,maxParallel:2}),/approved plan mismatch/i);
+ }
+ await assert.rejects(executeCoordinatedRX(command,{approved:true,expectedTasks:[],handlers,initialCredits:25,maxParallel:2}),/approved plan mismatch/i);
+ assert.equal(calls,0);
+});
