@@ -58,6 +58,9 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       res.end();
     }catch(e){console.error('RX CLOUD request failed:',e?.name||'Error');if(!res.headersSent)res.writeHead(500,{'Content-Type':'text/plain','Cache-Control':'no-store'});res.end('Internal server error');}
   });
+  server.headersTimeout=15000;
+  server.requestTimeout=30000;
+  server.keepAliveTimeout=5000;
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,resolve);});
   return server;
 }
