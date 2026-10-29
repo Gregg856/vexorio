@@ -7,6 +7,7 @@ on:
       - RX BIBI Tester — mobile browser
       - RX Meduza and Ant Task Board — dedicated read-only CI
       - RX Queen — publish read-only ant queue snapshot
+      - RX CLOUD self-host smoke tests
     types: [completed]
 permissions:
   contents: read
