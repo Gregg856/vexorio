@@ -49,9 +49,9 @@ assert.match(worker,/planRXChat\(message,history,bibiLearning\)/);
 // RX Queen handoff regression: no unsupported browser inbox write.
 const queenPanel=fs.readFileSync('guard-rx-queen-panel.js','utf8');
 const cloudComputer=fs.readFileSync('rx-mega-cloud-computer.cjs','utf8');
-assert.doesNotMatch(queenPanel,/fetch\\(['"]\\/api\\/rx\\/inbox['"]/);
+assert.ok(!queenPanel.includes("fetch('/api/rx/inbox'"),'Queen must not POST to unsupported inbox');
 assert.match(queenPanel,/Przekazanie do wykonawcy oczekuje na bezpieczny serwerowy adapter/);
-assert.match(cloudComputer,/function runQueenApprovedChecks\\(/);
+assert.ok(cloudComputer.includes('function runQueenApprovedChecks('),'Queen executor bridge missing');
 assert.match(cloudComputer,/approved&&execute/);
 const {runQueenApprovedChecks}=require('../rx-mega-cloud-computer.cjs');
 const plan={kind:'rx-ordered-work-proposal',requiresApproval:true,executed:false,stages:[{module:'RX BIBI',action:'Sprawdź czat'},{module:'RX Developer',action:'Przygotuj poprawkę'}]};
