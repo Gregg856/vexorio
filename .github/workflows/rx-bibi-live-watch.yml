@@ -37,23 +37,19 @@ jobs:
           path: rx-bibi-reports/
           if-no-files-found: warn
           retention-days: 14
-      - name: Zgłoś nową awarię lub ponów informację w istniejącym zgłoszeniu
+      - name: Zgłoś awarię w GitHub Issues bez duplikatów
         if: steps.check.outcome == 'failure'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RX_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          title='RX BIBI: panel na żywo — awaria'
-          existing="$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title=="RX BIBI: panel na żywo — awaria") | .number' | head -1)"
-          message="Automatyczna kontrola RX BIBI wykryła problem. Raport i zrzuty: $RX_RUN_URL. Nie sprawdzano zalogowanego czatu ani nie zmieniano danych produkcyjnych."
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --body "$message"
-          else
-            gh issue create --title "$title" --body "$message"
-          fi
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title='RX BIBI: panel na żywo — awaria';
+            const {owner,repo}=context.repo;
+            const url='https://github.com/'+owner+'/'+repo+'/actions/runs/'+context.runId;
+            const body='Automatyczna kontrola RX BIBI wykryła problem. Raport i zrzuty: '+url+'. Nie sprawdzano zalogowanego czatu ani nie zmieniano danych produkcyjnych.';
+            const issues=await github.paginate(github.rest.issues.listForRepo,{owner,repo,state:'open',per_page:100});
+            const found=issues.find(i=>!i.pull_request&&i.title===title);
+            if(found) await github.rest.issues.createComment({owner,repo,issue_number:found.number,body});
+            else await github.rest.issues.create({owner,repo,title,body});
       - name: Podsumowanie
         if: always()
         env:
