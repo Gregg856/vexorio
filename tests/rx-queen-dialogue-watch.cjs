@@ -51,6 +51,27 @@ const fs=require('node:fs');
    results.push({id:c.id,ok:true,contextUsed:!!result.contextUsed,answerLength:result.answer.length});
   }catch(e){results.push({id:c.id,ok:false,error:e.message});}
  }
+ // RX BIBI: longer conversation and topic switch through the actual planner.
+ // History follows the same bounded string contract as /api/rx/chat.
+ const dialogue=[
+  {message:'Co robią Mrówki?',expected:/mrów|zadani/i},
+  {message:'Dalej',expected:/mrów|zadani|plan/i,context:true},
+  {message:'Jak działa chmura?',expected:/chmur|cloudflare|github/i},
+  {message:'Dalej',expected:/chmur|cloudflare|github|test|raport/i,context:true},
+  {message:'Ile to 7 * 8?',expected:/56/},
+  {message:'Mam błąd w panelu',expected:/błęd|komunikat|raport|opisz/i},
+  {message:'Czy testy przeszły?',expected:/test|raport|wynik/i}
+ ];
+ const dialogueHistory=[];
+ for(const [index,turn] of dialogue.entries()){
+  try{
+   const result=planRXChat(turn.message,dialogueHistory.slice(-20));
+   if(!result.ok||!turn.expected.test(result.answer)||result.executed!==0)throw Error('Unexpected reply');
+   if(turn.context&&result.contextUsed!==true)throw Error('Lost follow-up context');
+   dialogueHistory.push(turn.message,result.answer);
+   results.push({id:'long-dialogue-'+index,ok:true,contextUsed:!!result.contextUsed,answerLength:result.answer.length});
+  }catch(e){results.push({id:'long-dialogue-'+index,ok:false,error:e.message});break;}
+ }
  const report={kind:'rx-bibi-queen-dialogue',mode:'SYNTHETIC_LOCAL_PLANNER',authenticatedProductionChat:'NOT_TESTED',checkedAt:new Date().toISOString(),checks:results,ok:results.every(x=>x.ok)};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-dialogue.json',JSON.stringify(report,null,2)+'\n');
