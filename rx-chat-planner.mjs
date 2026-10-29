@@ -214,6 +214,18 @@ export function planRXChat(message,history=[],learning=null){
   };
   answer='👑 Przyjęłam zadanie: '+requested+'\\n🐜 Plan: analiza → RX Developer przygotowuje kod → RX BIBI sprawdza → pokazuję wynik do zatwierdzenia.\\n🔒 To na razie plan pracy; nie uruchomiłam jeszcze wykonawcy ani nie zmieniłam plików.';
  }
+ // RX Queen conversation repair: answer the actual question, not a generic test plan.
+ const conversationalBuild=/(porozmawiaj|pogadaj|od czego zaczniemy|jak zaczac|jak zaczac budow)/i.test(plain)
+  &&/(mozg|model|ai|rx|krolow)/i.test(plain);
+ const badReply=/(zle odpowiada|odpowiadasz nie na temat|nie rozumiesz|ciagle to samo|w kolko to samo)/i.test(plain);
+ if(conversationalBuild){
+  answer='👑 Zacznijmy od tego, co już mamy: lokalnego planera RX, historii rozmów i modułów testowych. Pierwszy konkretny krok to lepsze rozumienie pytań i pamięć kontekstu. Następnie sprawdzimy jakość odpowiedzi na przykładowych rozmowach. To jeszcze nie jest samodzielnie wytrenowany model AI. Co chcesz rozwijać najpierw: rozmowę czy pamięć?';
+  plan.work=null;
+ }
+ if(badReply){
+  answer='👑 Widzę problem: mój lokalny planer korzysta z reguł i czasem powtarza ogólne odpowiedzi zamiast odpowiedzieć na pytanie. Wklej jedną moją błędną odpowiedź i napisz, jakiej oczekujesz. Porównamy obie wersje i poprawimy regułę. Nie uruchamiam testów bez Twojego polecenia.';
+  plan.work=null;
+ }
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
