@@ -207,24 +207,32 @@
   if(approveTask)approveTask.disabled=false;
   if(taskResult)taskResult.textContent='🐜 Plan mrówek (reguły, bez modelu AI)\nZadanie: '+description+'\nKomórki: '+cells.join(', ')+'\nKroki: 1. Analiza 2. Testy 3. Raport dla Królowej 4. Ręczna decyzja\nStatus: OCZEKUJE NA ZATWIERDZENIE. Niczego nie wykonano.';
  });
- approveTask?.addEventListener('click',()=>{
+ approveTask?.addEventListener('click',async()=>{
   if(!proposedTask||taskInput?.value.trim()!==proposedTask.description)return;
-  if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\nZadanie: '+proposedTask.description+'\nKomórki: '+proposedTask.cells.join(', ')+'\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
-  // Approval is local until a dedicated authenticated server-side task API exists.
-  // The private BIBI inbox is for verified reports, not browser work requests.
-  // Preserve the exact owner-approved request for an authenticated executor handoff.
-  // This is local only: no untrusted browser request is sent to a privileged API.
-  const approvedSnapshot=Object.freeze({schema:1,kind:'rx-queen-approved-request',request:proposedTask.description,cells:[...proposedTask.cells],approvedAt:new Date().toISOString(),executionRequested:false});
+  const approved=proposedTask;
+  const approvedSnapshot=Object.freeze({schema:1,kind:'rx-queen-approved-request',request:approved.description,cells:[...approved.cells],approvedAt:new Date().toISOString(),executionRequested:true});
   const snapshotOutput=document.getElementById('rxQueenApprovedSnapshot')||document.createElement('textarea');
-  snapshotOutput.id='rxQueenApprovedSnapshot';
-  snapshotOutput.readOnly=true;
-  snapshotOutput.setAttribute('aria-label','Zatwierdzone polecenie RX do bezpiecznego przekazania');
-  snapshotOutput.style.width='100%';
-  snapshotOutput.style.minHeight='110px';
+  snapshotOutput.id='rxQueenApprovedSnapshot';snapshotOutput.readOnly=true;
+  snapshotOutput.setAttribute('aria-label','Zatwierdzone polecenie RX');
+  snapshotOutput.style.width='100%';snapshotOutput.style.minHeight='110px';
   snapshotOutput.value=JSON.stringify(approvedSnapshot,null,2);
   if(!snapshotOutput.isConnected&&taskResult?.parentNode)taskResult.parentNode.insertBefore(snapshotOutput,taskResult.nextSibling);
-  approvedInSession++;resetTask();refreshWorkOverview();
-  if(taskResult)taskResult.textContent+='\\n📬 Przekazanie do wykonawcy oczekuje na bezpieczny serwerowy adapter. Nie wysłano żądania ani nie wykonano zadania.';
+  resetTask();
+  if(approveTask)approveTask.disabled=true;
+  if(taskResult)taskResult.textContent='👑 Sprawdzam sesję administratora i przekazuję zatwierdzone polecenie do RX Coordinator…';
+  try{
+   if(!window.supabase?.createClient)throw Error('Brak biblioteki logowania Supabase.');
+   const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+   const {data,error}=await client.auth.getSession();
+   if(error||!data?.session?.access_token)throw Error('Zaloguj się na swoje konto administratora VEXORIO.');
+   const response=await fetch('/api/rx/coordinator/run',{method:'POST',headers:{'Authorization':'Bearer '+data.session.access_token,'Content-Type':'application/json'},body:JSON.stringify({command:approved.description}),cache:'no-store'});
+   const payload=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error(payload.message||'Serwer RX: HTTP '+response.status);
+   approvedInSession++;refreshWorkOverview();
+   if(taskResult)taskResult.textContent='👑 RX Coordinator: '+(payload.message||'Polecenie przyjęte do kolejki GitHub Actions.')+'\\n🐜 Zlecono workflow, nie potwierdzono jeszcze zakończenia zadań.\\nSprawdź wynik w GitHub Actions.';
+  }catch(error){
+   if(taskResult)taskResult.textContent='⚠️ Nie wysłano polecenia RX: '+String(error?.message||error)+'\\nSprawdź konfigurację RX i sesję administratora.';
+  }
  });
 
  // RX NEURON 2.4: opt-in, local-only transfer of approved fixes.
