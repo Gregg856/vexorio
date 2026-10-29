@@ -4,8 +4,8 @@ function allocate(board,{maxTasks=30}={}){
  if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||!Number.isSafeInteger(maxTasks)||maxTasks<0||maxTasks>100)throw Error('Invalid task board or limit');
  return {schema:1,kind:'rx-bibi-budget',planned:board.tasks.slice(0,maxTasks),deferred:board.tasks.slice(maxTasks),limit:maxTasks,autoExecuted:0,actualProviderUsage:null};
 }
-// Module 1 — LIMITS: local planning guardrails, never claims live provider quotas.
-function enforceLimits(board,{maxTasks=10,maxPerSource=4,maxHighPriority=5}={}){
+// Module 1 — LIMITS: higher planning capacity only; never increases execution concurrency or provider quotas.
+function enforceLimits(board,{maxTasks=30,maxPerSource=12,maxHighPriority=10}={}){
  if(!board||board.kind!=='rx-ant-task-board'||!Array.isArray(board.tasks)||board.tasks.length>100)throw Error('Invalid task board');
  for(const n of [maxTasks,maxPerSource,maxHighPriority])if(!Number.isSafeInteger(n)||n<0||n>100)throw Error('Invalid limits');
  const planned=[],deferred=[],sourceCounts=new Map();let highPriority=0;
