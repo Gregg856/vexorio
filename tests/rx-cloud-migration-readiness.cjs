@@ -1,0 +1,21 @@
+'use strict';
+// RX CLOUD migration readiness gate: offline, no secrets, DNS, or production writes.
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const required=['rx-cloud-server.cjs','worker.js','index.html','manifest.webmanifest','deploy/RX-CLOUD-WINDOWS.md','deploy/RX-CLOUD-MIGRATION.md','tests/rx-cloud-server.cjs'];
+for(const file of required) assert(fs.statSync(path.join(root,file)).isFile(),'Missing migration prerequisite: '+file);
+const server=read('rx-cloud-server.cjs');
+assert(server.includes("host=process.env.HOST||'127.0.0.1'"),'RX CLOUD must bind localhost by default');
+assert(server.includes('/__rxcloud/health'),'Missing RX CLOUD health endpoint');
+assert(server.includes('maxBodyBytes=2*1024*1024'),'Upload limit changed: review and update smoke tests before migration');
+assert(server.includes('SUPABASE_URL'),'Staging database configuration required');
+const plan=read('deploy/RX-CLOUD-MIGRATION.md');
+for(const term of ['HTTPS','rollback','Supabase','Cloudflare']) assert(plan.includes(term),'Migration plan missing: '+term);
+const windows=read('deploy/RX-CLOUD-WINDOWS.md');
+assert(windows.includes('PowerShell'),'Windows setup instructions missing');
+assert(windows.includes('127.0.0.1'),'Localhost-only first boot required');
+assert(windows.includes('STAGING'),'Staging-first setup required');
+console.log('RX CLOUD migration readiness: PASS (offline source checks only; live Windows host and HTTPS NOT verified)');
