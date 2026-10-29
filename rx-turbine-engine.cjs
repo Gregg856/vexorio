@@ -31,7 +31,7 @@ async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2
   task.target.includes('..')||task.target.startsWith('/')||task.requiresApproval!==true||task.status!=='planned'))
   throw Error('Invalid approved turbine task');
  // An execution instance is single-use: retry requires a fresh explicit approval.
- if(executedTurbines.has(turbine))throw Error('Turbine plan already executed');
+ if(executedTurbines.has(turbine))return {schema:1,kind:'rx-turbine-execution',realExecution:false,planned:tasks.length,executed:0,peakActive:0,results:tasks.map(task=>({id:task.id,kind:task.kind,status:'skipped',reason:'already_executed'})),duplicatePrevented:true};
  executedTurbines.add(turbine);
  const results=new Array(tasks.length);
  let cursor=0,active=0,peakActive=0;
