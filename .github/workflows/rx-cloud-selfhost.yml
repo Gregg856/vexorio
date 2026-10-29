@@ -6,6 +6,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'worker.js'
       - 'public/**'
+      - 'deploy/Caddyfile.rxcloud.example'
+      - 'deploy/rxcloud.service'
       - '.github/workflows/rx-cloud-selfhost.yml'
   pull_request:
     paths:
@@ -34,5 +36,10 @@ jobs:
         run: |
           node --check rx-cloud-server.cjs
           node --check tests/rx-cloud-server.cjs
+      - name: Validate deployment templates
+        run: |
+          grep -q 'Restart=on-failure' deploy/rxcloud.service
+          grep -q 'reverse_proxy 127.0.0.1:8787' deploy/Caddyfile.rxcloud.example
+          grep -q 'health_uri /__rxcloud/health' deploy/Caddyfile.rxcloud.example
       - name: Run RX CLOUD smoke tests
         run: node tests/rx-cloud-server.cjs
