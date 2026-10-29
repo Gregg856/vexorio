@@ -42,6 +42,10 @@ jobs:
           node --check tests/rx-developer-bridge-isolated.cjs
       - name: Safe review-only integration
         run: node tests/rx-developer-bridge-isolated.cjs
+      - name: BIBI — functional regression checks
+        run: |
+          node tests/rx-developer-bridge-isolated.cjs
+          node --check rx-developer-review-runner.cjs
       - name: Verify RX Developer runner syntax
         run: node --check rx-developer-review-runner.cjs
       - name: Inspect selected RX module
