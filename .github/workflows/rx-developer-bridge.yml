@@ -6,6 +6,10 @@ on:
       - 'rx-developer-patch-bridge.cjs'
       - 'rx-developer-review-runner.cjs'
       - 'tests/rx-developer-bridge-isolated.cjs'
+      - 'rx-coordinator.cjs'
+      - 'rx-turbine-engine.cjs'
+      - 'tests/rx-coordinator.cjs'
+      - 'tests/rx-turbine-engine.cjs'
       - '.github/workflows/rx-developer-bridge.yml'
   push:
     branches: [main]
