@@ -9,6 +9,10 @@ assert.ok(report.accuracy>=0&&report.accuracy<=1);
 // Regression guard for the reproducible 120-epoch held-out evaluation.
 assert.ok(report.correct>=15,`RX model regression: ${report.correct}/24 (minimum 15/24)`);
 assert.equal(report.correct,report.cases.filter(x=>x.correct).length);
+for(const method of ['lexical','hybrid']){
+ assert.ok(report[method].correct>=0&&report[method].correct<=report.sampleCount);
+ assert.equal(report[method].accuracy,report[method].correct/report.sampleCount);
+}
 assert.equal(report.productionConnected,false);
 for(const label of LABELS)assert.equal(Object.values(report.confusion[label]).reduce((a,b)=>a+b,0),6);
 assert.equal(new Set(HOLDOUT.map(x=>x[0])).size,24);
