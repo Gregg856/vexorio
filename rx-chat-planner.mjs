@@ -139,10 +139,11 @@ export function planRXChat(message,history=[],learning=null){
  // A plan is not execution; RX Developer must be connected to a real executor.
  const workIntent=/(zbuduj|stw[oó]rz|napisz|dodaj|ulepsz|rozbuduj|popraw|napraw|przygotuj|zaprojektuj)/i.test(message)
   &&/(rx|kr[oó]low|m[oó]zg|model|modu[lł]|panel|kod|mr[oó]wk|czat|bibi)/i.test(message);
- if(workIntent&&!asksError&&!matrixRequest&&!dotRequest){
+ if(workIntent&&!matrixRequest&&!dotRequest){
   const requested=message.trim().slice(0,500);
   plan.work={
    kind:'rx-queen-work-order',request:requested,status:'proposed',executed:false,
+   verification:{module:'RX BIBI',required:true,status:'pending',passed:null},
    stages:[
     {module:'RX Queen',action:'Rozbij polecenie na małe, sprawdzalne kroki',status:'proposed'},
     {module:'RX Developer',action:'Przygotuj zmianę w istniejącym kodzie RX',status:'awaiting_executor'},
