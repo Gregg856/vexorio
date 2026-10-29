@@ -29,7 +29,9 @@ function summarizeQueenFastTiming(report){
  if(!report||report.kind!=='rx-fast-queen-timing'||!Array.isArray(report.samples)||
  report.samples.length<3||report.samples.length>30||
  report.samples.some(n=>!Number.isFinite(n)||n<0||n>120000)||
- !Array.isArray(report.details)||report.details.length!==report.samples.length)
+ !Array.isArray(report.details)||report.details.length!==report.samples.length||
+ !Number.isFinite(report.medianMs)||report.medianMs<0||report.medianMs>120000||
+ !Number.isFinite(report.variabilityPct)||report.variabilityPct<0||report.variabilityPct>100000)
  throw Error('Invalid RX FAST timing report');
  const slowest=new Map();
  for(const detail of report.details){
@@ -41,6 +43,7 @@ function summarizeQueenFastTiming(report){
    old.samples++;old.totalMs+=test.ms;old.maxMs=Math.max(old.maxMs,test.ms);slowest.set(test.file,old);
   }
  }
+ if(report.samples.slice().sort((a,b)=>a-b)[Math.floor(report.samples.length/2)]!==report.medianMs && report.samples.length%2===1)throw Error('Invalid RX FAST median');
  const ranked=[...slowest.values()].map(t=>({file:t.file,samples:t.samples,meanMs:Number((t.totalMs/t.samples).toFixed(1)),maxMs:t.maxMs}))
  .sort((a,b)=>b.meanMs-a.meanMs).slice(0,3);
  return {schema:1,kind:'rx-queen-fast-performance-handoff',medianMs:report.medianMs,
