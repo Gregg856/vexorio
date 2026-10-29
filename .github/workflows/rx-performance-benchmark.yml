@@ -100,6 +100,25 @@ jobs:
             if(full.failed||selected.failed)process.exitCode=1;
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
+      - name: Repeat RX FAST Queen timing (5 samples)
+        run: |
+          node - <<'NODE'
+          const {runFastTests,selectFastTests}=require('./rx-fast-test-engine.cjs');
+          (async()=>{
+            const tests=selectFastTests(['rx-mega-cloud-computer.cjs']);
+            const samples=[];
+            for(let i=0;i<5;i++){
+              const report=await runFastTests({tests});
+              if(report.failed)throw Error('RX Queen isolated test failed in sample '+(i+1));
+              samples.push(report.elapsedMs);
+            }
+            const sorted=samples.slice().sort((a,b)=>a-b);
+            const median=sorted[2];
+            const summary='## RX Queen repeated timing\\nSamples (ms): '+samples.join(', ')+'\\nMedian: '+median+' ms; min: '+sorted[0]+' ms; max: '+sorted[4]+' ms.\\n';
+            console.log(summary);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary);
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: rx-performance-benchmark
