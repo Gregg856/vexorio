@@ -15,10 +15,6 @@ const TEST_DEPENDENCIES={
  'rx-patch-drafter.cjs':'tests/rx-developer-bridge-isolated.cjs',
  'rx-command-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
  'rx-coordinator.cjs':'tests/rx-developer-bridge-isolated.cjs',
- 'rx-developer-patch-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
- 'rx-patch-drafter.cjs':'tests/rx-developer-bridge-isolated.cjs',
- 'rx-command-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
- 'rx-coordinator.cjs':'tests/rx-developer-bridge-isolated.cjs'
 };
 function selectFastTests(changedFiles){
  if(!Array.isArray(changedFiles)||changedFiles.length>500||changedFiles.some(p=>typeof p!=='string'||p.length>300))throw Error('Invalid changed files');
