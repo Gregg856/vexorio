@@ -16,7 +16,7 @@ function selectFastTests(changedFiles){
  if(!changedFiles.length)return DEFAULT_TESTS.slice();
  if(changedFiles.some(p=>p==='rx-fast-test-engine.cjs'||p.startsWith('.github/')||p==='package.json'||p==='package-lock.json'))return DEFAULT_TESTS.slice();
  const selected=new Set();
- for(const file of changedFiles){if(DEFAULT_TESTS.includes(file))selected.add(file);if(TEST_DEPENDENCIES[file])selected.add(TEST_DEPENDENCIES[file]);}
+ for(const file of changedFiles){if(DEFAULT_TESTS.includes(file)||file==='tests/rx-developer-bridge-isolated.cjs')selected.add(file);if(TEST_DEPENDENCIES[file])selected.add(TEST_DEPENDENCIES[file]);}
  return selected.size?[...selected]:DEFAULT_TESTS.slice();
 }
 async function runFastTests({tests=DEFAULT_TESTS,parallel=3,timeoutMs=20000}={}){
