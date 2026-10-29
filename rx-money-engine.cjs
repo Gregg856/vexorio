@@ -3,9 +3,10 @@
 const ROLES=Object.freeze(['SCOUT','SALES','TESTER','REPORT','TREASURER','BUILDER']);
 const STATUSES=Object.freeze(['queued','in_progress','review','approved','blocked','done']);
 const ALLOCATION=Object.freeze({development:70,reserve:30});
+const CHANNELS=Object.freeze(['rx_subscription','ant_service']);
 function money(cents){if(!Number.isSafeInteger(cents)||cents<0)throw Error('Invalid cents');return cents}
 function createMoneyEngine(){
- const tasks=new Map(),events=[];let nextId=1;
+ const tasks=new Map(),events=[],offers=[];let nextId=1;
  function addTask({role,title,description='',requiresApproval=true}){
   if(!ROLES.includes(role)||typeof title!=='string'||title.length<3||title.length>120||typeof description!=='string'||description.length>2000)throw Error('Invalid task');
   const id='RXM-'+String(nextId++).padStart(6,'0');
@@ -26,6 +27,15 @@ function createMoneyEngine(){
   const entry=Object.freeze({id:'RXE-'+String(events.length+1).padStart(6,'0'),kind,amountCents,reference,approvedBy,at:new Date().toISOString()});
   events.push(entry);return {...entry};
  }
+ function proposeOffer({channel,title,priceCents,role='SALES'}){
+  if(!CHANNELS.includes(channel)||typeof title!=='string'||title.trim().length<3||title.length>120||!ROLES.includes(role))throw Error('Invalid offer');
+  money(priceCents);
+  if(priceCents===0||priceCents>100000000)throw Error('Invalid offer price');
+  const offer=Object.freeze({id:'RXO-'+String(offers.length+1).padStart(6,'0'),channel,title,priceCents,status:'proposal',requiresApproval:true,paymentEnabled:false});
+  offers.push(offer);
+  const task=addTask({role,title:'Review offer: '+title.slice(0,100),description:channel+' / '+priceCents+' cents',requiresApproval:true});
+  return {offer:{...offer},reviewTaskId:task.id};
+ }
  function summary(){
   const income=events.filter(e=>e.kind==='income').reduce((n,e)=>n+e.amountCents,0);
   const expense=events.filter(e=>e.kind==='expense').reduce((n,e)=>n+e.amountCents,0);
@@ -33,6 +43,6 @@ function createMoneyEngine(){
   const development=Math.floor(available*70/100);
   return {incomeCents:income,expenseCents:expense,availableCents:available,developmentCents:development,reserveCents:available-development,allocation:ALLOCATION};
  }
- return Object.freeze({addTask,transition,record,summary,tasks:()=>[...tasks.values()].map(structuredClone),ledger:()=>events.map(e=>({...e}))});
+ return Object.freeze({addTask,transition,record,proposeOffer,summary,offers:()=>offers.map(e=>({...e})),tasks:()=>[...tasks.values()].map(structuredClone),ledger:()=>events.map(e=>({...e}))});
 }
-module.exports={createMoneyEngine,ROLES,ALLOCATION};
+module.exports={createMoneyEngine,ROLES,ALLOCATION,CHANNELS};
