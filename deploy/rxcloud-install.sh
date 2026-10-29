@@ -40,7 +40,7 @@ find . -maxdepth 1 -type f -name '*.html' -exec cp -t /opt/rxcloud/vexorio/publi
 for pattern in '*.js' '*.css' '*.svg' '*.png' '*.jpg' '*.jpeg' '*.webp' '*.ico' '*.json' '*.txt' '*.webmanifest'; do
   find . -maxdepth 1 -type f -name "$pattern" -exec cp -t /opt/rxcloud/vexorio/public/ -- {} +
 done
-install -m 0644 -o rxcloud -g rxcloud ./*.mjs /opt/rxcloud/vexorio/
+install -m 0644 -o rxcloud -g rxcloud ./*.mjs rx-task-catalog.cjs /opt/rxcloud/vexorio/
 chown -R rxcloud:rxcloud /opt/rxcloud/vexorio/public
 install -d -m 0700 -o root -g root /etc/rxcloud
 install -m 0600 -o root -g root deploy/rxcloud.env.example /etc/rxcloud/rxcloud.env
