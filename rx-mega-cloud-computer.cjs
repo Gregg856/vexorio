@@ -79,7 +79,7 @@ function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',v
   try{
    const patched=previewPatch(x.proposal,source).preview;
    new Script(patched,{filename:target});
-   return {target,rule:x.rule,syntax:'valid',bibiVerified:verify,requiresApproval:true,applied:false};
+   return {target,rule:x.rule,syntax:'valid',bibiVerified:verify&&checks.checks.length>0&&checks.checks.every(c=>c.status==='passed'),draft:x.proposal,sourceSha256:require('node:crypto').createHash('sha256').update(source).digest('hex'),requiresApproval:true,applied:false};
   }catch(error){return {target,rule:x.rule,syntax:'invalid',bibiVerified:false,error:String(error.message).slice(0,160),requiresApproval:true,applied:false};}
  });
  return {kind:'rx-queen-build-preview',checks,candidates,changesApplied:false};
