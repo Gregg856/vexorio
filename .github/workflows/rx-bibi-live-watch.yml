@@ -23,6 +23,8 @@ on:
       - 'rx-developer-review-runner.cjs'
       - 'rx-queen-bibi-triage.cjs'
       - 'rx-command-bridge.cjs'
+      - 'rx-turbine-engine.cjs'
+      - 'rx-coordinator.cjs'
       - 'rx-task-catalog.cjs'
       - 'rx-ai-router.cjs'
       - 'tests/rx-developer-bridge-isolated.cjs'
