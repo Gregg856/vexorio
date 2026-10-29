@@ -51,6 +51,7 @@ const assert=require('node:assert/strict');
 const source=fs.readFileSync(process.argv[2],'utf8');
 const target=process.argv[3];
 const mock={
+ 'node:vm':{Script:vm.Script},
  './rx-ai-router.cjs':{route:()=>({supported:true,module:'mock'})},
  './rx-task-catalog.cjs':{RULES:[{id:'test',words:['test'],modules:['mock'],cost:1,kind:'test',target:'mock',role:'test'}]},
  './rx-command-bridge.cjs':{planCommand:()=>({steps:[],requiresApproval:true})},
