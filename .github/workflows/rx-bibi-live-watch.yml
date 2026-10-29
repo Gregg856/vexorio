@@ -65,6 +65,30 @@ jobs:
         id: triage
         if: always()
         run: node rx-queen-bibi-triage.cjs
+      - name: RX BIBI SMART — zbiorczy indeks wykonanych kontroli
+        if: always()
+        env:
+          LIVE_OUTCOME: ${{ steps.check.outcome }}
+          DIALOGUE_OUTCOME: ${{ steps.dialogue.outcome }}
+          TRIAGE_OUTCOME: ${{ steps.triage.outcome }}
+        run: |
+          mkdir -p rx-bibi-reports
+          node -e '
+          const fs=require("fs");
+          const checks=[
+            ["rx-admin-ui","RX ADMIN UI","scripts/check-rx-admin-ui.cjs"],
+            ["rx-unified-adapter","RX Unified Adapter","tests/rx-bibi-unified-adapter.cjs"],
+            ["rx-dashboard-summary","RX BIBI Dashboard","tests/rx-bibi-dashboard-summary.cjs"],
+            ["rx-alarm","RX ALARM","tests/rx-alarm-simulation.cjs"],
+            ["rx-live-panel","RX BIBI Android/Desktop", "rx-bibi-reports/rx-live-panel.json"],
+            ["rx-queen-dialogue","RX Królowa Dialogue","tests/rx-queen-dialogue-watch.cjs"],
+            ["rx-queen-triage","RX Królowa Triage","rx-queen-bibi-triage.cjs"]
+          ];
+          const status={ "rx-live-panel":process.env.LIVE_OUTCOME,"rx-queen-dialogue":process.env.DIALOGUE_OUTCOME,"rx-queen-triage":process.env.TRIAGE_OUTCOME };
+          const items=checks.map(([id,name,source])=>({id,name,source,outcome:status[id]||"step-not-individually-tracked"}));
+          const out={schema:1,kind:"rx-bibi-smart-test-index",runId:process.env.GITHUB_RUN_ID,scope:"THIS_WORKFLOW_ONLY",productionModified:false,items};
+          fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-index.json",JSON.stringify(out,null,2)+"\\n");
+          '
       - name: Zachowaj raport i zdjęcia także przy błędzie
         if: always()
         uses: actions/upload-artifact@v4
