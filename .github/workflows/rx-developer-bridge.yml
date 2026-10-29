@@ -48,6 +48,10 @@ jobs:
           node --check tests/rx-developer-bridge-isolated.cjs
       - name: Safe review-only integration
         run: node tests/rx-developer-bridge-isolated.cjs
+      - name: RX Coordinator and Turbine functional tests
+        run: |
+          node tests/rx-coordinator.cjs
+          node tests/rx-turbine-engine.cjs
       - name: BIBI — runner syntax
         run: node --check rx-developer-review-runner.cjs
       - name: Inspect selected RX module
