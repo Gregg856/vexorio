@@ -6,6 +6,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 const root = path.resolve(__dirname, 'public');
+const startedAt = Date.now();
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webmanifest':'application/manifest+json'};
 async function staticFetch(request) {
   const url = new URL(request.url);
@@ -32,7 +33,7 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
     try {
       const origin='http://'+(req.headers.host||'localhost');
       const url=new URL(req.url||'/',origin);
-      if(url.pathname==='/__rxcloud/health') {res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node'}));return;}
+      if(url.pathname==='/__rxcloud/health') {res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000)}));return;}
       const chunks=[];let total=0;
       for await(const chunk of req){total+=chunk.length;if(total>2*1024*1024){res.writeHead(413);res.end();return;}chunks.push(chunk);}
       const headers=new Headers();
@@ -44,10 +45,10 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       if(method==='HEAD'||!response.body){res.end();return;}
       for await(const chunk of response.body) res.write(chunk);
       res.end();
-    }catch(e){console.error('RX CLOUD request failed:',e?.message||String(e));if(!res.headersSent)res.writeHead(500,{'Content-Type':'text/plain','Cache-Control':'no-store'});res.end('Internal server error');}
+    }catch(e){console.error('RX CLOUD request failed:',e?.name||'Error');if(!res.headersSent)res.writeHead(500,{'Content-Type':'text/plain','Cache-Control':'no-store'});res.end('Internal server error');}
   });
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,resolve);});
   return server;
 }
-if(require.main===module)start().then(s=>console.log('RX CLOUD listening on '+JSON.stringify(s.address()))).catch(e=>{console.error(e);process.exitCode=1;});
+if(require.main===module)start().then(s=>{console.log('RX CLOUD listening on '+JSON.stringify(s.address()));const shutdown=()=>s.close(()=>process.exit(0));process.once('SIGTERM',shutdown);process.once('SIGINT',shutdown);}).catch(e=>{console.error(e);process.exitCode=1;});
 module.exports={start,staticFetch};
