@@ -1,5 +1,5 @@
 'use strict';
-// RX BIBI Browser Agent 1.0 — read-only public-page exploration.
+// RX BIBI Browser Agent 1.1 — read-only public-page exploration.
 // No login, no cookies from user sessions, no form submission or production writes.
 const {chromium,devices}=require('playwright');
 const fs=require('node:fs');
@@ -29,6 +29,17 @@ const report={agent:'RX BIBI Browser Agent 1.0',mode:'PUBLIC_READ_ONLY',base,che
     report.checks.push({device:name,path:target,http:response?.status()??null,ok,metrics});
     if(!ok)issues.push({type:'layout_or_http',path:target,http:response?.status(),metrics});
    }
+   // Isolated interactive scenario: no request is sent to the production server.
+   // Playwright clicks, types and checks DOM reactions in a synthetic document.
+   await page.route('http://rx-agent.test/**',route=>route.fulfill({status:200,contentType:'text/html',body:`<!doctype html><html lang="pl"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RX isolated test</title><main><h1>RX BIBI Test</h1><label for="task">Zadanie</label><input id="task" autocomplete="off"><button id="run" type="button">Sprawdź</button><output id="result" aria-live="polite"></output></main><script>document.querySelector('#run').addEventListener('click',()=>{document.querySelector('#result').textContent='RX OK: '+document.querySelector('#task').value})<\/script></html>`}));
+   await page.goto('http://rx-agent.test/test',{waitUntil:'domcontentloaded'});
+   await page.locator('#task').fill('Kontrola RX');
+   await page.locator('#run').click();
+   const answer=await page.locator('#result').innerText();
+   const interactiveOk=answer==='RX OK: Kontrola RX';
+   await page.screenshot({path:path.join(output,name+'-interactive-isolated.png'),fullPage:true});
+   report.checks.push({device:name,kind:'isolated_click_type_verify',ok:interactiveOk,scope:'SYNTHETIC_DOCUMENT_NO_PRODUCTION_WRITES',result:answer});
+   if(!interactiveOk)issues.push({type:'isolated_interaction',detail:answer});
    report.checks.push({device:name,kind:'browser_diagnostics',ok:issues.length===0,issues});
    await context.close();
   }
