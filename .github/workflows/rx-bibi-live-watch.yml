@@ -169,6 +169,7 @@ jobs:
           fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-index.json",JSON.stringify(out,null,2)+"\\n");
           '
       - name: RX BIBI SMART — scal historię incydentów i analizę Królowej
+        id: memory_merge
         if: always()
         run: |
           node - <<'NODE'
@@ -226,7 +227,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Zgłoś awarię w GitHub Issues bez duplikatów
-        if: steps.check.outcome == 'failure' || steps.dialogue.outcome == 'failure'
+        if: steps.check.outcome == 'failure' || steps.dialogue.outcome == 'failure' || steps.browser_agent.outcome == 'failure' || steps.visual.outcome == 'failure' || steps.recorder.outcome == 'failure' || steps.triage.outcome == 'failure' || steps.memory_merge.outcome == 'failure'
         uses: actions/github-script@v7
         with:
           script: |
@@ -243,14 +244,18 @@ jobs:
         env:
           RESULT: ${{ steps.check.outcome }}
           DIALOGUE: ${{ steps.dialogue.outcome }}
+          BROWSER_AGENT: ${{ steps.browser_agent.outcome }}
+          MEMORY_MERGE: ${{ steps.memory_merge.outcome }}
         run: |
           echo "## RX BIBI — centralny tester i strażnik panelu" >> "$GITHUB_STEP_SUMMARY"
           echo "- Panel produkcyjny: $RESULT" >> "$GITHUB_STEP_SUMMARY"
           echo "- Syntetyczne rozmowy Królowej: $DIALOGUE" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Browser Agent: $BROWSER_AGENT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Historia błędów: $MEMORY_MERGE" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zakres: prawdziwa publiczna brama RX ADMIN oraz syntetyczna rozmowa z lokalnym planerem Królowej" >> "$GITHUB_STEP_SUMMARY"
           echo "- Analiza Królowej: rx-queen-bibi-triage.json (propozycje, bez automatycznych poprawek)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zalogowana rozmowa z Królową: nie jest objęta tym testem" >> "$GITHUB_STEP_SUMMARY"
           echo "- Raport JSON i zrzuty: artefakt rx-bibi-live-watch" >> "$GITHUB_STEP_SUMMARY"
       - name: Oznacz awarię testu
-        if: steps.check.outcome == 'failure' || steps.dialogue.outcome == 'failure'
+        if: steps.check.outcome == 'failure' || steps.dialogue.outcome == 'failure' || steps.browser_agent.outcome == 'failure' || steps.visual.outcome == 'failure' || steps.recorder.outcome == 'failure' || steps.triage.outcome == 'failure' || steps.memory_merge.outcome == 'failure'
         run: exit 1
