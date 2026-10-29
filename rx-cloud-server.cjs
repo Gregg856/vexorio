@@ -22,7 +22,11 @@ async function staticFetch(request) {
   const full = path.resolve(root, '.' + name);
   if(!full.startsWith(root + path.sep)) return new Response('Forbidden',{status:403});
   try {
-    const stat = await fs.stat(full);
+    const stat = await fs.lstat(full);
+    if(stat.isSymbolicLink()) return new Response('Forbidden',{status:403});
+    const realRoot = await fs.realpath(root);
+    const realFull = await fs.realpath(full);
+    if(!realFull.startsWith(realRoot + path.sep)) return new Response('Forbidden',{status:403});
     if(!stat.isFile()) return new Response('Not found',{status:404});
     const data = await fs.readFile(full);
     const headers = {'Content-Type':types[path.extname(full).toLowerCase()] || 'application/octet-stream','X-Content-Type-Options':'nosniff'};
