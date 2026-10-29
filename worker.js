@@ -127,6 +127,22 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        // RX Queen -> RX Developer: bounded, owner-only source review; BIBI checks in CI.
+        const developerMatch=/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:sprawdź|sprawdz|przeanalizuj|zbadaj)\\s+(?:kod\\s+)?(rx coordinator|rx command bridge|rx developer)(?:[.!? ]*)$/i.exec(message.trim());
+        if(developerMatch){
+          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'RX Developer jest dostępny tylko dla właściciela RX.');
+          if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji połączenia RX Developer.');
+          const target={'rx coordinator':'rx-coordinator.cjs','rx command bridge':'rx-command-bridge.cjs','rx developer':'rx-developer-patch-bridge.cjs'}[developerMatch[1].toLowerCase()];
+          let response;
+          try{
+            response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-developer-bridge.yml/dispatches',{
+              method:'POST',headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-Chat','Content-Type':'application/json'},
+              body:JSON.stringify({ref:'main',inputs:{target}}),signal:AbortSignal.timeout(12000)
+            });
+          }catch{return reply(502,'Królowa nie mogła połączyć się z RX Developer.');}
+          if(response.status!==204)return reply(502,'GitHub nie przyjął analizy RX Developer (HTTP '+response.status+').');
+          return new Response(JSON.stringify({ok:true,answer:'👑🐜 RX Developer przyjął analizę pliku '+target+'. BIBI sprawdzi ją w istniejącym procesie CI. To potwierdzenie rozpoczęcia, nie wynik. Otwórz raport RX Developer Bridge po zakończeniu.',engine:'rx-queen-developer-dispatch',queued:true,executed:1,modelInferenceUsed:false,workflow:'rx-developer-bridge.yml',target,requiresApproval:false}),{status:200,headers});
+        }
         // Owner-only explicit bridge: Queen chat -> existing bounded RX Coordinator workflow.
         // No arbitrary shell commands, code writes, deployment, or automatic scheduling.
         const runMatch=/^uruchom testy rx(?:\\s*:\\s*(.*))?$/i.exec(message.trim())
