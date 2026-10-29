@@ -226,6 +226,21 @@ export function planRXChat(message,history=[],learning=null){
   answer='👑 Widzę problem: mój lokalny planer korzysta z reguł i czasem powtarza ogólne odpowiedzi zamiast odpowiedzieć na pytanie. Wklej jedną moją błędną odpowiedź i napisz, jakiej oczekujesz. Porównamy obie wersje i poprawimy regułę. Nie uruchamiam testów bez Twojego polecenia.';
   plan.work=null;
  }
+ // Explicit conversational questions override keywords appearing in prohibitions.
+ const noTests=/(nie uruchamiaj|bez uruchamiania|bez testow|zadnych testow|nie rob testow|tylko rozmawiac)/i.test(plain);
+ const asksAboutBrain=/(jak dziala|jak funkcjonuje|czego (jeszcze )?nie potrafisz|co (juz )?potrafisz)/i.test(plain)
+  &&/(mozg|model|rx|krolow|twoj)/i.test(plain);
+ if(asksAboutBrain){
+  answer='👑 Mój obecny mózg RX to lokalny planer oparty na regułach. Rozpoznaję wybrane polecenia, korzystam z ostatnich wiadomości i potrafię proponować zadania. Mam też osobną pamięć na jawne polecenia zapisu. Nie umiem jeszcze swobodnie rozmawiać jak duży model językowy, samodzielnie trenować modelu ani naprawiać kodu bez podłączonego wykonawcy. RX NAUKA wykrywa niektóre preferencje w historii, ale jeszcze nie uczy modelu. Możemy zacząć od lepszego rozumienia pytań.';
+  plan.work=null;
+ }
+ if(noTests){
+  tasks.length=0;
+  if(plan.work)plan.work=null;
+  if(!asksAboutBrain&&/(diagnostyk|test|raport)/i.test(answer)){
+   answer='👑 Rozumiem, chcesz rozmawiać bez uruchamiania testów i raportów. Powiedz, jaki temat mam wyjaśnić; nie będę proponować testów.';
+  }
+ }
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
