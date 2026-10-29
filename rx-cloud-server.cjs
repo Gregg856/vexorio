@@ -27,8 +27,10 @@ async function staticFetch(request) {
 }
 async function start({port=Number(process.env.PORT||8787),host=process.env.HOST||'127.0.0.1'}={}) {
   if(!Number.isInteger(port)||port<0||port>65535) throw Error('Invalid port');
+  const supabaseUrl=process.env.SUPABASE_URL||'';
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(supabaseUrl)) throw Error('RX CLOUD requires an explicit SUPABASE_URL; refusing to start without staging configuration');
   const {default:worker} = await import(pathToFileURL(path.join(__dirname,'worker.js')).href);
-  const env = {ASSETS:{fetch:staticFetch},SUPABASE_URL:process.env.SUPABASE_URL||'https://lfytoxcnutduahshbsko.supabase.co',SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||'',RX_ADMIN_USER_ID:process.env.RX_ADMIN_USER_ID||'',RX_GITHUB_DISPATCH_TOKEN:process.env.RX_GITHUB_DISPATCH_TOKEN||'',VIEW_COUNT_ENABLED:process.env.VIEW_COUNT_ENABLED||'false',VIEW_COUNT_SECRET:process.env.VIEW_COUNT_SECRET||'',SUPABASE_SERVICE_ROLE_KEY:process.env.SUPABASE_SERVICE_ROLE_KEY||'',RX_AI_ENABLED:'false'};
+  const env = {ASSETS:{fetch:staticFetch},SUPABASE_URL:supabaseUrl,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||'',RX_ADMIN_USER_ID:process.env.RX_ADMIN_USER_ID||'',RX_GITHUB_DISPATCH_TOKEN:process.env.RX_GITHUB_DISPATCH_TOKEN||'',VIEW_COUNT_ENABLED:process.env.VIEW_COUNT_ENABLED||'false',VIEW_COUNT_SECRET:process.env.VIEW_COUNT_SECRET||'',SUPABASE_SERVICE_ROLE_KEY:process.env.SUPABASE_SERVICE_ROLE_KEY||'',RX_AI_ENABLED:'false'};
   const server=http.createServer(async(req,res)=>{
     try {
       const origin='http://'+(req.headers.host||'localhost');
