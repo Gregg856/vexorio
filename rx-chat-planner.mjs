@@ -31,7 +31,12 @@ export function planRXChat(message,history=[],learning=null){
  const topics=found.map(r=>r.topic);
  const tasks=found.map(r=>({module:r.module,role:r.role,action:r.id,status:'proposed',requiresApproval:true}));
  const plan={kind:'rx-coordinated-chat-proposal',queen:{status:'awaiting_approval',requiresApproval:true},ants:tasks.filter(t=>t.module==='ants'),cloud:{executionConnected:false},executed:0};
- const plain=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
+ const plainRaw=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
+ // Small explicit typo dictionary; avoid fuzzy execution or rewriting user content.
+ const plain=plainRaw.replace(/\\b(sorawdz|sprwadz|sprawdx)\\b/g,'sprawdz')
+  .replace(/\\b(zrib|zrob|zrub)\\b/g,'zrob')
+  .replace(/\\b(poprawke|poprawka)\\b/g,'popraw')
+  .replace(/\\b(mrowkami|mrowkach|mrowki)\\b/g,'mrowki');
  const greet=/^(czesc|hej|halo|witaj|dzien dobry|siema|bibi|krolowa|rx)[!.? ]*$/.test(plain);
  const thanks=/^(dzieki|dziekuje|super|dobrze|ok|gotowe)[!.? ]*$/.test(plain);
  const contextPlain=contextual.toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
@@ -45,6 +50,8 @@ export function planRXChat(message,history=[],learning=null){
  const asksConversation=/(pogadajmy|porozmawiajmy|chce pogadac|mozemy pogadac)/.test(plain);
  const asksTests=/(jakie testy|ktore testy|wyniki testow|czy testy przeszly|testy zielone)/.test(plain);
  const asksError=/(blad|bledy|nie dziala|awaria|napraw)/.test(plain);
+ const asksCheckChat=/(sprawdz).{0,35}(czat|chat)/.test(plain);
+ const asksFixChat=/(zrob|popraw|napraw).{0,35}(czat|chat)/.test(plain);
  const asksCloud=/(chmura|\bcloud\b|cloudflare|serwer|wdrozenie|deploy)/.test(plain);
  const asksQueue=/(kolejk|zadania w kolejce|ile zadan)/.test(plain);
  const asksSafety=/(bezpieczenstwo|bezpieczne|uprawnienia|dostep)/.test(plain);
@@ -147,6 +154,8 @@ export function planRXChat(message,history=[],learning=null){
  else if(elaborate)answer='👑 Rozwijamy temat: „'+currentUserTopic.slice(0,140)+'”. Mogę omówić działanie, ograniczenia albo zaproponować konkretny test. Który aspekt Cię interesuje?';
  else if(asksConversation)answer='👑 Jasne, porozmawiajmy! Co dziś najbardziej chcesz ulepszyć w VEXORIO albo co Cię ciekawi?';
  else if(asksTests)answer='🧪 Mogę wskazać testy i pomóc odczytać raport. Ich rzeczywisty wynik sprawdź przez „Sprawdź testy RX” lub raport RX Coordinator. Nie zgaduję, czy ostatni przebieg był zielony.';
+ else if(asksCheckChat)answer='🧪 Rozumiem: chcesz sprawdzić czat RX. Mogę zaproponować test wiadomości, kontekstu i obsługi błędów. Nie uruchomiłam testu ani nie znam jego wyniku bez raportu.';
+ else if(asksFixChat)answer='🔧 Rozumiem: chcesz poprawić czat RX. Potrzebuję objawu lub wyniku testu, żeby przygotować konkretną poprawkę. Samo polecenie nie zmienia kodu.';
  else if(asksError)answer='🔧 Opisz błąd albo wklej dokładny komunikat. Pomogę ustalić możliwą przyczynę i zaproponować test. Bez raportu nie potwierdzę naprawy.';
  else if(asksQueue)answer='🐜 Kolejka Warsztatu jest zapisana lokalnie w Twojej przeglądarce. Rozwiń Warsztat, aby zobaczyć liczbę zadań i pobrać paczkę. Sama kolejka nie uruchamia kodu.';
  else if(asksSafety)answer='🔒 Wykonanie zatwierdzonych testów wymaga sesji administratora i osobnego potwierdzenia. Wklejony kod nie jest uruchamiany automatycznie.';
