@@ -293,8 +293,7 @@ export default {
         // RX BIBI -> Queen: optional trusted server-to-server evidence, never browser-supplied.
         // Disabled unless the owner configures an HTTPS RX CLOUD endpoint and its token.
         let bibiLearning=null;
-        if(/(błęd|blad|awari|nie działa|nie dziala|napraw)/i.test(message)
-          &&typeof env.RX_BIBI_LEARNING_URL==='string'
+        if(typeof env.RX_BIBI_LEARNING_URL==='string'
           &&/^https:\/\/[a-z0-9.-]+\/__rxcloud\/bibi\/learning$/i.test(env.RX_BIBI_LEARNING_URL)
           &&typeof env.RX_BIBI_LEARNING_TOKEN==='string'&&env.RX_BIBI_LEARNING_TOKEN.length>=32){
           try{
