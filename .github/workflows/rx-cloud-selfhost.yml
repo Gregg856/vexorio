@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'rx-cloud-server.cjs'
+      - 'rx-money-engine.cjs'
+      - 'tests/rx-money-engine.cjs'
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-cloud-staged.cjs'
       - 'tests/rx-cloud-modules.cjs'
@@ -65,6 +67,8 @@ jobs:
         run: node tests/rx-cloud-queen-panel.cjs
       - name: Check RX module integration contracts
         run: node tests/rx-cloud-modules.cjs
+      - name: RX CLOUD 5.3 offer and approval safety checks
+        run: node tests/rx-money-engine.cjs
       - name: RX CLOUD 4.0 offline release gate
         run: node tests/rx-cloud-package.cjs
       - name: Validate deployment templates
