@@ -7,6 +7,7 @@ on:
       - 'tests/rx-queen-dialogue-watch.cjs'
       - 'tests/rx-live-panel.cjs'
       - 'rx-chat-planner.mjs'
+      - 'rx-queen-bibi-triage.cjs'
   workflow_dispatch:
   schedule:
     - cron: '17 * * * *'
@@ -40,6 +41,10 @@ jobs:
         id: dialogue
         continue-on-error: true
         run: node tests/rx-queen-dialogue-watch.cjs
+      - name: RX Królowa — przeanalizuj raporty BIBI bez automatycznych poprawek
+        id: triage
+        if: always()
+        run: node rx-queen-bibi-triage.cjs
       - name: Zachowaj raport i zdjęcia także przy błędzie
         if: always()
         uses: actions/upload-artifact@v4
@@ -71,6 +76,7 @@ jobs:
           echo "- Panel produkcyjny: $RESULT" >> "$GITHUB_STEP_SUMMARY"
           echo "- Syntetyczne rozmowy Królowej: $DIALOGUE" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zakres: prawdziwa publiczna brama RX ADMIN oraz syntetyczna rozmowa z lokalnym planerem Królowej" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Analiza Królowej: rx-queen-bibi-triage.json (propozycje, bez automatycznych poprawek)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zalogowana rozmowa z Królową: nie jest objęta tym testem" >> "$GITHUB_STEP_SUMMARY"
           echo "- Raport JSON i zrzuty: artefakt rx-bibi-live-watch" >> "$GITHUB_STEP_SUMMARY"
       - name: Oznacz awarię testu
