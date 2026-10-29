@@ -145,6 +145,21 @@ export default {
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-developer-status',readOnly:true}),{status:200,headers});
           }catch{return reply(502,'Nie można odczytać wyniku RX Developer.');}
         }
+        // Owner-only Queen chat command -> existing RX BIBI live tester.
+        // Dispatch only: no synthetic success claims, no production writes.
+        if(/^(?:królowa|krolowa)[,! ]+bibi[,! ]+(?:testuj|sprawdź|sprawdz|uruchom testy)(?:[.!? ]*)$/i.test(message.trim())){
+          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Testy BIBI może zlecić tylko właściciel RX.');
+          if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji uruchamiania BIBI.');
+          let response;
+          try{
+            response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-bibi-live-watch.yml/dispatches',{
+              method:'POST',headers:{Authorization:'Bearer '+env.RX_GITHUB_DISPATCH_TOKEN,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RX-Queen-BIBI-Chat','Content-Type':'application/json'},
+              body:JSON.stringify({ref:'main'}),signal:AbortSignal.timeout(12000)
+            });
+          }catch{return reply(502,'Nie udało się zlecić testów BIBI.');}
+          if(response.status!==204)return reply(502,'GitHub nie przyjął testów BIBI (HTTP '+response.status+').');
+          return new Response(JSON.stringify({ok:true,answer:'👑🐜 Zleciłam RX BIBI test panelu i czatu. Wyniki będą dostępne w RX BIBI Live Watch. Test zalogowanego czatu produkcyjnego nie jest częścią tego przebiegu.',engine:'rx-queen-bibi-dispatch',queued:true,executed:1,workflow:'rx-bibi-live-watch.yml',requiresApproval:false,productionModified:false}),{status:200,headers});
+        }
         // RX Queen -> RX Developer: bounded, owner-only source review; BIBI checks in CI.
         const developerMatch=/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:sprawdź|sprawdz|przeanalizuj|zbadaj)\s+(?:kod\s+)?(rx coordinator|rx command bridge|rx developer)(?:[.!? ]*)$/i.exec(message.trim());
         if(developerMatch){
