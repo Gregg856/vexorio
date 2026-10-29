@@ -40,6 +40,9 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   const healthData=await health.json();
   assert.equal(healthData.service,'rx-cloud-2');
   assert.equal(healthData.connectionsLimit,128);
+  assert.equal(healthData.load.activeRequests,1,'Health request should count itself');
+  assert.equal(healthData.load.peakActiveRequests,1,'First request should establish peak');
+  assert.equal(healthData.load.completedRequests,0,'First request should not yet be completed when snapshot is taken');
   for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
     assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
   }
@@ -76,6 +79,10 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(hostileHost.status,200,'Malformed Host must not break local request parsing');
   const stillHealthy=await fetch(base+'/__rxcloud/health');
   assert.equal(stillHealthy.status,200,'Server must remain healthy after oversized request');
-  console.log('RX CLOUD 5.5 memory visibility, resource limits and server smoke passed');
+  const finalLoad=(await stillHealthy.json()).load;
+  assert.equal(finalLoad.activeRequests,1,'Only health request should remain active');
+  assert(finalLoad.completedRequests>=8,'Request completion counter should advance');
+  assert(finalLoad.peakActiveRequests>=1,'Peak request counter should be populated');
+  console.log('RX CLOUD 5.6 request load counters, memory and server smoke passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
