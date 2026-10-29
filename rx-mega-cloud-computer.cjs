@@ -86,7 +86,10 @@ function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',v
 }
 
 
-function stageQueenPatch(candidate,{approved=false}={}){
+function stageQueenPatch(candidate,{approved=false,functionalReview=null}={}){
+ if(functionalReview!==null){
+  if(!functionalReview||functionalReview.target!==candidate?.target||functionalReview.rule!==candidate?.rule||functionalReview.functionalValidation!=='passed'||functionalReview.bibiValidation!=='passed'||functionalReview.readyForReview!==true||functionalReview.preview!==candidate?.draft?.preview)throw Error('Invalid BIBI functional review');
+ }
  if(!approved||!candidate||candidate.syntax!=='valid'||candidate.bibiVerified!==true||candidate.applied!==false)throw Error('Queen patch requires verified explicit approval');
  const allowed=['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs'];
  if(!allowed.includes(candidate.target)||candidate.draft?.target!==candidate.target)throw Error('Invalid Queen patch target');
