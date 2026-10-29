@@ -121,10 +121,10 @@ jobs:
               continue;
             }
             const review=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-developer-review.json','utf8'));
-            fs.writeFileSync('rx-bibi-reports/rx-developer-review-'+incident.incidentId+'.json',JSON.stringify(review,null,2)+'\\n');
+            fs.writeFileSync('rx-bibi-reports/rx-developer-review-'+incident.incidentId+'.json',JSON.stringify(review,null,2)+'\n');
             reviews.push({incidentId:incident.incidentId,target:incident.target,status:'reviewed',candidates:review.patchCandidates?.length||0});
           }
-          fs.writeFileSync('rx-bibi-reports/rx-developer-review-index.json',JSON.stringify({kind:'rx-bibi-developer-review-index',reviews,failed:failures,changesApplied:false},null,2)+'\\n');
+          fs.writeFileSync('rx-bibi-reports/rx-developer-review-index.json',JSON.stringify({kind:'rx-bibi-developer-review-index',reviews,failed:failures,changesApplied:false},null,2)+'\n');
           console.log('RX Developer reviewed',reviews.length,'queued incidents; failures:',failures,'no code changes applied');
           if(failures)process.exitCode=1;
           NODE
