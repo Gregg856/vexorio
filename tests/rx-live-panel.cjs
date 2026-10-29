@@ -8,7 +8,7 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
  const report={kind:'rx-bibi-live-panel',base,scope:'DEPLOYED_PUBLIC_GATE_ONLY',authenticatedChat:'NOT_TESTED',checks:[]};
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
-  for(const [name,contextOptions] of [['mobile',{...devices['Pixel 7'],locale:'pl-PL'}],['desktop',{viewport:{width:1365,height:850},locale:'pl-PL'}]]){
+  for(const [name,contextOptions] of [['mobile',{...devices['Pixel 7'],locale:'pl-PL'}],['mobile-narrow',{viewport:{width:360,height:740},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'pl-PL'}],['desktop',{viewport:{width:1365,height:850},locale:'pl-PL'}]]){
    const page=await browser.newPage(contextOptions);
    const errors=[];
    page.on('pageerror',error=>errors.push(error.message));
