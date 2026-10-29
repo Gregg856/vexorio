@@ -33,7 +33,7 @@ async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2
    if(typeof handler!=='function'){results[index]={id:task.id,kind:task.kind,status:'skipped',reason:'handler_unavailable'};continue;}
    active++;peakActive=Math.max(peakActive,active);
    const at=Date.now();
-   try{const result=await handler(task.target);results[index]={id:task.id,kind:task.kind,status:'completed',durationMs:Date.now()-at,ok:result===true};}
+   try{const result=await handler(task.target);results[index]={id:task.id,kind:task.kind,status:result===true?'completed':'failed',durationMs:Date.now()-at,ok:result===true,...(result===true?{}:{errorCode:'handler_returned_failure'})};}
    catch(error){results[index]={id:task.id,kind:task.kind,status:'failed',durationMs:Date.now()-at,errorCode:'handler_failed'};}
    finally{active--;}
   }
