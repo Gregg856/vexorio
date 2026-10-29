@@ -18,7 +18,14 @@ export function planRXChat(message,history=[],learning=null){
  const hasTopic=x=>topicPattern.test(normalizeRX(x))||RULES.some(r=>r.words.some(w=>normalizeRX(x).includes(normalizeRX(w))));
  const recentUserQuestions=history.slice(-10).filter((_,i,arr)=>i%2===arr.length%2);
  const recentTopic=recentUserQuestions.slice().reverse().find(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())))||previous.slice().reverse().find(hasTopic)||last;
- const contextual=followup&&last?recentTopic+' '+message:message;
+ const correction=/^(nie o to (mi )?chodzilo|nie o to chodzi|zle mnie zrozumialas|źle mnie zrozumiałaś)[.!? ]*$/i.test(normalizeRX(message.trim()));
+ const returnTopic=/^(wroc do poprzedniego tematu|wróć do poprzedniego tematu)[.!? ]*$/i.test(message.trim());
+ const elaborate=/^(wyjasnij dokladniej|wyjaśnij dokładniej|rozwin temat|rozwiń temat)[.!? ]*$/i.test(message.trim());
+ const userTurns=history.filter((_,i)=>i%2===0).filter(x=>x.trim());
+ const currentUserTopic=userTurns.slice().reverse().find(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())))||recentTopic;
+ const previousUserTopic=(()=>{const meaningful=userTurns.filter(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())));const current=meaningful.at(-1);return meaningful.slice(0,-1).reverse().find(x=>normalizeRX(x)!==normalizeRX(current))||null;})();
+ const selectedTopic=returnTopic?(previousUserTopic||''):currentUserTopic;
+ const contextual=(followup||correction||returnTopic||elaborate)&&last?selectedTopic+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const found=RULES.filter(r=>r.words.some(word=>q.includes(word)));
  const topics=found.map(r=>r.topic);
@@ -135,6 +142,9 @@ export function planRXChat(message,history=[],learning=null){
  else if(thanks)answer='👑 Jasne! Jestem gotowa na kolejne pytanie. Możemy omówić Mrówki, Wirnik lub testy RX.';
  else if(asksName)answer='👑 Jestem Królowa RX — rozmowna część VEXORIO. Mogę odpowiadać na pytania i pomagać planować testy, ale nie udaję niezależnego modelu AI.';
  else if(asksMemory)answer='🧠 Mam ograniczony kontekst ostatnich wiadomości. Trwałą notatkę możesz zapisać poleceniem „Zapamiętaj: temat | treść”, a odczytać przez „Przypomnij: temat”. Zapis wymaga poprawnego połączenia z serwerem.';
+ else if(correction)answer='👑 Rozumiem, poprzednia odpowiedź nie trafiła w Twoje pytanie. W temacie „'+currentUserTopic.slice(0,140)+'” napisz proszę, co konkretnie mam zmienić lub wyjaśnić. Nie będę zgadywać Twojej intencji.';
+ else if(returnTopic)answer=previousUserTopic?'👑 Wracamy do wcześniejszego tematu: „'+previousUserTopic.slice(0,140)+'”. Co chcesz w nim rozwinąć?':'👑 Nie widzę w ostatniej historii drugiego, wcześniejszego tematu. Napisz, do czego mam wrócić.';
+ else if(elaborate)answer='👑 Rozwijamy temat: „'+currentUserTopic.slice(0,140)+'”. Mogę omówić działanie, ograniczenia albo zaproponować konkretny test. Który aspekt Cię interesuje?';
  else if(asksConversation)answer='👑 Jasne, porozmawiajmy! Co dziś najbardziej chcesz ulepszyć w VEXORIO albo co Cię ciekawi?';
  else if(asksTests)answer='🧪 Mogę wskazać testy i pomóc odczytać raport. Ich rzeczywisty wynik sprawdź przez „Sprawdź testy RX” lub raport RX Coordinator. Nie zgaduję, czy ostatni przebieg był zielony.';
  else if(asksError)answer='🔧 Opisz błąd albo wklej dokładny komunikat. Pomogę ustalić możliwą przyczynę i zaproponować test. Bez raportu nie potwierdzę naprawy.';
