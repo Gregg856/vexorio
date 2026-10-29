@@ -51,6 +51,34 @@ function predictAdaptive(net,x,{preferBatch=true}={}){
  for(let i=0;i<count;i++)predictions.set(forward(net,x.subarray(i*net.input,(i+1)*net.input)).pred,i*net.output);
  return {predictions,method:'sequential'};
 }
+// One-time per-network calibration; explicit opt-in, bounded and reversible.
+// Uses actual measurements on the current runtime rather than CI-specific thresholds.
+function createAutoPredictor(net,{samples=32,rounds=9}={}){
+ if(!Number.isSafeInteger(samples)||samples<1||samples>128||!Number.isSafeInteger(rounds)||rounds<3||rounds>21)throw Error('Invalid calibration limits');
+ const input=Float32Array.from({length:samples*net.input},(_,i)=>Math.sin(i*0.17));
+ const single=()=>predictAdaptive(net,input,{preferBatch:false}).predictions;
+ const batch=()=>predictBatch(net,input);
+ const a=single(),b=batch();
+ for(let i=0;i<a.length;i++)if(!Number.isFinite(a[i])||!Number.isFinite(b[i])||Math.abs(a[i]-b[i])>1e-4)throw Error('Calibration mismatch');
+ const {performance}=require('node:perf_hooks');
+ for(let i=0;i<5;i++){single();batch();}
+ const oldTimes=[],newTimes=[];
+ for(let i=0;i<rounds;i++){
+  const measure=fn=>{const t=performance.now();for(let j=0;j<5;j++)fn();return performance.now()-t;};
+  if(i%2){newTimes.push(measure(batch));oldTimes.push(measure(single));}
+  else{oldTimes.push(measure(single));newTimes.push(measure(batch));}
+ }
+ const median=values=>values.sort((a,b)=>a-b)[Math.floor(values.length/2)];
+ const sequentialMs=median(oldTimes),batchMs=median(newTimes);
+ // Require a 10% margin to avoid choosing batch on noisy ties.
+ const preferBatch=batchMs<sequentialMs*0.9;
+ return Object.freeze({
+  method:preferBatch?'batch':'sequential',
+  calibration:Object.freeze({samples,rounds,sequentialMs,batchMs}),
+  predict(x){return predictAdaptive(net,x,{preferBatch});},
+  fallback(x){return predictAdaptive(net,x,{preferBatch:false});}
+ });
+}
 function loss(net,x,y){
  const count=x.length/net.input;let sum=0;
  for(let i=0;i<count;i++){
@@ -79,4 +107,4 @@ function train(net,x,y,{epochs=100,rate=0.03}={}){
  }
  return {initialLoss,finalLoss:loss(net,x,y),epochs,count};
 }
-module.exports={createNetwork,forward,predictBatch,predictAdaptive,loss,train};
+module.exports={createNetwork,forward,predictBatch,predictAdaptive,createAutoPredictor,loss,train};
