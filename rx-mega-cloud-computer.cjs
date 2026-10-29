@@ -86,6 +86,22 @@ function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',v
 }
 
 
+function prepareQueenPullRequest(staged,{approved=false,base='main'}={}){
+ if(!approved||base!=='main'||!staged||staged.kind!=='rx-queen-staged-patch'||
+    staged.changesApplied!==false||staged.deployed!==false||
+    staged.bibiPatchedSyntax?.passed!==true||staged.bibiPatchInvariant?.passed!==true||
+    staged.readyForPullRequest!==true)throw Error('Queen PR requires approved verified staging');
+ const allowed=['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs'];
+ if(!allowed.includes(staged.target))throw Error('Queen PR target not allowlisted');
+ const hash=require('node:crypto').createHash('sha256').update(staged.content).digest('hex');
+ if(hash!==staged.patchedSha256)throw Error('Queen PR content integrity failed');
+ return {kind:'rx-queen-pr-proposal',base,head:null,target:staged.target,
+  title:'RX: verified Queen/BIBI patch for '+staged.target,
+  content:staged.content,sourceSha256:staged.sourceSha256,
+  patchedSha256:staged.patchedSha256,requiresHumanReview:true,
+  branchCreated:false,pullRequestCreated:false,merged:false,deployed:false};
+}
+
 function matchesBibiFunctionalReview(candidate,review,patched){
  return !!candidate&&!!review&&typeof patched==='string'&&
   review.target===candidate.target&&review.rule===candidate.rule&&
@@ -148,4 +164,4 @@ if(require.main===module){
  console.log('RX MEGA CLOUD COMPUTER:',report.passed,'passed,',report.failed,'failed');
  if(report.failed)process.exitCode=1;
 }
-module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,stageQueenPatch,matchesBibiFunctionalReview,CHECKS};
+module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,stageQueenPatch,matchesBibiFunctionalReview,prepareQueenPullRequest,CHECKS};
