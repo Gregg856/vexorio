@@ -32,4 +32,19 @@ function createLearner({epochs=180,hidden=24,rate=0.06}={}){
  }
  return {kind:'rx-text-learner',metrics,labels:LABELS,classify,examples:EXAMPLES.length};
 }
-module.exports={createLearner,vector,LABELS};
+
+// RX lexical-neighbor probe: independent of neural scores, never overrides classify().
+// Uses only training examples, so held-out evaluation remains unseen.
+function lexicalProbe(text){
+ if(typeof text!=='string'||!text.trim())throw Error('Invalid text');
+ const words=s=>new Set((s.toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[]).filter(w=>w.length>2));
+ const query=words(text);
+ const ranked=EXAMPLES.map(([phrase,label])=>{
+  const candidate=words(phrase);
+  let common=0;for(const word of query)if(candidate.has(word))common++;
+  const union=query.size+candidate.size-common;
+  return {label,overlap:union?common/union:0};
+ }).sort((a,b)=>b.overlap-a.overlap);
+ return {kind:'rx-lexical-probe',label:ranked[0].label,overlap:ranked[0].overlap,matched:ranked[0].overlap>0};
+}
+module.exports={createLearner,vector,LABELS,lexicalProbe};
