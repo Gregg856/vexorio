@@ -33,7 +33,7 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
   const html=await (await fetch(base+'/rx-admin-prototype.html',{signal:AbortSignal.timeout(15000)})).text();
   if(!html.includes('id="rxApp"'))throw Error('Visual preview: RX Admin markup missing');
   const previewHtml=html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\/dist\/umd\/supabase\.min\.js"><\/script>/,
-   '<script>window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:{id:"rx-visual-preview",is_anonymous:false}},error:null})},rpc:async()=>({data:true,error:null})})};<\/script>');
+   '<script>window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:{id:"rx-visual-preview",is_anonymous:false}},error:null}),getSession:async()=>({data:{session:{access_token:"rx-isolated-preview-token"}},error:null})},rpc:async()=>({data:true,error:null})})};<\/script>');
   if(previewHtml===html)throw Error('Visual preview: Supabase dependency not isolated');
   for(const [name,options] of [['android',{...devices['Pixel 7'],locale:'pl-PL'}],['desktop',{viewport:{width:1365,height:850},locale:'pl-PL'}]]){
    const context=await browser.newContext({...options,recordVideo:{dir:'rx-bibi-reports/video',size:{width:name==='android'?412:1365,height:name==='android'?839:850}}});
