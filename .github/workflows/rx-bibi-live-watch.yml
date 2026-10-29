@@ -86,6 +86,21 @@ jobs:
           ];
           const status={ "rx-live-panel":process.env.LIVE_OUTCOME,"rx-queen-dialogue":process.env.DIALOGUE_OUTCOME,"rx-queen-triage":process.env.TRIAGE_OUTCOME };
           const items=checks.map(([id,name,source])=>({id,name,source,outcome:status[id]||"step-not-individually-tracked"}));
+          const history=[];
+          const livePath="rx-bibi-reports/rx-live-panel.json";
+          if(fs.existsSync(livePath)){
+            try{
+              const live=JSON.parse(fs.readFileSync(livePath,"utf8"));
+              for(const check of (Array.isArray(live.checks)?live.checks:[]).slice(0,150)){
+                if(!check||typeof check.name!=="string")continue;
+                history.push({tester:"rx-live-panel",check:check.name.slice(0,120),ok:check.ok===true,scope:typeof check.scope==="string"?check.scope.slice(0,120):"unspecified"});
+              }
+            }catch(error){history.push({tester:"rx-live-panel",check:"report-parse",ok:false,scope:"LOCAL_ARTIFACT",error:String(error.message).slice(0,120)});}
+          }
+          const failures=history.filter(x=>!x.ok);
+          const recurring=Object.values(failures.reduce((acc,item)=>{const key=item.tester+":"+item.check;const prev=acc[key];acc[key]={tester:item.tester,check:item.check,count:(prev?.count||0)+1};return acc;},{}));
+          const memory={schema:1,kind:"rx-bibi-smart-error-memory",runId:process.env.GITHUB_RUN_ID,scope:"CURRENT_RUN_ONLY_NO_CROSS_RUN_PERSISTENCE",history,failures,recurring,productionModified:false};
+          fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-memory.json",JSON.stringify(memory,null,2)+"\\n");
           const out={schema:1,kind:"rx-bibi-smart-test-index",runId:process.env.GITHUB_RUN_ID,scope:"THIS_WORKFLOW_ONLY",productionModified:false,items};
           fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-index.json",JSON.stringify(out,null,2)+"\\n");
           '
