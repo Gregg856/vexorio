@@ -8,11 +8,11 @@ const end=html.indexOf('async function loadBibiQueenWatch()',start);
 assert(start>=0&&end>start,'RX CLOUD handler must exist in Queen panel');
 const source=html.slice(start,end);
 assert(html.includes("else if(label==='☁️ RX CLOUD — monitoring')loadCloudWatch();"),'Menu must call handler');
-async function scenario(run,expected,now=Date.parse('2026-10-29T12:00:00Z')){
+async function scenario(run,expected,now=Date.parse('2026-10-29T12:00:00Z'),failure=false){
  const messages=[];
  const sandbox={
   add:(_type,msg)=>messages.push(msg),
-  fetch:async()=>({ok:true,json:async()=>({workflow_runs:run?[run]:[]})}),
+  fetch:async()=>{if(failure)throw Error('offline');return {ok:true,json:async()=>({workflow_runs:run?[run]:[]})};},
   AbortSignal:{timeout:()=>({})},
   Date:class extends Date{static now(){return now}},
  };
@@ -30,5 +30,11 @@ async function scenario(run,expected,now=Date.parse('2026-10-29T12:00:00Z')){
  await scenario({status:'completed',conclusion:'timed_out',updated_at:fresh},'RX ALARM: wykryto nieudany test');
  await scenario({status:'in_progress',updated_at:fresh},'w toku');
  await scenario(null,'Brak przebiegów');
- console.log('RX CLOUD Queen status scenarios: 7 passed');
+ await scenario({status:'completed',conclusion:'success',updated_at:fresh},'Testy instalacji: gotowe do dalszej walidacji');
+ await scenario({status:'completed',conclusion:'success',updated_at:old},'Testy instalacji: wymagają sprawdzenia');
+ await scenario({status:'completed',conclusion:'failure',updated_at:fresh},'Testy instalacji: wymagają sprawdzenia');
+ await scenario({status:'completed',conclusion:'success',updated_at:fresh},'Serwer 24/7: NIEPOTWIERDZONY');
+ await scenario(null,'Status RX CLOUD niedostępny',undefined,true);
+ await scenario({status:'in_progress',updated_at:fresh},'Testy instalacji: wymagają sprawdzenia');
+ console.log('RX CLOUD Queen status scenarios: 13 passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
