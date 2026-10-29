@@ -111,10 +111,22 @@ function stageQueenPatch(candidate,{approved=false}={}){
    error:check.status===0&&!check.error?null:String(check.error?.message||check.stderr||check.status).slice(0,240)};
  }finally{fs.rmSync(temp,{recursive:true,force:true});}
  if(!syntaxResult.passed)throw Error('BIBI patched source check failed: '+syntaxResult.error);
+
+ // BIBI verifies the intended behavioral invariant of these bounded cleanup rules:
+ // only the single approved debug statement may disappear.
+ const draft=candidate.draft;
+ if(!['remove-debugger','remove-console-debug'].includes(candidate.rule)||
+    !draft||draft.operation!=='replace-exact-once'||draft.newText!==''||
+    !((candidate.rule==='remove-debugger'&&/^\\s*debugger;?\\s*$/.test(draft.oldText))||
+      (candidate.rule==='remove-console-debug'&&/^\\s*console\\.debug\\([^\\r\\n]*\\);?\\s*$/.test(draft.oldText))))throw Error('BIBI patch invariant rejected');
+ const occurrences=source.split(draft.oldText).length-1;
+ if(occurrences!==1||patched!==source.replace(draft.oldText,''))throw Error('BIBI patch changed unexpected code');
+ const bibiPatchInvariant={passed:true,kind:'single-debug-statement-removal',sourcePreservedExceptApprovedEdit:true};
+
  // Staging only: no filesystem writes, commits, or deployment.
  return {kind:'rx-queen-staged-patch',target:candidate.target,sourceSha256:candidate.sourceSha256,
   patchedSha256:crypto.createHash('sha256').update(patched).digest('hex'),
-  content:patched,bibiPatchedSyntax:syntaxResult,readyForPullRequest:true,changesApplied:false,deployed:false};
+  content:patched,bibiPatchedSyntax:syntaxResult,bibiPatchInvariant,readyForPullRequest:true,changesApplied:false,deployed:false};
 }
 
 if(require.main===module){
