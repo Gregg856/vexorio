@@ -217,8 +217,21 @@ const results=[
  measure('RX ants task board',()=>buildBoard(supervisor,{maxTasks:80}),200),
  measure('RX COSMOS queue',()=>buildCosmosQueue(board),200)
 ];
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,fullMaskAB,results};
+// RX Neural: compare equivalent single-sample and batched inference in one CI process.
+const {createNetwork,forward,predictBatch}=require('./rx-neural-core.cjs');
+const neuralNet=createNetwork(16,32,8);
+const neuralInput=Float32Array.from({length:64*16},(_,i)=>Math.sin(i*0.13));
+const neuralSingle=()=>{const out=new Float32Array(64*8);for(let i=0;i<64;i++)out.set(forward(neuralNet,neuralInput.subarray(i*16,(i+1)*16)).pred,i*8);return out;};
+const neuralBatch=()=>predictBatch(neuralNet,neuralInput);
+const reference=neuralSingle(),candidate=neuralBatch();
+assert.equal(reference.length,candidate.length);
+for(let i=0;i<reference.length;i++)assert.ok(Math.abs(reference[i]-candidate[i])<1e-4,'RX Neural output mismatch at '+i);
+const neuralSingleTiming=measure('RX Neural 64 sequential samples',neuralSingle,30);
+const neuralBatchTiming=measure('RX Neural 64 batched samples',neuralBatch,30);
+const neuralComparison={samples:64,input:16,hidden:32,output:8,sequentialMedianMs:neuralSingleTiming.medianMs,batchMedianMs:neuralBatchTiming.medianMs,ratio:Number((neuralBatchTiming.medianMs/neuralSingleTiming.medianMs).toFixed(3)),verified:true,note:'Same-process microbenchmark; ratio below 1 means batch faster. No guaranteed speedup.'};
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',neuralComparison,developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,fullMaskAB,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
+console.log('RX Neural batch A/B:',JSON.stringify(neuralComparison));
 console.log(JSON.stringify(output,null,2));
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX performance microbenchmarks\n'+results.map(x=>'- '+x.name+': '+x.medianMs+' ms median/call').join('\n')+'\n');
