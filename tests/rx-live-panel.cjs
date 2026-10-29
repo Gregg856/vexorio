@@ -128,6 +128,26 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    report.checks.push({name:'chat-multiturn-'+name,ok:conversationOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST',turns:received.length,historyOk,messagesOk});
    if(!conversationOk)throw Error(name+': synthetic multi-turn history or messages failed');
 
+   // Fault-injection checks: verify the real UI reports server errors and timeouts.
+   // No production endpoint is contacted; requests stay in the isolated preview.
+   await page.unroute('**/api/rx/chat');
+   await page.route('**/api/rx/chat',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({message:'RX BIBI test 503'})}));
+   await page.locator('#input').fill('Cześć, sprawdź błąd serwera');
+   await page.locator('#form button[type="submit"]').click();
+   await page.locator('#messages').getByText('RX BIBI test 503',{exact:false}).waitFor({timeout:8000});
+   const serverErrorVisible=await page.locator('#messages').getByText('RX BIBI test 503',{exact:false}).count()>0;
+   report.checks.push({name:'chat-server-error-'+name,ok:serverErrorVisible,scope:'ISOLATED_FAULT_INJECTION_503'});
+   if(!serverErrorVisible)throw Error(name+': server error was not shown');
+   await page.unroute('**/api/rx/chat');
+   await page.route('**/api/rx/chat',route=>route.abort('timedout'));
+   await page.locator('#input').fill('Cześć, sprawdź niedostępny serwer');
+   await page.locator('#form button[type="submit"]').click();
+   await page.locator('#messages').getByText('Czat serwerowy jest niedostępny',{exact:false}).waitFor({timeout:8000});
+   const unavailableVisible=await page.locator('#messages').getByText('Czat serwerowy jest niedostępny',{exact:false}).count()>0;
+   report.checks.push({name:'chat-network-timeout-'+name,ok:unavailableVisible,scope:'ISOLATED_FAULT_INJECTION_NETWORK_TIMEOUT'});
+   if(!unavailableVisible)throw Error(name+': network timeout was not shown');
+
+
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
    if(errors.length)throw Error(name+': visual preview JS: '+errors.join('; '));
