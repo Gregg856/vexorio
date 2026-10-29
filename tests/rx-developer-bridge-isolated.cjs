@@ -36,6 +36,9 @@ const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
 const {spawnSync}=require('node:child_process');
+const {performance}=require('node:perf_hooks');
+const queenTiming={};
+const queenStarted=performance.now();
 // RX Queen regression: a previously reviewed incident is not queued again,
 // while a new failure still reaches the existing Developer handoff.
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rx-queen-memory-test-'));
@@ -62,6 +65,8 @@ try{
  const third=run();
  assert.ok(third.nextWork.some(x=>x.check==='new-check'),'New failure must still be queued');
 }finally{fs.rmSync(temp,{recursive:true,force:true});}
+queenTiming.incidentDedupMs=Number((performance.now()-queenStarted).toFixed(2));
+console.log('RX Queen timing: incident dedup '+queenTiming.incidentDedupMs+' ms');
 console.log('PASS RX Queen: persistent review deduplication and new incident handoff');
 
  // RX BIBI regression: Queen must pass build planning through the existing Turbine.
@@ -135,3 +140,4 @@ console.log('PASS RX Queen: persistent review deduplication and new incident han
  assert.throws(()=>prepareQueenPullRequest({...staged,content:'tampered'},{approved:true}),/integrity failed/);
  assert.throws(()=>prepareQueenPullRequest({...staged,bibiPatchedSyntax:{passed:false}},{approved:true}),/approved verified/);
  console.log('PASS RX Queen: PR proposal integrity and approval gates');
+console.log('RX Queen timing: total isolated test '+(performance.now()-queenStarted).toFixed(2)+' ms since incident profiling start');
