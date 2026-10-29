@@ -50,6 +50,8 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(await head.text(),'');
   const oversized=await fetch(base+'/nonexistent-rx-cloud-file-2026',{method:'POST',body:'x'.repeat(2*1024*1024+1)});
   assert.equal(oversized.status,413);
+  const hostileHost=await fetch(base+'/__rxcloud/health',{headers:{Host:'invalid-host:bad-port'}});
+  assert.equal(hostileHost.status,200,'Malformed Host must not break local request parsing');
   const stillHealthy=await fetch(base+'/__rxcloud/health');
   assert.equal(stillHealthy.status,200,'Server must remain healthy after oversized request');
   console.log('RX CLOUD 4.5 malformed path, static security and oversized request smoke passed');
