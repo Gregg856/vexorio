@@ -39,6 +39,10 @@ const {spawnSync}=require('node:child_process');
 const {performance}=require('node:perf_hooks');
 const queenTiming={};
 const phaseTimes=[];
+const nodeStartupStart=performance.now();
+const nodeStartup=spawnSync(process.execPath,['-e',''],{encoding:'utf8',timeout:5000});
+assert.equal(nodeStartup.status,0,nodeStartup.stderr);
+const nodeStartupMs=Number((performance.now()-nodeStartupStart).toFixed(2));
 const queenStarted=performance.now();
 // RX Queen regression: a previously reviewed incident is not queued again,
 // while a new failure still reaches the existing Developer handoff.
@@ -76,7 +80,9 @@ try{
  assert.ok(third.nextWork.some(x=>x.check==='new-check'),'New failure must still be queued');
 }finally{fs.rmSync(temp,{recursive:true,force:true});}
 queenTiming.incidentDedupMs=Number((performance.now()-queenStarted).toFixed(2));
+console.log('RX Queen timing: empty Node startup '+nodeStartupMs+' ms');
 console.log('RX Queen timing: triage subprocesses '+JSON.stringify(phaseTimes));
+console.log('RX Queen timing: triage overhead estimate '+JSON.stringify(phaseTimes.map(x=>Number((x.processMs-nodeStartupMs).toFixed(2))))+' ms (approximate, not isolated)');
 console.log('RX Queen timing: incident dedup '+queenTiming.incidentDedupMs+' ms');
 console.log('PASS RX Queen: persistent review deduplication and new incident handoff');
 
