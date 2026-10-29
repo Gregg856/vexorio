@@ -133,7 +133,15 @@ export default {
             const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-developer-bridge.yml/runs?branch=main&event=workflow_dispatch&per_page=1',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Developer-Status'},signal:AbortSignal.timeout(8000)});
             if(!response.ok)return reply(502,'GitHub HTTP '+response.status);
             const data=await response.json(),run=data.workflow_runs?.[0];
-            const answer=run?'👑 RX Developer: '+(run.status==='completed'?run.conclusion:run.status)+' — '+run.html_url:'👑 Brak zleconej analizy RX Developer.';
+            let answer=run?'👑 RX Developer: '+(run.status==='completed'?run.conclusion:run.status)+' — '+run.html_url:'👑 Brak zleconej analizy RX Developer.';
+            if(run&&run.status==='completed'&&run.conclusion==='success'){
+              const artifactResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/artifacts?per_page=30',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Developer-Status'},signal:AbortSignal.timeout(8000)});
+              if(artifactResponse.ok){
+                const artifacts=await artifactResponse.json();
+                const review=artifacts.artifacts?.find(item=>item.name==='rx-developer-review'&&!item.expired);
+                answer+=review?'\\n🐜 BIBI: raport analizy jest gotowy w artefakcie rx-developer-review.':'\\n⚠️ BIBI: brak dostępnego artefaktu raportu.';
+              }else answer+='\\n⚠️ BIBI: nie udało się sprawdzić artefaktów.';
+            }
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-developer-status',readOnly:true}),{status:200,headers});
           }catch{return reply(502,'Nie można odczytać wyniku RX Developer.');}
         }
