@@ -6,6 +6,8 @@ on:
       - '.github/workflows/rx-bibi-live-watch.yml'
       - 'tests/rx-queen-dialogue-watch.cjs'
       - 'tests/rx-live-panel.cjs'
+      - 'tests/rx-visual-audit.cjs'
+      - 'tests/rx-screen-recorder.cjs'
       - 'rx-admin-prototype.html'
       - 'tests/rx-alarm-simulation.cjs'
       - 'scripts/check-rx-admin-ui.cjs'
@@ -58,6 +60,14 @@ jobs:
         id: check
         continue-on-error: true
         run: node tests/rx-live-panel.cjs
+      - name: RX BIBI UNIFIED — audyt wizualny i zrzuty ekranu
+        id: visual
+        continue-on-error: true
+        run: node tests/rx-visual-audit.cjs
+      - name: RX BIBI UNIFIED — test nagrywania i zgód na ekran
+        id: recorder
+        continue-on-error: true
+        run: node tests/rx-screen-recorder.cjs
       - name: RX BIBI — rozmawiaj testowo z lokalnym mózgiem Królowej
         id: dialogue
         continue-on-error: true
