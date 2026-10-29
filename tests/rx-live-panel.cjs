@@ -183,6 +183,15 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
 
 
 
+   // Verify keyboard submission on the existing chat form after recovery.
+   // API remains mocked inside the isolated preview.
+   await page.locator('#input').fill('RX BIBI: test klawisza Enter');
+   await page.locator('#input').press('Enter');
+   await page.locator('#messages').getByText('RX BIBI: połączenie przywrócone',{exact:false}).last().waitFor({timeout:8000});
+   const enterOk=await page.locator('#input').inputValue()==='';
+   report.checks.push({name:'chat-enter-submit-'+name,ok:enterOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST'});
+   if(!enterOk)throw Error(name+': Enter did not clear chat composer');
+
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
    if(errors.length)throw Error(name+': visual preview JS: '+errors.join('; '));
