@@ -96,10 +96,25 @@ function stageQueenPatch(candidate,{approved=false}={}){
  const {previewPatch}=require('./rx-patch-drafter.cjs');
  const patched=previewPatch(candidate.draft,source).preview;
  new (require('node:vm').Script)(patched,{filename:candidate.target});
+ // BIBI checks the exact patched bytes using Node's syntax checker in isolation.
+ const os=require('node:os');
+ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rx-queen-stage-'));
+ let syntaxResult;
+ try{
+  const candidatePath=path.join(temp,'candidate.cjs');
+  fs.writeFileSync(candidatePath,patched,{flag:'wx',mode:0o600});
+  const check=spawnSync(process.execPath,['--check',candidatePath],{
+   cwd:temp,encoding:'utf8',timeout:10000,maxBuffer:16384,
+   env:{PATH:process.env.PATH||''}
+  });
+  syntaxResult={passed:check.status===0&&!check.error,
+   error:check.status===0&&!check.error?null:String(check.error?.message||check.stderr||check.status).slice(0,240)};
+ }finally{fs.rmSync(temp,{recursive:true,force:true});}
+ if(!syntaxResult.passed)throw Error('BIBI patched source check failed: '+syntaxResult.error);
  // Staging only: no filesystem writes, commits, or deployment.
  return {kind:'rx-queen-staged-patch',target:candidate.target,sourceSha256:candidate.sourceSha256,
   patchedSha256:crypto.createHash('sha256').update(patched).digest('hex'),
-  content:patched,readyForPullRequest:true,changesApplied:false,deployed:false};
+  content:patched,bibiPatchedSyntax:syntaxResult,readyForPullRequest:true,changesApplied:false,deployed:false};
 }
 
 if(require.main===module){
