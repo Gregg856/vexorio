@@ -223,6 +223,6 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
   }
   report.ok=true;
   console.log('PASS RX BIBI LIVE PANEL',JSON.stringify(report));
- }catch(error){report.ok=false;report.error=error.message;console.error('FAIL RX BIBI LIVE PANEL',error.message);process.exitCode=1}
+ }catch(error){report.ok=false;report.error=error.message;console.error('FAIL RX BIBI LIVE PANEL',error.stack||error.message);process.exitCode=1}
  finally{fs.mkdirSync('rx-bibi-reports',{recursive:true});fs.writeFileSync('rx-bibi-reports/rx-live-panel.json',JSON.stringify(report,null,2)+'\n');await browser.close();}
 })();
