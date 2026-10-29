@@ -26,7 +26,9 @@ async function scenario(run,expected,now=Date.parse('2026-10-29T12:00:00Z')){
  await scenario({status:'completed',conclusion:'success',updated_at:fresh},'ZIELONY');
  await scenario({status:'completed',conclusion:'success',updated_at:old},'NIEAKTUALNE');
  await scenario({status:'completed',conclusion:'failure',updated_at:fresh},'failure');
+ await scenario({status:'completed',conclusion:'failure',updated_at:fresh},'RX ALARM: wykryto nieudany test');
+ await scenario({status:'completed',conclusion:'timed_out',updated_at:fresh},'RX ALARM: wykryto nieudany test');
  await scenario({status:'in_progress',updated_at:fresh},'w toku');
  await scenario(null,'Brak przebiegów');
- console.log('RX CLOUD Queen status scenarios: 5 passed');
+ console.log('RX CLOUD Queen status scenarios: 7 passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
