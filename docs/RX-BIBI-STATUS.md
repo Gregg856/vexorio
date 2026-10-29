@@ -46,3 +46,14 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - Pozycje napisów i test nagrania z napisem: commit 1f3fd49a, run 40235263139 SUCCESS; trzy pozycje przetestowane jako wybory interfejsu, nie jako trzy osobne nagrania.
 - Muzyka, głośność i film z audio: commit 38c28cc2, run 40235743740 SUCCESS.
 - Następne zadanie: usprawnić montaż i zweryfikować odtwarzanie muzyki na docelowych przeglądarkach mobilnych.
+
+## Dziennik ciągłości — 2026-10-29 (zweryfikowane w GitHub Actions)
+- VEXORIO: repo Gregg856/vexorio, main; produkcja Cloudflare `https://vexorio.grzegorzbub1985.workers.dev`.
+- RX BIBI Tester: istniejący workflow `.github/workflows/rx-bibi-browser.yml`; nie tworzyć drugiego testera ani płatnego zamiennika.
+- Test języków: `tests/rx-live-languages.cjs` dodany commitem `9181351e`, podłączony do istniejącego RX BIBI commitem `7ecb07fc`. Sprawdza PL/DE/EN/UK, zmianę nagłówka, localStorage i zachowanie języka po przeładowaniu. Raport: `rx-bibi-reports/rx-live-languages.json` w artefaktach CI.
+- GitHub Actions na commicie `7ecb07fc`: RX BIBI Tester SUCCESS (run 40860299669); VEXORIO checks SUCCESS (40860299655); Deploy VEXORIO SUCCESS (40860299687).
+- Wynik SUCCESS workflow nie dowodzi samodzielnie, że każdy krok zakończył się sukcesem (część kroków ma `if: always()`); w razie regresji sprawdzić log kroku językowego i artefakt raportu.
+- TinyFish: odinstalowany z ChatGPT 2026-10-29; nie uruchamiać i nie instalować ponownie bez wyraźnej prośby właściciela. Nie mylić odłączenia wtyczki z anulowaniem subskrypcji u dostawcy.
+- Istniejąca pamięć: `rx-persistent-memory.mjs` (jawne polecenia i Supabase RLS), `guard/confirmed-fix-memory.cjs` i `docs/rx-confirmed-fixes.md` (potwierdzone naprawy), `rx-ant-task-board.cjs` (deduplikacja propozycji). Nie budować ich od nowa.
+- RX CLOUD 6.0: kod/testy self-host, nie oznaczać jako wdrożone na własnym fizycznym serwerze bez osobnego potwierdzenia.
+- Zasada: przed zmianą czytać ten dziennik i istniejące moduły; nie powtarzać zamkniętych prac. Nie zmieniać wyglądu `index.html` bez zgody; bez nowych kont i bez płatnych usług.
