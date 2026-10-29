@@ -242,6 +242,17 @@ export function planRXChat(message,history=[],learning=null){
    answer='👑 Rozumiem, chcesz rozmawiać bez uruchamiania testów i raportów. Powiedz, jaki temat mam wyjaśnić; nie będę proponować testów.';
   }
  }
+ // RX NAUKA 2.0: short follow-ups use the last user question, not a repeated template.
+ const userMessages=history.filter(x=>/^Użytkownik:\s*/i.test(x)).map(x=>x.replace(/^Użytkownik:\s*/i,'').trim());
+ const latestUserMessage=userMessages.at(-1)||'';
+ const brainContext=/(mozg|model|rx nauka|pamiec|krolow)/i.test(normalizeRX(latestUserMessage));
+ const shortFollowup=/^(a (pamiec|nauka|rozmowa)|co dalej|dalej|rozwin|rozwin to|jak to dziala|a jak|dlaczego|od czego zaczac)[?!. ]*$/i.test(plain);
+ if(shortFollowup&&brainContext){
+  if(/pamiec|nauka/i.test(plain))answer='👑 Pamięć rozmowy to przechowywanie wcześniejszych wiadomości, a nauka to wykorzystanie zatwierdzonych poprawek w następnych odpowiedziach. Obecnie RX rozpoznaje wybrane preferencje, ale nie trenuje modelu. Następny krok: sprawdzanie, czy moja odpowiedź uwzględnia Twoją ostatnią poprawkę.';
+  else answer='👑 Wróćmy do budowy mózgu RX. Mamy planer i ograniczoną historię rozmowy. Teraz rozwijamy rozumienie kolejnych pytań oraz uczenie z poprawek. Możemy zacząć od pamięci kontekstu albo od poprawiania nietrafionych odpowiedzi.';
+  tasks.length=0;
+  plan.work=null;
+ }
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
