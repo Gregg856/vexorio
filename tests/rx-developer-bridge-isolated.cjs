@@ -91,3 +91,18 @@ console.log('PASS RX Queen: persistent review deduplication and new incident han
   assert.equal(ok.results[0].status,'completed');
   console.log('PASS RX BIBI: real Turbine executor differentiates failed and completed handlers');
  })().catch(error=>{console.error(error);process.exitCode=1;});
+
+ // Regression: functional review must describe the exact approved patch bytes.
+ const {stageQueenPatch}=require('../rx-mega-cloud-computer.cjs');
+ const crypto=require('node:crypto');
+ const target='rx-command-bridge.cjs';
+ const original=fs.readFileSync(path.join(__dirname,'..',target),'utf8');
+ const debugLine='debugger;';
+ const injected=original+'\n'+debugLine+'\n';
+ const proposal=draftPatch({target,oldText:debugLine,newText:'',reason:'Remove debugger'});
+ const candidate={target,rule:'remove-debugger',syntax:'valid',bibiVerified:true,applied:false,
+  sourceSha256:crypto.createHash('sha256').update(original).digest('hex'),draft:proposal};
+ const review={target,rule:'remove-debugger',functionalValidation:'passed',bibiValidation:'passed',readyForReview:true,preview:original};
+ assert.throws(()=>stageQueenPatch(candidate,{approved:true,functionalReview:review}),/anchor missing|ambiguous|BIBI patch invariant/);
+ assert.throws(()=>stageQueenPatch(candidate,{approved:true,functionalReview:{...review,preview:'not the approved patch'}}),/anchor missing|ambiguous|BIBI patch invariant/);
+ console.log('PASS RX Queen: mismatched patch drafts cannot be staged');
