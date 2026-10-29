@@ -40,19 +40,69 @@ const verified=proposals.map((candidate,index)=>{
    check=spawnSync(process.execPath,['--check',tempFile],{encoding:'utf8',timeout:10000,maxBuffer:65536});
   }finally{fs.rmSync(sandbox,{recursive:true,force:true});}
   if(check.error||check.status!==0)throw Error('Sandbox syntax check failed: '+String(check.error?.message||check.stderr||check.status).slice(0,160));
-  // Functional smoke tests run against the disposable patched module only.
-  // No repository writes, imports of the patched module, or external commands.
-  const functionalChecks=[];
-  if(target==='rx-command-bridge.cjs'){
-   const required=['function planCommand(','module.exports={planCommand}'];
-   for(const marker of required)functionalChecks.push({name:'preserve-command-contract',passed:preview.includes(marker)});
-  }else if(target==='rx-coordinator.cjs'){
-   for(const marker of ['function coordinateRX(','module.exports={coordinateRX}'])functionalChecks.push({name:'preserve-coordinator-contract',passed:preview.includes(marker)});
-  }else if(target==='rx-developer-patch-bridge.cjs'){
-   for(const marker of ['function inspectAndPropose(','module.exports={inspectAndPropose}'])functionalChecks.push({name:'preserve-developer-contract',passed:preview.includes(marker)});
-  }
-  const functionalPassed=functionalChecks.length>0&&functionalChecks.every(x=>x.passed);
-  return {...candidate,incidentId,bibiValidation:'passed',sandboxValidation:'node-check-passed',functionalChecks,functionalValidation:functionalPassed?'smoke-passed':'failed',readyForReview:functionalPassed};
+  // Run actual exported behavior in a restricted child process against the patch.
+  // Only the three allowlisted modules are eligible. The child has no network,
+  // subprocess, filesystem or process.env access; require is a fixed mock map.
+  const harness = `
+'use strict';
+const fs=require('node:fs');
+const vm=require('node:vm');
+const assert=require('node:assert/strict');
+const source=fs.readFileSync(process.argv[2],'utf8');
+const target=process.argv[3];
+const mock={
+ './rx-ai-router.cjs':{route:()=>({supported:true,module:'mock'})},
+ './rx-task-catalog.cjs':{RULES:[{id:'test',words:['test'],modules:['mock'],cost:1,kind:'test',target:'mock',role:'test'}]},
+ './rx-command-bridge.cjs':{planCommand:()=>({steps:[],requiresApproval:true})},
+ './rx-turbine-engine.cjs':{createTurbine:()=>({submit:()=>({accepted:true}),plan:()=>({})})},
+ './rx-energy-core.cjs':{createEnergyCore:()=>({status:()=>({balance:0})})},
+ './rx-dna-core.js':{createAntDNA:()=>({id:'1',role:'test'})},
+ './guard/rx-developer-core.cjs':{analyzeJavaScript:()=>({ok:true})},
+ './rx-patch-drafter.cjs':{suggestPatch:()=>{throw Error('Rule match missing or ambiguous');}}
+};
+const context={module:{exports:{}},exports:{},require:(id)=>{if(!Object.hasOwn(mock,id))throw Error('Dependency blocked: '+id);return mock[id];}};
+vm.runInNewContext(source,context,{filename:target,timeout:1000});
+const api=context.module.exports;
+if(target==='rx-command-bridge.cjs'){
+ assert.equal(typeof api.planCommand,'function');
+ const result=api.planCommand('test',{energyBalance:2});
+ assert.equal(result.requiresApproval,true);
+ assert.equal(result.productionModified,false);
+ assert.equal(result.autoExecuted,0);
+ assert.throws(()=>api.planCommand(''),/Invalid RX command/);
+}else if(target==='rx-coordinator.cjs'){
+ assert.equal(typeof api.coordinateRX,'function');
+ const result=api.coordinateRX('test');
+ assert.equal(result.productionModified,false);
+ assert.equal(result.executed,0);
+ assert.equal(result.queen.requiresApproval,true);
+}else if(target==='rx-developer-patch-bridge.cjs'){
+ assert.equal(typeof api.inspectAndPropose,'function');
+ const result=api.inspectAndPropose({target:'src/test.js',source:'const a=1;'});
+ assert.equal(result.requiresApproval,true);
+ assert.equal(result.productionModified,false);
+ assert.equal(result.automaticDeployment,false);
+}else throw Error('Target not allowlisted');
+console.log('FUNCTIONAL_PASS');
+`;
+  let functional;
+  const functionalSandbox=fs.mkdtempSync(path.join(os.tmpdir(),'rx-bibi-functional-'));
+  try{
+   const patched=path.join(functionalSandbox,target);
+   const runner=path.join(functionalSandbox,'harness.cjs');
+   fs.writeFileSync(patched,preview,{flag:'wx'});
+   fs.writeFileSync(runner,harness,{flag:'wx'});
+   functional=spawnSync(process.execPath,['--no-network-inspection','--disallow-code-generation-from-strings',runner,patched,target],{
+    encoding:'utf8',timeout:3000,maxBuffer:16384,env:{NODE_OPTIONS:''},cwd:functionalSandbox
+   });
+  }finally{fs.rmSync(functionalSandbox,{recursive:true,force:true});}
+  const functionalPassed=!functional.error&&functional.status===0&&functional.stdout.includes('FUNCTIONAL_PASS');
+  return {...candidate,incidentId,bibiValidation:'passed',sandboxValidation:'node-check-passed',
+   functionalChecks:[{name:'isolated-export-behavior',passed:functionalPassed}],
+   functionalValidation:functionalPassed?'passed':'failed',
+   functionalError:functionalPassed?null:String(functional.error?.message||functional.stderr||functional.status).slice(0,160),
+   readyForReview:functionalPassed};
+
  }catch(error){
   return {...candidate,incidentId,bibiValidation:'failed',readyForReview:false,validationError:String(error.message).slice(0,160)};
  }
