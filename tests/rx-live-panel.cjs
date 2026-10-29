@@ -99,6 +99,22 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    report.checks.push({name:'chat-typing-'+name,ok:writingOk,scope:'ISOLATED_NO_PRODUCTION_SUBMIT',sendVisible});
    if(!writingOk)throw Error(name+': chat typing failed');
    await page.locator('#input').fill('');
+   // Exercise the real form submit handler with a harmless greeting. Stub only the
+   // chat endpoint in the isolated preview; never send requests to production.
+   let requests=0;
+   await page.route('**/api/rx/chat',async route=>{
+    requests++;
+    const body=route.request().postDataJSON();
+    if(body?.message!=='Cześć RX')throw Error('Unexpected synthetic chat message');
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-bibi-synthetic',answer:'RX BIBI: odpowiedź testowa'})});
+   });
+   await page.locator('#input').fill('Cześć RX');
+   await page.locator('#form button[type="submit"]').click();
+   await page.locator('#messages .msg.bot').filter({hasText:'RX BIBI: odpowiedź testowa'}).waitFor({timeout:5000});
+   const responseOk=requests===1&&await page.locator('#input').inputValue()==='';
+   report.checks.push({name:'chat-submit-response-'+name,ok:responseOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST',requests});
+   if(!responseOk)throw Error(name+': synthetic chat submit/response failed');
+
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
    if(errors.length)throw Error(name+': visual preview JS: '+errors.join('; '));
