@@ -98,7 +98,7 @@ console.log('FUNCTIONAL_PASS');
    });
   }finally{fs.rmSync(functionalSandbox,{recursive:true,force:true});}
   const functionalPassed=!functional.error&&functional.status===0&&functional.stdout.includes('FUNCTIONAL_PASS');
-  return {...candidate,incidentId,bibiValidation:'passed',sandboxValidation:'node-check-passed',
+  return {...candidate,incidentId,bibiValidation:functionalPassed?'passed':'failed',sandboxValidation:'node-check-passed',
    functionalChecks:[{name:'isolated-export-behavior',passed:functionalPassed}],
    functionalValidation:functionalPassed?'passed':'failed',
    functionalError:functionalPassed?null:String(functional.error?.message||functional.stderr||functional.status).slice(0,160),
