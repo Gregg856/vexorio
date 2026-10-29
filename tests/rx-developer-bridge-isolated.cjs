@@ -118,3 +118,20 @@ console.log('PASS RX Queen: persistent review deduplication and new incident han
  assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,functionalValidation:'failed'},patchedContent),false);
  assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,target:'other.cjs'},patchedContent),false);
  console.log('PASS RX Queen: exact matching passed BIBI review accepted; mismatches rejected');
+
+ // Queen PR proposal regression: no merge, no branch writes, fail closed.
+ const {prepareQueenPullRequest}=require('../rx-mega-cloud-computer.cjs');
+ const staged={kind:'rx-queen-staged-patch',target:'rx-command-bridge.cjs',
+  content:'module.exports={safe:true};',sourceSha256:'old',patchedSha256:
+  require('node:crypto').createHash('sha256').update('module.exports={safe:true};').digest('hex'),
+  bibiPatchedSyntax:{passed:true},bibiPatchInvariant:{passed:true},
+  readyForPullRequest:true,changesApplied:false,deployed:false};
+ const pr=prepareQueenPullRequest(staged,{approved:true});
+ assert.equal(pr.kind,'rx-queen-pr-proposal');
+ assert.equal(pr.pullRequestCreated,false);
+ assert.equal(pr.merged,false);
+ assert.equal(pr.deployed,false);
+ assert.throws(()=>prepareQueenPullRequest(staged,{approved:false}),/approved verified/);
+ assert.throws(()=>prepareQueenPullRequest({...staged,content:'tampered'},{approved:true}),/integrity failed/);
+ assert.throws(()=>prepareQueenPullRequest({...staged,bibiPatchedSyntax:{passed:false}},{approved:true}),/approved verified/);
+ console.log('PASS RX Queen: PR proposal integrity and approval gates');
