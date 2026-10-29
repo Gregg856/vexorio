@@ -66,6 +66,7 @@ on:
       - 'tests/rx-admin-auth-e2e.cjs'
       - 'rx-admin-prototype.html'
       - 'tests/rx-bibi-browser.cjs'
+      - 'tests/rx-live-languages.cjs'
       - 'tests/rx-bibi-studio.cjs'
       - 'tests/rx-bibi-encoder-diagnostic.cjs'
       - '.github/workflows/rx-bibi-browser.yml'
@@ -351,6 +352,9 @@ jobs:
       - name: RX — sprawdź wejście do panelu administratora VEXORIO
         if: always()
         run: node tests/rx-admin-entry-mobile.cjs
+      - name: RX BIBI — audyt języków PL DE EN UK na żywo
+        if: always()
+        run: node tests/rx-live-languages.cjs
       - name: RX BIBI — panel produkcyjny na żywo (mobile i desktop)
         if: always()
         run: node tests/rx-live-panel.cjs
