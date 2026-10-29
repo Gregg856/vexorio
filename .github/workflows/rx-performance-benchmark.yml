@@ -119,11 +119,18 @@ jobs:
             const sorted=samples.slice().sort((a,b)=>a-b);
             const median=sorted[2];
             const summary='## RX Queen repeated timing\\nSamples (ms): '+samples.join(', ')+'\\nMedian: '+median+' ms; min: '+sorted[0]+' ms; max: '+sorted[4]+' ms.\\n';
+            const spread=sorted[4]-sorted[0];
+            const mean=samples.reduce((sum,n)=>sum+n,0)/samples.length;
+            const variabilityPct=Number((100*spread/median).toFixed(1));
+            const recommendation=variabilityPct>25?'High timing variability: repeat measurements before optimizing.':'Timing variability within 25% of median; inspect slowest test before changing code.';
+            const analysis='RX FAST analysis: mean '+mean.toFixed(1)+' ms; range '+spread+' ms; variability '+variabilityPct+'%. '+recommendation;
+            console.log(analysis);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,analysis+'\\n');
             console.log(summary);
             require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary);
             const fs=require('node:fs');
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
-            fs.writeFileSync('rx-bibi-reports/rx-fast-queen-timing.json',JSON.stringify({schema:1,kind:'rx-fast-queen-timing',samples,medianMs:median,minMs:sorted[0],maxMs:sorted[4],details,productionModified:false},null,2)+'\n');
+            fs.writeFileSync('rx-bibi-reports/rx-fast-queen-timing.json',JSON.stringify({schema:1,kind:'rx-fast-queen-timing',samples,medianMs:median,minMs:sorted[0],maxMs:sorted[4],meanMs:Number(mean.toFixed(1)),spreadMs:spread,variabilityPct,recommendation,details,productionModified:false},null,2)+'\n');
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
       - uses: actions/upload-artifact@v4
