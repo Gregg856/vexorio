@@ -4,6 +4,8 @@ on:
     paths:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-cloud-queen-panel.cjs'
+      - 'rx-admin-prototype.html'
       - 'worker.js'
       - 'public/**'
       - 'deploy/Caddyfile.rxcloud.example'
@@ -37,6 +39,8 @@ jobs:
         run: |
           node --check rx-cloud-server.cjs
           node --check tests/rx-cloud-server.cjs
+      - name: Test Queen panel monitoring states
+        run: node tests/rx-cloud-queen-panel.cjs
       - name: Validate deployment templates
         run: |
           grep -q 'Restart=on-failure' deploy/rxcloud.service
