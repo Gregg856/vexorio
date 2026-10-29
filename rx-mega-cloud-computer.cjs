@@ -63,6 +63,18 @@ function runQueenApprovedChecks(plan,{approved=false,execute=false,maxChecks=2}=
  return {kind:'rx-queen-approved-checks',approved,executed:result.executed,checks:result.checks,productionModified:false,codePatched:false,deployed:false,requiresApproval:!approved};
 }
 
+
+function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs'}={}){
+ const allowed=['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs'];
+ if(!allowed.includes(target))throw Error('Invalid RX build target');
+ const checks=runQueenApprovedChecks(plan,{approved,execute:false});
+ if(!approved)return {kind:'rx-queen-build-preview',checks,candidates:[],changesApplied:false};
+ const {inspectAndPropose}=require('./rx-developer-patch-bridge.cjs');
+ const source=fs.readFileSync(path.join(__dirname,target),'utf8');
+ const review=inspectAndPropose({target,source});
+ return {kind:'rx-queen-build-preview',checks,candidates:review.suggestions.map(x=>({target,rule:x.rule,syntax:x.preview?.syntax||'review',requiresApproval:true,applied:false})),changesApplied:false};
+}
+
 if(require.main===module){
  const report=runCloudComputer({execute:true});
  const file=path.join('rx-bibi-reports','rx-mega-cloud-computer.json');
@@ -71,4 +83,4 @@ if(require.main===module){
  console.log('RX MEGA CLOUD COMPUTER:',report.passed,'passed,',report.failed,'failed');
  if(report.failed)process.exitCode=1;
 }
-module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,CHECKS};
+module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,CHECKS};
