@@ -18,6 +18,9 @@ on:
       - 'tests/rx-unified-failure-simulation.cjs'
       - 'tests/rx-bibi-dashboard-summary.cjs'
       - 'rx-chat-planner.mjs'
+      - 'tests/rx-chat-panel-contract.cjs'
+      - 'worker.js'
+      - 'rx-developer-review-runner.cjs'
       - 'rx-queen-bibi-triage.cjs'
   workflow_dispatch:
   schedule:
@@ -73,6 +76,8 @@ jobs:
         id: browser_agent
         continue-on-error: true
         run: node tests/rx-bibi-browser-agent.cjs
+      - name: RX BIBI — sprawdź połączenie czatu z RX Developerem
+        run: node tests/rx-chat-panel-contract.cjs
       - name: RX BIBI — rozmawiaj testowo z lokalnym mózgiem Królowej
         id: dialogue
         continue-on-error: true
