@@ -37,4 +37,13 @@ assert.match(runner,/rx-developer-review\.json/);
 assert.match(runner,/changesApplied:false/);
 assert.match(worker,/engine:localEngine/);
 assert.match(html,/data\.answer/);
+// RX BIBI: validate the actual chat composer and server route guardrails.
+assert.match(html,/<form[^>]*class="composer"[^>]*id="form"/);
+assert.match(html,/<textarea[^>]*id="input"[^>]*maxlength="8000"/);
+assert.match(html,/<button[^>]*class="send"[^>]*type="submit">Wyślij<\/button>/);
+assert.match(html,/getElementById\('form'\)\.addEventListener\('submit'/);
+assert.match(html,/e\.preventDefault\(\)/);
+assert.match(html,/input\.value\.trim\(\)/);
+assert.match(html,/input\.value=''/);
+assert.match(worker,/planRXChat\(message,history,bibiLearning\)/);
 console.log('RX chat panel/server contract OK (without authenticated session)');
