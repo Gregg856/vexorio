@@ -22,7 +22,13 @@ function createTurbine({maxParallel=4,maxQueued=100}={}){
 async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2}={}){
  if(!approved)throw Error('Owner approval required');
  if(!Number.isSafeInteger(maxParallel)||maxParallel<1||maxParallel>8)throw Error('Invalid execution capacity');
- const tasks=turbine.plan().waves.flat();
+ const plan=turbine?.plan?.();
+ if(!plan||plan.kind!=='rx-turbine-plan'||!Array.isArray(plan.waves)||plan.waves.length>500)throw Error('Invalid turbine plan');
+ const tasks=plan.waves.flat();
+ if(tasks.length>500||tasks.some(task=>!task||typeof task.id!=='string'||!/^RXJOB-[A-Za-z0-9_-]{1,40}$/.test(task.id)||
+  !ALLOWED.includes(task.kind)||typeof task.target!=='string'||!/^[-A-Za-z0-9_./]{1,120}$/.test(task.target)||
+  task.target.includes('..')||task.target.startsWith('/')||task.requiresApproval!==true||task.status!=='planned'))
+  throw Error('Invalid approved turbine task');
  const results=new Array(tasks.length);
  let cursor=0,active=0,peakActive=0;
  const started=Date.now();
