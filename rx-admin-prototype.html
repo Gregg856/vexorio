@@ -111,6 +111,7 @@ async function checkAdmin(){
   if(!confirmed||confirmed.id!==user.id)throw Error('Nieprawidłowa sesja.');
   if(rxActiveUserId&&rxActiveUserId!==user.id){rxServerChatHistory.length=0;document.getElementById('rxCheckChatResult').textContent='🔄 Zmieniono konto — historia czatu w tej karcie została wyczyszczona.';}
   rxActiveUserId=user.id;
+  rxRestoreTranscript(user.id);
   gate.hidden=true;app.hidden=false;
  }catch(e){rxActiveUserId=null;gateText.textContent=e.message||'Brak dostępu.';}
 }
@@ -199,7 +200,7 @@ const groups=[
 const menu=document.getElementById('menu'),sub=document.getElementById('sub'),heading=document.getElementById('heading'),messages=document.getElementById('messages');
 let selected=0;const activeModule=document.getElementById('activeModule');
 function show(i){selected=i;heading.textContent=groups[i][0];activeModule.textContent='Wybrany moduł: '+groups[i][0];menu.replaceChildren();groups.forEach(([name],n)=>{const b=document.createElement('button');b.className='nav';b.textContent=name;if(n===i)b.setAttribute('aria-current','page');b.onclick=()=>show(n);menu.append(b)});sub.replaceChildren();groups[i][1].forEach(label=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{add('user',label);if(label==='⚙️ RX Wirnik — ostatni przebieg')loadTurbineStatus();else if(label==='Diagnostyka Królowej — wyniki')loadQueenDiagnostics();else if(label==='Uruchom testy RX Coordinator')runApprovedCoordinator();else if(label==='Gotowość uruchamiania RX')loadExecutionReadiness();else if(label==='RX Coordinator — testy CI'||label==='Odśwież raport RX Coordinator')loadCoordinatorCI();else if(/^(Testy|Wyniki testów|Status systemów|Status 11 modułów)$/.test(label))loadLiveStatus('ci');else if(label==='Kolejka'||label==='Zadania do zatwierdzenia')loadLiveStatus('ants');else if(commandModule(label))loadStatus(commandModule(label));else add('bot','Ta podkategoria jest przygotowana jako nawigacja. Funkcje administracyjne będą podłączone dopiero po wdrożeniu autoryzacji.')};sub.append(b)})}
-function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'})}
+function add(type,message){const d=document.createElement('div');d.className='msg '+type;d.textContent=message;messages.append(d);d.scrollIntoView({block:'nearest'});if(typeof rxRememberMessage==='function')rxRememberMessage(type,message)}
 const REPORTS=Object.freeze({status:'rx-system-status.json',queen:'rx-queen-ant-supervisor.json',ants:'rx-ant-task-board.json',cosmos:'rx-cosmos-ant-queue.json',medusa:'rx-medusa-signals.json',computer:'rx-mega-cloud-computer.json',ai:'rx-ant-ai-training.json',bibi:'rx-bibi-budget.json'});
 async function readReport(name){
  const file=REPORTS[name];if(!file)throw Error('Nieznany raport.');
@@ -386,6 +387,44 @@ document.getElementById('rxCheckChat').addEventListener('click',async()=>{
 });
 
 const rxServerChatHistory=[];
+const RX_CHAT_TAB_KEY='rx-admin-chat-tab-v1';
+let rxTranscript=[],rxTranscriptEnabled=false;
+function rxRestoreTranscript(userId){
+ rxServerChatHistory.length=0;rxTranscript=[];
+ try{
+  const raw=JSON.parse(sessionStorage.getItem(RX_CHAT_TAB_KEY)||'null');
+  if(raw?.userId!==userId||raw?.enabled!==true)return;
+  rxTranscriptEnabled=true;
+  rxTranscript=Array.isArray(raw.messages)?raw.messages.filter(x=>x&&['user','bot'].includes(x.type)&&typeof x.text==='string'&&x.text.length<=4000).slice(-30):[];
+  for(const entry of rxTranscript){if(entry.type==='user')rxServerChatHistory.push(entry.text.slice(0,1000));}
+  if(rxServerChatHistory.length>20)rxServerChatHistory.splice(0,rxServerChatHistory.length-20);
+  for(const entry of rxTranscript)add(entry.type,entry.text);
+ }catch(_){rxTranscript=[];rxTranscriptEnabled=false;}
+ rxUpdateMemoryButton();
+}
+function rxUpdateMemoryButton(){
+ const button=document.getElementById('rxChatMemoryToggle');
+ if(button)button.textContent=rxTranscriptEnabled?'🧠 Pamięć karty: WŁ. — wyczyść':'🧠 Włącz pamięć rozmowy w tej karcie';
+}
+function rxRememberMessage(type,message){
+ if(!rxTranscriptEnabled||!rxActiveUserId||!['user','bot'].includes(type))return;
+ rxTranscript.push({type,text:String(message).slice(0,4000)});
+ rxTranscript=rxTranscript.slice(-30);
+ try{sessionStorage.setItem(RX_CHAT_TAB_KEY,JSON.stringify({userId:rxActiveUserId,enabled:true,messages:rxTranscript}));}catch(_){}
+}
+(function(){
+ const form=document.getElementById('form');
+ const button=document.createElement('button');button.type='button';button.id='rxChatMemoryToggle';
+ button.style.cssText='display:block;margin:8px 0;padding:9px;border-radius:9px;max-width:100%';
+ button.addEventListener('click',()=>{
+  rxTranscriptEnabled=!rxTranscriptEnabled;
+  if(!rxTranscriptEnabled){rxTranscript=[];rxServerChatHistory.length=0;try{sessionStorage.removeItem(RX_CHAT_TAB_KEY);}catch(_){}}
+  else if(rxActiveUserId){try{sessionStorage.setItem(RX_CHAT_TAB_KEY,JSON.stringify({userId:rxActiveUserId,enabled:true,messages:[]}));}catch(_){}}
+  rxUpdateMemoryButton();
+ });
+ form?.parentNode?.insertBefore(button,form);rxUpdateMemoryButton();
+})();
+
 async function answerServerBrainChat(question){
  try{
   const session=await rxClient.auth.getSession();
