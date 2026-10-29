@@ -85,6 +85,23 @@ function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',v
  return {kind:'rx-queen-build-preview',checks,candidates,changesApplied:false};
 }
 
+
+function stageQueenPatch(candidate,{approved=false}={}){
+ if(!approved||!candidate||candidate.syntax!=='valid'||candidate.bibiVerified!==true||candidate.applied!==false)throw Error('Queen patch requires verified explicit approval');
+ const allowed=['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs'];
+ if(!allowed.includes(candidate.target)||candidate.draft?.target!==candidate.target)throw Error('Invalid Queen patch target');
+ const crypto=require('node:crypto');
+ const source=fs.readFileSync(path.join(__dirname,candidate.target),'utf8');
+ if(crypto.createHash('sha256').update(source).digest('hex')!==candidate.sourceSha256)throw Error('Stale Queen patch source');
+ const {previewPatch}=require('./rx-patch-drafter.cjs');
+ const patched=previewPatch(candidate.draft,source).preview;
+ new (require('node:vm').Script)(patched,{filename:candidate.target});
+ // Staging only: no filesystem writes, commits, or deployment.
+ return {kind:'rx-queen-staged-patch',target:candidate.target,sourceSha256:candidate.sourceSha256,
+  patchedSha256:crypto.createHash('sha256').update(patched).digest('hex'),
+  content:patched,readyForPullRequest:true,changesApplied:false,deployed:false};
+}
+
 if(require.main===module){
  const report=runCloudComputer({execute:true});
  const file=path.join('rx-bibi-reports','rx-mega-cloud-computer.json');
@@ -93,4 +110,4 @@ if(require.main===module){
  console.log('RX MEGA CLOUD COMPUTER:',report.passed,'passed,',report.failed,'failed');
  if(report.failed)process.exitCode=1;
 }
-module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,CHECKS};
+module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,stageQueenPatch,CHECKS};
