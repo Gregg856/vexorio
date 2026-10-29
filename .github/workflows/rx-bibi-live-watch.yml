@@ -31,8 +31,6 @@ on:
       - 'guard-lab.html'
       - 'guard-tabs.js'
   workflow_dispatch:
-  schedule:
-    - cron: '17 * * * *'
 permissions:
   contents: read
   actions: read
