@@ -32,3 +32,10 @@ Ostatni potwierdzony commit: `0ea504c104c9ae18244a35e8b4ae9bc45176c84d`. Testy R
 
 ## Ograniczenia uczciwości
 Zielone CI ≠ BIBI zalogował się i pisał na czacie. Panel z przyciskiem ≠ autonomiczne wykonanie zadania. Raport z propozycją ≠ naprawiony błąd. Własne narzędzia są priorytetem, ale trzeba weryfikować ich realne możliwości.
+
+## Incydent RX BIBI Actions — 29.10.2026 (NIE POWTARZAĆ)
+- Run #113: `40921169407`, commit `0db5921`; GitHub zwracał `jobs: []`. Wcześniejsze czerwone: #112, #111, #110.
+- **Potwierdzona przyczyna**: `.github/workflows/rx-bibi-live-watch.yml` był uszkodzony: 1093 linie, zduplikowane `live` i `queen-fast`, przypadkowe nieprawidłowe fragmenty YAML poza zadaniami (m.in. dawne linie 408 i 748). To uniemożliwiało poprawną walidację workflow przed startem jobs.
+- **Naprawiono na `main`**: commit `a88fe35cf9e4378768d204d6bc0230fce09724cb`. Usunięto uszkodzone powtórzenia; zachowano pierwszy kompletny workflow (407 linii treści) z `scope`, `queen-fast`, `live`. Odczyt po commicie potwierdził po jednej definicji każdego zadania i brak obcych linii najwyższego poziomu.
+- **Stan testów**: wynik nowego przebiegu GitHub Actions nie został jeszcze potwierdzony. NIE twierdzić, że CI jest zielone. Następny krok: pobrać ID nowego run, jobs i logi; jeśli czerwony, naprawić rzeczywisty błąd bez maskowania. Nie odtwarzać starych duplikatów ani ponownie przerabiać concurrency bez dowodu.
+- Nie tworzyć nowych kont, paneli, workflow ani modułów. Używać istniejących RX BIBI, RX Developer, RX Sandbox, RX Królowa. Użytkownik oczekuje działania i trwałego zapisu, nie kolejnych raportów i powtarzania pracy.
