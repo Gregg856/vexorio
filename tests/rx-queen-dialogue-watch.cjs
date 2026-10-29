@@ -23,7 +23,12 @@ const fs=require('node:fs');
   {id:'errors',message:'Mam błąd w panelu',expected:/błęd|komunikat|raport|napraw/i},
   {id:'work-order',message:'Królowa zbuduj moduł RX',expected:/RX Developer|BIBI|plan/i,workExpected:true},
   {id:'learned-error',message:'Mam błąd w panelu',learning:{kind:'rx-queen-verified-learning',lessons:[{incidentId:'test-1',observation:'Przycisk czatu nie odpowiada',panelArea:'RX Admin'}]},expected:/Przycisk czatu nie odpowiada/},
-  {id:'followup',message:'Dalej',history:['Co robią Mrówki?'],expected:/mrów|zadani|plan/i}
+  {id:'followup',message:'Dalej',history:['Co robią Mrówki?'],expected:/mrów|zadani|plan/i},
+  {id:'freeform-question',message:'Dlaczego niebo jest niebieskie?',expected:/./},
+  {id:'freeform-creative',message:'Wymyśl historię o robocie i ogrodzie',expected:/./},
+  {id:'freeform-typos',message:'Co mozesz zrobic z moim projketem?',expected:/./},
+  {id:'freeform-long',message:'Opowiedz mi o planowaniu pracy. '.repeat(35),expected:/./},
+  {id:'freeform-mixed',message:'Hej Królowo, jak działają testy i co z Mrówkami?',expected:/test|mrów|zadani|plan/i}
  ];
  const results=[];
  for(const c of cases){
