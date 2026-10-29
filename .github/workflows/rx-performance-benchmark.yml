@@ -100,6 +100,8 @@ jobs:
             if(full.failed||selected.failed)process.exitCode=1;
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
+      - name: Verify RX FAST selection before timing
+        run: node tests/rx-fast-test-selection.cjs
       - name: Repeat RX FAST Queen timing (5 samples)
         run: |
           node - <<'NODE'
