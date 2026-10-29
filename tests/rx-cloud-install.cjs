@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const cp=require('node:child_process');
+const p='deploy/rxcloud-install.sh',s=fs.readFileSync(p,'utf8');
+assert.match(s,/MODE="\$\{1:---dry-run\}"/);
+assert.match(s,/Existing installation detected\. Refusing to overwrite/);
+assert.match(s,/No service started, no DNS modified, no production migration/);
+assert.doesNotMatch(s,/systemctl (start|enable|restart)/);
+assert.doesNotMatch(s,/wrangler deploy|git push|supabase db push/);
+let r=cp.spawnSync('bash',['-n',p],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);
+r=cp.spawnSync('bash',[p,'--dry-run'],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);
+assert.match(r.stdout,/Would NOT start services/);
+console.log('RX CLOUD 3.1 installer dry-run and safety checks: PASS');
