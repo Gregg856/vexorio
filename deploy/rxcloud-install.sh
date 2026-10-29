@@ -7,15 +7,18 @@ if [[ "$MODE" != "--dry-run" && "$MODE" != "--install" ]] || [[ $# -gt 1 ]]; the
 fi
 cd "$(dirname "$0")/.."
 echo "RX CLOUD 3.1 — mode: $MODE"
-if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
-  echo "Missing RX CLOUD source files" >&2; exit 1
-fi
 if [[ "$MODE" == "--dry-run" ]]; then
+  if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
+    echo "WARNING: Missing RX CLOUD source files or public/ assets. Installation is NOT ready."
+  fi
   echo "Would check Linux, Node.js 22+, systemd, Caddy and source tree."
   echo "Would create system user rxcloud and /opt/rxcloud/vexorio."
   echo "Would copy application, install a systemd unit and prepare /etc/rxcloud/rxcloud.env."
   echo "Would NOT start services, modify DNS, enable Caddy, or touch production."
   exit 0
+fi
+if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
+  echo "Missing RX CLOUD source files or public/ assets. Installation refused." >&2; exit 1
 fi
 if [[ "$(uname -s)" != Linux || "$(id -u)" -ne 0 ]]; then
   echo "--install requires root on Linux" >&2; exit 1
