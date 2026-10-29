@@ -37,7 +37,7 @@ function createLearner({epochs=180,hidden=24,rate=0.06}={}){
 // Uses only training examples, so held-out evaluation remains unseen.
 function lexicalProbe(text){
  if(typeof text!=='string'||!text.trim())throw Error('Invalid text');
- const words=s=>new Set((s.toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[]).filter(w=>w.length>2));
+ const words=s=>new Set((s.toLocaleLowerCase('pl').match(/[\p{L}\p{N}]+/gu)||[]).filter(w=>w.length>2));
  const query=words(text);
  const ranked=EXAMPLES.map(([phrase,label])=>{
   const candidate=words(phrase);
