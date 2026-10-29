@@ -59,6 +59,24 @@ jobs:
           assert.throws(()=>predictAdaptive(net,new Float32Array([1,2,3]),{preferBatch:'yes'}));
           console.log('RX Neural adaptive/fallback: PASS');
           NODE
+      - name: Verify calibrated RX Neural selector
+        run: |
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const {createNetwork,createAutoPredictor,predictBatch}=require('./rx-neural-core.cjs');
+          const net=createNetwork(4,8,3);
+          const auto=createAutoPredictor(net,{samples:16,rounds:5});
+          assert.ok(['batch','sequential'].includes(auto.method));
+          const input=Float32Array.from({length:32*4},(_,i)=>Math.sin(i));
+          const reference=predictBatch(net,input);
+          for(const result of [auto.predict(input),auto.fallback(input)]){
+            assert.equal(result.predictions.length,reference.length);
+            for(let i=0;i<reference.length;i++)assert.ok(Math.abs(result.predictions[i]-reference[i])<1e-4);
+          }
+          assert.equal(auto.fallback(input).method,'sequential');
+          assert.throws(()=>createAutoPredictor(net,{samples:5000}));
+          console.log('RX Neural auto selector: PASS; selected',auto.method);
+          NODE
       - name: Measure RX modules
         run: node rx-performance-benchmark.cjs
       - uses: actions/upload-artifact@v4
