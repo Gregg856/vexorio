@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
+process.env.SUPABASE_URL='https://rxcloud-staging-test.supabase.co';
 const {start,staticFetch}=require('../rx-cloud-server.cjs');
 (async()=>{
  const traversal=await staticFetch(new Request('http://localhost/%2e%2e/%2e%2e/etc/passwd'));
