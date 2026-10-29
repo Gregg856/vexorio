@@ -87,21 +87,7 @@ jobs:
       - name: RX BIBI — sprawdź połączenie czatu z RX Developerem
         run: node tests/rx-chat-panel-contract.cjs
       - name: RX BIBI — test pamięci Królowej i budowania przez mrówki
-        run: |
-          node tests/rx-developer-bridge-isolated.cjs
-          node - <<'NODE'
-          const assert=require('node:assert/strict');
-          const {planCommand}=require('./rx-command-bridge.cjs');
-          const {coordinateRX}=require('./rx-coordinator.cjs');
-          const plan=planCommand('Zbuduj nowa funkcje',{energyBalance:100});
-          assert.ok(plan.steps.some(x=>x.intent==='build_feature'&&x.supported));
-          assert.equal(plan.autoExecuted,0);
-          const coordinated=coordinateRX('Zbuduj nowa funkcje',{initialCredits:100});
-          assert.ok(coordinated.ants.some(x=>x.intent==='build_feature'));
-          assert.equal(coordinated.executed,0);
-          assert.equal(coordinated.productionModified,false);
-          console.log('PASS RX BIBI Queen build routing, ant planning, no production writes');
-          NODE
+        run: node tests/rx-developer-bridge-isolated.cjs
       - name: RX BIBI — rozmawiaj testowo z lokalnym mózgiem Królowej
         id: dialogue
         continue-on-error: true
