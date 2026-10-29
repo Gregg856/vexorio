@@ -35,6 +35,13 @@ const incidents=[...unique.values()].sort((a,b)=>Number(b.priority==='HIGH')-Num
 const updatedHistory=[...new Map([...known.filter(x=>x&&x.id).map(x=>[x.id,x]),...incidents.map(x=>[x.id,x])]).values()].slice(-300);
 fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(historyFile,JSON.stringify({history:updatedHistory},null,2)+'\n');
+// Route each incident to an existing RX worker instead of leaving it as a passive report.
+const routeIncident=f=>f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Developer';
+const nextWork=incidents.filter(f=>f.severity==='error').slice(0,5).map(f=>({
+ incidentId:f.id,worker:routeIncident(f),priority:f.priority,
+ action:'reproduce-and-isolate',check:f.check||null,source:f.source,
+ requiresApproval:true,executed:false
+}));
 const developerHandoff=incidents.map(f=>({id:f.id,priority:f.priority,occurrences:f.occurrences,previouslySeen:f.previouslySeen,module:f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Queen',source:f.source,check:f.check||null,problem:f.problem,proposedAction:f.suggestion,requiresApproval:true}));
 // RX Queen learning feed: only verified test outcomes, never unapproved fixes.
 const learningFeed={
