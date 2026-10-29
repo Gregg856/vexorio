@@ -116,10 +116,13 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
     received.push({message:body.message,history:Array.isArray(body.history)?body.history:[]});
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-bibi-synthetic',answer:turn.answer})});
    });
+   const chatLatenciesMs=[];
    for(const [index,turn] of turns.entries()){
+    const started=Date.now();
     await page.locator('#input').fill(turn.question);
     await page.locator('#form button[type="submit"]').click();
     await page.locator('#messages').getByText(turn.answer,{exact:false}).waitFor({timeout:8000});
+    chatLatenciesMs.push(Date.now()-started);
     if(await page.locator('#input').inputValue()!=='')throw Error(name+': input not cleared at turn '+index);
    }
    const historyOk=received.length===turns.length&&received.every((turn,index)=>index===0||turn.history.some(h=>String(h).includes(turns[index-1].answer)));
@@ -127,6 +130,11 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    const conversationOk=historyOk&&messagesOk;
    report.checks.push({name:'chat-multiturn-'+name,ok:conversationOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST',turns:received.length,historyOk,messagesOk});
    if(!conversationOk)throw Error(name+': synthetic multi-turn history or messages failed');
+   const maxChatLatencyMs=Math.max(...chatLatenciesMs);
+   const latencyOk=chatLatenciesMs.length===turns.length&&maxChatLatencyMs<8000;
+   report.checks.push({name:'chat-response-latency-'+name,ok:latencyOk,scope:'ISOLATED_STUBBED_API_NOT_REAL_SERVER_LATENCY',latenciesMs:chatLatenciesMs,maxMs:maxChatLatencyMs});
+   if(!latencyOk)throw Error(name+': chat response too slow '+JSON.stringify(chatLatenciesMs));
+
 
    // Fault-injection checks: verify the real UI reports server errors and timeouts.
    // No production endpoint is contacted; requests stay in the isolated preview.
