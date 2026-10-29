@@ -24,3 +24,17 @@ test('RX Admin preserves Queen workbench, approval gates and no arbitrary code e
  assert.match(html,/is_vexorio_admin/);
  assert.doesNotMatch(html,/\beval\s*\(/);
 });
+
+test('BIBI Tester verifies that Queen chat and ant queue have active click handlers',()=>{
+ for(const id of ['rxCheckChat','rxAntQueueRefresh','rxRunApprovedTests','rxWorkQueue']){
+  assert.match(html,new RegExp('getElementById\\(\\x27'+id+'\\x27\\)'));
+ }
+ assert.match(html,/function add\(type,message\)/);
+ assert.match(html,/d\.textContent=message/);
+});
+test('RX CLOUD probe is bounded and remains read-only',()=>{
+ assert.match(html,/AbortSignal\.timeout\(5000\)/);
+ assert.match(html,/cache:'no-store'/);
+ assert.match(html,/button\.disabled=false/);
+ assert.doesNotMatch(html,/fetch\('\/__rxcloud\/queen\/status'/);
+});
