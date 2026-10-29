@@ -7,6 +7,10 @@ const RULES=catalog.RULES;
 export function planRXChat(message,history=[],learning=null){
  if(typeof message!=='string'||!message.trim()||message.length>8000)throw new TypeError('Invalid message');
  if(!Array.isArray(history)||history.length>20||history.some(x=>typeof x!=='string'||x.length>8000))throw new TypeError('Invalid history');
+ // RX NAUKA 1.0: read-only, bounded session preference extraction.
+ const recentUserTurns=history.filter((_,index)=>index%2===0).slice(-10);
+ const preferences=recentUserTurns.filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/i.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
+ const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  const last=history.at(-1)||'';
  const previous=history.slice(-5).filter(x=>x.trim());
  const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez|a ten |a tamten |co z tym|co z nim|co z nimi|zrob drugi punkt|zrób drugi punkt)/i.test(message.trim());
@@ -217,5 +221,5 @@ export function planRXChat(message,history=[],learning=null){
   const lesson=verifiedLessons[0];
   answer+='\\n🧠 RX BIBI wykrył wcześniej: '+lesson.observation.slice(0,180)+'. Obszar: '+String(lesson.panelArea||'RX').slice(0,90)+'. To wskazówka do diagnostyki, nie potwierdzona naprawa. Wymagana weryfikacja testem.';
  }
- return {ok:true,answer,topics,tasks,plan,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
+ return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
