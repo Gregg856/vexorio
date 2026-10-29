@@ -23,7 +23,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rx-teacher-lessons
-          path: rx-bibi-reports/rx-queen-dialogue.json
+          path: |
+            rx-bibi-reports/rx-queen-dialogue.json
+            rx-bibi-reports/rx-lesson-candidates.json
           if-no-files-found: warn
           retention-days: 14
       - name: Run bounded Queen diagnostics
