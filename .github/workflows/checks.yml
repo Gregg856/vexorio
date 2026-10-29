@@ -18,6 +18,13 @@ jobs:
           node-version: '22'
       - name: Verify RX Developer browser/core parity before merge
         run: node tests/rx-developer-parity.cjs
+      - name: Stage static assets for RX CLOUD smoke test
+        run: |
+          mkdir -p public
+          find . -maxdepth 1 -type f -name '*.html' -exec cp -t public/ -- {} +
+          cp -- manifest.webmanifest public/
+          test -s public/index.html
+          test -s public/manifest.webmanifest
       - name: Check inline JavaScript and core UI
         run: |
           node tests/smoke.cjs
