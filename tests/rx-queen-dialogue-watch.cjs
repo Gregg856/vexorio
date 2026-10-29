@@ -11,12 +11,13 @@ const fs=require('node:fs');
   {id:'memory',message:'Czy pamiętasz rozmowę?',expected:/pamię|histori|kontekst/i},
   {id:'cloud',message:'Jak działa chmura?',expected:/cloudflare|chmur|github/i},
   {id:'errors',message:'Mam błąd w panelu',expected:/błęd|komunikat|raport|napraw/i},
+  {id:'learned-error',message:'Mam błąd w panelu',learning:{kind:'rx-queen-verified-learning',lessons:[{incidentId:'test-1',observation:'Przycisk czatu nie odpowiada',panelArea:'RX Admin'}]},expected:/Przycisk czatu nie odpowiada/},
   {id:'followup',message:'Dalej',history:['Co robią Mrówki?'],expected:/mrów|zadani|plan/i}
  ];
  const results=[];
  for(const c of cases){
   try{
-   const result=planRXChat(c.message,c.history||[]);
+   const result=planRXChat(c.message,c.history||[],c.learning||null);
    if(!result?.ok||typeof result.answer!=='string'||!result.answer.trim())throw Error('No usable answer');
    if(!c.expected.test(result.answer))throw Error('Answer not related to expected topic');
    if(result.executed!==0)throw Error('Unexpected execution');
