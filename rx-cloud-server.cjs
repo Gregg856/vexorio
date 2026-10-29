@@ -4,6 +4,7 @@
 const http = require('node:http');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const {timingSafeEqual} = require('node:crypto');
 const {pathToFileURL} = require('node:url');
 const root = path.resolve(__dirname, 'public');
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webmanifest':'application/manifest+json'};
@@ -48,6 +49,19 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       const origin='http://localhost';
       const url=new URL(req.url||'/',origin);
       if(url.pathname==='/__rxcloud/health') {if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'Allow':'GET, HEAD','Cache-Control':'no-store'});res.end();return;}res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),memory:{rssBytes:process.memoryUsage().rss,heapUsedBytes:process.memoryUsage().heapUsed,heapTotalBytes:process.memoryUsage().heapTotal},connectionsLimit:server.maxConnections,load:{activeRequests,peakActiveRequests,completedRequests}}));return;}
+      if(url.pathname==='/__rxcloud/queen/status') {
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('X-Content-Type-Options','nosniff');
+        if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end();return;}
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32 && supplied.length===secret.length &&
+          timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        if(!valid){res.writeHead(401,{'Content-Type':'application/json'});res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        res.writeHead(200,{'Content-Type':'application/json'});
+        res.end(JSON.stringify({ok:true,service:'rx-cloud-2',queenBridge:'connected',mode:'read-only',taskExecution:false,productionChanges:false}));
+        return;
+      }
       const maxBodyBytes=2*1024*1024; // Preserve verified upload bound until tests and upload flow are updated together.
       const declaredLength=req.headers['content-length'];
       if(declaredLength!==undefined && /^\d+$/.test(declaredLength) && Number(declaredLength)>maxBodyBytes){res.writeHead(413,{'Cache-Control':'no-store'});res.end();req.resume();return;}
