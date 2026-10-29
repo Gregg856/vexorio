@@ -86,6 +86,23 @@ jobs:
         id: triage
         if: always()
         run: node rx-queen-bibi-triage.cjs
+      - name: RX Developer — analyze BIBI failure queue
+        if: always()
+        env:
+          RX_TARGET: rx-developer-patch-bridge.cjs
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const path='rx-bibi-reports/rx-queen-bibi-triage.json';
+          if(!fs.existsSync(path)){console.log('BIBI triage unavailable');process.exit(0);}
+          const triage=JSON.parse(fs.readFileSync(path,'utf8'));
+          if(!Array.isArray(triage.nextWork)||triage.nextWork.length===0){console.log('No BIBI failures to analyze');process.exit(0);}
+          const {spawnSync}=require('node:child_process');
+          const result=spawnSync(process.execPath,['rx-developer-review-runner.cjs'],{stdio:'inherit',env:{...process.env,RX_TARGET:'rx-developer-patch-bridge.cjs'},timeout:30000});
+          if(result.error)throw result.error;
+          if(result.status!==0)process.exit(result.status||1);
+          console.log('RX Developer analyzed existing module; no code changes applied');
+          NODE
       - name: RX BIBI SMART — odczytaj pamięć poprzedniego przebiegu
         id: previous
         if: always()
