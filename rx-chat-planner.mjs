@@ -73,6 +73,16 @@ export function planRXChat(message,history=[],learning=null){
   {id:'knowledge',match:asksKnowledge,label:'📚 Wiedza',detail:'Źródła można odczytać z modułu wiedzy świata.'},
   {id:'next',match:asksNext,label:'👑 Kolejne kroki',detail:'Najpierw raport, potem wybór poprawki i zatwierdzenie.'}
  ];
+ // Deterministic order for multiple requests: diagnose -> propose fix -> verify.
+ // This is a read-only plan; no modules are executed by the chat planner.
+ const compoundRequest=/(?:\\b(?:i|oraz|potem|nastepnie|a potem)\\b|,)/.test(plain);
+ const orderedWork=[];
+ if(compoundRequest){
+  if(asksCheckChat||asksError||asksTests)orderedWork.push({module:'RX BIBI',action:'Sprawdź czat i zgromadź wynik testu',status:'proposed',requiresApproval:true});
+  if(asksFixChat||asksBuilding)orderedWork.push({module:'RX Developer',action:'Przygotuj poprawkę na podstawie wyniku',status:'proposed',requiresApproval:true});
+  if(orderedWork.length>1)orderedWork.push({module:'RX BIBI',action:'Uruchom test regresji po zatwierdzonej poprawce',status:'proposed',requiresApproval:true});
+ }
+ if(orderedWork.length>1)plan.work={kind:'rx-ordered-work-proposal',status:'proposed',executed:false,requiresApproval:true,stages:orderedWork};
  const selectedParts=multiParts.filter(x=>x.match);
  const multiIntent=selectedParts.length>=2;
  const requestedPoint=plain.match(/^(?:zrob|pokaz|omow|wyjasnij|sprawdz|przejdz do|punkt)\s+(?:punkt\s+)?(pierwszy|drugi|trzeci|czwarty|piaty|[1-5])(?:\s+punkt)?[.!? ]*$/);
@@ -154,6 +164,7 @@ export function planRXChat(message,history=[],learning=null){
  else if(elaborate)answer='👑 Rozwijamy temat: „'+currentUserTopic.slice(0,140)+'”. Mogę omówić działanie, ograniczenia albo zaproponować konkretny test. Który aspekt Cię interesuje?';
  else if(asksConversation)answer='👑 Jasne, porozmawiajmy! Co dziś najbardziej chcesz ulepszyć w VEXORIO albo co Cię ciekawi?';
  else if(asksTests)answer='🧪 Mogę wskazać testy i pomóc odczytać raport. Ich rzeczywisty wynik sprawdź przez „Sprawdź testy RX” lub raport RX Coordinator. Nie zgaduję, czy ostatni przebieg był zielony.';
+ else if(orderedWork.length>1)answer='👑 Rozumiem kilka zadań. Proponowana kolejność:\\n'+orderedWork.map((x,i)=>(i+1)+'. '+x.module+': '+x.action).join('\\n')+'\\n🔒 To plan — nie uruchomiłam testów ani nie zmieniłam kodu.';
  else if(asksCheckChat)answer='🧪 Rozumiem: chcesz sprawdzić czat RX. Mogę zaproponować test wiadomości, kontekstu i obsługi błędów. Nie uruchomiłam testu ani nie znam jego wyniku bez raportu.';
  else if(asksFixChat)answer='🔧 Rozumiem: chcesz poprawić czat RX. Potrzebuję objawu lub wyniku testu, żeby przygotować konkretną poprawkę. Samo polecenie nie zmienia kodu.';
  else if(asksError)answer='🔧 Opisz błąd albo wklej dokładny komunikat. Pomogę ustalić możliwą przyczynę i zaproponować test. Bez raportu nie potwierdzę naprawy.';
