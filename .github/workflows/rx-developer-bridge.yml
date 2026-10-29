@@ -7,6 +7,16 @@ on:
       - 'tests/rx-developer-bridge-isolated.cjs'
       - '.github/workflows/rx-developer-bridge.yml'
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'RX file to inspect'
+        required: false
+        default: 'rx-command-bridge.cjs'
+        type: choice
+        options:
+          - rx-command-bridge.cjs
+          - rx-coordinator.cjs
+          - rx-developer-patch-bridge.cjs
 permissions:
   contents: read
 jobs:
@@ -25,3 +35,14 @@ jobs:
           node --check tests/rx-developer-bridge-isolated.cjs
       - name: Safe review-only integration
         run: node tests/rx-developer-bridge-isolated.cjs
+      - name: Inspect selected RX module
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          RX_TARGET: ${{ inputs.target }}
+        run: node rx-developer-review-runner.cjs
+      - name: Save developer review
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-developer-review
+          path: rx-bibi-reports/rx-developer-review.json
