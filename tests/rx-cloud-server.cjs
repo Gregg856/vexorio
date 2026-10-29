@@ -1,5 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const path=require('node:path');
 process.env.SUPABASE_URL='https://rxcloud-staging-test.supabase.co';
 const {start,staticFetch}=require('../rx-cloud-server.cjs');
 (async()=>{
@@ -13,6 +15,12 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
    const response=await staticFetch(new Request('http://localhost'+blocked));
    assert.notEqual(response.status,200,'Unsafe static asset must not be served: '+blocked);
  }
+ const symlink=path.resolve(__dirname,'../public/rxcloud-link-test.txt');
+ try{
+   await fs.symlink(path.resolve(__dirname,'../rx-cloud-server.cjs'),symlink);
+   const linked=await staticFetch(new Request('http://localhost/rxcloud-link-test.txt'));
+   assert.equal(linked.status,403,'Public symlink to server source must be denied');
+ }finally{await fs.rm(symlink,{force:true});}
  const configured=process.env.SUPABASE_URL;
  delete process.env.SUPABASE_URL;
  await assert.rejects(start({port:0,host:'127.0.0.1'}),/explicit SUPABASE_URL/);
