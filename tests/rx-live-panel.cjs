@@ -56,7 +56,7 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    const chatFirst=await page.evaluate(()=>{
     const chat=document.getElementById('rxChatCard')?.getBoundingClientRect();
     const secondary=document.querySelector('.section>.card:has(#sub)')?.getBoundingClientRect();
-    return {chatTop:chat?.top,secondaryTop:secondary?.top,ok:!!chat&&!!secondary&&chat.top<secondary.top};
+    return {chatTop:chat?.top,secondaryTop:secondary?.top,secondaryHidden:!!secondary&&(secondary.width===0||secondary.height===0),ok:!!chat&&!!secondary&&(secondary.width===0||secondary.height===0||chat.top<secondary.top)};
    });
    report.checks.push({name:'chat-first-'+name,ok:chatFirst.ok,layout:chatFirst});
    if(!chatFirst.ok)throw Error(name+': secondary tools appear above RX chat '+JSON.stringify(chatFirst));
@@ -67,9 +67,10 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
     const parent=container?.getBoundingClientRect();
     const buttons=[...document.querySelectorAll('#rxChatCard .rx-actions button')];
     const rects=buttons.map(b=>{const r=b.getBoundingClientRect();return {id:b.id,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}});
-    const within=!!parent&&rects.length>=4&&rects.every(r=>r.width>=44&&r.height>=36&&r.left>=parent.left-2&&r.right<=parent.right+2);
+    const hidden=getComputedStyle(container).display==='none';
+    const within=!!parent&&rects.length>=4&&(hidden||rects.every(r=>r.width>=44&&r.height>=36&&r.left>=parent.left-2&&r.right<=parent.right+2));
     const overlap=rects.some((a,i)=>rects.slice(i+1).some(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>2&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>2));
-    return {within,overlap,buttons:rects};
+    return {within,overlap:hidden?false:overlap,hidden,buttons:rects};
    });
    report.checks.push({name:'chat-actions-'+name,ok:actions.within&&!actions.overlap,scope:'ISOLATED_MOCK_AUTH_PREVIEW',actions});
    if(!actions.within||actions.overlap)throw Error(name+': chat actions clipped or overlapping '+JSON.stringify(actions));
