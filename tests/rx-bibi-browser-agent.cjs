@@ -43,12 +43,8 @@ const report={agent:'RX BIBI Browser Agent 1.2',mode:'PUBLIC_READ_ONLY',base,che
    // Exercise actual RX Admin markup and styles, isolated from all production APIs.
    // No authenticated session is created; we reveal the UI only in a synthetic preview.
    const adminHtml=await (await fetch(base+'/rx-admin-prototype.html',{signal:AbortSignal.timeout(15000)})).text();
-   await page.route('http://rx-preview.test/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>RX preview</title>'}));
-   await page.route('**/*',route=>{
-    if(route.request().url().startsWith('http://rx-preview.test/'))return route.continue();
-    return route.abort();
-   });
-   await page.goto('http://rx-preview.test/');
+   // Render production markup inside a local blank document: no DNS or network access.
+   await page.goto('about:blank');
    await page.setContent(adminHtml,{waitUntil:'domcontentloaded'});
    await page.evaluate(()=>{const gate=document.querySelector('#rxGate'),app=document.querySelector('#rxApp');if(gate)gate.hidden=true;if(app)app.hidden=false;});
    const input=page.locator('#input');
