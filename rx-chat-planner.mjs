@@ -4,7 +4,7 @@ import math from './rx-math-core.cjs';
 // Intent identifiers match rx-command-bridge.cjs; no Node-only dependencies.
 const RULES=catalog.RULES;
 
-export function planRXChat(message,history=[]){
+export function planRXChat(message,history=[],learning=null){
  if(typeof message!=='string'||!message.trim()||message.length>8000)throw new TypeError('Invalid message');
  if(!Array.isArray(history)||history.length>20||history.some(x=>typeof x!=='string'||x.length>8000))throw new TypeError('Invalid history');
  const last=history.at(-1)||'';
@@ -135,5 +135,12 @@ export function planRXChat(message,history=[]){
  else if(topics.length)answer='👑 Rozumiem temat: '+[...new Set(topics)].join(', ')+'. Mogę pomóc przygotować plan testów i wyjaśnić kolejne kroki. Niczego nie uruchomiłam bez zatwierdzenia.';
  else answer='👑 Chcę dobrze zrozumieć. Czy pytasz o Mrówki, Wirnik, model RX czy o konkretny błąd? Napisz jednym zdaniem, co mam sprawdzić lub wyjaśnić.';
 
+ // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
+ const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
+  ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
+ if(asksError&&verifiedLessons.length){
+  const lesson=verifiedLessons[0];
+  answer+='\\n🧠 RX BIBI wykrył wcześniej: '+lesson.observation.slice(0,180)+'. Obszar: '+String(lesson.panelArea||'RX').slice(0,90)+'. To wskazówka do diagnostyki, nie potwierdzona naprawa. Wymagana weryfikacja testem.';
+ }
  return {ok:true,answer,topics,tasks,plan,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
