@@ -11,6 +11,7 @@ for(const value of ['','Zażółć gęślą jaźń! 👑','Cześć Królowo 🤠
 assert.equal(toFrequencyVector('A').length,256);
 assert.ok(Math.abs(toFrequencyVector('AB').reduce((a,b)=>a+b,0)-1)<1e-6);
 assert.throws(()=>tokenize('a'.repeat(16385)),/too long/);
-assert.throws(()=>detokenize([300]),/unknown token/i);
+assert.throws(()=>detokenize([300]),/Invalid token id/);
+assert.throws(()=>detokenize([259]),/unknown token/i);
 assert.throws(()=>detokenize([255]),/utf-8/i);
 console.log('PASS RX LANGUAGE TOKENIZER');
