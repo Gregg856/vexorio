@@ -102,6 +102,23 @@ jobs:
           node --test tests/rx-ai-router.cjs
           node --test tests/rx-coordinator.cjs
           node --test tests/rx-coordinator-cloud.cjs
+      - name: RX Neural — sprawdź zgodność obliczeń wsadowych
+        run: |
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const {createNetwork,forward,predictBatch}=require('./rx-neural-core.cjs');
+          const net=createNetwork(3,5,2);
+          const input=new Float32Array([1,2,3,4,5,6,-1,0,1]);
+          const batch=predictBatch(net,input);
+          assert.equal(batch.length,6);
+          for(let i=0;i<3;i++){
+            const expected=forward(net,input.subarray(i*3,i*3+3)).pred;
+            for(let j=0;j<2;j++)assert.ok(Math.abs(batch[i*2+j]-expected[j])<1e-5);
+          }
+          assert.throws(()=>predictBatch(net,new Float32Array([1,2])));
+          assert.throws(()=>predictBatch(net,new Float32Array([NaN,0,1])));
+          console.log('RX Neural batch: PASS 3 samples, dimensions and finite input');
+          NODE
       - name: RX BIBI — 20 dodatkowych kontroli istniejących modułów
         run: |
           # 10 kontroli składni: żaden wadliwy moduł nie przechodzi dalej.
