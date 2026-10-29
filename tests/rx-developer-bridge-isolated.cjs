@@ -74,3 +74,18 @@ console.log('PASS RX Queen: persistent review deduplication and new incident han
  assert.equal(coordinated.executed,0);
  assert.equal(coordinated.productionModified,false);
  console.log('PASS RX BIBI: Queen -> Ants -> Turbine build proposal; no automatic writes');
+
+ // RX BIBI: actual bounded executor must distinguish a failed handler from success.
+ const {createTurbine,executeApproved}=require('../rx-turbine-engine.cjs');
+ (async()=>{
+  const t=createTurbine();
+  t.submit({id:'RXJOB-bibi-fail',kind:'run_unit_tests',target:'tests/rx-ai-core.cjs'});
+  const failed=await executeApproved(t,{approved:true,handlers:{run_unit_tests:async()=>false}});
+  assert.equal(failed.executed,1);
+  assert.equal(failed.results[0].status,'failed');
+  assert.equal(failed.results[0].ok,false);
+  assert.equal(failed.results[0].errorCode,'handler_returned_failure');
+  const ok=await executeApproved(t,{approved:true,handlers:{run_unit_tests:async()=>true}});
+  assert.equal(ok.results[0].status,'completed');
+  console.log('PASS RX BIBI: real Turbine executor differentiates failed and completed handlers');
+ })().catch(error=>{console.error(error);process.exitCode=1;});
