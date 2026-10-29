@@ -229,9 +229,24 @@ for(let i=0;i<reference.length;i++)assert.ok(Math.abs(reference[i]-candidate[i])
 const neuralSingleTiming=measure('RX Neural 64 sequential samples',neuralSingle,30);
 const neuralBatchTiming=measure('RX Neural 64 batched samples',neuralBatch,30);
 const neuralComparison={samples:64,input:16,hidden:32,output:8,sequentialMedianMs:neuralSingleTiming.medianMs,batchMedianMs:neuralBatchTiming.medianMs,ratio:Number((neuralBatchTiming.medianMs/neuralSingleTiming.medianMs).toFixed(3)),verified:true,note:'Same-process microbenchmark; ratio below 1 means batch faster. No guaranteed speedup.'};
-const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',neuralComparison,developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,fullMaskAB,results};
+// Size sweep: preserve correctness before measuring each candidate. No automatic production switching.
+const neuralSizeSweep=[1,8,32,64,128].map(samples=>{
+ const x=neuralInput.length===samples*16?neuralInput:Float32Array.from({length:samples*16},(_,i)=>Math.sin(i*0.13));
+ const sequential=()=>{const out=new Float32Array(samples*8);for(let i=0;i<samples;i++)out.set(forward(neuralNet,x.subarray(i*16,(i+1)*16)).pred,i*8);return out;};
+ const batched=()=>predictBatch(neuralNet,x);
+ const a=sequential(),b=batched();
+ assert.equal(a.length,b.length);
+ for(let i=0;i<a.length;i++)assert.ok(Math.abs(a[i]-b[i])<1e-4,'RX Neural sweep mismatch: '+samples+' samples at '+i);
+ const iterations=samples>=128?20:40;
+ const sequentialMs=measure('RX Neural sequential '+samples,sequential,iterations).medianMs;
+ const batchMs=measure('RX Neural batch '+samples,batched,iterations).medianMs;
+ return {samples,sequentialMs,batchMs,ratio:Number((batchMs/sequentialMs).toFixed(3)),verified:true};
+});
+
+const output={schema:1,kind:'rx-performance-benchmark',node:process.version,disclaimer:'Local CI microbenchmarks only; no paid provider calls, production changes, or end-to-end latency claims.',neuralComparison,neuralSizeSweep,developerAB,developerScale,developerPhases,maskAB,maskSyntaxAB,maskStability,maskMemory,memoryRepresentation,memoryTotal,maskOutputStrategies,fullMaskAB,results};
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
 fs.writeFileSync('rx-bibi-reports/rx-performance-benchmark.json',JSON.stringify(output,null,2)+'\n');
 console.log('RX Neural batch A/B:',JSON.stringify(neuralComparison));
+console.log('RX Neural size sweep:',JSON.stringify(neuralSizeSweep));
 console.log(JSON.stringify(output,null,2));
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX performance microbenchmarks\n'+results.map(x=>'- '+x.name+': '+x.medianMs+' ms median/call').join('\n')+'\n');
