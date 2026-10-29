@@ -41,6 +41,19 @@ concurrency:
   group: rx-bibi-live-watch
   cancel-in-progress: false
 jobs:
+  queen-fast:
+    name: RX BIBI FAST — odpowiedzi Królowej
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: RX BIBI FAST — prawdziwy test rozmowy i pisania
+        run: node tests/rx-queen-dialogue-watch.cjs
+      - name: RX BIBI FAST — test połączenia czatu
+        run: node tests/rx-chat-panel-contract.cjs
   live:
     name: RX BIBI — kontrola na żywo
     runs-on: ubuntu-latest
