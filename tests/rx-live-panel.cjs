@@ -152,8 +152,12 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    for(const [index,question] of turns.entries()){
     const started=Date.now();
     await page.locator('#input').fill(question);
+    const responsePromise=page.waitForResponse(response=>response.url().includes('/api/rx/chat')&&response.request().method()==='POST',{timeout:12000});
     await page.locator('#form button[type="submit"]').click();
-    await page.locator('#messages').getByText(answers[index],{exact:false}).last().waitFor({timeout:8000});
+    const chatResponse=await responsePromise;
+    const reply=await chatResponse.json();
+    if(!chatResponse.ok()||typeof reply.answer!=='string')throw Error(name+': invalid chat response at turn '+index);
+    await page.locator('#messages').getByText(reply.answer,{exact:false}).last().waitFor({timeout:8000});
     chatLatenciesMs.push(Date.now()-started);
     if(await page.locator('#input').inputValue()!=='')throw Error(name+': input not cleared at turn '+index);
    }
