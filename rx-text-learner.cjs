@@ -17,7 +17,26 @@ const EXAMPLES=[
 const LABELS=Object.freeze(['greeting','tests','memory','math']);
 function vector(text){
  if(typeof text!=='string'||!text.trim())throw Error('Invalid text');
- return toFrequencyVector(text.toLocaleLowerCase('pl'));
+ const normalized=text.toLocaleLowerCase('pl').normalize('NFC');
+ const bytes=toFrequencyVector(normalized);
+ const result=new Float32Array(256);
+ // Hybrid representation: 128 byte-frequency bins + 128 hashed word/character features.
+ for(let i=0;i<256;i++)result[i%128]+=bytes[i]*0.4;
+ const words=normalized.match(/[\\p{L}\\p{N}]+/gu)||[];
+ let features=0;
+ function add(feature,weight){
+  let hash=2166136261;
+  for(const char of feature){hash=Math.imul(hash^char.codePointAt(0),16777619);}
+  result[128+(hash>>>0)%128]+=weight;features+=weight;
+ }
+ for(const word of words){
+  add('w:'+word,2);
+  if(word.length>=4)add('p:'+word.slice(0,4),1);
+  if(word.length>=5)add('p:'+word.slice(0,5),1);
+  for(let i=0;i+3<=word.length;i++)add('g:'+word.slice(i,i+3),0.35);
+ }
+ if(features)for(let i=128;i<256;i++)result[i]/=features;
+ return result;
 }
 function createLearner({epochs=180,hidden=24,rate=0.06}={}){
  if(!Number.isSafeInteger(epochs)||epochs<1||epochs>1000||!Number.isSafeInteger(hidden)||hidden<1||hidden>128||!Number.isFinite(rate)||rate<=0||rate>0.2)throw Error('Invalid training settings');
