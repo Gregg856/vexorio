@@ -142,7 +142,7 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    await page.route('**/api/rx/chat',route=>route.abort('timedout'));
    await page.locator('#input').fill('Cześć, sprawdź niedostępny serwer');
    await page.locator('#form button[type="submit"]').click();
-   await page.locator('#messages').getByText('Czat serwerowy jest niedostępny',{exact:false}).waitFor({timeout:8000});
+   await page.locator('#messages').getByText('Czat serwerowy jest niedostępny',{exact:false}).last().waitFor({timeout:8000});
    const unavailableVisible=await page.locator('#messages').getByText('Czat serwerowy jest niedostępny',{exact:false}).count()>0;
    report.checks.push({name:'chat-network-timeout-'+name,ok:unavailableVisible,scope:'ISOLATED_FAULT_INJECTION_NETWORK_TIMEOUT'});
    if(!unavailableVisible)throw Error(name+': network timeout was not shown');
