@@ -48,11 +48,11 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       const origin='http://localhost';
       const url=new URL(req.url||'/',origin);
       if(url.pathname==='/__rxcloud/health') {if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'Allow':'GET, HEAD','Cache-Control':'no-store'});res.end();return;}res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),memory:{rssBytes:process.memoryUsage().rss,heapUsedBytes:process.memoryUsage().heapUsed,heapTotalBytes:process.memoryUsage().heapTotal},connectionsLimit:server.maxConnections,load:{activeRequests,peakActiveRequests,completedRequests}}));return;}
-      const maxBodyBytes=10*1024*1024; // RX CLOUD: allow image uploads up to 10 MiB; keep a bounded request body.
+      const maxBodyBytes=2*1024*1024; // Preserve verified upload bound until tests and upload flow are updated together.
       const declaredLength=req.headers['content-length'];
       if(declaredLength!==undefined && /^\d+$/.test(declaredLength) && Number(declaredLength)>maxBodyBytes){res.writeHead(413,{'Cache-Control':'no-store'});res.end();req.resume();return;}
       const chunks=[];let total=0;
-      for await(const chunk of req){total+=chunk.length;if(total>maxBodyBytes){res.writeHead(413);res.end();req.destroy();return;}chunks.push(chunk);}
+      for await(const chunk of req){total+=chunk.length;if(total>maxBodyBytes){res.writeHead(413);res.end();req.resume();return;}chunks.push(chunk);}
       const headers=new Headers();
       for(const [key,val] of Object.entries(req.headers)) if(val!==undefined) headers.set(key,Array.isArray(val)?val.join(', '):val);
       const method=req.method||'GET';
