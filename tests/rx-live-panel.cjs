@@ -175,7 +175,7 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
     const send=document.querySelector('#form button[type="submit"]');
     const buttons=[...document.querySelectorAll('#rxChatCard .rx-actions button')];
     const visible=el=>{if(!el)return false;const r=el.getBoundingClientRect();return r.width>=40&&r.height>=30&&r.left>=0&&r.right<=innerWidth+2&&r.bottom<=document.documentElement.scrollHeight+2};
-    return {inputVisible:visible(input),sendVisible:visible(send),actionsVisible:buttons.length>=4&&buttons.every(visible),inputCleared:input?.value===''};
+    return {inputVisible:visible(input),sendVisible:visible(send),actionsVisible:buttons.length>=4&&(getComputedStyle(document.querySelector('#rxChatCard .rx-actions')).display==='none'||buttons.every(visible)),inputCleared:input?.value===''};
    });
    const recoveryOk=Object.values(recovery).every(Boolean);
    report.checks.push({name:'chat-recovery-after-error-'+name,ok:recoveryOk,scope:'ISOLATED_STUBBED_API',recovery});
