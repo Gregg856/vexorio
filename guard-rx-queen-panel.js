@@ -210,7 +210,19 @@
  approveTask?.addEventListener('click',()=>{
   if(!proposedTask||taskInput?.value.trim()!==proposedTask.description)return;
   if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\nZadanie: '+proposedTask.description+'\nKomórki: '+proposedTask.cells.join(', ')+'\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
+  // Hand off a bounded, explicitly approved request to the existing RX inbox.
+  // The inbox only queues work for server-side review; it does not run code.
+  const approvedDescription=proposedTask.description;
+  const approvedCells=[...proposedTask.cells];
   approvedInSession++;resetTask();refreshWorkOverview();
+  if(taskResult)taskResult.textContent+='\\n📬 Próbuję przekazać zatwierdzony plan do skrzynki RX…';
+  try{
+   const response=await fetch('/api/rx/inbox',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:approvedDescription,cells:approvedCells,source:'queen-panel'})});
+   if(!response.ok)throw Error('inbox_unavailable');
+   if(taskResult)taskResult.textContent+='\\n📬 Serwer przyjął żądanie do skrzynki; nie oznacza to wykonania.';
+  }catch(_){
+   if(taskResult)taskResult.textContent+='\\n⚪ Nie udało się przekazać do skrzynki RX. Plan zatwierdzony tylko w tej sesji. Brak wykonania.';
+  }
  });
 
  // RX NEURON 2.4: opt-in, local-only transfer of approved fixes.
