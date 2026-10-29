@@ -8,6 +8,7 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-cloud-migration-readiness.cjs'
       - 'deploy/RX-CLOUD-WINDOWS.md'
+      - 'deploy/rxcloud-windows-preflight.ps1'
       - 'tests/rx-cloud-staged.cjs'
       - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-package.cjs'
