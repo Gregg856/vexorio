@@ -30,7 +30,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   const sensitive=await fetch(base+'/rx-cloud-server.cjs');
   assert.notEqual(sensitive.status,200,'Server source must not be publicly served');
   const missing=await fetch(base+'/nonexistent-rx-cloud-file-2026');
-  assert.equal(missing.status,404);
+  assert.equal(missing.status,403,'Extensionless public paths are denied by the static asset allowlist');
   const oversized=await fetch(base+'/nonexistent-rx-cloud-file-2026',{method:'POST',body:'x'.repeat(2*1024*1024+1)});
   assert.equal(oversized.status,413);
   console.log('RX CLOUD 2.0 self-host smoke checks passed');
