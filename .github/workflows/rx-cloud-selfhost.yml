@@ -6,6 +6,8 @@ on:
       - 'rx-money-engine.cjs'
       - 'tests/rx-money-engine.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-cloud-migration-readiness.cjs'
+      - 'deploy/RX-CLOUD-WINDOWS.md'
       - 'tests/rx-cloud-staged.cjs'
       - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-package.cjs'
@@ -84,6 +86,8 @@ jobs:
           cp -- *.js public/
           test -s public/index.html
           test -s public/manifest.webmanifest
+      - name: Check migration readiness (offline, Windows plan)
+        run: node tests/rx-cloud-migration-readiness.cjs
       - name: Run RX CLOUD smoke tests
         run: node tests/rx-cloud-server.cjs
       - name: Test isolated RX CLOUD installation layout
