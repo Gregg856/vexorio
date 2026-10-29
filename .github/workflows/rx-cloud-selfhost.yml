@@ -1,0 +1,38 @@
+name: RX CLOUD self-host smoke tests
+on:
+  push:
+    paths:
+      - 'rx-cloud-server.cjs'
+      - 'tests/rx-cloud-server.cjs'
+      - 'worker.js'
+      - 'public/**'
+      - '.github/workflows/rx-cloud-selfhost.yml'
+  pull_request:
+    paths:
+      - 'rx-cloud-server.cjs'
+      - 'tests/rx-cloud-server.cjs'
+      - 'worker.js'
+      - 'public/**'
+      - '.github/workflows/rx-cloud-selfhost.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rx-cloud-selfhost-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  smoke:
+    name: Node 22 RX CLOUD HTTP smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check rx-cloud-server.cjs
+          node --check tests/rx-cloud-server.cjs
+      - name: Run RX CLOUD smoke tests
+        run: node tests/rx-cloud-server.cjs
