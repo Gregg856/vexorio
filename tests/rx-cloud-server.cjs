@@ -127,6 +127,28 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   }finally{
     for(const socket of sockets)socket.destroy();
   }
-  console.log('RX CLOUD 5.8 local TCP concurrency and latency tests passed');
+  // RX CLOUD 5.9: progressive localhost-only load with bounded 3s timeout per request.
+  const stages=[2,4,8,16];
+  const stageReports=[];
+  for(const parallel of stages){
+    const started=performance.now();
+    const results=await Promise.all(Array.from({length:parallel},async()=>{
+      const response=await fetch(base+'/__rxcloud/health',{signal:AbortSignal.timeout(3000)});
+      assert.equal(response.status,200,'Progressive local load must remain healthy');
+      const data=await response.json();
+      assert.equal(data.ok,true);
+      return data;
+    }));
+    const durationMs=performance.now()-started;
+    assert.equal(results.length,parallel);
+    assert(Number.isFinite(durationMs)&&durationMs>=0);
+    stageReports.push({parallel,completed:results.length,durationMs:Number(durationMs.toFixed(2))});
+  }
+  const stageHealth=await fetch(base+'/__rxcloud/health');
+  const stageData=await stageHealth.json();
+  assert(stageData.load.completedRequests>=stages.reduce((a,b)=>a+b,0),'Load counter must include progressive stages');
+  assert(stageData.load.activeRequests>=1,'Health snapshot must include current request');
+  console.log('RX CLOUD 5.9 progressive localhost load: '+JSON.stringify({stages:stageReports,peakActiveRequests:stageData.load.peakActiveRequests,connectionsLimit:stageData.connectionsLimit}));
+  console.log('RX CLOUD 5.9 progressive localhost load and TCP tests passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
