@@ -8,17 +8,17 @@ fi
 cd "$(dirname "$0")/.."
 echo "RX CLOUD 3.1 — mode: $MODE"
 if [[ "$MODE" == "--dry-run" ]]; then
-  if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
-    echo "WARNING: Missing RX CLOUD source files or public/ assets. Installation is NOT ready."
+  if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -f index.html ]]; then
+    echo "WARNING: Missing RX CLOUD source files or index.html asset. Installation is NOT ready."
   fi
   echo "Would check Linux, Node.js 22+, systemd, Caddy and source tree."
   echo "Would create system user rxcloud and /opt/rxcloud/vexorio."
-  echo "Would copy application, install a systemd unit and prepare /etc/rxcloud/rxcloud.env."
+  echo "Would copy application root static assets, install a systemd unit and prepare /etc/rxcloud/rxcloud.env."
   echo "Would NOT start services, modify DNS, enable Caddy, or touch production."
   exit 0
 fi
 if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
-  echo "Missing RX CLOUD source files or public/ assets. Installation refused." >&2; exit 1
+  echo "Missing RX CLOUD source files or index.html asset. Installation refused." >&2; exit 1
 fi
 if [[ "$(uname -s)" != Linux || "$(id -u)" -ne 0 ]]; then
   echo "--install requires root on Linux" >&2; exit 1
@@ -35,7 +35,8 @@ fi
 install -d -m 0750 -o rxcloud -g rxcloud /opt/rxcloud/vexorio
 # Exclude .git and sensitive local files; copy only required server sources.
 install -m 0644 -o rxcloud -g rxcloud rx-cloud-server.cjs worker.js /opt/rxcloud/vexorio/
-cp -a public /opt/rxcloud/vexorio/public
+install -d -m 0755 -o rxcloud -g rxcloud /opt/rxcloud/vexorio/public
+find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.webp' -o -name '*.ico' -o -name '*.json' -o -name '*.txt' -o -name '*.webmanifest' \) -exec cp -- {} /opt/rxcloud/vexorio/public/ \;
 chown -R rxcloud:rxcloud /opt/rxcloud/vexorio/public
 install -d -m 0700 -o root -g root /etc/rxcloud
 install -m 0600 -o root -g root deploy/rxcloud.env.example /etc/rxcloud/rxcloud.env
