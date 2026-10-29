@@ -64,15 +64,25 @@ function runQueenApprovedChecks(plan,{approved=false,execute=false,maxChecks=2}=
 }
 
 
-function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs'}={}){
+function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',verify=false}={}){
  const allowed=['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs'];
- if(!allowed.includes(target))throw Error('Invalid RX build target');
- const checks=runQueenApprovedChecks(plan,{approved,execute:false});
+ if(!allowed.includes(target)||typeof verify!=='boolean')throw Error('Invalid RX build options');
+ const checks=runQueenApprovedChecks(plan,{approved,execute:approved&&verify,maxChecks:2});
  if(!approved)return {kind:'rx-queen-build-preview',checks,candidates:[],changesApplied:false};
+ if(verify&&checks.checks.some(x=>x.status!=='passed'))return {kind:'rx-queen-build-preview',checks,candidates:[],blocked:'bibi-check-failed',changesApplied:false};
  const {inspectAndPropose}=require('./rx-developer-patch-bridge.cjs');
+ const {previewPatch}=require('./rx-patch-drafter.cjs');
+ const {Script}=require('node:vm');
  const source=fs.readFileSync(path.join(__dirname,target),'utf8');
  const review=inspectAndPropose({target,source});
- return {kind:'rx-queen-build-preview',checks,candidates:review.suggestions.map(x=>({target,rule:x.rule,syntax:x.preview?.syntax||'review',requiresApproval:true,applied:false})),changesApplied:false};
+ const candidates=review.suggestions.map(x=>{
+  try{
+   const patched=previewPatch(x.proposal,source).preview;
+   new Script(patched,{filename:target});
+   return {target,rule:x.rule,syntax:'valid',bibiVerified:verify,requiresApproval:true,applied:false};
+  }catch(error){return {target,rule:x.rule,syntax:'invalid',bibiVerified:false,error:String(error.message).slice(0,160),requiresApproval:true,applied:false};}
+ });
+ return {kind:'rx-queen-build-preview',checks,candidates,changesApplied:false};
 }
 
 if(require.main===module){
