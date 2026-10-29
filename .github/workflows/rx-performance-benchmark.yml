@@ -6,6 +6,7 @@ on:
       - 'rx-math-core.cjs'
       - 'rx-math-core-test.cjs'
       - 'rx-neural-core.cjs'
+      - 'rx-performance-benchmark.cjs'
       - 'rx-neural-core-test.cjs'
       - '.github/workflows/rx-performance-benchmark.yml'
   pull_request:
