@@ -32,6 +32,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.keepAliveTimeout,5000,'Keep-alive timeout must be bounded');
   assert.equal(server.maxRequestsPerSocket,100,'Requests per socket must be bounded');
   assert.equal(server.maxHeadersCount,100,'Header count must be bounded');
+  assert.equal(server.maxConnections,128,'Concurrent connection count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
   const health=await fetch(base+'/__rxcloud/health');
@@ -69,6 +70,6 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(hostileHost.status,200,'Malformed Host must not break local request parsing');
   const stillHealthy=await fetch(base+'/__rxcloud/health');
   assert.equal(stillHealthy.status,200,'Server must remain healthy after oversized request');
-  console.log('RX CLOUD 4.5 malformed path, static security and oversized request smoke passed');
+  console.log('RX CLOUD 5.2 resource limits and server smoke passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
