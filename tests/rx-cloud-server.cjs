@@ -37,7 +37,13 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   const base='http://127.0.0.1:'+port;
   const health=await fetch(base+'/__rxcloud/health');
   assert.equal(health.status,200);
-  assert.equal((await health.json()).service,'rx-cloud-2');
+  const healthData=await health.json();
+  assert.equal(healthData.service,'rx-cloud-2');
+  assert.equal(healthData.connectionsLimit,128);
+  for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
+    assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
+  }
+  assert(healthData.memory.heapUsedBytes<=healthData.memory.heapTotalBytes,'Heap usage cannot exceed heap total');
   assert.equal(health.headers.get('cache-control'),'no-store');
   assert.equal(health.headers.get('x-content-type-options'),'nosniff');
   const healthHead=await fetch(base+'/__rxcloud/health',{method:'HEAD'});
@@ -70,6 +76,6 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(hostileHost.status,200,'Malformed Host must not break local request parsing');
   const stillHealthy=await fetch(base+'/__rxcloud/health');
   assert.equal(stillHealthy.status,200,'Server must remain healthy after oversized request');
-  console.log('RX CLOUD 5.2 resource limits and server smoke passed');
+  console.log('RX CLOUD 5.5 memory visibility, resource limits and server smoke passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
