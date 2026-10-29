@@ -23,6 +23,8 @@ const {previewPatch}=require('./rx-patch-drafter.cjs');
 const {Script}=require('node:vm');
 const os=require('node:os');
 const {spawnSync}=require('node:child_process');
+const incidentId=process.env.RX_INCIDENT_ID||null;
+if(incidentId&&!/^[a-f0-9]{16}$/.test(incidentId))throw Error('Invalid RX incident id');
 const verified=proposals.map((candidate,index)=>{
  const proposal=report.suggestions[index].proposal;
  try{
@@ -38,12 +40,24 @@ const verified=proposals.map((candidate,index)=>{
    check=spawnSync(process.execPath,['--check',tempFile],{encoding:'utf8',timeout:10000,maxBuffer:65536});
   }finally{fs.rmSync(sandbox,{recursive:true,force:true});}
   if(check.error||check.status!==0)throw Error('Sandbox syntax check failed: '+String(check.error?.message||check.stderr||check.status).slice(0,160));
-  return {...candidate,bibiValidation:'passed',sandboxValidation:'node-check-passed',readyForReview:true};
+  // Functional smoke tests run against the disposable patched module only.
+  // No repository writes, imports of the patched module, or external commands.
+  const functionalChecks=[];
+  if(target==='rx-command-bridge.cjs'){
+   const required=['function planCommand(','module.exports={planCommand}'];
+   for(const marker of required)functionalChecks.push({name:'preserve-command-contract',passed:preview.includes(marker)});
+  }else if(target==='rx-coordinator.cjs'){
+   for(const marker of ['function coordinateRX(','module.exports={coordinateRX}'])functionalChecks.push({name:'preserve-coordinator-contract',passed:preview.includes(marker)});
+  }else if(target==='rx-developer-patch-bridge.cjs'){
+   for(const marker of ['function inspectAndPropose(','module.exports={inspectAndPropose}'])functionalChecks.push({name:'preserve-developer-contract',passed:preview.includes(marker)});
+  }
+  const functionalPassed=functionalChecks.length>0&&functionalChecks.every(x=>x.passed);
+  return {...candidate,incidentId,bibiValidation:'passed',sandboxValidation:'node-check-passed',functionalChecks,functionalValidation:functionalPassed?'smoke-passed':'failed',readyForReview:functionalPassed};
  }catch(error){
-  return {...candidate,bibiValidation:'failed',readyForReview:false,validationError:String(error.message).slice(0,160)};
+  return {...candidate,incidentId,bibiValidation:'failed',readyForReview:false,validationError:String(error.message).slice(0,160)};
  }
 });
 const output=path.join(__dirname,'rx-bibi-reports','rx-developer-review.json');
 fs.mkdirSync(path.dirname(output),{recursive:true});
-fs.writeFileSync(output,JSON.stringify({...report,reviewStatus:'completed',patchCandidates:verified,bibiTest:'rx-developer-bridge-isolated.cjs',changesApplied:false},null,2)+'\n');
+fs.writeFileSync(output,JSON.stringify({...report,reviewStatus:'completed',incidentId,patchCandidates:verified,bibiTest:'rx-developer-bridge-isolated.cjs',changesApplied:false},null,2)+'\n');
 console.log('RX Developer reviewed',target,'suggestions',report.suggestions.length);
