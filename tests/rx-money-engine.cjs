@@ -15,4 +15,13 @@ rx.record({kind:'expense',amountCents:1000,reference:'cost-1',approvedBy:'owner'
 assert.deepEqual([rx.summary().developmentCents,rx.summary().reserveCents],[6300,2700]);
 assert.throws(()=>rx.record({kind:'expense',amountCents:-1,reference:'x',approvedBy:'owner'}),/Invalid cents/);
 assert.equal(rx.ledger().length,2);
+const sub=rx.proposeOffer({channel:'rx_subscription',title:'RX monthly access',priceCents:1000});
+const ants=rx.proposeOffer({channel:'ant_service',title:'Consent-based website QA',priceCents:2500,role:'TESTER'});
+assert.equal(sub.offer.status,'proposal');
+assert.equal(ants.offer.paymentEnabled,false);
+assert.equal(rx.offers().length,2);
+assert.equal(rx.tasks().find(t=>t.id===ants.reviewTaskId).requiresApproval,true);
+assert.equal(rx.ledger().length,2,'Proposed offers must not create income or payments');
+assert.throws(()=>rx.proposeOffer({channel:'unknown',title:'Invalid channel',priceCents:100}),/Invalid offer/);
+assert.throws(()=>rx.proposeOffer({channel:'ant_service',title:'Invalid zero',priceCents:0}),/Invalid offer price/);
 console.log('PASS RX MONEY ENGINE tasks, approval, ledger and 70/30 allocation');
