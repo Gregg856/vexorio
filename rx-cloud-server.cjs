@@ -42,11 +42,11 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   const env = {ASSETS:{fetch:staticFetch},SUPABASE_URL:supabaseUrl,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||'',RX_ADMIN_USER_ID:process.env.RX_ADMIN_USER_ID||'',RX_GITHUB_DISPATCH_TOKEN:process.env.RX_GITHUB_DISPATCH_TOKEN||'',VIEW_COUNT_ENABLED:process.env.VIEW_COUNT_ENABLED||'false',VIEW_COUNT_SECRET:process.env.VIEW_COUNT_SECRET||'',SUPABASE_SERVICE_ROLE_KEY:process.env.SUPABASE_SERVICE_ROLE_KEY||'',RX_AI_ENABLED:'false'};
   const server=http.createServer(async(req,res)=>{
     try {
-      const origin='http://'+(req.headers.host||'localhost');
+      const origin='http://localhost';
       const url=new URL(req.url||'/',origin);
       if(url.pathname==='/__rxcloud/health') {res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000)}));return;}
       const chunks=[];let total=0;
-      for await(const chunk of req){total+=chunk.length;if(total>2*1024*1024){res.writeHead(413);res.end();return;}chunks.push(chunk);}
+      for await(const chunk of req){total+=chunk.length;if(total>2*1024*1024){res.writeHead(413);res.end();req.resume();return;}chunks.push(chunk);}
       const headers=new Headers();
       for(const [key,val] of Object.entries(req.headers)) if(val!==undefined) headers.set(key,Array.isArray(val)?val.join(', '):val);
       const method=req.method||'GET';
