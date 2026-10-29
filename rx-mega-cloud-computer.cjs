@@ -88,7 +88,7 @@ function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',v
 
 function stageQueenPatch(candidate,{approved=false,functionalReview=null}={}){
  if(functionalReview!==null){
-  if(!functionalReview||functionalReview.target!==candidate?.target||functionalReview.rule!==candidate?.rule||functionalReview.functionalValidation!=='passed'||functionalReview.bibiValidation!=='passed'||functionalReview.readyForReview!==true||functionalReview.preview!==candidate?.draft?.preview)throw Error('Invalid BIBI functional review');
+  if(!functionalReview||functionalReview.target!==candidate?.target||functionalReview.rule!==candidate?.rule||functionalReview.functionalValidation!=='passed'||functionalReview.bibiValidation!=='passed'||functionalReview.readyForReview!==true)throw Error('Invalid BIBI functional review');
  }
  if(!approved||!candidate||candidate.syntax!=='valid'||candidate.bibiVerified!==true||candidate.applied!==false)throw Error('Queen patch requires verified explicit approval');
  const allowed=['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs'];
@@ -98,6 +98,7 @@ function stageQueenPatch(candidate,{approved=false,functionalReview=null}={}){
  if(crypto.createHash('sha256').update(source).digest('hex')!==candidate.sourceSha256)throw Error('Stale Queen patch source');
  const {previewPatch}=require('./rx-patch-drafter.cjs');
  const patched=previewPatch(candidate.draft,source).preview;
+ if(functionalReview!==null&&functionalReview.preview!==patched)throw Error('BIBI reviewed different patch bytes');
  new (require('node:vm').Script)(patched,{filename:candidate.target});
  // BIBI checks the exact patched bytes using Node's syntax checker in isolation.
  const os=require('node:os');
