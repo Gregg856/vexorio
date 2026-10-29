@@ -293,6 +293,28 @@ jobs:
           fs.writeFileSync('rx-bibi-reports/rx-bibi-run-evidence.json',JSON.stringify(report,null,2)+'\n');
           console.log('RX BIBI evidence:',report.url,'failed steps:',failed.join(', ')||'none among tracked steps');
           NODE
+      - name: RX Królowa — połącz wynik BIBI z pamięcią incydentów
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const root='rx-bibi-reports/';
+          const read=name=>{try{return JSON.parse(fs.readFileSync(root+name,'utf8'));}catch{return null;}};
+          const evidence=read('rx-bibi-run-evidence.json');
+          if(!evidence||!/^\d+$/.test(evidence.runId||''))throw Error('Missing BIBI run evidence');
+          const triage=read('rx-queen-bibi-triage.json');
+          if(triage){
+            triage.runEvidence={runId:evidence.runId,attempt:evidence.attempt,sha:evidence.sha,url:evidence.url,outcomes:evidence.outcomes,failed:evidence.failed,finalJobConclusion:evidence.finalJobConclusion};
+            triage.incidents=(triage.incidents||[]).map(incident=>({...incident,lastObservedRunId:evidence.runId,lastObservedRunUrl:evidence.url}));
+            fs.writeFileSync(root+'rx-queen-bibi-triage.json',JSON.stringify(triage,null,2)+'\n');
+          }
+          const memory=read('rx-bibi-smart-memory.json');
+          if(memory){
+            memory.runEvidence={runId:evidence.runId,sha:evidence.sha,url:evidence.url,failed:evidence.failed};
+            fs.writeFileSync(root+'rx-bibi-smart-memory.json',JSON.stringify(memory,null,2)+'\n');
+          }
+          console.log('RX Queen BIBI evidence linked:',evidence.url,'incidents:',triage?.incidents?.length||0);
+          NODE
       - name: Zachowaj raport i zdjęcia także przy błędzie
         if: always()
         uses: actions/upload-artifact@v4
