@@ -51,6 +51,23 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    });
    if(layout.overflow||!layout.input||!layout.send)throw Error(name+': invalid chat layout '+JSON.stringify(layout));
    fs.mkdirSync('rx-bibi-reports/visual',{recursive:true});
+   if(name==='android'){
+    // Approximate the reduced viewport when the Android software keyboard opens.
+    // This is a layout regression test, not a claim to emulate Samsung's keyboard.
+    await page.setViewportSize({width:412,height:520});
+    await page.locator('#input').focus();
+    await page.locator('#input').scrollIntoViewIfNeeded();
+    const keyboardLayout=await page.evaluate(()=>{
+     const input=document.getElementById('input').getBoundingClientRect();
+     const send=document.querySelector('#form button[type="submit"]').getBoundingClientRect();
+     return {height:innerHeight,inputTop:input.top,inputBottom:input.bottom,sendBottom:send.bottom,sendWidth:send.width,documentWidth:document.documentElement.scrollWidth};
+    });
+    const keyboardOk=keyboardLayout.inputTop>=0&&keyboardLayout.inputBottom<=keyboardLayout.height+2&&keyboardLayout.sendBottom<=keyboardLayout.height+2&&keyboardLayout.sendWidth>=44&&keyboardLayout.documentWidth<=412+4;
+    report.checks.push({name:'android-keyboard-reduced-viewport',ok:keyboardOk,scope:'SIMULATED_RESIZE_NOT_REAL_KEYBOARD',layout:keyboardLayout});
+    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-android-keyboard-preview.png',fullPage:true});
+    if(!keyboardOk)throw Error('Android reduced viewport hides chat composer: '+JSON.stringify(keyboardLayout));
+    await page.setViewportSize({width:412,height:839});
+   }
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
    if(errors.length)throw Error(name+': visual preview JS: '+errors.join('; '));
