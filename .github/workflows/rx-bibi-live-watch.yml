@@ -1,5 +1,12 @@
 name: RX BIBI — stały strażnik panelu
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/rx-bibi-live-watch.yml'
+      - 'tests/rx-queen-dialogue-watch.cjs'
+      - 'tests/rx-live-panel.cjs'
+      - 'rx-chat-planner.mjs'
   workflow_dispatch:
   schedule:
     - cron: '17 * * * *'
@@ -58,9 +65,11 @@ jobs:
         if: always()
         env:
           RESULT: ${{ steps.check.outcome }}
+          DIALOGUE: ${{ steps.dialogue.outcome }}
         run: |
           echo "## RX BIBI — strażnik panelu" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Wynik kontroli: $RESULT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Panel produkcyjny: $RESULT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Syntetyczne rozmowy Królowej: $DIALOGUE" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zakres: prawdziwa publiczna brama RX ADMIN oraz syntetyczna rozmowa z lokalnym planerem Królowej" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zalogowana rozmowa z Królową: nie jest objęta tym testem" >> "$GITHUB_STEP_SUMMARY"
           echo "- Raport JSON i zrzuty: artefakt rx-bibi-live-watch" >> "$GITHUB_STEP_SUMMARY"
