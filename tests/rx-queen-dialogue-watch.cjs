@@ -11,6 +11,7 @@ const fs=require('node:fs');
   {id:'memory',message:'Czy pamiętasz rozmowę?',expected:/pamię|histori|kontekst/i},
   {id:'cloud',message:'Jak działa chmura?',expected:/cloudflare|chmur|github/i},
   {id:'errors',message:'Mam błąd w panelu',expected:/błęd|komunikat|raport|napraw/i},
+  {id:'work-order',message:'Królowa zbuduj moduł RX',expected:/RX Developer|BIBI|plan/i,workExpected:true},
   {id:'learned-error',message:'Mam błąd w panelu',learning:{kind:'rx-queen-verified-learning',lessons:[{incidentId:'test-1',observation:'Przycisk czatu nie odpowiada',panelArea:'RX Admin'}]},expected:/Przycisk czatu nie odpowiada/},
   {id:'followup',message:'Dalej',history:['Co robią Mrówki?'],expected:/mrów|zadani|plan/i}
  ];
@@ -21,6 +22,7 @@ const fs=require('node:fs');
    if(!result?.ok||typeof result.answer!=='string'||!result.answer.trim())throw Error('No usable answer');
    if(!c.expected.test(result.answer))throw Error('Answer not related to expected topic');
    if(result.executed!==0)throw Error('Unexpected execution');
+   if(c.workExpected&&(!result.plan?.work||!result.plan.work.stages.some(x=>x.module==='RX BIBI')||result.plan.work.executed!==false))throw Error('Missing BIBI work verification');
    results.push({id:c.id,ok:true,contextUsed:!!result.contextUsed,answerLength:result.answer.length});
   }catch(e){results.push({id:c.id,ok:false,error:e.message});}
  }
