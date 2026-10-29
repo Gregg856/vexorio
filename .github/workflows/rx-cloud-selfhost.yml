@@ -8,6 +8,7 @@ on:
       - 'public/**'
       - 'deploy/Caddyfile.rxcloud.example'
       - 'deploy/rxcloud.service'
+      - 'scripts/rx-cloud-health.cjs'
       - '.github/workflows/rx-cloud-selfhost.yml'
   pull_request:
     paths:
@@ -43,3 +44,9 @@ jobs:
           grep -q 'health_uri /__rxcloud/health' deploy/Caddyfile.rxcloud.example
       - name: Run RX CLOUD smoke tests
         run: node tests/rx-cloud-server.cjs
+      - name: Validate monitor failure reporting (no live server)
+        run: |
+          if RX_CLOUD_HEALTH_URL=http://127.0.0.1:1/__rxcloud/health RX_CLOUD_REPORT_PATH=/tmp/rx-cloud-health.json node scripts/rx-cloud-health.cjs; then
+            echo 'Monitor incorrectly accepted unavailable server'; exit 1
+          fi
+          node -e "const r=require('/tmp/rx-cloud-health.json'); if(r.status!=='error'||r.kind!=='rx-cloud-health') process.exit(1)"
