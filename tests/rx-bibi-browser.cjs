@@ -303,6 +303,21 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX Strażak — formularz silnika RX daje wynik',(await guard.locator('#guardRxResult').innerText()).length>40);
 
 
+    // RX Admin on Android: public shell and secure gate only; never bypass admin login.
+    try {
+      const admin=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
+      const adminErrors=[];
+      admin.on('pageerror',error=>adminErrors.push(error.message));
+      const adminResponse=await admin.goto(base+'/rx-admin-prototype.html',{waitUntil:'domcontentloaded',timeout:30000});
+      record('RX Admin Android — HTTP 200',adminResponse?.status()===200,String(adminResponse?.status()));
+      record('RX Admin Android — brama dostępu',await admin.locator('#rxGate').count()===1);
+      record('RX Admin Android — aplikacja domyślnie ukryta',await admin.locator('#rxApp').isHidden());
+      for(const id of ['rxAdminCloudCheck','rxAntQueueRefresh','rxCheckChat','rxRunApprovedTests','rxWorkbench']){
+        record('RX Admin Android — moduł '+id,await admin.locator('#'+id).count()===1);
+      }
+      record('RX Admin Android — bez błędów składni JS',adminErrors.length===0,adminErrors.join('; '));
+      await admin.close();
+    }catch(error){record('RX Admin Android — audyt bramy i modułów',false,error.message);}
     record('Błędy JS RX BIBI', jsErrors.length === 0, jsErrors.join('; '));
     record('Błędy JS RX Strażak', guardErrors.length === 0, guardErrors.join('; '));
     for (const [label, target] of [['RX BIBI', page], ['RX Strażak', guard]]) {
