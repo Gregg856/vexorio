@@ -109,20 +109,27 @@ jobs:
           (async()=>{
             const tests=selectFastTests(['rx-mega-cloud-computer.cjs']);
             const samples=[];
+            const details=[];
             for(let i=0;i<5;i++){
               const report=await runFastTests({tests});
               if(report.failed)throw Error('RX Queen isolated test failed in sample '+(i+1));
               samples.push(report.elapsedMs);
+              details.push({elapsedMs:report.elapsedMs,slowest:report.slowest,passed:report.passed});
             }
             const sorted=samples.slice().sort((a,b)=>a-b);
             const median=sorted[2];
             const summary='## RX Queen repeated timing\\nSamples (ms): '+samples.join(', ')+'\\nMedian: '+median+' ms; min: '+sorted[0]+' ms; max: '+sorted[4]+' ms.\\n';
             console.log(summary);
             require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary);
+            const fs=require('node:fs');
+            fs.mkdirSync('rx-bibi-reports',{recursive:true});
+            fs.writeFileSync('rx-bibi-reports/rx-fast-queen-timing.json',JSON.stringify({schema:1,kind:'rx-fast-queen-timing',samples,medianMs:median,minMs:sorted[0],maxMs:sorted[4],details,productionModified:false},null,2)+'\n');
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
       - uses: actions/upload-artifact@v4
         with:
           name: rx-performance-benchmark
-          path: rx-bibi-reports/rx-performance-benchmark.json
+          path: |
+            rx-bibi-reports/rx-performance-benchmark.json
+            rx-bibi-reports/rx-fast-queen-timing.json
           retention-days: 7
