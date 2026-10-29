@@ -61,6 +61,7 @@ on:
       - 'tests/rx-navigation-mobile.cjs'
       - 'tests/rx-admin-entry-mobile.cjs'
       - 'tests/rx-chat-mobile.cjs'
+      - 'tests/rx-live-panel.cjs'
       - 'tests/rx-visual-audit.cjs'
       - 'tests/rx-admin-auth-e2e.cjs'
       - 'rx-admin-prototype.html'
@@ -350,6 +351,9 @@ jobs:
       - name: RX — sprawdź wejście do panelu administratora VEXORIO
         if: always()
         run: node tests/rx-admin-entry-mobile.cjs
+      - name: RX BIBI — panel produkcyjny na żywo (mobile i desktop)
+        if: always()
+        run: node tests/rx-live-panel.cjs
       - name: RX BIBI — sprawdź czat RX na telefonie
         run: node tests/rx-chat-mobile.cjs
       - name: RX BIBI — audyt wizualny wszystkich kategorii i czatu
