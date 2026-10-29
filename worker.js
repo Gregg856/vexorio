@@ -240,7 +240,26 @@ export default {
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-ant-job-report',workflow:'rx-medusa-ant.yml',runId:run.id,runStatus:state(run),jobs:jobs.map(j=>({name:j.name,status:state(j),url:j.html_url||null})),executed:0,modelInferenceUsed:false}),{status:200,headers});
           }catch{return reply(502,'GitHub nie odpowiedział podczas odczytu raportu Mrówek.');}
         }
-        const planned=planRXChat(message,history);
+        // RX BIBI -> Queen: optional trusted server-to-server evidence, never browser-supplied.
+        // Disabled unless the owner configures an HTTPS RX CLOUD endpoint and its token.
+        let bibiLearning=null;
+        if(/(błęd|blad|awari|nie działa|nie dziala|napraw)/i.test(message)
+          &&typeof env.RX_BIBI_LEARNING_URL==='string'
+          &&/^https:\/\/[a-z0-9.-]+\/__rxcloud\/bibi\/learning$/i.test(env.RX_BIBI_LEARNING_URL)
+          &&typeof env.RX_BIBI_LEARNING_TOKEN==='string'&&env.RX_BIBI_LEARNING_TOKEN.length>=32){
+          try{
+            const response=await fetch(env.RX_BIBI_LEARNING_URL,{
+              headers:{Authorization:'Bearer '+env.RX_BIBI_LEARNING_TOKEN,Accept:'application/json'},
+              signal:AbortSignal.timeout(2500)
+            });
+            if(response.ok&&Number(response.headers.get('content-length')||0)<65536){
+              const data=await response.json();
+              if(data?.kind==='rx-queen-verified-learning'&&Array.isArray(data.lessons))
+                bibiLearning={kind:data.kind,lessons:data.lessons.slice(0,3)};
+            }
+          }catch{/* Offline RX CLOUD must not block Queen chat. */}
+        }
+        const planned=planRXChat(message,history,bibiLearning);
         if(/^(zapamiętaj|przypomnij):/i.test(message.trim())){
           try{
             const memory=await handleRXMemory(message,{base,apikey:env.SUPABASE_ANON_KEY,auth,userId:identity.id});
