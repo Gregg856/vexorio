@@ -21,6 +21,7 @@ on:
     - cron: '17 * * * *'
 permissions:
   contents: read
+  actions: read
   issues: write
 concurrency:
   group: rx-bibi-live-watch
@@ -66,6 +67,7 @@ jobs:
         if: always()
         run: node rx-queen-bibi-triage.cjs
       - name: RX BIBI SMART — odczytaj pamięć poprzedniego przebiegu
+        id: previous
         if: always()
         continue-on-error: true
         env:
@@ -87,8 +89,18 @@ jobs:
             const artifact=(artifacts.artifacts||[]).find(x=>x.name==="rx-bibi-live-watch"&&!x.expired);
             if(!artifact)return;
             fs.writeFileSync("rx-bibi-reports/previous/artifact-reference.json",JSON.stringify({runId:prev.id,artifactId:artifact.id,url:artifact.archive_download_url},null,2));
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,"run_id="+prev.id+"\n");
           })().catch(e=>{console.log("Previous run lookup unavailable:",e.message);});
           '
+      - name: RX BIBI SMART — pobierz poprzedni raport
+        if: steps.previous.outputs.run_id != ''
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: rx-bibi-live-watch
+          run-id: ${{ steps.previous.outputs.run_id }}
+          github-token: ${{ github.token }}
+          path: rx-bibi-previous
       - name: RX BIBI SMART — zbiorczy indeks wykonanych kontroli
         if: always()
         env:
@@ -121,9 +133,22 @@ jobs:
               }
             }catch(error){history.push({tester:"rx-live-panel",check:"report-parse",ok:false,scope:"LOCAL_ARTIFACT",error:String(error.message).slice(0,120)});}
           }
+          let previousRunId=null,previousHistory=[];
+          const previousPath="rx-bibi-previous/rx-bibi-smart-memory.json";
+          if(fs.existsSync(previousPath)){
+            try{
+              const prior=JSON.parse(fs.readFileSync(previousPath,"utf8"));
+              if(prior.kind==="rx-bibi-smart-error-memory"&&Array.isArray(prior.history)){
+                previousRunId=String(prior.runId||"").slice(0,30);
+                previousHistory=prior.history.filter(x=>x&&typeof x.tester==="string"&&typeof x.check==="string"&&typeof x.ok==="boolean").slice(0,150);
+              }
+            }catch(error){console.log("Previous SMART report unreadable:",error.message);}
+          }
+          const priorFailures=new Set(previousHistory.filter(x=>!x.ok).map(x=>x.tester+":"+x.check));
+          const recurringAcrossRuns=history.filter(x=>!x.ok&&priorFailures.has(x.tester+":"+x.check)).map(x=>({tester:x.tester,check:x.check,previousRunId}));
           const failures=history.filter(x=>!x.ok);
           const recurring=Object.values(failures.reduce((acc,item)=>{const key=item.tester+":"+item.check;const prev=acc[key];acc[key]={tester:item.tester,check:item.check,count:(prev?.count||0)+1};return acc;},{}));
-          const memory={schema:1,kind:"rx-bibi-smart-error-memory",runId:process.env.GITHUB_RUN_ID,scope:"CURRENT_RUN_ONLY_NO_CROSS_RUN_PERSISTENCE",history,failures,recurring,productionModified:false};
+          const memory={schema:1,kind:"rx-bibi-smart-error-memory",runId:process.env.GITHUB_RUN_ID,scope:previousRunId?"CURRENT_AND_PREVIOUS_SUCCESSFUL_RUN":"CURRENT_RUN_ONLY_PREVIOUS_UNAVAILABLE",previousRunId,history,failures,recurring,recurringAcrossRuns,productionModified:false};
           fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-memory.json",JSON.stringify(memory,null,2)+"\\n");
           const out={schema:1,kind:"rx-bibi-smart-test-index",runId:process.env.GITHUB_RUN_ID,scope:"THIS_WORKFLOW_ONLY",productionModified:false,items};
           fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-index.json",JSON.stringify(out,null,2)+"\\n");
