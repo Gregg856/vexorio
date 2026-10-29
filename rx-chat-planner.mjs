@@ -135,6 +135,23 @@ export function planRXChat(message,history=[],learning=null){
  else if(topics.length)answer='👑 Rozumiem temat: '+[...new Set(topics)].join(', ')+'. Mogę pomóc przygotować plan testów i wyjaśnić kolejne kroki. Niczego nie uruchomiłam bez zatwierdzenia.';
  else answer='👑 Chcę dobrze zrozumieć. Czy pytasz o Mrówki, Wirnik, model RX czy o konkretny błąd? Napisz jednym zdaniem, co mam sprawdzić lub wyjaśnić.';
 
+ // RX Queen work planner: natural-language work requests, with BIBI as verifier.
+ // A plan is not execution; RX Developer must be connected to a real executor.
+ const workIntent=/(zbuduj|stw[oó]rz|napisz|dodaj|ulepsz|rozbuduj|popraw|napraw|przygotuj|zaprojektuj)/i.test(message)
+  &&/(rx|kr[oó]low|m[oó]zg|model|modu[lł]|panel|kod|mr[oó]wk|czat|bibi)/i.test(message);
+ if(workIntent&&!asksError&&!matrixRequest&&!dotRequest){
+  const requested=message.trim().slice(0,500);
+  plan.work={
+   kind:'rx-queen-work-order',request:requested,status:'proposed',executed:false,
+   stages:[
+    {module:'RX Queen',action:'Rozbij polecenie na małe, sprawdzalne kroki',status:'proposed'},
+    {module:'RX Developer',action:'Przygotuj zmianę w istniejącym kodzie RX',status:'awaiting_executor'},
+    {module:'RX BIBI',action:'Sprawdź zmianę testami i zgłoś wynik',status:'awaiting_executor'},
+    {module:'RX Queen',action:'Pokaż wynik właścicielowi do zatwierdzenia',status:'awaiting_approval'}
+   ],requiresApproval:true
+  };
+  answer='👑 Przyjęłam zadanie: '+requested+'\\n🐜 Plan: analiza → RX Developer przygotowuje kod → RX BIBI sprawdza → pokazuję wynik do zatwierdzenia.\\n🔒 To na razie plan pracy; nie uruchomiłam jeszcze wykonawcy ani nie zmieniłam plików.';
+ }
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
