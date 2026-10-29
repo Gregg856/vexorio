@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
+const net=require('node:net');
 process.env.SUPABASE_URL='https://rxcloud-staging-test.supabase.co';
 const {start,staticFetch}=require('../rx-cloud-server.cjs');
 (async()=>{
@@ -106,6 +107,26 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert(load.completedRequests>=sampleCount,'Completed request count must include burst');
   assert(Number.isFinite(p95)&&p95>=0,'Invalid p95 latency');
   console.log('RX CLOUD 5.7 localhost-only burst: '+JSON.stringify({requests:sampleCount,concurrency,meanMs:Number(mean.toFixed(2)),p95Ms:Number(p95.toFixed(2)),peakActiveRequests:load.peakActiveRequests}));
-  console.log('RX CLOUD 5.7 request load counters, memory and local burst passed');
+  // RX CLOUD 5.8: verify real simultaneous TCP connections, not just fast health requests.
+  // Four idle sockets remain open until explicitly destroyed; localhost only.
+  const sockets=[];
+  try{
+    for(let i=0;i<4;i++){
+      const socket=net.connect({host:'127.0.0.1',port});
+      sockets.push(socket);
+      await new Promise((resolve,reject)=>{
+        socket.once('connect',resolve);
+        socket.once('error',reject);
+        socket.setTimeout(3000,()=>socket.destroy(new Error('Local socket timeout')));
+      });
+    }
+    const openConnections=await new Promise((resolve,reject)=>server.getConnections((err,n)=>err?reject(err):resolve(n)));
+    assert(openConnections>=4,'Server must accept at least four simultaneous TCP connections');
+    assert(openConnections<=server.maxConnections,'Server must respect configured connection capacity');
+    console.log('RX CLOUD 5.8 localhost TCP capacity: '+JSON.stringify({heldSockets:4,observedConnections:openConnections,configuredLimit:server.maxConnections}));
+  }finally{
+    for(const socket of sockets)socket.destroy();
+  }
+  console.log('RX CLOUD 5.8 local TCP concurrency and latency tests passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
