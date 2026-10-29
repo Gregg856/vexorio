@@ -29,3 +29,35 @@ const noMatch=inspectAndPropose({target:'src/x.js',source:'const x=1;'});
 assert.equal(noMatch.suggestions.length,0);
 assert.equal(noMatch.productionModified,false);
 console.log('PASS RX Developer Bridge: proposals only, no writes, blocked targets, ambiguity, comment/string safety');
+
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const {spawnSync}=require('node:child_process');
+// RX Queen regression: a previously reviewed incident is not queued again,
+// while a new failure still reaches the existing Developer handoff.
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rx-queen-memory-test-'));
+try{
+ const reports=path.join(temp,'rx-bibi-reports');
+ fs.mkdirSync(reports,{recursive:true});
+ const failure={ok:false,checks:[{id:'synthetic-check',ok:false,error:'Synthetic regression failure'}]};
+ fs.writeFileSync(path.join(reports,'rx-live-panel.json'),JSON.stringify(failure));
+ const queen=path.join(__dirname,'..','rx-queen-bibi-triage.cjs');
+ const run=()=>{const p=spawnSync(process.execPath,[queen],{cwd:temp,encoding:'utf8',timeout:5000});assert.equal(p.status,0,p.stderr);return JSON.parse(fs.readFileSync(path.join(reports,'rx-queen-bibi-triage.json'),'utf8'));};
+ const first=run();
+ const incident=first.incidents.find(x=>x.source==='rx-live-panel.json'&&x.check==='synthetic-check');
+ assert.ok(incident,'First run must detect synthetic failure');
+ assert.ok(first.nextWork.some(x=>x.incidentId===incident.id),'New failure must be queued');
+ const historyPath=path.join(reports,'rx-bibi-incident-history.json');
+ const history=JSON.parse(fs.readFileSync(historyPath,'utf8'));
+ history.history.find(x=>x.id===incident.id).developerReview={incidentId:incident.id,status:'NO_PATCH_CANDIDATES',requiresApproval:true,changesApplied:false};
+ fs.writeFileSync(historyPath,JSON.stringify(history));
+ const second=run();
+ assert.ok(second.incidents.some(x=>x.id===incident.id&&x.developerReview?.incidentId===incident.id),'Prior review must survive next run');
+ assert.ok(!second.nextWork.some(x=>x.incidentId===incident.id),'Reviewed failure must not be queued twice');
+ failure.checks.push({id:'new-check',ok:false,error:'New synthetic failure'});
+ fs.writeFileSync(path.join(reports,'rx-live-panel.json'),JSON.stringify(failure));
+ const third=run();
+ assert.ok(third.nextWork.some(x=>x.check==='new-check'),'New failure must still be queued');
+}finally{fs.rmSync(temp,{recursive:true,force:true});}
+console.log('PASS RX Queen: persistent review deduplication and new incident handoff');
