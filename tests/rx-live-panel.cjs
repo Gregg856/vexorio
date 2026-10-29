@@ -103,19 +103,30 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    await page.locator('#input').fill('');
    // Exercise the real form submit handler with a harmless greeting. Stub only the
    // chat endpoint in the isolated preview; never send requests to production.
-   let requests=0;
+   const turns=[
+    {question:'Cześć RX',answer:'RX BIBI: odpowiedź testowa 1'},
+    {question:'Jak działa nasz tester?',answer:'RX BIBI: odpowiedź testowa 2'},
+    {question:'Podsumuj rozmowę',answer:'RX BIBI: odpowiedź testowa 3'}
+   ];
+   const received=[];
    await page.route('**/api/rx/chat',async route=>{
-    requests++;
     const body=route.request().postDataJSON();
-    if(body?.message!=='Cześć RX')throw Error('Unexpected synthetic chat message');
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-bibi-synthetic',answer:'RX BIBI: odpowiedź testowa'})});
+    const turn=turns[received.length];
+    if(!turn||body?.message!==turn.question)throw Error('Unexpected synthetic chat turn: '+JSON.stringify(body));
+    received.push({message:body.message,history:Array.isArray(body.history)?body.history:[]});
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-bibi-synthetic',answer:turn.answer})});
    });
-   await page.locator('#input').fill('Cześć RX');
-   await page.locator('#form button[type="submit"]').click();
-   await page.locator('#messages .msg.bot').filter({hasText:'RX BIBI: odpowiedź testowa'}).waitFor({timeout:5000});
-   const responseOk=requests===1&&await page.locator('#input').inputValue()==='';
-   report.checks.push({name:'chat-submit-response-'+name,ok:responseOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST',requests});
-   if(!responseOk)throw Error(name+': synthetic chat submit/response failed');
+   for(const [index,turn] of turns.entries()){
+    await page.locator('#input').fill(turn.question);
+    await page.locator('#form button[type="submit"]').click();
+    await page.locator('#messages').getByText(turn.answer,{exact:false}).waitFor({timeout:8000});
+    if(await page.locator('#input').inputValue()!=='')throw Error(name+': input not cleared at turn '+index);
+   }
+   const historyOk=received.length===turns.length&&received.every((turn,index)=>index===0||turn.history.some(h=>String(h).includes(turns[index-1].answer)));
+   const messagesOk=await page.locator('#messages').getByText('RX BIBI: odpowiedź testowa').count()>=turns.length;
+   const conversationOk=historyOk&&messagesOk;
+   report.checks.push({name:'chat-multiturn-'+name,ok:conversationOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST',turns:received.length,historyOk,messagesOk});
+   if(!conversationOk)throw Error(name+': synthetic multi-turn history or messages failed');
 
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
