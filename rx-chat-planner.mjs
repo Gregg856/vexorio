@@ -272,6 +272,19 @@ export function planRXChat(message,history=[],learning=null){
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
+ // RX NAUKA 3.0: reuse only externally verified, bounded lessons for matching questions.
+ // Never treat arbitrary chat history or generated teacher output as verified truth.
+ const trustedReplies=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
+  ?learning.lessons.filter(x=>x&&x.verified===true&&typeof x.question==='string'&&typeof x.correctAnswer==='string'
+    &&x.question.length>=8&&x.question.length<=240&&x.correctAnswer.length>=8&&x.correctAnswer.length<=500).slice(0,20):[];
+ const normalizedQuestion=normalizeRX(message.trim()).replace(/[^a-z0-9 ]/g,'').replace(/ +/g,' ').trim();
+ const matchedLesson=trustedReplies.find(x=>normalizeRX(x.question).replace(/[^a-z0-9 ]/g,'').replace(/ +/g,' ').trim()===normalizedQuestion);
+ if(matchedLesson&&!noTests&&!asksLearningHow){
+  answer='👑 Sprawdzona lekcja RX: '+matchedLesson.correctAnswer;
+  tasks.length=0;
+  plan.work=null;
+  rxLearning.verifiedFacts=1;
+ }
  if(asksError&&verifiedLessons.length){
   const lesson=verifiedLessons[0];
   answer+='\\n🧠 RX BIBI wykrył wcześniej: '+lesson.observation.slice(0,180)+'. Obszar: '+String(lesson.panelArea||'RX').slice(0,90)+'. To wskazówka do diagnostyki, nie potwierdzona naprawa. Wymagana weryfikacja testem.';
