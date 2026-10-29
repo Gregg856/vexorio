@@ -38,7 +38,7 @@ permissions:
   actions: read
   issues: write
 concurrency:
-  group: rx-bibi-live-watch-${{ github.ref }}
+  group: rx-bibi-live-watch-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   scope:
