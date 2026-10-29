@@ -18,6 +18,8 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    if(!await page.locator('#rxGate').isVisible())throw Error(name+': access gate missing');
    if(await page.locator('#rxApp').isVisible())throw Error(name+': anonymous admin app visible');
    if(await page.locator('#input').count()!==1)throw Error(name+': chat input missing in deployed DOM');
+   const reportsEntry=await page.evaluate(()=>({menu:document.querySelector('#menu')?.textContent||'',source:[...document.scripts].filter(x=>!x.src).map(x=>x.textContent).join('\n')}));
+   if(!reportsEntry.source.includes('🐜 RX BIBI — raport Królowej')||!reportsEntry.source.includes('async function loadBibiQueenWatch'))throw Error(name+': RX BIBI reports entry not deployed');
    const viewport=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth}));
    if(viewport.documentWidth>viewport.viewportWidth+4)throw Error(name+': horizontal overflow '+JSON.stringify(viewport));
    if(errors.length)throw Error(name+': JS errors: '+errors.join('; '));
