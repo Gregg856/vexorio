@@ -6,7 +6,7 @@ if [[ "$MODE" != "--dry-run" && "$MODE" != "--install" ]] || [[ $# -gt 1 ]]; the
   echo "Usage: bash deploy/rxcloud-install.sh [--dry-run|--install]" >&2; exit 2
 fi
 cd "$(dirname "$0")/.."
-echo "RX CLOUD 3.1 — mode: $MODE"
+echo "RX CLOUD 4.2 — mode: $MODE"
 if [[ "$MODE" == "--dry-run" ]]; then
   if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -f index.html ]]; then
     echo "WARNING: Missing RX CLOUD source files or index.html asset. Installation is NOT ready."
@@ -20,6 +20,15 @@ fi
 if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -f index.html ]]; then
   echo "Missing RX CLOUD source files or index.html asset. Installation refused." >&2; exit 1
 fi
+# Refuse symlinks and likely private files in the published asset set.
+while IFS= read -r -d '' asset; do
+  name="${asset#./}"
+  if [[ -L "$asset" ]]; then echo "Refusing symlink asset: $name" >&2; exit 1; fi
+  case "${name,,}" in
+    *secret*|*credential*|*private*|*backup*|*token*|*password*|*.env*|*.pem|*.key)
+      echo "Refusing potentially sensitive asset: $name" >&2; exit 1;;
+  esac
+done < <(find . -maxdepth 1 \( -type f -o -type l \) \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.txt' -o -name '*.webmanifest' \) -print0)
 if [[ "$(uname -s)" != Linux || "$(id -u)" -ne 0 ]]; then
   echo "--install requires root on Linux" >&2; exit 1
 fi
