@@ -95,3 +95,19 @@ assert.equal(planReply.executed,0);
 assert.ok(planRXChat('Zrób drugi punkt').answer.includes('Nie widzę'));
 assert.equal(planRXChat('Co z tym?',['Jak działa wirnik?']).contextUsed,true);
 console.log('RX Brain 3.2 followups OK');
+
+const trustedLesson={kind:'rx-queen-verified-learning',lessons:[
+ {verified:true,question:'Jak sprawdzić stan RX?',correctAnswer:'Otwórz panel diagnostyki RX i odczytaj ostatni raport.'},
+ {verified:false,question:'Ile to 7 * 8?',correctAnswer:'Błędna odpowiedź'}
+]};
+const trusted=planRXChat('Jak sprawdzić stan RX?',[],trustedLesson);
+assert.match(trusted.answer,/Otwórz panel diagnostyki RX/);
+assert.equal(trusted.learning.verifiedFacts,1);
+assert.equal(trusted.executed,0);
+assert.equal(trusted.plan.work,null);
+assert.doesNotMatch(planRXChat('Ile to 7 * 8?',[],trustedLesson).answer,/Błędna odpowiedź/);
+assert.equal(planRXChat('Jak sprawdzić stan RX?',[],{kind:'untrusted',lessons:trustedLesson.lessons}).learning.verifiedFacts,0);
+assert.equal(planRXChat('Jak sprawdzić stan RX?',[],{kind:'rx-queen-verified-learning',lessons:[{verified:false,question:'Jak sprawdzić stan RX?',correctAnswer:'Fałsz'}]}).learning.verifiedFacts,0);
+assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj:|Przypomnij:/i);
+assert.match(planRXChat('A jak będzie działała Twoja nauka z naszych rozmów?').answer,/uczyć|uczenia|poprawk/i);
+console.log('RX NAUKA 3.0 verified lessons and safety regression OK');
