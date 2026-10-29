@@ -4,6 +4,7 @@ on:
     paths:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-cloud-staged.cjs'
       - 'tests/rx-cloud-queen-panel.cjs'
       - 'rx-admin-prototype.html'
       - 'worker.js'
@@ -51,6 +52,7 @@ jobs:
         run: |
           node --check rx-cloud-server.cjs
           node --check tests/rx-cloud-server.cjs
+          node --check tests/rx-cloud-staged.cjs
       - name: Test staged installer safety and dry-run
         run: node tests/rx-cloud-install.cjs
       - name: Test VPS preflight safety and syntax
@@ -72,6 +74,8 @@ jobs:
           test -s public/manifest.webmanifest
       - name: Run RX CLOUD smoke tests
         run: node tests/rx-cloud-server.cjs
+      - name: Test isolated RX CLOUD installation layout
+        run: node tests/rx-cloud-staged.cjs
       - name: Validate monitor failure reporting (no live server)
         run: |
           if RX_CLOUD_HEALTH_URL=http://127.0.0.1:1/__rxcloud/health RX_CLOUD_REPORT_PATH=/tmp/rx-cloud-health.json node scripts/rx-cloud-health.cjs; then
