@@ -14,6 +14,11 @@ function inspectAndPropose({target,source}={}){
    if(!/Rule match missing or ambiguous|Invalid patch target/.test(error.message))throw error;
   }
  }
- return {schema:1,kind:'rx-unified-code-review',engine:'RX Developer + RX Patch Drafter',target,analysis,suggestions,requiresApproval:true,productionModified:false,automaticDeployment:false};
+ const previews=suggestions.map(item=>({rule:item.rule,target,source:item.preview.preview}));
+ const syntaxChecks=previews.map(item=>{
+  try{new (require('node:vm').Script)(item.source,{filename:target});return {rule:item.rule,syntax:'valid'};}
+  catch(error){return {rule:item.rule,syntax:'invalid',error:String(error.message).slice(0,160)};}
+ });
+ return {schema:1,kind:'rx-unified-code-review',engine:'RX Developer + RX Patch Drafter',target,analysis,suggestions,syntaxChecks,requiresApproval:true,productionModified:false,automaticDeployment:false};
 }
 module.exports={inspectAndPropose};
