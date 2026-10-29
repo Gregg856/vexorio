@@ -3,7 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const PRIORITY={critical:0,high:1,medium:2,low:3};
-const {allocate}=require('./rx-bibi-budget.cjs');
+const {enforceLimits}=require('./rx-bibi-budget.cjs');
 // Convert verified CI failures into review-only ant proposals. No execution privileges.
 function triageCiFailures(runs,{maxTasks=10}={}){
  if(!Array.isArray(runs)||runs.length>100||!Number.isSafeInteger(maxTasks)||maxTasks<1||maxTasks>20)throw Error('Invalid CI runs');
@@ -63,7 +63,7 @@ if(require.main===module){
  let memory=null;
  try{memory=JSON.parse(fs.readFileSync(path.join('rx-bibi-reports','rx-signal-memory.json'),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;}
  const board=buildBoard(JSON.parse(fs.readFileSync(input,'utf8')),{medusa,memory});
- const budget=allocate(board);
+ const budget=enforceLimits(board);
  const cosmos=buildCosmosQueue(board);
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-ant-task-board.json',JSON.stringify(board,null,2)+'\n');
