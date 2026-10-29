@@ -57,7 +57,7 @@ const learningFeed={
  learningStatus:'EVIDENCE_COLLECTED_NOT_MODEL_RETRAINING'
 };
 fs.writeFileSync(path.join(dir,'rx-queen-learning-feed.json'),JSON.stringify(learningFeed,null,2)+'\n');
-const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,incidents,developerHandoff,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
+const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,incidents,developerHandoff,nextWork,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
 fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(path.join(dir,'rx-queen-bibi-triage.json'),JSON.stringify(report,null,2)+'\n');
 console.log('RX QUEEN BIBI TRIAGE',JSON.stringify(report));
