@@ -212,6 +212,17 @@
   if(taskResult)taskResult.textContent='👑 PLAN ZATWIERDZONY DO RĘCZNEJ REALIZACJI\nZadanie: '+proposedTask.description+'\nKomórki: '+proposedTask.cells.join(', ')+'\nNie uruchomiono zadań, testów, zapisu ani wdrożenia. Wykonanie wymaga osobnego działania.';
   // Approval is local until a dedicated authenticated server-side task API exists.
   // The private BIBI inbox is for verified reports, not browser work requests.
+  // Preserve the exact owner-approved request for an authenticated executor handoff.
+  // This is local only: no untrusted browser request is sent to a privileged API.
+  const approvedSnapshot=Object.freeze({schema:1,kind:'rx-queen-approved-request',request:proposedTask.description,cells:[...proposedTask.cells],approvedAt:new Date().toISOString(),executionRequested:false});
+  const snapshotOutput=document.getElementById('rxQueenApprovedSnapshot')||document.createElement('textarea');
+  snapshotOutput.id='rxQueenApprovedSnapshot';
+  snapshotOutput.readOnly=true;
+  snapshotOutput.setAttribute('aria-label','Zatwierdzone polecenie RX do bezpiecznego przekazania');
+  snapshotOutput.style.width='100%';
+  snapshotOutput.style.minHeight='110px';
+  snapshotOutput.value=JSON.stringify(approvedSnapshot,null,2);
+  if(!snapshotOutput.isConnected&&taskResult?.parentNode)taskResult.parentNode.insertBefore(snapshotOutput,taskResult.nextSibling);
   approvedInSession++;resetTask();refreshWorkOverview();
   if(taskResult)taskResult.textContent+='\\n📬 Przekazanie do wykonawcy oczekuje na bezpieczny serwerowy adapter. Nie wysłano żądania ani nie wykonano zadania.';
  });
