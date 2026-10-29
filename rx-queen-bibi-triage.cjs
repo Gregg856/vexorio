@@ -6,7 +6,7 @@ const path=require('node:path');
 const dir='rx-bibi-reports';
 const inputs=['rx-live-panel.json','rx-queen-dialogue.json','browser-agent/report.json','rx-visual-audit.json'];
 const findings=[];
-const historyFile=path.join(dir,'rx-bibi-smart-memory.json');
+const historyFile=path.join(dir,'rx-bibi-incident-history.json');
 let known=[];
 try{const memory=JSON.parse(fs.readFileSync(historyFile,'utf8'));known=Array.isArray(memory)?memory:Array.isArray(memory.history)?memory.history:[];}catch{}
 for(const file of inputs){
