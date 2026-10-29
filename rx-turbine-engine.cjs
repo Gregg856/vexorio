@@ -1,6 +1,6 @@
 'use strict';
 // RX TURBINE: bounded, deduplicated cloud-work scheduling plan. No actual execution.
-const ALLOWED=Object.freeze(['check_syntax','run_unit_tests','run_browser_tests','inspect_ci']);
+const ALLOWED=Object.freeze(['check_syntax','run_unit_tests','run_browser_tests','inspect_ci','plan_build']);
 function createTurbine({maxParallel=4,maxQueued=100}={}){
  if(!Number.isSafeInteger(maxParallel)||maxParallel<1||maxParallel>16||!Number.isSafeInteger(maxQueued)||maxQueued<1||maxQueued>500)throw Error('Invalid turbine capacity');
  const queue=[],seen=new Set();
