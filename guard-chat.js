@@ -193,7 +193,7 @@
  }catch(_){transcriptEnabled=false;transcript=[];}
  const memoryButton=document.createElement('button');
  memoryButton.type='button';
- memoryButton.setAttribute('aria-label','Pamięć rozmowy w tej karcie');
+ if(typeof memoryButton.setAttribute==='function')memoryButton.setAttribute('aria-label','Pamięć rozmowy w tej karcie');
  const updateMemoryButton=()=>{memoryButton.textContent=transcriptEnabled?'🧠 Pamięć karty: WŁ. (wyłącz i wyczyść)':'🧠 Włącz pamięć rozmowy w tej karcie';};
  updateMemoryButton();
  memoryButton.addEventListener('click',()=>{
@@ -206,7 +206,7 @@
   }
   updateMemoryButton();
  });
- form.parentNode?.insertBefore(memoryButton,form);
+ if(typeof form.parentNode?.insertBefore==='function')form.parentNode.insertBefore(memoryButton,form);
  function append(role,message){
   const p=document.createElement('p');p.className='guard-chat-message';
   if(p.style)p.style.cssText='padding:11px 13px;border-radius:12px;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap;max-width:100%;box-sizing:border-box';
