@@ -98,7 +98,10 @@ jobs:
           const triage=JSON.parse(fs.readFileSync(path,'utf8'));
           if(!Array.isArray(triage.nextWork)||triage.nextWork.length===0){console.log('No BIBI failures to analyze');process.exit(0);}
           const {spawnSync}=require('node:child_process');
-          const result=spawnSync(process.execPath,['rx-developer-review-runner.cjs'],{stdio:'inherit',env:{...process.env,RX_TARGET:'rx-developer-patch-bridge.cjs'},timeout:30000});
+          const allowed=new Set(['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs']);
+          const target=triage.nextWork.find(item=>allowed.has(item.target))?.target;
+          if(!target){console.log('No allowlisted target for BIBI incidents');process.exit(0);}
+          const result=spawnSync(process.execPath,['rx-developer-review-runner.cjs'],{stdio:'inherit',env:{...process.env,RX_TARGET:target},timeout:30000});
           if(result.error)throw result.error;
           if(result.status!==0)process.exit(result.status||1);
           console.log('RX Developer analyzed existing module; no code changes applied');
