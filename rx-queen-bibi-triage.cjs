@@ -3,7 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const dir='rx-bibi-reports';
-const inputs=['rx-live-panel.json','rx-queen-dialogue.json'];
+const inputs=['rx-live-panel.json','rx-queen-dialogue.json','browser-agent/report.json','rx-visual-audit.json'];
 const findings=[];
 for(const file of inputs){
  const full=path.join(dir,file);
