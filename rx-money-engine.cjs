@@ -43,6 +43,6 @@ function createMoneyEngine(){
   const development=Math.floor(available*70/100);
   return {incomeCents:income,expenseCents:expense,availableCents:available,developmentCents:development,reserveCents:available-development,allocation:ALLOCATION};
  }
- return Object.freeze({addTask,transition,record,proposeOffer,summary,offers:()=>offers.map(e=>({...e})),tasks:()=>[...tasks.values()].map(structuredClone),ledger:()=>events.map(e=>({...e}))});
+ return Object.freeze({addTask,transition,record,proposeOffer,summary,offers:()=>offers.map(e=>({...e})),tasks:()=>[...tasks.values()].map(task=>structuredClone(task)),ledger:()=>events.map(e=>({...e}))});
 }
 module.exports={createMoneyEngine,ROLES,ALLOCATION,CHANNELS};
