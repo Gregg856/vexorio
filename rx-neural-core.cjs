@@ -26,6 +26,18 @@ function forward(net,x){
  for(let j=0;j<net.output;j++)pred[j]+=net.b2[j];
  return {z1,h,pred};
 }
+// Efficient batched inference for the existing RX network; no training or network calls.
+function predictBatch(net,x){
+ if(!(x instanceof Float32Array)||x.length===0||x.length%net.input!==0)throw Error('Invalid batch input');
+ const count=x.length/net.input;
+ if(count>4096||count*net.hidden>4e6||count*net.output>4e6)throw Error('Batch too large');
+ for(const v of x)if(!Number.isFinite(v))throw Error('Non-finite batch input');
+ const z1=matmul(x,net.w1,count,net.input,net.hidden);
+ for(let i=0;i<count;i++)for(let j=0;j<net.hidden;j++)z1[i*net.hidden+j]=Math.max(0,z1[i*net.hidden+j]+net.b1[j]);
+ const predictions=matmul(z1,net.w2,count,net.hidden,net.output);
+ for(let i=0;i<count;i++)for(let j=0;j<net.output;j++)predictions[i*net.output+j]+=net.b2[j];
+ return predictions;
+}
 function loss(net,x,y){
  const count=x.length/net.input;let sum=0;
  for(let i=0;i<count;i++){
@@ -54,4 +66,4 @@ function train(net,x,y,{epochs=100,rate=0.03}={}){
  }
  return {initialLoss,finalLoss:loss(net,x,y),epochs,count};
 }
-module.exports={createNetwork,forward,loss,train};
+module.exports={createNetwork,forward,predictBatch,loss,train};
