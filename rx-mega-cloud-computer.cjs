@@ -47,6 +47,22 @@ function runAntQueue(queue,{approvedIds=[],execute=false,maxChecks=3}={}){
  return {...report,kind:'rx-cosmos-ant-check-report',queueTasks:queue.planned.length,approvedTasks:approved.length,eligibleTasks:eligible.length,skippedTasks:queue.planned.length-approved.length,approvalRequired:true,executedTaskIds:execute?uniqueApproved.slice(0,maxChecks).map(task=>task.id):[],note:'Only explicitly approved, fixed allowlisted Node checks can run. No arbitrary task execution, edits or deployments.'};
 }
 
+// Queen-to-executor bridge: explicit approval allows only existing allowlisted tests.
+// Code edits and deployments are never performed by this bridge.
+function runQueenApprovedChecks(plan,{approved=false,execute=false,maxChecks=2}={}){
+ if(!plan||!['rx-ordered-work-proposal','rx-queen-work-order'].includes(plan.kind)||!Array.isArray(plan.stages)||plan.stages.length<1||plan.stages.length>10||plan.requiresApproval!==true||plan.executed!==false)throw Error('Invalid Queen work plan');
+ if(typeof approved!=='boolean'||typeof execute!=='boolean'||!Number.isSafeInteger(maxChecks)||maxChecks<0||maxChecks>2)throw Error('Invalid Queen execution options');
+ const stageModules=plan.stages.map(stage=>{
+  if(!stage||!['RX Queen','RX BIBI','RX Developer'].includes(stage.module)||typeof stage.action!=='string'||stage.action.length>500)throw Error('Queen stage not allowlisted');
+  return stage.module;
+ });
+ const checks=[...new Set(stageModules.map(module=>module==='RX BIBI'?'tests/rx-integration.cjs':module==='RX Developer'?'tests/rx-ai-core.cjs':null).filter(Boolean))];
+ if(checks.some(check=>!CHECKS.includes(check)))throw Error('Queen check not allowlisted');
+ const authorized=approved&&execute;
+ const result=runCloudComputer({execute:authorized,selectedChecks:authorized?checks:[],maxChecks});
+ return {kind:'rx-queen-approved-checks',approved,executed:result.executed,checks:result.checks,productionModified:false,codePatched:false,deployed:false,requiresApproval:!approved};
+}
+
 if(require.main===module){
  const report=runCloudComputer({execute:true});
  const file=path.join('rx-bibi-reports','rx-mega-cloud-computer.json');
@@ -55,4 +71,4 @@ if(require.main===module){
  console.log('RX MEGA CLOUD COMPUTER:',report.passed,'passed,',report.failed,'failed');
  if(report.failed)process.exitCode=1;
 }
-module.exports={runCloudComputer,runAntQueue,CHECKS};
+module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,CHECKS};
