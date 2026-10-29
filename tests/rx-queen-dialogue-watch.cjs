@@ -72,6 +72,25 @@ const fs=require('node:fs');
    results.push({id:'long-dialogue-'+index,ok:true,contextUsed:!!result.contextUsed,answerLength:result.answer.length});
   }catch(e){results.push({id:'long-dialogue-'+index,ok:false,error:e.message});break;}
  }
+ // Compound requests must preserve the ordered work plan, not overwrite it
+ // with the generic work-order planner. No actual task execution here.
+ const compoundCases=[
+  {id:'compound-check-fix',message:'Sprawdź czat i napraw błędy w czacie',modules:['RX BIBI','RX Developer','RX BIBI']},
+  {id:'compound-typos',message:'Sorawdz czat i zrib poprawke czatu',modules:['RX BIBI','RX Developer','RX BIBI']},
+  {id:'compound-fix-only',message:'Napraw czat i przetestuj',modules:['RX BIBI','RX Developer','RX BIBI']},
+  {id:'compound-no-fix',message:'Sprawdź czat i przetestuj panel',modules:[]}
+ ];
+ for(const c of compoundCases){
+  try{
+   const r=planRXChat(c.message);
+   const stages=r.plan?.work?.stages||[];
+   const actual=stages.map(x=>x.module);
+   if(c.modules.length?actual.join('|')!==c.modules.join('|'):actual.some(x=>x==='RX Developer'))throw Error('Incorrect task ordering: '+actual.join(','));
+   if(r.executed!==0||r.plan?.work?.executed===true||stages.some(x=>x.requiresApproval===false))throw Error('Unauthorized execution');
+   if(c.modules.length&&(!r.answer.includes('RX Developer')||!r.answer.includes('RX BIBI')))throw Error('Answer omits planned modules');
+   results.push({id:c.id,ok:true,stages:actual});
+  }catch(e){results.push({id:c.id,ok:false,error:e.message});}
+ }
  const report={kind:'rx-bibi-queen-dialogue',mode:'SYNTHETIC_LOCAL_PLANNER',authenticatedProductionChat:'NOT_TESTED',checkedAt:new Date().toISOString(),checks:results,ok:results.every(x=>x.ok)};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-dialogue.json',JSON.stringify(report,null,2)+'\n');
