@@ -14,6 +14,10 @@ const TEST_DEPENDENCIES={
  'rx-developer-patch-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
  'rx-patch-drafter.cjs':'tests/rx-developer-bridge-isolated.cjs',
  'rx-command-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-coordinator.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-developer-patch-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-patch-drafter.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-command-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
  'rx-coordinator.cjs':'tests/rx-developer-bridge-isolated.cjs'
 };
 function selectFastTests(changedFiles){
