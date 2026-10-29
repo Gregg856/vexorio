@@ -1,6 +1,7 @@
 'use strict';
 // RX CLOUD 3.5: verify server runs from an isolated deployment directory.
 const assert=require('node:assert/strict');
+process.env.SUPABASE_URL='https://rxcloud-staging-test.supabase.co';
 const fs=require('node:fs/promises');
 const os=require('node:os');
 const path=require('node:path');
