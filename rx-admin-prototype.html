@@ -699,7 +699,10 @@ async function answerServerBrainChat(question){
   if(data.engine==='rx-tech-help'&&Array.isArray(data.sources)&&data.sources.length){rxLastTechHelp={query:question.replace(/^[^:]*:\s*/,''),sources:data.sources.filter(x=>typeof x.title==='string'&&typeof x.url==='string').slice(0,3)};}else rxLastTechHelp=null;
   const tasks=Array.isArray(data.tasks)?data.tasks:[];
   const engineLabel=data.engine==='cloudflare-workers-ai'?'🧠 Model językowy Cloudflare AI':data.engine==='rx-persistent-memory'?'🧠 Pamięć RX':data.engine==='rule-based-fallback'?'⚙️ Silnik reguł RX':data.engine==='rx-tech-help'?'🔎 Wyszukiwanie pomocy':'⚙️ '+String(data.engine||'RX').slice(0,60);
-  add('bot','['+engineLabel+']\n'+data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
+  // Keep normal conversation free of technical task lists; explicit test/work requests may show them.
+  const wantsTasks=/(?:^|\s)(?:testuj|uruchom test|sprawdz test|sprawdź test|pokaz zadania|pokaż zadania|lista zadan|lista zadań)(?:\s|$)/i.test(question)
+    && !/(nie uruchamiaj|bez testow|bez testów|nie pokazuj zadan|nie pokazuj zadań)/i.test(question);
+  add('bot','['+engineLabel+']\n'+data.answer+(wantsTasks&&tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
   rxServerChatHistory.push('RX: '+String(data.answer||'').slice(0,2000));
   if(rxServerChatHistory.length>20)rxServerChatHistory.shift();
   if(data.engine==='rx-queen-ant-test-dispatch'&&Number.isSafeInteger(data.runId)&&data.runId>0&&data.runStatus!=='success'&&data.runStatus!=='failure'){
