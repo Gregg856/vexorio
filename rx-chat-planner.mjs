@@ -261,6 +261,14 @@ export function planRXChat(message,history=[],learning=null){
   tasks.length=0;
   plan.work=null;
  }
+ // RX NAUKA: distinguish a question about learning from commands to save/recall notes.
+ const asksLearningHow=/(jak|w jaki sposob|czy).{0,60}(nauk|ucz|uczen|uczyc)/i.test(plain)
+  && /(rozmow|odpowiedzi|poprawek|bledow|twoj|twoja|rx)/i.test(plain);
+ if(asksLearningHow){
+  answer='👑 Chcę uczyć się z rozmów w trzech krokach: najpierw zapamiętać temat i Twoje preferencje w bieżącym czacie, potem rozpoznać, kiedy poprawiasz moją odpowiedź, a następnie wykorzystać tę poprawkę przy podobnym pytaniu. Obecnie działa tylko ograniczony kontekst i wykrywanie części preferencji; automatyczne utrwalanie poprawek i trenowanie modelu jeszcze nie działają. Nie zapisuję każdej wiadomości jako prawdy. Możemy rozwijać te funkcje po kolei.';
+  tasks.length=0;
+  plan.work=null;
+ }
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
