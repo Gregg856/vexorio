@@ -21,13 +21,24 @@ const proposals=report.suggestions.map(item=>({
 const original=fs.readFileSync(path.join(__dirname,target),'utf8');
 const {previewPatch}=require('./rx-patch-drafter.cjs');
 const {Script}=require('node:vm');
+const os=require('node:os');
+const {spawnSync}=require('node:child_process');
 const verified=proposals.map((candidate,index)=>{
  const proposal=report.suggestions[index].proposal;
  try{
   const preview=previewPatch(proposal,original).preview;
   if(preview!==candidate.preview)throw Error('Preview mismatch');
   new Script(preview,{filename:target});
-  return {...candidate,bibiValidation:'passed',readyForReview:true};
+  // Run the real Node syntax checker against a temporary file, never the repository.
+  const sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'rx-bibi-patch-'));
+  let check;
+  try{
+   const tempFile=path.join(sandbox,target);
+   fs.writeFileSync(tempFile,preview,{flag:'wx'});
+   check=spawnSync(process.execPath,['--check',tempFile],{encoding:'utf8',timeout:10000,maxBuffer:65536});
+  }finally{fs.rmSync(sandbox,{recursive:true,force:true});}
+  if(check.error||check.status!==0)throw Error('Sandbox syntax check failed: '+String(check.error?.message||check.stderr||check.status).slice(0,160));
+  return {...candidate,bibiValidation:'passed',sandboxValidation:'node-check-passed',readyForReview:true};
  }catch(error){
   return {...candidate,bibiValidation:'failed',readyForReview:false,validationError:String(error.message).slice(0,160)};
  }
