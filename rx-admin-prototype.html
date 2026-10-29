@@ -375,8 +375,34 @@ async function runApprovedCoordinator(command='Sprawdź testy w chmurze i model 
   const response=await fetch('/api/rx/coordinator/run',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({command}),credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(18000)});
   const data=await response.json();
   if(!response.ok||data.ok!==true)throw Error(data.message||'HTTP '+response.status);
-  add('bot','🐜 '+data.message+' Wynik sprawdzisz przez „Odśwież raport RX Coordinator”.');
+  add('bot','🐜 '+data.message+' Czekam na wynik w GitHub Actions…');
+  void watchCoordinatorDispatch();
  }catch(error){add('bot','Nie uruchomiono testów: '+error.message);}
+}
+async function watchCoordinatorDispatch(){
+ // Dispatch API returns 202 without a run ID; identify a new manual run by its creation time.
+ const started=Date.now()-30000;
+ let runId=null;
+ for(let attempt=0;attempt<24;attempt++){
+  if(document.hidden){await new Promise(resolve=>setTimeout(resolve,5000));continue;}
+  try{
+   const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-coordinator-cloud.yml/runs?branch=main&event=workflow_dispatch&per_page=5',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+   if(!response.ok)throw Error('GitHub HTTP '+response.status);
+   const data=await response.json();
+   if(!Array.isArray(data.workflow_runs))throw Error('Brak listy przebiegów.');
+   const candidate=runId?data.workflow_runs.find(r=>r.id===runId):data.workflow_runs.find(r=>Date.parse(r.created_at)>=started);
+   if(candidate){
+    runId=candidate.id;
+    if(candidate.status==='completed'){
+     const state=candidate.conclusion==='success'?'✅ SUKCES':candidate.conclusion==='failure'?'❌ BŁĄD':'⚠️ '+candidate.conclusion;
+     add('bot','👑🐜 RX Coordinator #'+runId+': '+state+'\\n'+candidate.html_url+'\\nTo wynik workflow; nie oznacza automatycznej zmiany kodu.');
+     return;
+    }
+   }
+  }catch(error){if(attempt===23)add('bot','⚠️ Nie udało się potwierdzić wyniku GitHub: '+error.message);}
+  await new Promise(resolve=>setTimeout(resolve,5000));
+ }
+ add('bot','🐜 Nie potwierdzono zakończenia RX Coordinator w tym czasie. Wybierz „Odśwież raport RX Coordinator”.');
 }
 async function loadExecutionReadiness(){
  add('bot','🔒 Sprawdzam gotowość bezpiecznego wykonawcy RX…');
