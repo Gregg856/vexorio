@@ -109,9 +109,10 @@ async function checkAdmin(){
   const {data:{user:confirmed},error:checkError}=await rxClient.auth.getUser();
   if(checkError||confirmed?.id!==user.id)throw Error('Sesja zmieniła się. Zaloguj się ponownie.');
   if(!confirmed||confirmed.id!==user.id)throw Error('Nieprawidłowa sesja.');
-  if(rxActiveUserId&&rxActiveUserId!==user.id){rxServerChatHistory.length=0;document.getElementById('rxCheckChatResult').textContent='🔄 Zmieniono konto — historia czatu w tej karcie została wyczyszczona.';}
+  if(rxActiveUserId&&rxActiveUserId!==user.id){rxServerChatHistory.length=0;rxTranscript=[];rxTranscriptEnabled=false;try{sessionStorage.removeItem(RX_CHAT_TAB_KEY);}catch(_){}document.getElementById('rxCheckChatResult').textContent='🔄 Zmieniono konto — historia czatu w tej karcie została wyczyszczona.';}
+  const rxAccountChanged=rxActiveUserId!==user.id;
   rxActiveUserId=user.id;
-  rxRestoreTranscript(user.id);
+  if(rxAccountChanged)rxRestoreTranscript(user.id);
   gate.hidden=true;app.hidden=false;
  }catch(e){rxActiveUserId=null;gateText.textContent=e.message||'Brak dostępu.';}
 }
