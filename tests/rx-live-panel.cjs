@@ -3,9 +3,12 @@
 // Does not bypass auth, send chat messages, or change production data.
 const {chromium,devices}=require('playwright');
 const fs=require('node:fs');
+const {pathToFileURL}=require('node:url');
+const path=require('node:path');
 const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev').replace(/\/$/,'');
 (async()=>{
  const report={kind:'rx-bibi-live-panel',base,scope:'DEPLOYED_PUBLIC_GATE_ONLY',authenticatedChat:'NOT_TESTED',checks:[]};
+ const {planRXChat}=await import(pathToFileURL(path.resolve(__dirname,'../rx-chat-planner.mjs')).href);
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   for(const [name,contextOptions] of [['mobile',{...devices['Pixel 7'],locale:'pl-PL'}],['mobile-narrow',{viewport:{width:360,height:740},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'pl-PL'}],['desktop',{viewport:{width:1365,height:850},locale:'pl-PL'}]]){
@@ -112,42 +115,47 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    await page.locator('#input').fill('');
    // Exercise the real form submit handler with a harmless greeting. Stub only the
    // chat endpoint in the isolated preview; never send requests to production.
+   // Exercise the existing UI against the real local RX planner, while
+   // intercepting only the API transport. No authenticated production calls.
    const turns=[
-    {question:'Cześć RX',answer:'RX BIBI: odpowiedź testowa 1'},
-    {question:'Jak działa nasz tester?',answer:'RX BIBI: odpowiedź testowa 2'},
-    {question:'Podsumuj rozmowę',answer:'RX BIBI: odpowiedź testowa 3'},
-    {question:'Dlaczego niebo jest niebieskie?',answer:'RX BIBI: odpowiedź testowa 4'},
-    {question:'Co mozesz zrobic z moim projketem?',answer:'RX BIBI: odpowiedź testowa 5'},
-    {question:'Hej Królowo, jak działają testy i co z Mrówkami?',answer:'RX BIBI: odpowiedź testowa 6'}
+    'Cześć RX',
+    'Co robią Mrówki?',
+    'Dalej',
+    'Dlaczego niebo jest niebieskie?',
+    'Co mozesz zrobic z moim projketem?',
+    'Hej Królowo, jak działają testy i co z Mrówkami?'
    ];
    const received=[];
+   const answers=[];
    await page.route('**/api/rx/chat',async route=>{
     const body=route.request().postDataJSON();
-    const turn=turns[received.length];
-    if(!turn||body?.message!==turn.question)throw Error('Unexpected synthetic chat turn: '+JSON.stringify(body));
-    received.push({message:body.message,history:Array.isArray(body.history)?body.history:[]});
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-bibi-synthetic',answer:turn.answer})});
+    const question=turns[received.length];
+    if(!question||body?.message!==question)throw Error('Unexpected chat turn: '+JSON.stringify(body));
+    const history=Array.isArray(body.history)?body.history:[];
+    const planned=planRXChat(body.message,history);
+    if(!planned.ok||!planned.answer?.trim()||planned.executed!==0)throw Error('Invalid RX planner response');
+    received.push({message:body.message,history,contextUsed:planned.contextUsed});
+    answers.push(planned.answer);
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-local-planner',answer:planned.answer})});
    });
    const chatLatenciesMs=[];
-   for(const [index,turn] of turns.entries()){
+   for(const [index,question] of turns.entries()){
     const started=Date.now();
-    await page.locator('#input').fill(turn.question);
+    await page.locator('#input').fill(question);
     await page.locator('#form button[type="submit"]').click();
-    await page.locator('#messages').getByText(turn.answer,{exact:false}).waitFor({timeout:8000});
+    await page.locator('#messages').getByText(answers[index],{exact:false}).last().waitFor({timeout:8000});
     chatLatenciesMs.push(Date.now()-started);
     if(await page.locator('#input').inputValue()!=='')throw Error(name+': input not cleared at turn '+index);
    }
-   const historyOk=received.length===turns.length&&received.every((turn,index)=>index===0||turn.history.some(h=>String(h).includes(turns[index-1].answer)));
-   const messagesOk=await page.locator('#messages').getByText('RX BIBI: odpowiedź testowa').count()>=turns.length;
-   const conversationOk=historyOk&&messagesOk;
-   report.checks.push({name:'chat-multiturn-'+name,ok:conversationOk,scope:'ISOLATED_STUBBED_API_NO_PRODUCTION_REQUEST',turns:received.length,historyOk,messagesOk});
-   if(!conversationOk)throw Error(name+': synthetic multi-turn history or messages failed');
-   const maxChatLatencyMs=Math.max(...chatLatenciesMs);
-   const latencyOk=chatLatenciesMs.length===turns.length&&maxChatLatencyMs<8000;
-   report.checks.push({name:'chat-response-latency-'+name,ok:latencyOk,scope:'ISOLATED_STUBBED_API_NOT_REAL_SERVER_LATENCY',latenciesMs:chatLatenciesMs,maxMs:maxChatLatencyMs});
-   if(!latencyOk)throw Error(name+': chat response too slow '+JSON.stringify(chatLatenciesMs));
-
-
+   const historyOk=received.length===turns.length&&received.every((turn,index)=>index===0||turn.history.some(h=>String(h).includes(answers[index-1])));
+   const messagesOk=await page.locator('#messages .msg.bot').count()>=turns.length;
+   const contextOk=received[2]?.contextUsed===true;
+   const conversationOk=historyOk&&messagesOk&&contextOk;
+   report.checks.push({name:'chat-real-planner-multiturn-'+name,ok:conversationOk,scope:'ISOLATED_REAL_LOCAL_PLANNER_NO_PRODUCTION_REQUEST',turns:received.length,historyOk,messagesOk,contextOk});
+   if(!conversationOk)throw Error(name+': real planner multi-turn conversation failed');
+   const latencyOk=chatLatenciesMs.length===turns.length&&chatLatenciesMs.every(ms=>ms<8000);
+   report.checks.push({name:'chat-local-planner-ui-latency-'+name,ok:latencyOk,scope:'ISOLATED_LOCAL_PLANNER_NOT_PRODUCTION_LATENCY',latenciesMs:chatLatenciesMs});
+   if(!latencyOk)throw Error(name+': planner UI response too slow');
    // Fault-injection checks: verify the real UI reports server errors and timeouts.
    // No production endpoint is contacted; requests stay in the isolated preview.
    await page.unroute('**/api/rx/chat');
