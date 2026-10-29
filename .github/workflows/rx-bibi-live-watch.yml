@@ -6,6 +6,8 @@ on:
       - '.github/workflows/rx-bibi-live-watch.yml'
       - 'tests/rx-queen-dialogue-watch.cjs'
       - 'tests/rx-live-panel.cjs'
+      - 'rx-admin-prototype.html'
+      - 'tests/rx-alarm-simulation.cjs'
       - 'rx-chat-planner.mjs'
       - 'rx-queen-bibi-triage.cjs'
   workflow_dispatch:
@@ -33,6 +35,8 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: RX ALARM — sprawdź symulację awarii i deduplikację zgłoszeń
+        run: node --test tests/rx-alarm-simulation.cjs
       - name: RX BIBI — otwórz prawdziwy panel na telefonie i komputerze
         id: check
         continue-on-error: true
