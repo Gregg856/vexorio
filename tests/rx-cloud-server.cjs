@@ -83,6 +83,29 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(finalLoad.activeRequests,1,'Only health request should remain active');
   assert(finalLoad.completedRequests>=8,'Request completion counter should advance');
   assert(finalLoad.peakActiveRequests>=1,'Peak request counter should be populated');
-  console.log('RX CLOUD 5.6 request load counters, memory and server smoke passed');
+  // RX CLOUD 5.7: bounded, localhost-only burst; never targets a public endpoint.
+  const sampleCount=24;
+  const concurrency=4;
+  const latencies=[];
+  for(let offset=0;offset<sampleCount;offset+=concurrency){
+    const batch=Array.from({length:Math.min(concurrency,sampleCount-offset)},async()=>{
+      const started=performance.now();
+      const response=await fetch(base+'/__rxcloud/health',{signal:AbortSignal.timeout(5000)});
+      assert.equal(response.status,200,'Local burst request failed');
+      await response.json();
+      latencies.push(performance.now()-started);
+    });
+    await Promise.all(batch);
+  }
+  latencies.sort((a,b)=>a-b);
+  const p95=latencies[Math.ceil(latencies.length*.95)-1];
+  const mean=latencies.reduce((sum,n)=>sum+n,0)/latencies.length;
+  const loadResponse=await fetch(base+'/__rxcloud/health');
+  const load=(await loadResponse.json()).load;
+  assert.equal(latencies.length,sampleCount,'All local burst samples must complete');
+  assert(load.completedRequests>=sampleCount,'Completed request count must include burst');
+  assert(Number.isFinite(p95)&&p95>=0,'Invalid p95 latency');
+  console.log('RX CLOUD 5.7 localhost-only burst: '+JSON.stringify({requests:sampleCount,concurrency,meanMs:Number(mean.toFixed(2)),p95Ms:Number(p95.toFixed(2)),peakActiveRequests:load.peakActiveRequests}));
+  console.log('RX CLOUD 5.7 request load counters, memory and local burst passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
