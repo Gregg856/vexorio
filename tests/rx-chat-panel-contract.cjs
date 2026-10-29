@@ -18,6 +18,10 @@ assert.match(worker,/RX_BIBI_LEARNING_TOKEN/);
 assert.match(worker,/RX_BIBI_LEARNING_URL/);
 // BIBI verifies the actual owner-only Queen -> RX Developer dispatch contract.
 assert.match(worker,/developerMatch/);
+const developerLine=worker.split('\n').find(line=>line.includes('const developerMatch='));
+assert.ok(developerLine,'Missing RX Developer command matcher');
+assert.ok(!developerLine.includes(String.raw`\\\\s`),'RX Developer command must recognize spaces, not literal backslashes');
+assert.ok(developerLine.includes(String.raw`\\s+`),'RX Developer command must match whitespace');
 assert.match(worker,/rx-developer-bridge\.yml\/dispatches/);
 assert.match(worker,/RX_GITHUB_DISPATCH_TOKEN/);
 assert.match(worker,/identity\.id!==env\.RX_ADMIN_USER_ID/);
