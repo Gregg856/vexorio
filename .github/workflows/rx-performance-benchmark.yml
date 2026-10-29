@@ -79,6 +79,27 @@ jobs:
           NODE
       - name: Measure RX modules
         run: node rx-performance-benchmark.cjs
+      - name: Compare RX FAST full and Queen-selected test duration
+        run: |
+          node - <<'NODE'
+          const {runFastTests,selectFastTests}=require('./rx-fast-test-engine.cjs');
+          (async()=>{
+            const full=await runFastTests();
+            const selected=await runFastTests({tests:selectFastTests(['rx-mega-cloud-computer.cjs'])});
+            const summary=[
+              '## RX FAST — measured comparison',
+              '| Mode | Tests | Passed | Duration |',
+              '|---|---:|---:|---:|',
+              '| Full | '+full.total+' | '+full.passed+' | '+full.elapsedMs+' ms |',
+              '| Queen-selected | '+selected.total+' | '+selected.passed+' | '+selected.elapsedMs+' ms |',
+              '',
+              'These are two different test sets, not equivalent coverage.'
+            ].join('\\n');
+            console.log(summary);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\\n');
+            if(full.failed||selected.failed)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: rx-performance-benchmark
