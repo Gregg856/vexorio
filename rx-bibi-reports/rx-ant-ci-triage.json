@@ -4,10 +4,19 @@
   "tasks": [
     {
       "source": "github-actions",
-      "action": "Sprawdź nieudany przebieg CI: cancelled",
+      "action": "Sprawdź nieudany przebieg CI: failure",
+      "target": "RX BIBI — stały strażnik panelu",
+      "priority": "high",
+      "runId": 40879214936,
+      "status": "needs_review",
+      "requiresApproval": true
+    },
+    {
+      "source": "github-actions",
+      "action": "Sprawdź nieudany przebieg CI: failure",
       "target": "RX BIBI Tester — mobile browser",
-      "priority": "medium",
-      "runId": 40825189544,
+      "priority": "high",
+      "runId": 40879112608,
       "status": "needs_review",
       "requiresApproval": true
     }
@@ -16,6 +25,6 @@
   "autoFixesApplied": 0,
   "note": "Proposals only. Human approval required before any code change.",
   "source": "github-actions",
-  "checkedAt": "2026-10-29T05:58:19.206Z",
+  "checkedAt": "2026-10-29T13:22:30.256Z",
   "sourceAvailable": true
 }\n
