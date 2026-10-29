@@ -50,6 +50,14 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
     return {viewport:{width:innerWidth,height:innerHeight},chat:box('rxChatCard'),input:box('input'),send:document.querySelector('#form button[type="submit"]')?.getBoundingClientRect().toJSON(),overflow:document.documentElement.scrollWidth>innerWidth+4};
    });
    if(layout.overflow||!layout.input||!layout.send)throw Error(name+': invalid chat layout '+JSON.stringify(layout));
+   const chatFirst=await page.evaluate(()=>{
+    const chat=document.getElementById('rxChatCard')?.getBoundingClientRect();
+    const secondary=document.querySelector('.section>.card:has(#sub)')?.getBoundingClientRect();
+    return {chatTop:chat?.top,secondaryTop:secondary?.top,ok:!!chat&&!!secondary&&chat.top<secondary.top};
+   });
+   report.checks.push({name:'chat-first-'+name,ok:chatFirst.ok,layout:chatFirst});
+   if(!chatFirst.ok)throw Error(name+': secondary tools appear above RX chat '+JSON.stringify(chatFirst));
+
    fs.mkdirSync('rx-bibi-reports/visual',{recursive:true});
    if(name==='android'){
     // Approximate the reduced viewport when the Android software keyboard opens.
