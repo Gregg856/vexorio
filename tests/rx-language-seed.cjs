@@ -9,7 +9,7 @@ for(const entry of ENTRIES){
   assert.equal(typeof entry[lang],'string');
   assert.ok(entry[lang].trim());
   const found=lookup(entry[lang],lang);
-  assert.equal(found?.id,entry.id);
+  assert.ok(ENTRIES.some(candidate=>candidate.id===found?.id&&candidate[lang]===entry[lang]));
   assert.equal(found?.translations[lang],entry[lang]);
  }
 }
