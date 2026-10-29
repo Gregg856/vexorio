@@ -55,6 +55,19 @@
  });
 
 
+ const cloudCheck=document.createElement('button');
+ cloudCheck.type='button';cloudCheck.textContent='Sprawdź RX CLOUD';
+ const cloudOutput=document.createElement('p');cloudOutput.textContent='Połączenie niezweryfikowane.';
+ hub.append(cloudCheck,cloudOutput);
+ cloudCheck.addEventListener('click',async()=>{
+  cloudCheck.disabled=true;
+  try {
+   const response=await fetch('/__rxcloud/health',{cache:'no-store'});
+   const data=await response.json();
+   cloudOutput.textContent=response.ok&&data.ok===true&&data.service==='rx-cloud-2'?'RX CLOUD odpowiada. Kanał Królowej wymaga osobnej autoryzacji.':'RX CLOUD niepotwierdzony.';
+  }catch(_){cloudOutput.textContent='RX CLOUD niedostępny na tym hoście.';}
+  finally{cloudCheck.disabled=false;}
+ });
  // One verified, read-only RX system inventory from our own GitHub reports.
  const systemButton=document.createElement('button');
  systemButton.type='button';systemButton.textContent='🧠 Sprawdź wszystkie systemy RX';
