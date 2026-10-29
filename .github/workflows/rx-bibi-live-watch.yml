@@ -269,6 +269,30 @@ jobs:
             console.log("RX BIBI SMART report accepted by RX CLOUD inbox.");
           }).catch(e=>{console.error("RX CLOUD inbox delivery unavailable:",e.message);process.exitCode=1;});
           '
+      - name: RX BIBI — zapisz identyfikator przebiegu i wyniki kroków
+        if: always()
+        env:
+          RX_RUN_ID: ${{ github.run_id }}
+          RX_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RX_RUN_SHA: ${{ github.sha }}
+          RX_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RX_PANEL: ${{ steps.check.outcome }}
+          RX_VISUAL: ${{ steps.visual.outcome }}
+          RX_BROWSER: ${{ steps.browser_agent.outcome }}
+          RX_DIALOGUE: ${{ steps.dialogue.outcome }}
+          RX_TRIAGE: ${{ steps.triage.outcome }}
+          RX_MEMORY: ${{ steps.memory_merge.outcome }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const names={panel:'RX_PANEL',visual:'RX_VISUAL',browser:'RX_BROWSER',dialogue:'RX_DIALOGUE',triage:'RX_TRIAGE',memory:'RX_MEMORY'};
+          const outcomes=Object.fromEntries(Object.entries(names).map(([name,key])=>[name,process.env[key]||'unknown']));
+          const failed=Object.entries(outcomes).filter(([,value])=>value==='failure').map(([name])=>name);
+          const report={schema:1,kind:'rx-bibi-run-evidence',runId:process.env.RX_RUN_ID,attempt:Number(process.env.RX_RUN_ATTEMPT),sha:process.env.RX_RUN_SHA,url:process.env.RX_RUN_URL,outcomes,failed,observedAt:new Date().toISOString(),finalJobConclusion:'not-yet-known',note:'Step outcomes only; final GitHub Actions conclusion must be verified separately.'};
+          fs.mkdirSync('rx-bibi-reports',{recursive:true});
+          fs.writeFileSync('rx-bibi-reports/rx-bibi-run-evidence.json',JSON.stringify(report,null,2)+'\n');
+          console.log('RX BIBI evidence:',report.url,'failed steps:',failed.join(', ')||'none among tracked steps');
+          NODE
       - name: Zachowaj raport i zdjęcia także przy błędzie
         if: always()
         uses: actions/upload-artifact@v4
