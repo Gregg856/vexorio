@@ -276,6 +276,25 @@ jobs:
           console.log('Cloudflare token active; verifying asset-upload authorization at deploy time.');
           NODE
 
+      - name: Sprawdź uprawnienia konta Workers
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          code="$(curl -sS --retry 2 --max-time 20 -o /tmp/rx-cf-worker.json -w '%{http_code}' -H "Authorization: Bearer $CF_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/workers/scripts")"
+          node - "$code" <<'NODE'
+          const fs=require('node:fs');
+          const code=process.argv[2];
+          const body=JSON.parse(fs.readFileSync('/tmp/rx-cf-worker.json','utf8'));
+          if(code!=='200'||body.success!==true){
+            const errs=Array.isArray(body.errors)?body.errors.map(e=>String(e.code||'unknown')).join(','):'unknown';
+            console.error('::error::Cloudflare Workers scripts API access failed: HTTP '+code+'; Cloudflare error codes: '+errs+'. Check CLOUDFLARE_ACCOUNT_ID and Workers Scripts Edit permission.');
+            process.exit(1);
+          }
+          console.log('Workers scripts API read access OK. Asset-upload permission still requires a successful deploy.');
+          NODE
+
       - name: Publikuj w Cloudflare
         id: publish
         uses: cloudflare/wrangler-action@v3
