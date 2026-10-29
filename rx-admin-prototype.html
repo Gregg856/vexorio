@@ -221,8 +221,10 @@ async function loadCloudWatch(){
   const run=Array.isArray(data.workflow_runs)?data.workflow_runs[0]:null;
   if(!run){add('bot','☁️ Brak przebiegów CI. '+workflow);return;}
   const status=run.status==='completed'?(run.conclusion==='success'?'✅ ZIELONY':'⚠️ '+String(run.conclusion||'nieznany')):'⏳ '+String(run.status||'w toku');
+  const ageMs=Date.now()-Date.parse(run.updated_at||run.created_at||'');
+  const stale=!Number.isFinite(ageMs)||ageMs>24*60*60*1000;
   const when=run.updated_at?new Date(run.updated_at).toLocaleString('pl-PL'):'brak daty';
-  add('bot','☁️ RX CLOUD — testy: '+status+'\nData: '+when+'\nŹródło: GitHub Actions.\nTo wynik CI, NIE monitoring publicznego serwera 24/7.\nRaport: '+(run.html_url||workflow));
+  add('bot','☁️ RX CLOUD — testy: '+(stale?'⚠️ NIEAKTUALNE (ostatni wynik: '+status+')':status)+'\nData: '+when+'\nŹródło: GitHub Actions.\nTo wynik CI, NIE monitoring publicznego serwera 24/7.\nRaport: '+(run.html_url||workflow));
  }catch(e){add('bot','⚠️ Status RX CLOUD niedostępny. Sprawdź: '+workflow);}
 }
 async function loadBibiQueenWatch(){
