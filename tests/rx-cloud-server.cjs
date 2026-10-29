@@ -9,6 +9,10 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
    const response=await staticFetch(new Request('http://localhost'+blocked));
    assert.equal(response.status,403,'Static asset must be denied: '+blocked);
  }
+ for(const blocked of ['/data%00.json','/nested/%2ehidden.js','/config%5csecret.json','/private-backup.json','/file.pem','/file.key','/module.mjs']){
+   const response=await staticFetch(new Request('http://localhost'+blocked));
+   assert.notEqual(response.status,200,'Unsafe static asset must not be served: '+blocked);
+ }
  const configured=process.env.SUPABASE_URL;
  delete process.env.SUPABASE_URL;
  await assert.rejects(start({port:0,host:'127.0.0.1'}),/explicit SUPABASE_URL/);
@@ -31,8 +35,15 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.notEqual(sensitive.status,200,'Server source must not be publicly served');
   const missing=await fetch(base+'/nonexistent-rx-cloud-file-2026');
   assert.equal(missing.status,403,'Extensionless public paths are denied by the static asset allowlist');
+  const notFound=await fetch(base+'/nonexistent-rx-cloud-file-2026.json');
+  assert.equal(notFound.status,404,'Missing permitted-extension assets should return 404');
+  const head=await fetch(base+'/manifest.webmanifest',{method:'HEAD'});
+  assert.equal(head.status,200);
+  assert.equal(await head.text(),'');
   const oversized=await fetch(base+'/nonexistent-rx-cloud-file-2026',{method:'POST',body:'x'.repeat(2*1024*1024+1)});
   assert.equal(oversized.status,413);
-  console.log('RX CLOUD 2.0 self-host smoke checks passed');
+  const stillHealthy=await fetch(base+'/__rxcloud/health');
+  assert.equal(stillHealthy.status,200,'Server must remain healthy after oversized request');
+  console.log('RX CLOUD 4.5 malformed path, static security and oversized request smoke passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
