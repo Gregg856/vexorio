@@ -58,9 +58,12 @@ jobs:
             exit 0
           fi
           changed="$(git diff-tree --no-commit-id --name-only -r HEAD)"
-          if [[ -z "$changed" ]]; then
+          if [[ -n "$changed" ]] && ! echo "$changed" | grep -Evq '^(rx-chat-planner[.]mjs|tests/rx-queen-dialogue-watch[.]cjs|tests/rx-chat-panel-contract[.]cjs)$'; then
+            echo "full=false" >> "$GITHUB_OUTPUT"
+          else
             echo "full=true" >> "$GITHUB_OUTPUT"
-          elif echo "$changed" | grep -Eq '^(rx-chat-planner\\.mjs|tests/rx-queen-dialogue-watch\\.cjs|tests/rx-chat-panel-contract\\.cjs)
+          fi
+  queen-fast:
     name: RX BIBI FAST — odpowiedzi Królowej
     runs-on: ubuntu-latest
     timeout-minutes: 2
