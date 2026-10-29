@@ -86,6 +86,14 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
      const send=document.querySelector('#form button[type="submit"]').getBoundingClientRect();
      return {height:innerHeight,inputTop:input.top,inputBottom:input.bottom,sendBottom:send.bottom,sendWidth:send.width,documentWidth:document.documentElement.scrollWidth};
     });
+    const keyboardActions=await page.evaluate(()=>({
+      hidden: [...document.querySelectorAll('#rxChatCard .rx-actions button')].every(b=>{const r=b.getBoundingClientRect();return r.width===0&&r.height===0;}),
+      composerVisible: (()=>{const r=document.querySelector('#rxChatCard .composer').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight+2;})(),
+      keyboardClass:document.body.classList.contains('rx-keyboard-open')
+    }));
+    const compactOk=keyboardActions.keyboardClass&&keyboardActions.hidden&&keyboardActions.composerVisible;
+    report.checks.push({name:'android-keyboard-compact-chat',ok:compactOk,scope:'SIMULATED_RESIZE_NOT_REAL_KEYBOARD',layout:keyboardActions});
+    if(!compactOk)throw Error('Android keyboard compact mode regression: '+JSON.stringify(keyboardActions));
     const keyboardOk=keyboardLayout.inputTop>=0&&keyboardLayout.inputBottom<=keyboardLayout.height+2&&keyboardLayout.sendBottom<=keyboardLayout.height+2&&keyboardLayout.sendWidth>=44&&keyboardLayout.documentWidth<=412+4;
     report.checks.push({name:'android-keyboard-reduced-viewport',ok:keyboardOk,scope:'SIMULATED_RESIZE_NOT_REAL_KEYBOARD',layout:keyboardLayout});
     await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-android-keyboard-preview.png',fullPage:true});
