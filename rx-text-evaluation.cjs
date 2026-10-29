@@ -5,7 +5,11 @@ const HOLDOUT=Object.freeze([
  ['witaj królowo','greeting'],['hej RX','greeting'],['dobry wieczór','greeting'],
  ['jak poszły testy','tests'],['wynik testowania','tests'],['sprawdzenie testów','tests'],
  ['przypomnij co ustaliliśmy','memory'],['co zapamiętałaś','memory'],['nasza pamięć rozmów','memory'],
- ['ile jest dwa plus dwa','math'],['oblicz mi sumę','math'],['pomnóż liczby','math']
+ ['ile jest dwa plus dwa','math'],['oblicz mi sumę','math'],['pomnóż liczby','math'],
+ ['siema RX','greeting'],['miło cię widzieć','greeting'],['witam serdecznie','greeting'],
+ ['czy kontrola przeszła','tests'],['raport z testowania','tests'],['sprawdź zielone wyniki','tests'],
+ ['odtwórz nasze ustalenia','memory'],['co było w poprzedniej rozmowie','memory'],['przypomnij historię','memory'],
+ ['jaki wynik dodawania','math'],['wylicz iloczyn','math'],['obliczenie procentów','math']
 ]);
 function evaluate({epochs=180}={}){
  const learner=createLearner({epochs});
