@@ -6,6 +6,7 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-cloud-staged.cjs'
       - 'tests/rx-cloud-modules.cjs'
+      - 'tests/rx-cloud-package.cjs'
       - 'tests/rx-cloud-queen-panel.cjs'
       - 'rx-admin-prototype.html'
       - 'worker.js'
@@ -26,6 +27,7 @@ on:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-cloud-modules.cjs'
+      - 'tests/rx-cloud-package.cjs'
       - 'worker.js'
       - 'public/**'
       - 'deploy/rxcloud-preflight.sh'
@@ -63,6 +65,8 @@ jobs:
         run: node tests/rx-cloud-queen-panel.cjs
       - name: Check RX module integration contracts
         run: node tests/rx-cloud-modules.cjs
+      - name: RX CLOUD 4.0 offline release gate
+        run: node tests/rx-cloud-package.cjs
       - name: Validate deployment templates
         run: |
           grep -q 'Restart=on-failure' deploy/rxcloud.service
