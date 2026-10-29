@@ -89,7 +89,7 @@ jobs:
             const artifact=(artifacts.artifacts||[]).find(x=>x.name==="rx-bibi-live-watch"&&!x.expired);
             if(!artifact)return;
             fs.writeFileSync("rx-bibi-reports/previous/artifact-reference.json",JSON.stringify({runId:prev.id,artifactId:artifact.id,url:artifact.archive_download_url},null,2));
-            fs.appendFileSync(process.env.GITHUB_OUTPUT,"run_id="+prev.id+"\n");
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,"run_id="+prev.id+"\\n");
           })().catch(e=>{console.log("Previous run lookup unavailable:",e.message);});
           '
       - name: RX BIBI SMART — pobierz poprzedni raport
