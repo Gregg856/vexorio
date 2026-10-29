@@ -115,7 +115,10 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    const turns=[
     {question:'Cześć RX',answer:'RX BIBI: odpowiedź testowa 1'},
     {question:'Jak działa nasz tester?',answer:'RX BIBI: odpowiedź testowa 2'},
-    {question:'Podsumuj rozmowę',answer:'RX BIBI: odpowiedź testowa 3'}
+    {question:'Podsumuj rozmowę',answer:'RX BIBI: odpowiedź testowa 3'},
+    {question:'Dlaczego niebo jest niebieskie?',answer:'RX BIBI: odpowiedź testowa 4'},
+    {question:'Co mozesz zrobic z moim projketem?',answer:'RX BIBI: odpowiedź testowa 5'},
+    {question:'Hej Królowo, jak działają testy i co z Mrówkami?',answer:'RX BIBI: odpowiedź testowa 6'}
    ];
    const received=[];
    await page.route('**/api/rx/chat',async route=>{
