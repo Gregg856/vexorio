@@ -11,7 +11,7 @@ const fs=require('node:fs');
   {id:'math-invalid',message:'RX DOT: [1,2]; [3]',expected:/Nieprawidłowe wektory/i},
   {id:'math-matrix',message:'RX MMUL: [[1,2]]; [[3],[4]]',expected:/11|MMUL/i},
 
-  {id:'wishes',message:'Napisz życzenia dla mamy',expected:/Wszystkiego najlepszego|zdrowia/i},
+  {id:'wishes',message:'Napisz życzenia dla mamy',expected:/Dla mamy:.*Wszystkiego najlepszego/i},
   {id:'proofread',message:'Popraw: witaj  świecie',expected:/Witaj świecie[.]/i},
   {id:'arithmetic',message:'Ile to 7 * 8?',expected:/56/},
   {id:'division-zero',message:'Oblicz 4 / 0',expected:/dzielenie przez zero/i},
