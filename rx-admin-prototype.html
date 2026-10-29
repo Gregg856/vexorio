@@ -224,6 +224,10 @@ async function loadCloudWatch(){
   const ageMs=Date.now()-Date.parse(run.updated_at||run.created_at||'');
   const stale=!Number.isFinite(ageMs)||ageMs>24*60*60*1000;
   const when=run.updated_at?new Date(run.updated_at).toLocaleString('pl-PL'):'brak daty';
+  let alarmInfo='';
+  if(run.conclusion==='failure'||run.conclusion==='timed_out'||run.conclusion==='action_required'){
+   alarmInfo='\\n🚨 RX ALARM: wykryto nieudany test. Zgłoszenia: https://github.com/Gregg856/vexorio/issues?q=is%3Aissue+is%3Aopen+RX+ALARM';
+  }
   add('bot','☁️ RX CLOUD — testy: '+(stale?'⚠️ NIEAKTUALNE (ostatni wynik: '+status+')':status)+'\nData: '+when+'\nŹródło: GitHub Actions.\nTo wynik CI, NIE monitoring publicznego serwera 24/7.\nRaport: '+(run.html_url||workflow));
  }catch(e){add('bot','⚠️ Status RX CLOUD niedostępny. Sprawdź: '+workflow);}
 }
