@@ -49,7 +49,11 @@ find . -maxdepth 1 -type f -name '*.html' -exec cp -t /opt/rxcloud/vexorio/publi
 for pattern in '*.js' '*.css' '*.svg' '*.png' '*.jpg' '*.jpeg' '*.webp' '*.ico' '*.json' '*.txt' '*.webmanifest'; do
   find . -maxdepth 1 -type f -name "$pattern" -exec cp -t /opt/rxcloud/vexorio/public/ -- {} +
 done
-install -m 0644 -o rxcloud -g rxcloud ./*.mjs ./*.cjs /opt/rxcloud/vexorio/
+runtime_modules=(rx-persistent-memory.mjs rx-knowledge-base.mjs rx-world-knowledge.mjs rx-chat-planner.mjs rx-task-catalog.cjs rx-math-core.cjs)
+for module in "${runtime_modules[@]}"; do
+  if [[ ! -f "$module" || -L "$module" ]]; then echo "Missing or unsafe runtime module: $module" >&2; exit 1; fi
+done
+install -m 0644 -o rxcloud -g rxcloud "${runtime_modules[@]}" /opt/rxcloud/vexorio/
 chown -R rxcloud:rxcloud /opt/rxcloud/vexorio/public
 install -d -m 0700 -o root -g root /etc/rxcloud
 install -m 0600 -o root -g root deploy/rxcloud.env.example /etc/rxcloud/rxcloud.env
