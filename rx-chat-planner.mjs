@@ -109,24 +109,24 @@ export function planRXChat(message,history=[],learning=null){
  else if(requestedPoint&&selectedPoint)answer='👑 Punkt '+(pointIndex+1)+' z poprzedniego planu: '+selectedPoint+'\\n🔒 Mogę omówić ten krok, ale nie uruchamiam go bez zatwierdzenia.';
  else if(requestedPoint)answer='👑 Nie widzę w ostatnich wiadomościach numerowanego planu z tym punktem. Wklej plan albo napisz, który krok masz na myśli.';
  else if(multiIntent)answer='👑 Rozumiem kilka spraw w jednym poleceniu:\\n'+selectedParts.map((x,i)=>(i+1)+'. '+x.label+': '+x.detail).join('\\n')+'\\n🔒 To plan odpowiedzi, nie uruchomienie zadań.';
- else if(/^(?:napisz|uloz|stworz)\\s+(?:mi\\s+)?(?:krotkie\\s+)?zyczenia\\s+(?:urodzinowe\\s+)?(?:dla\\s+)?([\\p{L} -]{2,55})[.!? ]*$/iu.test(plain)){
-  const who=message.trim().match(/(?:dla\\s+)?([\\p{L} -]{2,55})[.!? ]*$/u)?.[1]?.trim()||'Ciebie';
-  const recipient=who.replace(/^(?:napisz|uloz|stworz)\\s+(?:mi\\s+)?(?:krotkie\\s+)?zyczenia\\s+(?:urodzinowe\\s+)?(?:dla\\s+)?/iu,'').trim();
+ else if(/^(?:napisz|uloz|stworz)\s+(?:mi\s+)?(?:krotkie\s+)?zyczenia\s+(?:urodzinowe\s+)?(?:dla\s+)?([\p{L} -]{2,55})[.!? ]*$/iu.test(plain)){
+  const who=message.trim().match(/(?:dla\s+)?([\p{L} -]{2,55})[.!? ]*$/u)?.[1]?.trim()||'Ciebie';
+  const recipient=who.replace(/^(?:napisz|uloz|stworz)\s+(?:mi\s+)?(?:krotkie\s+)?zyczenia\s+(?:urodzinowe\s+)?(?:dla\s+)?/iu,'').trim();
   answer='🎂 '+(recipient?'Dla '+recipient+': ':'')+'Wszystkiego najlepszego! Dużo zdrowia, radości, spokoju i spełnienia marzeń. Niech każdy dzień przynosi coś dobrego!';
  }
- else if(/^(?:popraw|popraw tekst)\\s*:\\s*[^\\n]+/iu.test(message.trim())){
-  const source=message.trim().replace(/^(?:popraw|popraw tekst)\\s*:\\s*/iu,'').trim();
-  const cleaned=source.replace(/\\s+/g,' ').replace(/\\s+([,.!?;:])/g,'$1');
+ else if(/^(?:popraw|popraw tekst)\s*:\s*[^\n]+/iu.test(message.trim())){
+  const source=message.trim().replace(/^(?:popraw|popraw tekst)\s*:\s*/iu,'').trim();
+  const cleaned=source.replace(/\s+/g,' ').replace(/\s+([,.!?;:])/g,'$1');
   const fixed=cleaned.charAt(0).toLocaleUpperCase('pl-PL')+cleaned.slice(1)+(/[.!?]$/.test(cleaned)?'':'.');
   answer='✍️ Prosta korekta interpunkcji i odstępów (nie pełna korekta językowa): '+fixed;
  }
- else if(/^(?:ile to|oblicz)\\s+[-+]?\\d+(?:[.,]\\d+)?\\s*[+*\\/\\-]\\s*[-+]?\\d+(?:[.,]\\d+)?\\s*\\??$/iu.test(plain)){
-  const m=plain.match(/([-+]?\\d+(?:[.,]\\d+)?)\\s*([+*\\/\\-])\\s*([-+]?\\d+(?:[.,]\\d+)?)/);
+ else if(/^(?:ile to|oblicz)\s+[-+]?\d+(?:[.,]\d+)?\s*[+*\/\-]\s*[-+]?\d+(?:[.,]\d+)?\s*\??$/iu.test(plain)){
+  const m=plain.match(/([-+]?\d+(?:[.,]\d+)?)\s*([+*\/\-])\s*([-+]?\d+(?:[.,]\d+)?)/);
   const a=Number(m[1].replace(',','.')),b=Number(m[3].replace(',','.'));
   const n=m[2]==='+'?a+b:m[2]==='-'?a-b:m[2]==='*'?a*b:b===0?NaN:a/b;
   answer=Number.isFinite(n)?'🧮 Wynik: '+n:'🧮 Nie mogę wykonać tego działania (np. dzielenie przez zero).';
  }
- else if(/^(?:przetlumacz|tlumacz)\\s+(?:na\\s+)?(?:angielski|niemiecki|polski)\\s*:/iu.test(plain))answer='🌍 Nie mam jeszcze silnika tłumaczeń dowolnych zdań. Mogę pomóc z prostymi przykładami, ale nie będę wymyślać tłumaczenia.';
+ else if(/^(?:przetlumacz|tlumacz)\s+(?:na\s+)?(?:angielski|niemiecki|polski)\s*:/iu.test(plain))answer='🌍 Nie mam jeszcze silnika tłumaczeń dowolnych zdań. Mogę pomóc z prostymi przykładami, ale nie będę wymyślać tłumaczenia.';
  else if(greet)answer='👑 Cześć! Jestem Królowa RX. Możemy rozmawiać o Mrówkach, Wirniku, chmurze i budowie VEXORIO. Napisz, co chcesz sprawdzić albo zaplanować.';
  else if(thanks)answer='👑 Jasne! Jestem gotowa na kolejne pytanie. Możemy omówić Mrówki, Wirnik lub testy RX.';
  else if(asksName)answer='👑 Jestem Królowa RX — rozmowna część VEXORIO. Mogę odpowiadać na pytania i pomagać planować testy, ale nie udaję niezależnego modelu AI.';
