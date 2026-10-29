@@ -397,7 +397,7 @@ function rxRestoreTranscript(userId){
   if(raw?.userId!==userId||raw?.enabled!==true)return;
   rxTranscriptEnabled=true;
   rxTranscript=Array.isArray(raw.messages)?raw.messages.filter(x=>x&&['user','bot'].includes(x.type)&&typeof x.text==='string'&&x.text.length<=4000).slice(-30):[];
-  for(const entry of rxTranscript){if(entry.type==='user')rxServerChatHistory.push(entry.text.slice(0,1000));}
+  for(const entry of rxTranscript){rxServerChatHistory.push((entry.type==='bot'?'RX: ':'Użytkownik: ')+entry.text.slice(0,1000));}
   if(rxServerChatHistory.length>20)rxServerChatHistory.splice(0,rxServerChatHistory.length-20);
   for(const entry of rxTranscript)add(entry.type,entry.text);
  }catch(_){rxTranscript=[];rxTranscriptEnabled=false;}
@@ -434,7 +434,7 @@ async function answerServerBrainChat(question){
   const response=await fetch('/api/rx/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({message:question,history:rxServerChatHistory.slice(-20)}),signal:AbortSignal.timeout(12000)});
   const data=await response.json();
   if(!response.ok)throw Error(data.message||'Błąd serwera '+response.status);
-  rxServerChatHistory.push(question);
+  rxServerChatHistory.push('Użytkownik: '+question.slice(0,2000));
   if(rxServerChatHistory.length>20)rxServerChatHistory.shift();
   const memoryCommand=/^(zapamiętaj|przypomnij):/i.test(question.trim());
   if(memoryCommand&&data.engine!=='rx-persistent-memory'){
@@ -445,6 +445,8 @@ async function answerServerBrainChat(question){
   const tasks=Array.isArray(data.tasks)?data.tasks:[];
   const engineLabel=data.engine==='cloudflare-workers-ai'?'🧠 Model językowy Cloudflare AI':data.engine==='rx-persistent-memory'?'🧠 Pamięć RX':data.engine==='rule-based-fallback'?'⚙️ Silnik reguł RX':data.engine==='rx-tech-help'?'🔎 Wyszukiwanie pomocy':'⚙️ '+String(data.engine||'RX').slice(0,60);
   add('bot','['+engineLabel+']\n'+data.answer+(tasks.length?'\n🐜 Proponowane zadania (bez wykonania):\n'+tasks.map(t=>'• '+t.module+' / '+t.action).join('\n'):''));
+  rxServerChatHistory.push('RX: '+String(data.answer||'').slice(0,2000));
+  if(rxServerChatHistory.length>20)rxServerChatHistory.shift();
   if(data.engine==='rx-queen-ant-test-dispatch'&&Number.isSafeInteger(data.runId)&&data.runId>0&&data.runStatus!=='success'&&data.runStatus!=='failure'){
     void watchAntRunCompletion(data.runId);
   }
