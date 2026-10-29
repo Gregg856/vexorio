@@ -18,6 +18,7 @@ for(const label of LABELS)assert.equal(Object.values(report.confusion[label]).re
 assert.equal(new Set(HOLDOUT.map(x=>x[0])).size,24);
 assert.ok(report.training.finalLoss<report.training.initialLoss);
 const full=evaluate({epochs:180});
+assert.ok(full.hybrid.correct>=18,`RX hybrid regression: ${full.hybrid.correct}/24 (minimum 18/24)`);
 assert.ok(full.correct>=16,`RX full training regression: ${full.correct}/24 (minimum 16/24)`);
 const trainedPhrases=[
  'cześć królowo','dzień dobry RX','hej witaj','pokaż testy','sprawdź wyniki testów','czy testy są zielone',
