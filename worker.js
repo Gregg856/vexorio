@@ -129,7 +129,8 @@ export default {
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
         // Owner-only explicit bridge: Queen chat -> existing bounded RX Coordinator workflow.
         // No arbitrary shell commands, code writes, deployment, or automatic scheduling.
-        const runMatch=/^uruchom testy rx(?:\\s*:\\s*(.*))?$/i.exec(message.trim());
+        const runMatch=/^uruchom testy rx(?:\\s*:\\s*(.*))?$/i.exec(message.trim())
+          ||/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:uruchom|wykonaj|przetestuj)\\s+(?:testy|test|kontrole|kontrolę)\\s+(?:rx|królowej rx|krolowej rx)(?:\\s*[:,-]\\s*(.*))?$/i.exec(message.trim());
         if(runMatch){
           if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Uruchamianie testów jest dostępne tylko dla właściciela RX.');
           if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji uruchamiania testów RX.');
