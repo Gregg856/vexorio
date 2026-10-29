@@ -106,3 +106,15 @@ console.log('PASS RX Queen: persistent review deduplication and new incident han
  assert.throws(()=>stageQueenPatch(candidate,{approved:true,functionalReview:review}),/anchor missing|ambiguous|BIBI patch invariant/);
  assert.throws(()=>stageQueenPatch(candidate,{approved:true,functionalReview:{...review,preview:'not the approved patch'}}),/anchor missing|ambiguous|BIBI patch invariant/);
  console.log('PASS RX Queen: mismatched patch drafts cannot be staged');
+
+ // Positive and negative regression of the exact functional-review gate.
+ const {matchesBibiFunctionalReview}=require('../rx-mega-cloud-computer.cjs');
+ const validCandidate={target:'rx-command-bridge.cjs',rule:'remove-debugger'};
+ const patchedContent='module.exports={safe:true};\n';
+ const validReview={target:validCandidate.target,rule:validCandidate.rule,
+  functionalValidation:'passed',bibiValidation:'passed',readyForReview:true,preview:patchedContent};
+ assert.equal(matchesBibiFunctionalReview(validCandidate,validReview,patchedContent),true);
+ assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,preview:'different'},patchedContent),false);
+ assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,functionalValidation:'failed'},patchedContent),false);
+ assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,target:'other.cjs'},patchedContent),false);
+ console.log('PASS RX Queen: exact matching passed BIBI review accepted; mismatches rejected');
