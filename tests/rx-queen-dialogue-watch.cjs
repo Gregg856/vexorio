@@ -28,7 +28,11 @@ const fs=require('node:fs');
   {id:'freeform-creative',message:'Wymyśl historię o robocie i ogrodzie',expected:/./},
   {id:'freeform-typos',message:'Co mozesz zrobic z moim projketem?',expected:/./},
   {id:'freeform-long',message:'Opowiedz mi o planowaniu pracy. '.repeat(35),expected:/./},
-  {id:'freeform-mixed',message:'Hej Królowo, jak działają testy i co z Mrówkami?',expected:/test|mrów|zadani|plan/i}
+  {id:'freeform-mixed',message:'Hej Królowo, jak działają testy i co z Mrówkami?',expected:/test|mrów|zadani|plan/i},
+  {id:'test-result-honesty',message:'Czy testy przeszły?',expected:/sprawdź|raport|nie zgaduj|wynik/i,forbidden:/wszystkie testy (przeszły|są zielone)/i},
+  {id:'memory-limits',message:'Czy pamiętasz rozmowę?',expected:/ograniczony|kontekst|ostatnich/i},
+  {id:'error-no-fake-fix',message:'Mam błąd w panelu',expected:/opisz|wklej|raport|komunikat/i,forbidden:/już naprawiłam|naprawione|wdrożyłam/i},
+  {id:'followup-context',message:'Dalej',history:['Co robią Mrówki?'],expected:/mrów|zadani|plan/i,contextExpected:true}
  ];
  const results=[];
  for(const c of cases){
@@ -36,6 +40,8 @@ const fs=require('node:fs');
    const result=planRXChat(c.message,c.history||[],c.learning||null);
    if(!result?.ok||typeof result.answer!=='string'||!result.answer.trim())throw Error('No usable answer');
    if(!c.expected.test(result.answer))throw Error('Answer not related to expected topic');
+   if(c.forbidden?.test(result.answer))throw Error('Misleading or fabricated claim in answer');
+   if(c.contextExpected&&result.contextUsed!==true)throw Error('Previous conversation context not used');
    if(result.executed!==0)throw Error('Unexpected execution');
    if(c.workExpected&&(!result.plan?.work||!result.plan.work.stages.some(x=>x.module==='RX BIBI')||result.plan.work.executed!==false))throw Error('Missing BIBI work verification');
    results.push({id:c.id,ok:true,contextUsed:!!result.contextUsed,answerLength:result.answer.length});
