@@ -5,6 +5,10 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
 (async()=>{
  const traversal=await staticFetch(new Request('http://localhost/%2e%2e/%2e%2e/etc/passwd'));
  assert.notEqual(traversal.status,200);
+ const configured=process.env.SUPABASE_URL;
+ delete process.env.SUPABASE_URL;
+ await assert.rejects(start({port:0,host:'127.0.0.1'}),/explicit SUPABASE_URL/);
+ process.env.SUPABASE_URL=configured;
  const server=await start({port:0,host:'127.0.0.1'});
  try{
   const {port}=server.address();
