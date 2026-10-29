@@ -180,6 +180,33 @@
  try{queue=window.GuardTaskQueue.createTaskQueue(saved);}catch(_){queue=window.GuardTaskQueue.createTaskQueue();}
  function persist(){try{localStorage.setItem(storageKey,JSON.stringify(queue.list()));}catch(_){}}
 
+ // Optional tab-only transcript; no server upload or automatic storage of private messages.
+ const transcriptKey='rx-chat-transcript-optin-v1';
+ const transcriptEnabledKey='rx-chat-transcript-enabled-v1';
+ let transcriptEnabled=false,restoringTranscript=false,transcript=[];
+ try{
+  transcriptEnabled=sessionStorage.getItem(transcriptEnabledKey)==='yes';
+  if(transcriptEnabled){
+   const saved=JSON.parse(sessionStorage.getItem(transcriptKey)||'[]');
+   if(Array.isArray(saved))transcript=saved.filter(x=>x&&['Ty','Strażak','RX Strażak'].includes(x.role)&&typeof x.message==='string'&&x.message.length<=1500).slice(-30);
+  }
+ }catch(_){transcriptEnabled=false;transcript=[];}
+ const memoryButton=document.createElement('button');
+ memoryButton.type='button';
+ memoryButton.setAttribute('aria-label','Pamięć rozmowy w tej karcie');
+ const updateMemoryButton=()=>{memoryButton.textContent=transcriptEnabled?'🧠 Pamięć karty: WŁ. (wyłącz i wyczyść)':'🧠 Włącz pamięć rozmowy w tej karcie';};
+ updateMemoryButton();
+ memoryButton.addEventListener('click',()=>{
+  transcriptEnabled=!transcriptEnabled;
+  if(!transcriptEnabled){
+   transcript=[];
+   try{sessionStorage.removeItem(transcriptKey);sessionStorage.removeItem(transcriptEnabledKey);}catch(_){}
+  }else{
+   try{sessionStorage.setItem(transcriptEnabledKey,'yes');}catch(_){}
+  }
+  updateMemoryButton();
+ });
+ form.parentNode?.insertBefore(memoryButton,form);
  function append(role,message){
   const p=document.createElement('p');p.className='guard-chat-message';
   if(p.style)p.style.cssText='padding:11px 13px;border-radius:12px;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap;max-width:100%;box-sizing:border-box';
@@ -200,6 +227,16 @@
   }
   p.append(document.createTextNode(source.slice(offset)));
   messages.append(p);messages.scrollTop=messages.scrollHeight;
+  if(transcriptEnabled&&!restoringTranscript&&['Ty','Strażak','RX Strażak'].includes(role)){
+   transcript.push({role,message:source.slice(0,1500)});
+   if(transcript.length>30)transcript=transcript.slice(-30);
+   try{sessionStorage.setItem(transcriptKey,JSON.stringify(transcript));}catch(_){}
+  }
+ }
+ if(transcriptEnabled&&transcript.length){
+  restoringTranscript=true;
+  for(const entry of transcript)append(entry.role,entry.message);
+  restoringTranscript=false;
  }
  // Mobile quick commands run only on explicit user click and use the normal safe chat handler.
  const quick=document.createElement('div');
