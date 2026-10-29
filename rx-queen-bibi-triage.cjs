@@ -27,7 +27,7 @@ for(const f of findings){
  const id=crypto.createHash('sha256').update([f.source,f.check||'',f.problem].join('|')).digest('hex').slice(0,16);
  const old=previous.get(id);
  const priority=f.severity==='error'?'HIGH':'MEDIUM';
- const incident={...f,id,priority,occurrences:(old?.occurrences||0)+1,firstSeen:old?.firstSeen||new Date().toISOString(),lastSeen:new Date().toISOString(),previouslySeen:!!old};
+ const incident={...f,id,priority,occurrences:(old?.occurrences||0)+1,firstSeen:old?.firstSeen||new Date().toISOString(),lastSeen:new Date().toISOString(),previouslySeen:!!old,...(old?.developerReview?{developerReview:old.developerReview}:{})};
  if(unique.has(id))unique.get(id).occurrences++;
  else unique.set(id,incident);
 }
@@ -37,7 +37,7 @@ fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(historyFile,JSON.stringify({history:updatedHistory},null,2)+'\n');
 // Route each incident to an existing RX worker instead of leaving it as a passive report.
 const routeIncident=f=>f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Developer';
-const nextWork=incidents.filter(f=>f.severity==='error').slice(0,5).map(f=>({
+const nextWork=incidents.filter(f=>f.severity==='error'&&!f.developerReview).slice(0,5).map(f=>({
  incidentId:f.id,worker:routeIncident(f),priority:f.priority,
  action:'reproduce-and-isolate',check:f.check||null,source:f.source,
  target:f.source.includes('live-panel')?'rx-command-bridge.cjs':f.source.includes('browser-agent')?'rx-coordinator.cjs':'rx-developer-patch-bridge.cjs',
