@@ -28,6 +28,34 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    report.checks.push({name,ok:true,http:response.status(),gate:true,anonymousAppHidden:true,noPageErrors:true,viewport});
    await page.close();
   }
+  // Visual preview is isolated: render the real HTML/CSS with a mocked client-side
+  // authorization adapter. Never authenticate against production or write data.
+  const html=await (await fetch(base+'/rx-admin-prototype.html',{signal:AbortSignal.timeout(15000)})).text();
+  if(!html.includes('id="rxApp"'))throw Error('Visual preview: RX Admin markup missing');
+  const previewHtml=html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\/dist\/umd\/supabase\.min\.js"><\/script>/,
+   '<script>window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:{id:"rx-visual-preview",is_anonymous:false}},error:null})},rpc:async()=>({data:true,error:null})})};<\/script>');
+  if(previewHtml===html)throw Error('Visual preview: Supabase dependency not isolated');
+  for(const [name,options] of [['android',{...devices['Pixel 7'],locale:'pl-PL'}],['desktop',{viewport:{width:1365,height:850},locale:'pl-PL'}]]){
+   const page=await browser.newPage(options);
+   const errors=[];
+   page.on('pageerror',e=>errors.push(e.message));
+   await page.route('**/*',route=>route.abort());
+   await page.goto('about:blank');
+   await page.setContent(previewHtml,{waitUntil:'domcontentloaded'});
+   await page.locator('#rxApp').waitFor({state:'visible',timeout:10000});
+   const chat=page.locator('#rxChatCard');
+   if(!await chat.isVisible())throw Error(name+': chat not visible in isolated preview');
+   const layout=await page.evaluate(()=>{
+    const box=id=>{const r=document.getElementById(id)?.getBoundingClientRect();return r?{top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width)}:null};
+    return {viewport:{width:innerWidth,height:innerHeight},chat:box('rxChatCard'),input:box('input'),send:document.querySelector('#form button[type="submit"]')?.getBoundingClientRect().toJSON(),overflow:document.documentElement.scrollWidth>innerWidth+4};
+   });
+   if(layout.overflow||!layout.input||!layout.send)throw Error(name+': invalid chat layout '+JSON.stringify(layout));
+   fs.mkdirSync('rx-bibi-reports/visual',{recursive:true});
+   await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
+   report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
+   if(errors.length)throw Error(name+': visual preview JS: '+errors.join('; '));
+   await page.close();
+  }
   report.ok=true;
   console.log('PASS RX BIBI LIVE PANEL',JSON.stringify(report));
  }catch(error){report.ok=false;report.error=error.message;console.error('FAIL RX BIBI LIVE PANEL',error.message);process.exitCode=1}
