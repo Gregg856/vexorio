@@ -17,7 +17,22 @@ const proposals=report.suggestions.map(item=>({
  requiresApproval:true,
  applied:false
 }));
+// BIBI validates each candidate in memory; no source file is changed.
+const original=fs.readFileSync(path.join(__dirname,target),'utf8');
+const {previewPatch}=require('./rx-patch-drafter.cjs');
+const {Script}=require('node:vm');
+const verified=proposals.map((candidate,index)=>{
+ const proposal=report.suggestions[index].proposal;
+ try{
+  const preview=previewPatch(proposal,original).preview;
+  if(preview!==candidate.preview)throw Error('Preview mismatch');
+  new Script(preview,{filename:target});
+  return {...candidate,bibiValidation:'passed',readyForReview:true};
+ }catch(error){
+  return {...candidate,bibiValidation:'failed',readyForReview:false,validationError:String(error.message).slice(0,160)};
+ }
+});
 const output=path.join(__dirname,'rx-bibi-reports','rx-developer-review.json');
 fs.mkdirSync(path.dirname(output),{recursive:true});
-fs.writeFileSync(output,JSON.stringify({...report,reviewStatus:'completed',patchCandidates:proposals,bibiTest:'rx-developer-bridge-isolated.cjs',changesApplied:false},null,2)+'\n');
+fs.writeFileSync(output,JSON.stringify({...report,reviewStatus:'completed',patchCandidates:verified,bibiTest:'rx-developer-bridge-isolated.cjs',changesApplied:false},null,2)+'\n');
 console.log('RX Developer reviewed',target,'suggestions',report.suggestions.length);
