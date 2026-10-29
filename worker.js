@@ -127,6 +127,16 @@ export default {
         if(typeof message!=='string'||!message.trim()||message.length>8000)return reply(400,'Wiadomość musi mieć od 1 do 8000 znaków.');
         const history=payload?.history??[];
         if(!Array.isArray(history)||history.length>20||history.some(item=>typeof item!=='string'||item.length>8000))return reply(400,'Nieprawidłowa historia rozmowy.');
+        if(/^(wynik|status|raport) rx developer$/i.test(message.trim())){
+          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Tylko właściciel RX.');
+          try{
+            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-developer-bridge.yml/runs?branch=main&event=workflow_dispatch&per_page=1',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Developer-Status'},signal:AbortSignal.timeout(8000)});
+            if(!response.ok)return reply(502,'GitHub HTTP '+response.status);
+            const data=await response.json(),run=data.workflow_runs?.[0];
+            const answer=run?'👑 RX Developer: '+(run.status==='completed'?run.conclusion:run.status)+' — '+run.html_url:'👑 Brak zleconej analizy RX Developer.';
+            return new Response(JSON.stringify({ok:true,answer,engine:'rx-developer-status',readOnly:true}),{status:200,headers});
+          }catch{return reply(502,'Nie można odczytać wyniku RX Developer.');}
+        }
         // RX Queen -> RX Developer: bounded, owner-only source review; BIBI checks in CI.
         const developerMatch=/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:sprawdź|sprawdz|przeanalizuj|zbadaj)\\s+(?:kod\\s+)?(rx coordinator|rx command bridge|rx developer)(?:[.!? ]*)$/i.exec(message.trim());
         if(developerMatch){
