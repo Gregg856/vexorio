@@ -61,6 +61,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   server.headersTimeout=15000;
   server.requestTimeout=30000;
   server.keepAliveTimeout=5000;
+  server.maxRequestsPerSocket=100;
+  server.maxHeadersCount=100;
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,resolve);});
   return server;
 }
