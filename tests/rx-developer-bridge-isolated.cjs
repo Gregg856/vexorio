@@ -38,6 +38,7 @@ const path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {performance}=require('node:perf_hooks');
 const queenTiming={};
+const phaseTimes=[];
 const queenStarted=performance.now();
 // RX Queen regression: a previously reviewed incident is not queued again,
 // while a new failure still reaches the existing Developer handoff.
@@ -48,7 +49,6 @@ try{
  const failure={ok:false,checks:[{id:'synthetic-check',ok:false,error:'Synthetic regression failure'}]};
  fs.writeFileSync(path.join(reports,'rx-live-panel.json'),JSON.stringify(failure));
  const queen=path.join(__dirname,'..','rx-queen-bibi-triage.cjs');
- const phaseTimes=[];
  const run=()=>{
   const start=performance.now();
   const p=spawnSync(process.execPath,[queen],{cwd:temp,encoding:'utf8',timeout:5000});
