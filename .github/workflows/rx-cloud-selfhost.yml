@@ -11,6 +11,8 @@ on:
       - 'deploy/Caddyfile.rxcloud.example'
       - 'deploy/rxcloud.service'
       - 'deploy/rxcloud-preflight.sh'
+      - 'deploy/rxcloud-install.sh'
+      - 'tests/rx-cloud-install.cjs'
       - 'deploy/rxcloud.env.example'
       - 'tests/rx-cloud-preflight.cjs'
       - 'scripts/rx-cloud-health.cjs'
@@ -22,6 +24,8 @@ on:
       - 'worker.js'
       - 'public/**'
       - 'deploy/rxcloud-preflight.sh'
+      - 'deploy/rxcloud-install.sh'
+      - 'tests/rx-cloud-install.cjs'
       - 'deploy/rxcloud.env.example'
       - 'tests/rx-cloud-preflight.cjs'
       - '.github/workflows/rx-cloud-selfhost.yml'
@@ -45,6 +49,8 @@ jobs:
         run: |
           node --check rx-cloud-server.cjs
           node --check tests/rx-cloud-server.cjs
+      - name: Test staged installer safety and dry-run
+        run: node tests/rx-cloud-install.cjs
       - name: Test VPS preflight safety and syntax
         run: node tests/rx-cloud-preflight.cjs
       - name: Test Queen panel monitoring states
