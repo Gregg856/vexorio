@@ -6,7 +6,8 @@ const CAPABILITIES=Object.freeze({
  inspect_tests:{module:'rx-queen-ant-supervisor.cjs',mode:'ci-report',automatic:true},
  record_screen:{module:'rx-screen-recorder.html',mode:'user-consent',automatic:false},
  edit_video:{module:'rx-bibi-studio.html',mode:'local-browser',automatic:false},
- plan_cloud_checks:{module:'rx-cloud-computer.cjs',mode:'bounded-planner',automatic:false}
+ plan_cloud_checks:{module:'rx-cloud-computer.cjs',mode:'bounded-planner',automatic:false},
+ build_feature:{module:'rx-developer-patch-bridge.cjs',mode:'review-only-build-planning',automatic:false}
 });
 function route(intent){
  if(typeof intent!=='string'||intent.length>120)throw Error('Invalid intent');
