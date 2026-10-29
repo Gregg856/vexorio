@@ -1,0 +1,69 @@
+name: RX BIBI — stały strażnik panelu
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: rx-bibi-live-watch
+  cancel-in-progress: false
+jobs:
+  live:
+    name: RX BIBI — kontrola na żywo
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Zainstaluj bibliotekę dla naszego RX BIBI
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: RX BIBI — otwórz prawdziwy panel na telefonie i komputerze
+        id: check
+        continue-on-error: true
+        run: node tests/rx-live-panel.cjs
+      - name: Zachowaj raport i zdjęcia także przy błędzie
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-bibi-live-watch
+          path: rx-bibi-reports/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Zgłoś nową awarię lub ponów informację w istniejącym zgłoszeniu
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RX_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title='RX BIBI: panel na żywo — awaria'
+          existing="$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title=="RX BIBI: panel na żywo — awaria") | .number' | head -1)"
+          message="Automatyczna kontrola RX BIBI wykryła problem. Raport i zrzuty: $RX_RUN_URL. Nie sprawdzano zalogowanego czatu ani nie zmieniano danych produkcyjnych."
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$message"
+          else
+            gh issue create --title "$title" --body "$message"
+          fi
+      - name: Podsumowanie
+        if: always()
+        env:
+          RESULT: ${{ steps.check.outcome }}
+        run: |
+          echo "## RX BIBI — strażnik panelu" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Wynik kontroli: $RESULT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Zakres: prawdziwa publiczna brama RX ADMIN, mobile i desktop" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Zalogowana rozmowa z Królową: nie jest objęta tym testem" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Raport JSON i zrzuty: artefakt rx-bibi-live-watch" >> "$GITHUB_STEP_SUMMARY"
+      - name: Oznacz awarię testu
+        if: steps.check.outcome == 'failure'
+        run: exit 1
