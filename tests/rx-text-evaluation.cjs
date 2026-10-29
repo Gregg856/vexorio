@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {HOLDOUT,evaluate}=require('../rx-text-evaluation.cjs');
+const {HOLDOUT,CHALLENGE,evaluate,evaluateChallenge}=require('../rx-text-evaluation.cjs');
 const {LABELS,createLearner}=require('../rx-text-learner.cjs');
 const report=evaluate({epochs:120});
 assert.equal(report.sampleCount,24);
@@ -31,3 +31,16 @@ const normalize=text=>text.toLocaleLowerCase('pl').normalize('NFC').trim();
 const seen=new Set(trainedPhrases.map(normalize));
 for(const [phrase] of HOLDOUT)assert.ok(!seen.has(normalize(phrase)),`Evaluation leakage: ${phrase}`);
 console.log('PASS RX TEXT HELDOUT EVALUATION',report.correct+'/'+report.sampleCount);
+
+const challenge=evaluateChallenge({epochs:120});
+assert.equal(challenge.sampleCount,32);
+assert.equal(challenge.cases.length,32);
+assert.equal(challenge.productionConnected,false);
+const normalized=new Set(HOLDOUT.map(([phrase])=>phrase.toLocaleLowerCase('pl').trim()));
+for(const [phrase,expected] of CHALLENGE){
+ assert.ok(!normalized.has(phrase.toLocaleLowerCase('pl').trim()),'Challenge overlaps original holdout');
+ assert.ok(LABELS.includes(expected),'Unknown challenge label');
+}
+for(const method of ['neural','lexical','hybrid']){
+ assert.equal(challenge[method].accuracy,challenge[method].correct/challenge.sampleCount);
+}
