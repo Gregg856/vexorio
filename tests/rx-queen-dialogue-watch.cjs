@@ -91,6 +91,18 @@ const fs=require('node:fs');
    results.push({id:c.id,ok:true,stages:actual});
   }catch(e){results.push({id:c.id,ok:false,error:e.message});}
  }
+ // Verify the real existing test executor stays approval-gated.
+ const {runQueenApprovedChecks}=require('../rx-mega-cloud-computer.cjs');
+ const queenPlan=planRXChat('Sprawdź czat i napraw błędy w czacie').plan.work;
+ try{
+  const denied=runQueenApprovedChecks(queenPlan,{approved:false,execute:true});
+  const preview=runQueenApprovedChecks(queenPlan,{approved:true,execute:false});
+  if(denied.executed!==0||preview.executed!==0||denied.productionModified||preview.codePatched||denied.deployed)throw Error('Unauthorized Queen execution');
+  let rejected=false;
+  try{runQueenApprovedChecks({...queenPlan,stages:[{module:'arbitrary',action:'run anything'}]},{approved:true,execute:true});}catch{rejected=true;}
+  if(!rejected)throw Error('Unknown Queen executor was accepted');
+  results.push({id:'queen-executor-approval-gate',ok:true});
+ }catch(e){results.push({id:'queen-executor-approval-gate',ok:false,error:e.message});}
  const report={kind:'rx-bibi-queen-dialogue',mode:'SYNTHETIC_LOCAL_PLANNER',authenticatedProductionChat:'NOT_TESTED',checkedAt:new Date().toISOString(),checks:results,ok:results.every(x=>x.ok)};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-dialogue.json',JSON.stringify(report,null,2)+'\n');
