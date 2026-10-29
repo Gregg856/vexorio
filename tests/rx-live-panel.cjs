@@ -147,6 +147,24 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    report.checks.push({name:'chat-network-timeout-'+name,ok:unavailableVisible,scope:'ISOLATED_FAULT_INJECTION_NETWORK_TIMEOUT'});
    if(!unavailableVisible)throw Error(name+': network timeout was not shown');
 
+   // Recovery: after an error the composer and action buttons must remain usable.
+   await page.unroute('**/api/rx/chat');
+   await page.route('**/api/rx/chat',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({engine:'rx-bibi-recovery',answer:'RX BIBI: połączenie przywrócone'})}));
+   await page.locator('#input').fill('Cześć RX, sprawdź powrót po awarii');
+   await page.locator('#form button[type="submit"]').click();
+   await page.locator('#messages').getByText('RX BIBI: połączenie przywrócone',{exact:false}).last().waitFor({timeout:8000});
+   const recovery=await page.evaluate(()=>{
+    const input=document.querySelector('#input');
+    const send=document.querySelector('#form button[type="submit"]');
+    const buttons=[...document.querySelectorAll('#rxChatCard .rx-actions button')];
+    const visible=el=>{if(!el)return false;const r=el.getBoundingClientRect();return r.width>=40&&r.height>=30&&r.left>=0&&r.right<=innerWidth+2&&r.bottom<=document.documentElement.scrollHeight+2};
+    return {inputVisible:visible(input),sendVisible:visible(send),actionsVisible:buttons.length>=4&&buttons.every(visible),inputCleared:input?.value===''};
+   });
+   const recoveryOk=Object.values(recovery).every(Boolean);
+   report.checks.push({name:'chat-recovery-after-error-'+name,ok:recoveryOk,scope:'ISOLATED_STUBBED_API',recovery});
+   if(!recoveryOk)throw Error(name+': chat composer/actions did not recover '+JSON.stringify(recovery));
+
+
 
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
