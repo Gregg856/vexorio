@@ -40,6 +40,7 @@ const routeIncident=f=>f.source.includes('browser-agent')?'RX Browser Agent':f.s
 const nextWork=incidents.filter(f=>f.severity==='error').slice(0,5).map(f=>({
  incidentId:f.id,worker:routeIncident(f),priority:f.priority,
  action:'reproduce-and-isolate',check:f.check||null,source:f.source,
+ target:f.source.includes('live-panel')?'rx-command-bridge.cjs':f.source.includes('browser-agent')?'rx-coordinator.cjs':'rx-developer-patch-bridge.cjs',
  requiresApproval:true,executed:false
 }));
 const developerHandoff=incidents.map(f=>({id:f.id,priority:f.priority,occurrences:f.occurrences,previouslySeen:f.previouslySeen,module:f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Queen',source:f.source,check:f.check||null,problem:f.problem,proposedAction:f.suggestion,requiresApproval:true}));
