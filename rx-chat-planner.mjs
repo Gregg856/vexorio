@@ -79,7 +79,7 @@ export function planRXChat(message,history=[],learning=null){
  const orderedWork=[];
  if(compoundRequest){
   const wantsDiagnosis=asksCheckChat||/(sprawdz|testuj|przetestuj).{0,45}(czat|chat|panel)/.test(plain);
-  const wantsRepair=asksFixChat||/(popraw|napraw|usun bledy).{0,45}(czat|chat|panel)/.test(plain);
+  const wantsRepair=asksFixChat||/(popraw|napraw|usun bledy|zrob popraw).{0,45}(czat|chat|panel)/.test(plain)||/(czat|chat|panel).{0,45}(popraw|napraw)/.test(plain);
   if(wantsDiagnosis||wantsRepair)orderedWork.push({module:'RX BIBI',action:'Sprawdź wskazany obszar i zgromadź wynik testu',status:'proposed',requiresApproval:true});
   if(wantsRepair)orderedWork.push({module:'RX Developer',action:'Przygotuj poprawkę na podstawie wyniku',status:'proposed',requiresApproval:true});
   if(wantsRepair)orderedWork.push({module:'RX BIBI',action:'Zweryfikuj poprawkę testem regresji',status:'proposed',requiresApproval:true});
