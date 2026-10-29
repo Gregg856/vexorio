@@ -28,3 +28,9 @@ Zachowaj starą konfigurację DNS i działający Worker. Przy błędzie przywró
 - Brak potwierdzonego VPS, IP, domeny i dostępu SSH.
 - Konfiguracja HTTPS jest szablonem, nie uruchomionym certyfikatem.
 - RX CLOUD CI potwierdza wybrane testy, nie zgodność wszystkich funkcji produkcyjnych.
+
+## Decyzja właściciela — 2026-10-29
+- Cel zatwierdzony: przenieść CAŁĄ stronę VEXORIO z Cloudflare na własną infrastrukturę RX CLOUD; Cloudflare nie jest docelowym hostingiem.
+- RX CLOUD i Królowa RX są na razie wyłącznie do prywatnego użytku właściciela. Unikać płatnych wtyczek i nowych aplikacji na Androidzie.
+- Nie wracać do pytania, czy właściciel chce migracji: chce. Pozostaje ustalić techniczny adres stale działającego serwera RX i sprawdzić jego dostępność.
+- Nie wyłączać działającej produkcji przed zweryfikowaniem docelowego hostingu, HTTPS, testów, danych i możliwości powrotu. To zabezpieczenie migracji, a nie zmiana decyzji o odejściu z Cloudflare.
