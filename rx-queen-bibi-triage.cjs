@@ -1,6 +1,7 @@
 'use strict';
 // RX Queen reads RX BIBI reports and proposes actions. Never edits or deploys code.
 const fs=require('node:fs');
+const crypto=require('node:crypto');
 const path=require('node:path');
 const dir='rx-bibi-reports';
 const inputs=['rx-live-panel.json','rx-queen-dialogue.json','browser-agent/report.json','rx-visual-audit.json'];
@@ -19,8 +20,23 @@ for(const file of inputs){
   }
  }catch(e){findings.push({source:file,severity:'error',problem:'Unreadable report: '+e.message.slice(0,180),suggestion:'Verify report JSON format',requiresApproval:true});}
 }
-const developerHandoff=findings.map(f=>({module:f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Queen',source:f.source,check:f.check||null,problem:f.problem,proposedAction:f.suggestion,requiresApproval:true}));
-const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,developerHandoff,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
+// Stable incident fingerprints: avoid repeated repair proposals within this run.
+const previous=new Map(known.filter(x=>x&&typeof x.id==='string').map(x=>[x.id,x]));
+const unique=new Map();
+for(const f of findings){
+ const id=crypto.createHash('sha256').update([f.source,f.check||'',f.problem].join('|')).digest('hex').slice(0,16);
+ const old=previous.get(id);
+ const priority=f.severity==='error'?'HIGH':'MEDIUM';
+ const incident={...f,id,priority,occurrences:(old?.occurrences||0)+1,firstSeen:old?.firstSeen||new Date().toISOString(),lastSeen:new Date().toISOString(),previouslySeen:!!old};
+ if(unique.has(id))unique.get(id).occurrences++;
+ else unique.set(id,incident);
+}
+const incidents=[...unique.values()].sort((a,b)=>Number(b.priority==='HIGH')-Number(a.priority==='HIGH')||b.occurrences-a.occurrences);
+const updatedHistory=[...new Map([...known.filter(x=>x&&x.id).map(x=>[x.id,x]),...incidents.map(x=>[x.id,x])]).values()].slice(-300);
+fs.mkdirSync(dir,{recursive:true});
+fs.writeFileSync(historyFile,JSON.stringify({history:updatedHistory},null,2)+'\n');
+const developerHandoff=incidents.map(f=>({id:f.id,priority:f.priority,occurrences:f.occurrences,previouslySeen:f.previouslySeen,module:f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Queen',source:f.source,check:f.check||null,problem:f.problem,proposedAction:f.suggestion,requiresApproval:true}));
+const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,incidents,developerHandoff,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
 fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(path.join(dir,'rx-queen-bibi-triage.json'),JSON.stringify(report,null,2)+'\n');
 console.log('RX QUEEN BIBI TRIAGE',JSON.stringify(report));
