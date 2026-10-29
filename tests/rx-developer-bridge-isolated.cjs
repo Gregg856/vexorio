@@ -2,6 +2,8 @@
 const assert=require('node:assert/strict');
 const {inspectAndPropose}=require('../rx-developer-patch-bridge.cjs');
 const {draftPatch,previewPatch,suggestPatch}=require('../rx-patch-drafter.cjs');
+const runnerSource=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','rx-developer-review-runner.cjs'),'utf8');
+assert.match(runnerSource,/bibiValidation:functionalPassed\?'passed':'failed'/,'Failed functional sandbox checks must fail BIBI validation');
 const source='const safe=true;\ndebugger;\nconsole.debug("test");\n';
 const result=inspectAndPropose({target:'src/example.js',source});
 assert.equal(result.requiresApproval,true);
