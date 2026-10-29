@@ -229,7 +229,8 @@ export function planRXChat(message,history=[],learning=null){
  // Explicit conversational questions override keywords appearing in prohibitions.
  const noTests=/(nie uruchamiaj|bez uruchamiania|bez testow|zadnych testow|nie rob testow|tylko rozmawiac)/i.test(plain);
  const asksAboutBrain=/(jak dziala|jak funkcjonuje|czego (jeszcze )?nie potrafisz|co (juz )?potrafisz)/i.test(plain)
-  &&/(mozg|model|rx|krolow|twoj)/i.test(plain);
+  &&/(mozg|model|rx|krolow|twoj)/i.test(plain)
+  && !/(jak dziala pamiec|jak funkcjonuje pamiec)/i.test(plain);
  if(asksAboutBrain){
   answer='👑 Mój obecny mózg RX to lokalny planer oparty na regułach. Rozpoznaję wybrane polecenia, korzystam z ostatnich wiadomości i potrafię proponować zadania. Mam też osobną pamięć na jawne polecenia zapisu. Nie umiem jeszcze swobodnie rozmawiać jak duży model językowy, samodzielnie trenować modelu ani naprawiać kodu bez podłączonego wykonawcy. RX NAUKA wykrywa niektóre preferencje w historii, ale jeszcze nie uczy modelu. Możemy zacząć od lepszego rozumienia pytań.';
   plan.work=null;
