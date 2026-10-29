@@ -1,0 +1,21 @@
+# RX CLOUD 2.2 — reverse proxy for a dedicated test hostname
+# Replace rxcloud.example.com with a hostname you control before deployment.
+# Caddy provisions HTTPS automatically once DNS points to this machine
+# and inbound ports 80/443 are reachable.
+rxcloud.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:8787 {
+    health_uri /__rxcloud/health
+    health_interval 30s
+    health_timeout 5s
+  }
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+    -Server
+  }
+  log {
+    output file /var/log/caddy/rxcloud-access.log
+    format json
+  }
+}
