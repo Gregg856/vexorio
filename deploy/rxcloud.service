@@ -1,0 +1,26 @@
+[Unit]
+Description=RX CLOUD 2.1 VEXORIO self-hosted adapter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rxcloud
+Group=rxcloud
+WorkingDirectory=/opt/rxcloud/vexorio
+EnvironmentFile=/etc/rxcloud/rxcloud.env
+ExecStart=/usr/bin/node /opt/rxcloud/vexorio/rx-cloud-server.cjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/rxcloud/vexorio
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
