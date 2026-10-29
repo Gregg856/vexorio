@@ -109,12 +109,24 @@ jobs:
           if(!Array.isArray(triage.nextWork)||triage.nextWork.length===0){console.log('No BIBI failures to analyze');process.exit(0);}
           const {spawnSync}=require('node:child_process');
           const allowed=new Set(['rx-command-bridge.cjs','rx-coordinator.cjs','rx-developer-patch-bridge.cjs']);
-          const incident=triage.nextWork.find(item=>allowed.has(item.target)&&/^[a-f0-9]{16}$/.test(item.incidentId));
-          if(!incident){console.log('No valid allowlisted BIBI incident to review');process.exit(0);}
-          const result=spawnSync(process.execPath,['rx-developer-review-runner.cjs'],{stdio:'inherit',env:{...process.env,RX_TARGET:incident.target,RX_INCIDENT_ID:incident.incidentId},timeout:30000});
-          if(result.error)throw result.error;
-          if(result.status!==0)process.exit(result.status||1);
-          console.log('RX Developer analyzed existing module; no code changes applied');
+          const selected=triage.nextWork.filter(item=>allowed.has(item.target)&&/^[a-f0-9]{16}$/.test(item.incidentId)).slice(0,5);
+          if(!selected.length){console.log('No valid allowlisted BIBI incident to review');process.exit(0);}
+          const reviews=[];
+          let failures=0;
+          for(const incident of selected){
+            const result=spawnSync(process.execPath,['rx-developer-review-runner.cjs'],{stdio:'inherit',env:{...process.env,RX_TARGET:incident.target,RX_INCIDENT_ID:incident.incidentId},timeout:30000});
+            if(result.error||result.status!==0){
+              failures++;
+              reviews.push({incidentId:incident.incidentId,target:incident.target,status:'review_failed',error:String(result.error?.message||result.status).slice(0,120)});
+              continue;
+            }
+            const review=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-developer-review.json','utf8'));
+            fs.writeFileSync('rx-bibi-reports/rx-developer-review-'+incident.incidentId+'.json',JSON.stringify(review,null,2)+'\\n');
+            reviews.push({incidentId:incident.incidentId,target:incident.target,status:'reviewed',candidates:review.patchCandidates?.length||0});
+          }
+          fs.writeFileSync('rx-bibi-reports/rx-developer-review-index.json',JSON.stringify({kind:'rx-bibi-developer-review-index',reviews,failed:failures,changesApplied:false},null,2)+'\\n');
+          console.log('RX Developer reviewed',reviews.length,'queued incidents; failures:',failures,'no code changes applied');
+          if(failures)process.exitCode=1;
           NODE
       - name: RX BIBI SMART — odczytaj pamięć poprzedniego przebiegu
         id: previous
