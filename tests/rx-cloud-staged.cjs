@@ -13,7 +13,7 @@ const path=require('node:path');
   for(const file of await fs.readdir(source,{withFileTypes:true})){
    if(!file.isFile())continue;
    const name=file.name;
-   if(name==='rx-cloud-server.cjs'||name==='worker.js'||name.endsWith('.mjs')){
+   if(name==='rx-cloud-server.cjs'||name==='worker.js'||name==='rx-task-catalog.cjs'||name.endsWith('.mjs')){
     await fs.copyFile(path.join(source,name),path.join(target,name));
    }
    if(/\.(html|js|css|svg|png|jpg|jpeg|webp|ico|json|txt|webmanifest)$/.test(name)){
