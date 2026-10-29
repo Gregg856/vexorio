@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# RX CLOUD 3.1 — staged installer, defaults to read-only preview.
+set -Eeuo pipefail
+MODE="${1:---dry-run}"
+if [[ "$MODE" != "--dry-run" && "$MODE" != "--install" ]] || [[ $# -gt 1 ]]; then
+  echo "Usage: bash deploy/rxcloud-install.sh [--dry-run|--install]" >&2; exit 2
+fi
+cd "$(dirname "$0")/.."
+echo "RX CLOUD 3.1 — mode: $MODE"
+if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
+  echo "Missing RX CLOUD source files" >&2; exit 1
+fi
+if [[ "$MODE" == "--dry-run" ]]; then
+  echo "Would check Linux, Node.js 22+, systemd, Caddy and source tree."
+  echo "Would create system user rxcloud and /opt/rxcloud/vexorio."
+  echo "Would copy application, install a systemd unit and prepare /etc/rxcloud/rxcloud.env."
+  echo "Would NOT start services, modify DNS, enable Caddy, or touch production."
+  exit 0
+fi
+if [[ "$(uname -s)" != Linux || "$(id -u)" -ne 0 ]]; then
+  echo "--install requires root on Linux" >&2; exit 1
+fi
+for bin in node systemctl id install cp; do command -v "$bin" >/dev/null || { echo "Missing $bin" >&2; exit 1; }; done
+major="$(node -p 'Number(process.versions.node.split(".")[0])')"
+if (( major < 22 )); then echo "Node.js >=22 required" >&2; exit 1; fi
+if [[ -e /etc/systemd/system/rxcloud.service || -e /opt/rxcloud/vexorio ]]; then
+  echo "Existing installation detected. Refusing to overwrite." >&2; exit 1
+fi
+if ! id rxcloud >/dev/null 2>&1; then
+  useradd --system --home-dir /opt/rxcloud --shell /usr/sbin/nologin rxcloud
+fi
+install -d -m 0750 -o rxcloud -g rxcloud /opt/rxcloud/vexorio
+# Exclude .git and sensitive local files; copy only required server sources.
+install -m 0644 -o rxcloud -g rxcloud rx-cloud-server.cjs worker.js /opt/rxcloud/vexorio/
+cp -a public /opt/rxcloud/vexorio/public
+chown -R rxcloud:rxcloud /opt/rxcloud/vexorio/public
+install -d -m 0700 -o root -g root /etc/rxcloud
+install -m 0600 -o root -g root deploy/rxcloud.env.example /etc/rxcloud/rxcloud.env
+install -m 0644 -o root -g root deploy/rxcloud.service /etc/systemd/system/rxcloud.service
+systemctl daemon-reload
+echo "Staged only: fill /etc/rxcloud/rxcloud.env with STAGING credentials, then validate before enabling service."
+echo "No service started, no DNS modified, no production migration."
