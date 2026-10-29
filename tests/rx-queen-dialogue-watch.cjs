@@ -23,6 +23,8 @@ const fs=require('node:fs');
   {id:'errors',message:'Mam błąd w panelu',expected:/błęd|komunikat|raport|napraw/i},
   {id:'work-order',message:'Królowa zbuduj moduł RX',expected:/RX Developer|BIBI|plan/i,workExpected:true},
   {id:'learned-error',message:'Mam błąd w panelu',learning:{kind:'rx-queen-verified-learning',lessons:[{incidentId:'test-1',observation:'Przycisk czatu nie odpowiada',panelArea:'RX Admin'}]},expected:/Przycisk czatu nie odpowiada/},
+  {id:'verified-lesson',message:'Jak sprawdzić stan RX?',learning:{kind:'rx-queen-verified-learning',lessons:[{verified:true,question:'Jak sprawdzić stan RX?',correctAnswer:'Odczytaj ostatni raport RX w panelu diagnostyki.'}]},expected:/Odczytaj ostatni raport RX/},
+  {id:'unverified-lesson-rejected',message:'Ile to 7 * 8?',learning:{kind:'rx-queen-verified-learning',lessons:[{verified:false,question:'Ile to 7 * 8?',correctAnswer:'Nieprawda'}]},expected:/56/,forbidden:/Nieprawda/},
   {id:'followup',message:'Dalej',history:['Co robią Mrówki?'],expected:/mrów|zadani|plan/i},
   {id:'freeform-question',message:'Dlaczego niebo jest niebieskie?',expected:/./},
   {id:'freeform-creative',message:'Wymyśl historię o robocie i ogrodzie',expected:/./},
