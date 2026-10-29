@@ -9,7 +9,8 @@ const TEST_DEPENDENCIES={
  'rx-ant-academy-ci.cjs':'tests/rx-ant-academy-ci.cjs',
  'rx-bibi-budget.cjs':'tests/rx-bibi-budget.cjs',
  'rx-ant-task-board.cjs':'tests/rx-ant-task-board.cjs',
- 'rx-medusa-engine.cjs':'tests/rx-medusa-engine.cjs'
+ 'rx-medusa-engine.cjs':'tests/rx-medusa-engine.cjs',
+ 'rx-mega-cloud-computer.cjs':'tests/rx-developer-bridge-isolated.cjs'
 };
 function selectFastTests(changedFiles){
  if(!Array.isArray(changedFiles)||changedFiles.length>500||changedFiles.some(p=>typeof p!=='string'||p.length>300))throw Error('Invalid changed files');
