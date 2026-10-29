@@ -19,7 +19,7 @@ function createTurbine({maxParallel=4,maxQueued=100}={}){
  return Object.freeze({submit,plan});
 }
 // Execute only explicitly approved, allowlisted work. Real concurrency is bounded.
-const executedTurbines=new WeakSet();
+const inFlightTurbines=new WeakSet();
 async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2}={}){
  if(!approved)throw Error('Owner approval required');
  if(!Number.isSafeInteger(maxParallel)||maxParallel<1||maxParallel>8)throw Error('Invalid execution capacity');
@@ -31,8 +31,8 @@ async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2
   task.target.includes('..')||task.target.startsWith('/')||task.requiresApproval!==true||task.status!=='planned'))
   throw Error('Invalid approved turbine task');
  // An execution instance is single-use: retry requires a fresh explicit approval.
- if(executedTurbines.has(turbine))return {schema:1,kind:'rx-turbine-execution',realExecution:false,planned:tasks.length,executed:0,peakActive:0,results:tasks.map(task=>({id:task.id,kind:task.kind,status:'skipped',reason:'already_executed'})),duplicatePrevented:true};
- executedTurbines.add(turbine);
+ if(inFlightTurbines.has(turbine))throw Error('Turbine execution already in progress');
+ inFlightTurbines.add(turbine);
  const results=new Array(tasks.length);
  let cursor=0,active=0,peakActive=0;
  const started=Date.now();
@@ -48,7 +48,8 @@ async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2
    finally{active--;}
   }
  }
- await Promise.all(Array.from({length:Math.min(maxParallel,tasks.length)},()=>worker()));
+ try{await Promise.all(Array.from({length:Math.min(maxParallel,tasks.length)},()=>worker()));}
+ finally{inFlightTurbines.delete(turbine);}
  return {schema:1,kind:'rx-turbine-execution',realExecution:true,startedAt:new Date(started).toISOString(),durationMs:Date.now()-started,planned:tasks.length,executed:results.filter(x=>x.status==='completed'||x.status==='failed').length,peakActive,results};
 }
 module.exports={createTurbine,executeApproved};
