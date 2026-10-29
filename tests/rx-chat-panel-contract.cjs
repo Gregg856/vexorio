@@ -50,7 +50,15 @@ assert.match(worker,/planRXChat\(message,history,bibiLearning\)/);
 const queenPanel=fs.readFileSync('guard-rx-queen-panel.js','utf8');
 const cloudComputer=fs.readFileSync('rx-mega-cloud-computer.cjs','utf8');
 assert.ok(!queenPanel.includes("fetch('/api/rx/inbox'"),'Queen must not POST to unsupported inbox');
-assert.match(queenPanel,/Przekazanie do wykonawcy oczekuje na bezpieczny serwerowy adapter/);
+// Queen now dispatches approved commands through the existing authenticated coordinator endpoint.
+assert.match(queenPanel,/fetch\('\/api\/rx\/coordinator\/run'/);
+assert.match(queenPanel,/client\.auth\.getSession\(\)/);
+assert.match(queenPanel,/Authorization':'Bearer '/);
+assert.match(queenPanel,/JSON\.stringify\(\{command:approved\.description\}\)/);
+assert.match(worker,/url\.pathname === '\/api\/rx\/coordinator\/run'/);
+assert.match(worker,/identity\.id!==env\.RX_ADMIN_USER_ID/);
+assert.match(worker,/rx-coordinator-cloud\.yml/);
+assert.match(worker,/rpc\/is_vexorio_admin/);
 assert.ok(cloudComputer.includes('function runQueenApprovedChecks('),'Queen executor bridge missing');
 assert.match(cloudComputer,/approved&&execute/);
 const {runQueenApprovedChecks}=require('../rx-mega-cloud-computer.cjs');
