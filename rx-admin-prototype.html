@@ -37,7 +37,7 @@ main{min-height:0;height:100%;max-height:100%;overflow:hidden}
  .card{padding:12px;margin:4px 0}
  .chat{min-height:100px}
 }
-</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style><style>
+@media(min-width:721px){.section{display:flex;flex-direction:column}#rxChatCard{order:-10}.section>.card:has(#sub){order:-5}}@media(max-width:720px){#rxAdminCloudCheck,#rxAntQueueRefresh,#rxBibiScreenshot,#rxBibiSelfTest{font-size:.72rem!important;min-height:36px!important;padding:6px 7px!important;flex:1 1 42%!important;line-height:1.15}#rxChatCard .rx-actions button{font-size:.78rem!important;padding:7px 9px!important}}</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style><style>
 /* Compact phone layout: chat first, readable composer, controls stay reachable. */
  #rxWorkbench summary{cursor:pointer;font-weight:700;font-size:1rem;padding:6px 0;list-style:auto}
  #rxWorkbench .rx-workbench-body{padding-top:12px}
