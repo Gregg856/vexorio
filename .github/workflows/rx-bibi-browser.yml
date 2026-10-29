@@ -161,6 +161,48 @@ jobs:
             rx-bibi-reports/rx-ant-ai-evaluation.json
             rx-ai-checkpoints/latest.json
           retention-days: 14
+  video:
+    name: RX BIBI VIDEO — osobny audyt multimediów
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 6
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright bez pobierania przeglądarki
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --no-package-lock playwright@1.56.1
+      # Heavy video export only for Studio/PhotoMotion source changes or manual audit; not scheduled runs or unrelated UI edits.
+      - name: RX FAST — wybierz czy potrzebny jest test eksportu wideo
+        id: video_scope
+        if: always()
+        env:
+          RX_BEFORE: ${{ github.event.before }}
+          RX_EVENT: ${{ github.event_name }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),cp=require('node:child_process');
+          const scope=['rx-bibi-studio.html','rx-photo-motion.js','rx-video-engine.js','rx-ai-director.js','tests/rx-bibi-studio.cjs','tests/rx-bibi-encoder-diagnostic.cjs'];
+          let run=process.env.RX_EVENT==='workflow_dispatch';
+          if(!run && process.env.RX_EVENT==='push'){const before=process.env.RX_BEFORE||'';try{if(!/^[a-f0-9]{40}$/i.test(before))throw Error('unknown base');const files=cp.execFileSync('git',['diff','--name-only',before,'HEAD'],{encoding:'utf8'}).trim().split(/\r?\n/);run=files.some(f=>scope.includes(f));}catch{run=false;}}
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,'run_video='+String(run)+'\n');
+          console.log('RX BIBI full video export:',run?'YES':'SKIP (unrelated changes)');
+          NODE
+      - name: RX BIBI — diagnostyka kodera wideo i audio
+        if: always() && steps.video_scope.outputs.run_video == 'true'
+        run: node tests/rx-bibi-encoder-diagnostic.cjs
+      - name: Przetestuj RX BIBI AI Studio i PhotoMotion
+        id: studio
+        if: always() && steps.video_scope.outputs.run_video == 'true'
+        run: node tests/rx-bibi-studio.cjs
   mobile:
     # Browser suite on UI changes, manual requests and scheduled audits.
     # Backend-only pushes do not need Chromium; fast checks run in VEXORIO checks.
@@ -288,29 +330,6 @@ jobs:
         run: node --check rx-screen-recorder.js
       - name: RX BIBI — testuj Screen Recorder
         run: node tests/rx-screen-recorder.cjs
-      # Heavy video export only for Studio/PhotoMotion source changes or manual audit; not scheduled runs or unrelated UI edits.
-      - name: RX FAST — wybierz czy potrzebny jest test eksportu wideo
-        id: video_scope
-        if: always()
-        env:
-          RX_BEFORE: ${{ github.event.before }}
-          RX_EVENT: ${{ github.event_name }}
-        run: |
-          node - <<'NODE'
-          const fs=require('node:fs'),cp=require('node:child_process');
-          const scope=['rx-bibi-studio.html','rx-photo-motion.js','rx-video-engine.js','rx-ai-director.js','tests/rx-bibi-studio.cjs','tests/rx-bibi-encoder-diagnostic.cjs'];
-          let run=process.env.RX_EVENT==='workflow_dispatch';
-          if(!run){const before=process.env.RX_BEFORE||'';try{if(!/^[a-f0-9]{40}$/i.test(before))throw Error('unknown base');const files=cp.execFileSync('git',['diff','--name-only',before,'HEAD'],{encoding:'utf8'}).trim().split(/\r?\n/);run=files.some(f=>scope.includes(f));}catch{run=true;}}
-          fs.appendFileSync(process.env.GITHUB_OUTPUT,'run_video='+String(run)+'\n');
-          console.log('RX BIBI full video export:',run?'YES':'SKIP (unrelated changes)');
-          NODE
-      - name: RX BIBI — diagnostyka kodera wideo i audio
-        if: always() && steps.video_scope.outputs.run_video == 'true'
-        run: node tests/rx-bibi-encoder-diagnostic.cjs
-      - name: Przetestuj RX BIBI AI Studio i PhotoMotion
-        id: studio
-        if: always() && steps.video_scope.outputs.run_video == 'true'
-        run: node tests/rx-bibi-studio.cjs
       - name: RX — sprawdź wejście do panelu administratora VEXORIO
         if: always()
         run: node tests/rx-admin-entry-mobile.cjs
