@@ -257,6 +257,25 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+      - name: Sprawdź dostęp Cloudflare przed publikacją
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$CF_TOKEN" && test -n "$CF_ACCOUNT" || { echo "::error::Brak sekretu Cloudflare token/account"; exit 1; }
+          code="$(curl -sS --retry 2 --max-time 20 -o /tmp/rx-cf-token.json -w '%{http_code}' -H "Authorization: Bearer $CF_TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify)"
+          node - "$code" <<'NODE'
+          const fs=require('node:fs');
+          const code=process.argv[2];
+          const body=JSON.parse(fs.readFileSync('/tmp/rx-cf-token.json','utf8'));
+          if(code!=='200'||body.success!==true||body.result?.status!=='active'){
+            console.error('::error::Cloudflare token verification failed (HTTP '+code+'); check token status and permissions.');
+            process.exit(1);
+          }
+          console.log('Cloudflare token active; verifying asset-upload authorization at deploy time.');
+          NODE
+
       - name: Publikuj w Cloudflare
         id: publish
         uses: cloudflare/wrangler-action@v3
