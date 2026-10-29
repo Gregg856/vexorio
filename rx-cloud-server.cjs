@@ -62,6 +62,32 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.end(JSON.stringify({ok:true,service:'rx-cloud-2',queenBridge:'connected',mode:'read-only',taskExecution:false,productionChanges:false}));
         return;
       }
+      // Private local RX BIBI report inbox: explicit token, bounded JSON, no public access.
+      if(url.pathname==='/__rxcloud/bibi/inbox'){
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('X-Content-Type-Options','nosniff');
+        res.setHeader('Content-Type','application/json');
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(req.method!=='POST'){res.writeHead(405,{'Allow':'POST'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        const declared=Number(req.headers['content-length']||0);
+        if(declared>262144){res.writeHead(413);res.end(JSON.stringify({ok:false,error:'Report too large'}));req.resume();return;}
+        const chunks=[];let total=0;
+        for await(const chunk of req){total+=chunk.length;if(total>262144){res.writeHead(413);res.end(JSON.stringify({ok:false,error:'Report too large'}));return;}chunks.push(chunk);}
+        let payload;
+        try{payload=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{res.writeHead(400);res.end(JSON.stringify({ok:false,error:'Invalid JSON'}));return;}
+        if(!payload||payload.kind!=='rx-bibi-smart-error-memory'||!Array.isArray(payload.history)||payload.history.length>150||typeof payload.runId!=='string'||!/^[0-9]{1,30}$/.test(payload.runId)){
+          res.writeHead(422);res.end(JSON.stringify({ok:false,error:'Invalid BIBI report'}));return;
+        }
+        const dir=path.resolve(process.env.RX_BIBI_INBOX_DIR||path.join(__dirname,'rx-cloud-private-inbox'));
+        await fs.mkdir(dir,{recursive:true,mode:0o700});
+        const file=path.join(dir,'rx-bibi-'+payload.runId+'.json');
+        await fs.writeFile(file,JSON.stringify(payload)+'\\n',{flag:'wx',mode:0o600}).catch(e=>{if(e.code!=='EEXIST')throw e;});
+        res.writeHead(202);res.end(JSON.stringify({ok:true,stored:true,runId:payload.runId}));
+        return;
+      }
       const maxBodyBytes=2*1024*1024; // Preserve verified upload bound until tests and upload flow are updated together.
       const declaredLength=req.headers['content-length'];
       if(declaredLength!==undefined && /^\d+$/.test(declaredLength) && Number(declaredLength)>maxBodyBytes){res.writeHead(413,{'Cache-Control':'no-store'});res.end();req.resume();return;}
