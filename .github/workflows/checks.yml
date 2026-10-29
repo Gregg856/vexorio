@@ -45,6 +45,7 @@ jobs:
           node tests/rx-error-learner.cjs
           node tests/rx-neuron-v21.cjs
           node tests/rx-language-tokenizer.cjs
+          node tests/rx-language-seed.cjs
           node tests/rx-text-learner.cjs
           node tests/rx-text-evaluation.cjs
           node rx-text-evaluation.cjs
