@@ -105,6 +105,16 @@ const fs=require('node:fs');
   if(!rejected)throw Error('Unknown Queen executor was accepted');
   results.push({id:'queen-executor-approval-gate',ok:true});
  }catch(e){results.push({id:'queen-executor-approval-gate',ok:false,error:e.message});}
+ // RX NAUKA 3.3: candidates are synthetic and require independent verification.
+ // Never automatically promote a failed answer to a trusted lesson.
+ const lessonCandidates=results.filter(x=>!x.ok).slice(0,10).map(x=>({
+  id:x.id,source:'synthetic-dialogue-test',observation:x.error||'Failed dialogue check',
+  status:'pending-review',verified:false
+ }));
+ fs.writeFileSync('rx-bibi-reports/rx-lesson-candidates.json',JSON.stringify({
+  kind:'rx-lesson-candidates',generatedAt:new Date().toISOString(),
+  candidates:lessonCandidates,automaticallyApproved:0,modelTrained:false
+ },null,2)+'\\n');
  const report={kind:'rx-bibi-queen-dialogue',mode:'SYNTHETIC_LOCAL_PLANNER',authenticatedProductionChat:'NOT_TESTED',checkedAt:new Date().toISOString(),checks:results,ok:results.every(x=>x.ok)};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-dialogue.json',JSON.stringify(report,null,2)+'\n');
