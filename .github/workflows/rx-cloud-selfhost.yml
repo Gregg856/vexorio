@@ -65,7 +65,7 @@ jobs:
       - name: Stage VEXORIO static assets for local self-host test
         run: |
           mkdir -p public
-          find . -maxdepth 1 -type f \\( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.webp' -o -name '*.ico' -o -name '*.json' -o -name '*.txt' -o -name '*.webmanifest' \\) -exec cp -- {} public/ \\;
+          find . -maxdepth 1 -type f | grep -E '\\.(html|js|css|svg|png|jpg|jpeg|webp|ico|json|txt|webmanifest)$' | while IFS= read -r file; do cp -- "$file" public/; done
           test -s public/index.html
           test -s public/manifest.webmanifest
       - name: Run RX CLOUD smoke tests
