@@ -6,6 +6,7 @@ on:
       - '.github/workflows/rx-bibi-live-watch.yml'
       - 'tests/rx-queen-dialogue-watch.cjs'
       - 'tests/rx-live-panel.cjs'
+      - 'tests/rx-bibi-browser-agent.cjs'
       - 'tests/rx-visual-audit.cjs'
       - 'tests/rx-screen-recorder.cjs'
       - 'rx-admin-prototype.html'
@@ -68,6 +69,10 @@ jobs:
         id: recorder
         continue-on-error: true
         run: node tests/rx-screen-recorder.cjs
+      - name: RX BIBI Browser Agent 1.0 — obserwacja stron i nagrania
+        id: browser_agent
+        continue-on-error: true
+        run: node tests/rx-bibi-browser-agent.cjs
       - name: RX BIBI — rozmawiaj testowo z lokalnym mózgiem Królowej
         id: dialogue
         continue-on-error: true
