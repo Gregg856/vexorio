@@ -253,6 +253,14 @@ export function planRXChat(message,history=[],learning=null){
   tasks.length=0;
   plan.work=null;
  }
+ // RX NAUKA: full-sentence questions about learning are not memory commands.
+ const learningQuestion=/(jak|w jaki sposob|czy|kiedy|co).{0,70}(nauk|ucz|uczyc|uczyla|uczyla sie|trenow)/i.test(plain)
+  &&/(rozmow|wiadomosc|popraw|odpowiedz|twoj|twoja|rx|krolow)/i.test(plain);
+ if(learningQuestion){
+  answer='👑 Nauka z naszych rozmów będzie przebiegać etapami. Najpierw rozpoznaję temat i Twoje preferencje z ostatnich wiadomości. Kiedy poprawisz moją odpowiedź, przyszły moduł będzie mógł zapisać tę poprawkę jako przykład i użyć jej przy podobnym pytaniu. Obecnie RX NAUKA wykrywa wybrane preferencje i obsługuje niektóre pytania uzupełniające, ale nie zapisuje automatycznie trwałych lekcji ani nie trenuje wag modelu AI. Taką trwałą naukę musimy dopiero zbudować i przetestować.';
+  tasks.length=0;
+  plan.work=null;
+ }
  // Evidence-aware suggestions only when trusted server-side learning is explicitly supplied.
  const verifiedLessons=learning&&learning.kind==='rx-queen-verified-learning'&&Array.isArray(learning.lessons)
   ?learning.lessons.filter(x=>x&&typeof x.observation==='string'&&typeof x.incidentId==='string').slice(0,3):[];
