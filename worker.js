@@ -146,7 +146,7 @@ export default {
           }catch{return reply(502,'Nie można odczytać wyniku RX Developer.');}
         }
         // RX Queen -> RX Developer: bounded, owner-only source review; BIBI checks in CI.
-        const developerMatch=/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:sprawdź|sprawdz|przeanalizuj|zbadaj)\\s+(?:kod\\s+)?(rx coordinator|rx command bridge|rx developer)(?:[.!? ]*)$/i.exec(message.trim());
+        const developerMatch=/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:sprawdź|sprawdz|przeanalizuj|zbadaj)\s+(?:kod\s+)?(rx coordinator|rx command bridge|rx developer)(?:[.!? ]*)$/i.exec(message.trim());
         if(developerMatch){
           if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'RX Developer jest dostępny tylko dla właściciela RX.');
           if(!env.RX_GITHUB_DISPATCH_TOKEN)return reply(503,'Brak konfiguracji połączenia RX Developer.');
