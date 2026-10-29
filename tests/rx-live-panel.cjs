@@ -36,7 +36,8 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    '<script>window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:{id:"rx-visual-preview",is_anonymous:false}},error:null})},rpc:async()=>({data:true,error:null})})};<\/script>');
   if(previewHtml===html)throw Error('Visual preview: Supabase dependency not isolated');
   for(const [name,options] of [['android',{...devices['Pixel 7'],locale:'pl-PL'}],['desktop',{viewport:{width:1365,height:850},locale:'pl-PL'}]]){
-   const page=await browser.newPage(options);
+   const context=await browser.newContext({...options,recordVideo:{dir:'rx-bibi-reports/video',size:{width:name==='android'?412:1365,height:name==='android'?839:850}}});
+   const page=await context.newPage();
    const errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',route=>route.abort());
@@ -89,10 +90,20 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
     if(!keyboardOk)throw Error('Android reduced viewport hides chat composer: '+JSON.stringify(keyboardLayout));
     await page.setViewportSize({width:412,height:839});
    }
+   // Isolated interactive smoke test: type into the real composer without submitting to production.
+   const sample='RX BIBI TEST — wiadomość próbna (bez wysyłania)';
+   await page.locator('#input').fill(sample);
+   const typed=await page.locator('#input').inputValue();
+   const sendVisible=await page.locator('#form button[type="submit"]').isVisible();
+   const writingOk=typed===sample&&sendVisible;
+   report.checks.push({name:'chat-typing-'+name,ok:writingOk,scope:'ISOLATED_NO_PRODUCTION_SUBMIT',sendVisible});
+   if(!writingOk)throw Error(name+': chat typing failed');
+   await page.locator('#input').fill('');
    await page.screenshot({path:'rx-bibi-reports/visual/rx-admin-'+name+'-preview.png',fullPage:true});
    report.checks.push({name:'visual-'+name,ok:errors.length===0,scope:'ISOLATED_MOCK_AUTH_PREVIEW',layout,errors});
    if(errors.length)throw Error(name+': visual preview JS: '+errors.join('; '));
    await page.close();
+   await context.close(); // flush Playwright video into the existing report artifact
   }
   report.ok=true;
   console.log('PASS RX BIBI LIVE PANEL',JSON.stringify(report));
