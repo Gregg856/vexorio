@@ -434,7 +434,7 @@ function queueChatProposal(message){
  catch{add('bot','⚠️ Nie mogę odczytać lokalnej kolejki. Pobierz kopię i napraw dane przed dodaniem zadania.');return true;}
  if(queue.length>=20){add('bot','⚠️ Kolejka jest pełna (20/20). Pobierz ją lub wyczyść w Warsztacie.');return true;}
  const task={schema:1,kind:'rx-queen-proposal',filename:'rx-chat-task-'+Date.now()+'.md',description,code:description,createdAt:new Date().toISOString(),approved:false,executed:false};
- try{localStorage.setItem(RX_CHAT_QUEUE_KEY,JSON.stringify([...queue,task]));document.getElementById('rxWorkQueueList')?.dispatchEvent(new Event('rx-queue-changed'));add('bot','🐜 Dodałam opis zadania do lokalnej kolejki ('+(queue.length+1)+'/20). Rozwiń Warsztat Królowej, by je przejrzeć i wyeksportować. Nic nie zostało uruchomione.');}
+ try{localStorage.setItem(RX_CHAT_QUEUE_KEY,JSON.stringify([...queue,task]));document.getElementById('rxWorkQueueList')?.dispatchEvent(new Event('rx-queue-changed'));add('bot','🐜 Dodałam opis zadania do lokalnej kolejki ('+(queue.length+1)+'/20). Status: ZAPLANOWANE LOKALNIE, nie wysłane do mrówek. Rozwiń Warsztat Królowej, by je przejrzeć i wyeksportować. Nie uruchomiono żadnego wykonawcy.');}
  catch{add('bot','⚠️ Nie udało się zapisać zadania. Sprawdź miejsce w przeglądarce.');}
  return true;
 }
