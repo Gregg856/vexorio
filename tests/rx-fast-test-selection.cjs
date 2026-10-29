@@ -6,5 +6,9 @@ assert.deepEqual(selectFastTests(['rx-medusa-engine.cjs']),['tests/rx-medusa-eng
 assert.deepEqual(selectFastTests(['tests/rx-ant-task-board.cjs']),['tests/rx-ant-task-board.cjs']);
 assert.deepEqual(selectFastTests(['.github/workflows/rx-bibi-browser.yml']),all);
 assert.deepEqual(selectFastTests(['unmapped-file.js']),all);
+assert.deepEqual(selectFastTests(['rx-mega-cloud-computer.cjs']),['tests/rx-developer-bridge-isolated.cjs']);
+assert.deepEqual(selectFastTests(['rx-developer-patch-bridge.cjs']),['tests/rx-developer-bridge-isolated.cjs']);
+assert.deepEqual(selectFastTests(['rx-patch-drafter.cjs','rx-coordinator.cjs']),['tests/rx-developer-bridge-isolated.cjs']);
+assert.deepEqual(selectFastTests(['rx-command-bridge.cjs']),['tests/rx-developer-bridge-isolated.cjs']);
 assert.throws(()=>selectFastTests(['',42]),/Invalid changed files/);
 console.log('PASS RX FAST selection: targeted tests and safe fallback');

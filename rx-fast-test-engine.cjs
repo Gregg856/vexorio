@@ -9,14 +9,19 @@ const TEST_DEPENDENCIES={
  'rx-ant-academy-ci.cjs':'tests/rx-ant-academy-ci.cjs',
  'rx-bibi-budget.cjs':'tests/rx-bibi-budget.cjs',
  'rx-ant-task-board.cjs':'tests/rx-ant-task-board.cjs',
- 'rx-medusa-engine.cjs':'tests/rx-medusa-engine.cjs'
+ 'rx-medusa-engine.cjs':'tests/rx-medusa-engine.cjs',
+ 'rx-mega-cloud-computer.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-developer-patch-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-patch-drafter.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-command-bridge.cjs':'tests/rx-developer-bridge-isolated.cjs',
+ 'rx-coordinator.cjs':'tests/rx-developer-bridge-isolated.cjs',
 };
 function selectFastTests(changedFiles){
  if(!Array.isArray(changedFiles)||changedFiles.length>500||changedFiles.some(p=>typeof p!=='string'||p.length>300))throw Error('Invalid changed files');
  if(!changedFiles.length)return DEFAULT_TESTS.slice();
  if(changedFiles.some(p=>p==='rx-fast-test-engine.cjs'||p.startsWith('.github/')||p==='package.json'||p==='package-lock.json'))return DEFAULT_TESTS.slice();
  const selected=new Set();
- for(const file of changedFiles){if(DEFAULT_TESTS.includes(file))selected.add(file);if(TEST_DEPENDENCIES[file])selected.add(TEST_DEPENDENCIES[file]);}
+ for(const file of changedFiles){if(DEFAULT_TESTS.includes(file)||file==='tests/rx-developer-bridge-isolated.cjs')selected.add(file);if(TEST_DEPENDENCIES[file])selected.add(TEST_DEPENDENCIES[file]);}
  return selected.size?[...selected]:DEFAULT_TESTS.slice();
 }
 async function runFastTests({tests=DEFAULT_TESTS,parallel=3,timeoutMs=20000}={}){

@@ -79,8 +79,87 @@ jobs:
           NODE
       - name: Measure RX modules
         run: node rx-performance-benchmark.cjs
+      - name: Compare RX FAST full and Queen-selected test duration
+        run: |
+          node - <<'NODE'
+          const {runFastTests,selectFastTests}=require('./rx-fast-test-engine.cjs');
+          (async()=>{
+            const full=await runFastTests();
+            const selected=await runFastTests({tests:selectFastTests(['rx-mega-cloud-computer.cjs'])});
+            const summary=[
+              '## RX FAST — measured comparison',
+              '| Mode | Tests | Passed | Duration |',
+              '|---|---:|---:|---:|',
+              '| Full | '+full.total+' | '+full.passed+' | '+full.elapsedMs+' ms |',
+              '| Queen-selected | '+selected.total+' | '+selected.passed+' | '+selected.elapsedMs+' ms |',
+              '',
+              'These are two different test sets, not equivalent coverage.'
+            ].join('\\n');
+            console.log(summary);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\\n');
+            if(full.failed||selected.failed)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+      - name: Verify RX FAST selection before timing
+        run: node tests/rx-fast-test-selection.cjs
+      - name: Repeat RX FAST Queen timing (5 samples)
+        run: |
+          node - <<'NODE'
+          const {runFastTests,selectFastTests}=require('./rx-fast-test-engine.cjs');
+          (async()=>{
+            const tests=selectFastTests(['rx-mega-cloud-computer.cjs']);
+            const samples=[];
+            const details=[];
+            for(let i=0;i<5;i++){
+              const report=await runFastTests({tests});
+              if(report.failed)throw Error('RX Queen isolated test failed in sample '+(i+1));
+              samples.push(report.elapsedMs);
+              details.push({elapsedMs:report.elapsedMs,slowest:report.slowest,passed:report.passed});
+            }
+            const sorted=samples.slice().sort((a,b)=>a-b);
+            const median=sorted[2];
+            const summary='## RX Queen repeated timing\\nSamples (ms): '+samples.join(', ')+'\\nMedian: '+median+' ms; min: '+sorted[0]+' ms; max: '+sorted[4]+' ms.\\n';
+            const spread=sorted[4]-sorted[0];
+            const mean=samples.reduce((sum,n)=>sum+n,0)/samples.length;
+            const variabilityPct=Number((100*spread/median).toFixed(1));
+            const recommendation=variabilityPct>25?'High timing variability: repeat measurements before optimizing.':'Timing variability within 25% of median; inspect slowest test before changing code.';
+            const analysis='RX FAST analysis: mean '+mean.toFixed(1)+' ms; range '+spread+' ms; variability '+variabilityPct+'%. '+recommendation;
+            console.log(analysis);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,analysis+'\\n');
+            console.log(summary);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary);
+            const fs=require('node:fs');
+            fs.mkdirSync('rx-bibi-reports',{recursive:true});
+            fs.writeFileSync('rx-bibi-reports/rx-fast-queen-timing.json',JSON.stringify({schema:1,kind:'rx-fast-queen-timing',samples,medianMs:median,minMs:sorted[0],maxMs:sorted[4],meanMs:Number(mean.toFixed(1)),spreadMs:spread,variabilityPct,recommendation,details,productionModified:false},null,2)+'\n');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+      - name: RX Queen and BIBI read-only performance handoff
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const {summarizeQueenFastTiming}=require('./rx-queen-work-summary.cjs');
+          const timing=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-fast-queen-timing.json','utf8'));
+          const handoff=summarizeQueenFastTiming(timing);
+          assert.equal(handoff.kind,'rx-queen-fast-performance-handoff');
+          assert.equal(handoff.productionModified,false);
+          assert.equal(handoff.automaticDeployment,false);
+          assert.equal(handoff.developerTask?.approved,false);
+          assert.equal(handoff.developerTask?.executed,false);
+          assert.throws(()=>summarizeQueenFastTiming({kind:'rx-fast-queen-timing',samples:[1],details:[]}),/Invalid/);
+          fs.writeFileSync('rx-bibi-reports/rx-queen-fast-handoff.json',JSON.stringify(handoff,null,2)+'\\n');
+          const summary='## RX Queen → BIBI → Developer (proposal only)\\n'+
+            'Next action: '+handoff.nextAction+'\\n'+
+            'Developer review target: '+(handoff.developerTask?.target||'none')+'\\n'+
+            'No code changes, approvals or deployment.\\n';
+          console.log(summary);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary);
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: rx-performance-benchmark
-          path: rx-bibi-reports/rx-performance-benchmark.json
+          path: |
+            rx-bibi-reports/rx-performance-benchmark.json
+            rx-bibi-reports/rx-fast-queen-timing.json
+            rx-bibi-reports/rx-queen-fast-handoff.json
           retention-days: 7

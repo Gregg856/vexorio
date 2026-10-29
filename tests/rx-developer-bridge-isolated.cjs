@@ -36,6 +36,11 @@ const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
 const {spawnSync}=require('node:child_process');
+const {performance}=require('node:perf_hooks');
+const queenTiming={};
+const phaseTimes=[];
+// Node startup baseline already measured in CI #37; do not spawn an extra process each run.
+const queenStarted=performance.now();
 // RX Queen regression: a previously reviewed incident is not queued again,
 // while a new failure still reaches the existing Developer handoff.
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rx-queen-memory-test-'));
@@ -45,7 +50,16 @@ try{
  const failure={ok:false,checks:[{id:'synthetic-check',ok:false,error:'Synthetic regression failure'}]};
  fs.writeFileSync(path.join(reports,'rx-live-panel.json'),JSON.stringify(failure));
  const queen=path.join(__dirname,'..','rx-queen-bibi-triage.cjs');
- const run=()=>{const p=spawnSync(process.execPath,[queen],{cwd:temp,encoding:'utf8',timeout:5000});assert.equal(p.status,0,p.stderr);return JSON.parse(fs.readFileSync(path.join(reports,'rx-queen-bibi-triage.json'),'utf8'));};
+ const run=()=>{
+  const start=performance.now();
+  const p=spawnSync(process.execPath,[queen],{cwd:temp,encoding:'utf8',timeout:5000});
+  const processMs=performance.now()-start;
+  assert.equal(p.status,0,p.stderr);
+  const readStart=performance.now();
+  const data=JSON.parse(fs.readFileSync(path.join(reports,'rx-queen-bibi-triage.json'),'utf8'));
+  phaseTimes.push({processMs:Number(processMs.toFixed(2)),resultReadMs:Number((performance.now()-readStart).toFixed(2))});
+  return data;
+ };
  const first=run();
  const incident=first.incidents.find(x=>x.source==='rx-live-panel.json'&&x.check==='synthetic-check');
  assert.ok(incident,'First run must detect synthetic failure');
@@ -62,6 +76,9 @@ try{
  const third=run();
  assert.ok(third.nextWork.some(x=>x.check==='new-check'),'New failure must still be queued');
 }finally{fs.rmSync(temp,{recursive:true,force:true});}
+queenTiming.incidentDedupMs=Number((performance.now()-queenStarted).toFixed(2));
+console.log('RX Queen timing: triage subprocesses '+JSON.stringify(phaseTimes));
+console.log('RX Queen timing: incident dedup '+queenTiming.incidentDedupMs+' ms');
 console.log('PASS RX Queen: persistent review deduplication and new incident handoff');
 
  // RX BIBI regression: Queen must pass build planning through the existing Turbine.
@@ -118,3 +135,21 @@ console.log('PASS RX Queen: persistent review deduplication and new incident han
  assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,functionalValidation:'failed'},patchedContent),false);
  assert.equal(matchesBibiFunctionalReview(validCandidate,{...validReview,target:'other.cjs'},patchedContent),false);
  console.log('PASS RX Queen: exact matching passed BIBI review accepted; mismatches rejected');
+
+ // Queen PR proposal regression: no merge, no branch writes, fail closed.
+ const {prepareQueenPullRequest}=require('../rx-mega-cloud-computer.cjs');
+ const staged={kind:'rx-queen-staged-patch',target:'rx-command-bridge.cjs',
+  content:'module.exports={safe:true};',sourceSha256:'old',patchedSha256:
+  require('node:crypto').createHash('sha256').update('module.exports={safe:true};').digest('hex'),
+  bibiPatchedSyntax:{passed:true},bibiPatchInvariant:{passed:true},
+  readyForPullRequest:true,changesApplied:false,deployed:false};
+ const pr=prepareQueenPullRequest(staged,{approved:true});
+ assert.equal(pr.kind,'rx-queen-pr-proposal');
+ assert.equal(pr.pullRequestCreated,false);
+ assert.equal(pr.merged,false);
+ assert.equal(pr.deployed,false);
+ assert.throws(()=>prepareQueenPullRequest(staged,{approved:false}),/approved verified/);
+ assert.throws(()=>prepareQueenPullRequest({...staged,content:'tampered'},{approved:true}),/integrity failed/);
+ assert.throws(()=>prepareQueenPullRequest({...staged,bibiPatchedSyntax:{passed:false}},{approved:true}),/approved verified/);
+ console.log('PASS RX Queen: PR proposal integrity and approval gates');
+console.log('RX Queen timing: total isolated test '+(performance.now()-queenStarted).toFixed(2)+' ms since incident profiling start');
