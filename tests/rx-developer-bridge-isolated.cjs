@@ -48,7 +48,17 @@ try{
  const failure={ok:false,checks:[{id:'synthetic-check',ok:false,error:'Synthetic regression failure'}]};
  fs.writeFileSync(path.join(reports,'rx-live-panel.json'),JSON.stringify(failure));
  const queen=path.join(__dirname,'..','rx-queen-bibi-triage.cjs');
- const run=()=>{const p=spawnSync(process.execPath,[queen],{cwd:temp,encoding:'utf8',timeout:5000});assert.equal(p.status,0,p.stderr);return JSON.parse(fs.readFileSync(path.join(reports,'rx-queen-bibi-triage.json'),'utf8'));};
+ const phaseTimes=[];
+ const run=()=>{
+  const start=performance.now();
+  const p=spawnSync(process.execPath,[queen],{cwd:temp,encoding:'utf8',timeout:5000});
+  const processMs=performance.now()-start;
+  assert.equal(p.status,0,p.stderr);
+  const readStart=performance.now();
+  const data=JSON.parse(fs.readFileSync(path.join(reports,'rx-queen-bibi-triage.json'),'utf8'));
+  phaseTimes.push({processMs:Number(processMs.toFixed(2)),resultReadMs:Number((performance.now()-readStart).toFixed(2))});
+  return data;
+ };
  const first=run();
  const incident=first.incidents.find(x=>x.source==='rx-live-panel.json'&&x.check==='synthetic-check');
  assert.ok(incident,'First run must detect synthetic failure');
@@ -66,6 +76,7 @@ try{
  assert.ok(third.nextWork.some(x=>x.check==='new-check'),'New failure must still be queued');
 }finally{fs.rmSync(temp,{recursive:true,force:true});}
 queenTiming.incidentDedupMs=Number((performance.now()-queenStarted).toFixed(2));
+console.log('RX Queen timing: triage subprocesses '+JSON.stringify(phaseTimes));
 console.log('RX Queen timing: incident dedup '+queenTiming.incidentDedupMs+' ms');
 console.log('PASS RX Queen: persistent review deduplication and new incident handoff');
 
