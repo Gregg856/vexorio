@@ -86,6 +86,13 @@ function previewQueenBuild(plan,{approved=false,target='rx-command-bridge.cjs',v
 }
 
 
+function matchesBibiFunctionalReview(candidate,review,patched){
+ return !!candidate&&!!review&&typeof patched==='string'&&
+  review.target===candidate.target&&review.rule===candidate.rule&&
+  review.functionalValidation==='passed'&&review.bibiValidation==='passed'&&
+  review.readyForReview===true&&review.preview===patched;
+}
+
 function stageQueenPatch(candidate,{approved=false,functionalReview=null}={}){
  if(functionalReview!==null){
   if(!functionalReview||functionalReview.target!==candidate?.target||functionalReview.rule!==candidate?.rule||functionalReview.functionalValidation!=='passed'||functionalReview.bibiValidation!=='passed'||functionalReview.readyForReview!==true)throw Error('Invalid BIBI functional review');
@@ -98,7 +105,7 @@ function stageQueenPatch(candidate,{approved=false,functionalReview=null}={}){
  if(crypto.createHash('sha256').update(source).digest('hex')!==candidate.sourceSha256)throw Error('Stale Queen patch source');
  const {previewPatch}=require('./rx-patch-drafter.cjs');
  const patched=previewPatch(candidate.draft,source).preview;
- if(functionalReview!==null&&functionalReview.preview!==patched)throw Error('BIBI reviewed different patch bytes');
+ if(functionalReview!==null&&!matchesBibiFunctionalReview(candidate,functionalReview,patched))throw Error('BIBI reviewed different patch bytes');
  new (require('node:vm').Script)(patched,{filename:candidate.target});
  // BIBI checks the exact patched bytes using Node's syntax checker in isolation.
  const os=require('node:os');
@@ -141,4 +148,4 @@ if(require.main===module){
  console.log('RX MEGA CLOUD COMPUTER:',report.passed,'passed,',report.failed,'failed');
  if(report.failed)process.exitCode=1;
 }
-module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,stageQueenPatch,CHECKS};
+module.exports={runCloudComputer,runAntQueue,runQueenApprovedChecks,previewQueenBuild,stageQueenPatch,matchesBibiFunctionalReview,CHECKS};
