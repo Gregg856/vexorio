@@ -110,8 +110,7 @@ export function planRXChat(message,history=[],learning=null){
  else if(requestedPoint)answer='👑 Nie widzę w ostatnich wiadomościach numerowanego planu z tym punktem. Wklej plan albo napisz, który krok masz na myśli.';
  else if(multiIntent)answer='👑 Rozumiem kilka spraw w jednym poleceniu:\\n'+selectedParts.map((x,i)=>(i+1)+'. '+x.label+': '+x.detail).join('\\n')+'\\n🔒 To plan odpowiedzi, nie uruchomienie zadań.';
  else if(/^(?:napisz|uloz|stworz)\s+(?:mi\s+)?(?:krotkie\s+)?zyczenia\s+(?:urodzinowe\s+)?(?:dla\s+)?([\p{L} -]{2,55})[.!? ]*$/iu.test(plain)){
-  const who=message.trim().match(/(?:dla\s+)?([\p{L} -]{2,55})[.!? ]*$/u)?.[1]?.trim()||'Ciebie';
-  const recipient=who.replace(/^(?:napisz|uloz|stworz)\s+(?:mi\s+)?(?:krotkie\s+)?zyczenia\s+(?:urodzinowe\s+)?(?:dla\s+)?/iu,'').trim();
+  const recipient=message.trim().replace(/^(?:napisz|ułóż|uloz|stwórz|stworz)\s+(?:mi\s+)?(?:krótkie|krotkie)?\s*życzenia\s+(?:urodzinowe\s+)?(?:dla\s+)?/iu,'').replace(/[.!? ]+$/u,'').trim();
   answer='🎂 '+(recipient?'Dla '+recipient+': ':'')+'Wszystkiego najlepszego! Dużo zdrowia, radości, spokoju i spełnienia marzeń. Niech każdy dzień przynosi coś dobrego!';
  }
  else if(/^(?:popraw|popraw tekst)\s*:\s*[^\n]+/iu.test(message.trim())){
