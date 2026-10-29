@@ -8,6 +8,12 @@ on:
       - 'tests/rx-live-panel.cjs'
       - 'rx-admin-prototype.html'
       - 'tests/rx-alarm-simulation.cjs'
+      - 'scripts/check-rx-admin-ui.cjs'
+      - 'rx-bibi-unified-adapter.cjs'
+      - 'tests/rx-bibi-unified-adapter.cjs'
+      - 'tests/rx-bibi-extra.cjs'
+      - 'tests/rx-unified-failure-simulation.cjs'
+      - 'tests/rx-bibi-dashboard-summary.cjs'
       - 'rx-chat-planner.mjs'
       - 'rx-queen-bibi-triage.cjs'
   workflow_dispatch:
@@ -35,6 +41,16 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: RX BIBI CENTRAL — struktura RX Admin i bezpieczeństwo
+        run: node --test scripts/check-rx-admin-ui.cjs
+      - name: RX BIBI CENTRAL — Unified Adapter i integracje
+        run: |
+          node tests/verify-real-dependencies.cjs
+          node tests/rx-bibi-unified-adapter.cjs
+          node tests/rx-bibi-extra.cjs
+          node tests/rx-unified-failure-simulation.cjs
+      - name: RX BIBI CENTRAL — raport zbiorczy
+        run: node tests/rx-bibi-dashboard-summary.cjs
       - name: RX ALARM — sprawdź symulację awarii i deduplikację zgłoszeń
         run: node --test tests/rx-alarm-simulation.cjs
       - name: RX BIBI — otwórz prawdziwy panel na telefonie i komputerze
@@ -76,7 +92,7 @@ jobs:
           RESULT: ${{ steps.check.outcome }}
           DIALOGUE: ${{ steps.dialogue.outcome }}
         run: |
-          echo "## RX BIBI — strażnik panelu" >> "$GITHUB_STEP_SUMMARY"
+          echo "## RX BIBI — centralny tester i strażnik panelu" >> "$GITHUB_STEP_SUMMARY"
           echo "- Panel produkcyjny: $RESULT" >> "$GITHUB_STEP_SUMMARY"
           echo "- Syntetyczne rozmowy Królowej: $DIALOGUE" >> "$GITHUB_STEP_SUMMARY"
           echo "- Zakres: prawdziwa publiczna brama RX ADMIN oraz syntetyczna rozmowa z lokalnym planerem Królowej" >> "$GITHUB_STEP_SUMMARY"
