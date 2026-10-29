@@ -40,8 +40,10 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
    const page=await context.newPage();
    const errors=[];
    page.on('pageerror',e=>errors.push(e.message));
-   await page.route('**/*',route=>route.abort());
-   await page.goto('about:blank');
+   // Give the isolated document a synthetic HTTP origin so relative /api/rx/chat
+   // resolves normally; block every network request except our local document.
+   await page.route('**/*',route=>route.request().url()==='http://rx.test/'?route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>RX isolated</title>'}):route.abort());
+   await page.goto('http://rx.test/');
    await page.setContent(previewHtml,{waitUntil:'domcontentloaded'});
    await page.locator('#rxApp').waitFor({state:'visible',timeout:10000});
    const chat=page.locator('#rxChatCard');
