@@ -61,3 +61,16 @@ try{
  assert.ok(third.nextWork.some(x=>x.check==='new-check'),'New failure must still be queued');
 }finally{fs.rmSync(temp,{recursive:true,force:true});}
 console.log('PASS RX Queen: persistent review deduplication and new incident handoff');
+
+ // RX BIBI regression: Queen must pass build planning through the existing Turbine.
+ // This is a queued proposal, never an automatic code change.
+ const {planCommand}=require('../rx-command-bridge.cjs');
+ const {coordinateRX}=require('../rx-coordinator.cjs');
+ const build=planCommand('Zbuduj nowa funkcje',{energyBalance:100});
+ assert.ok(build.steps.some(x=>x.intent==='build_feature'&&x.supported),'Queen must recognize a build request');
+ const coordinated=coordinateRX('Zbuduj nowa funkcje',{initialCredits:100});
+ assert.ok(coordinated.ants.some(x=>x.intent==='build_feature'),'Turbine must accept the build task');
+ assert.ok(coordinated.turbine.waves.flat().some(x=>x.kind==='plan_build'),'Build task must reach the existing Turbine queue');
+ assert.equal(coordinated.executed,0);
+ assert.equal(coordinated.productionModified,false);
+ console.log('PASS RX BIBI: Queen -> Ants -> Turbine build proposal; no automatic writes');
