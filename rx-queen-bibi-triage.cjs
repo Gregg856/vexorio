@@ -36,6 +36,20 @@ const updatedHistory=[...new Map([...known.filter(x=>x&&x.id).map(x=>[x.id,x]),.
 fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(historyFile,JSON.stringify({history:updatedHistory},null,2)+'\n');
 const developerHandoff=incidents.map(f=>({id:f.id,priority:f.priority,occurrences:f.occurrences,previouslySeen:f.previouslySeen,module:f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Queen',source:f.source,check:f.check||null,problem:f.problem,proposedAction:f.suggestion,requiresApproval:true}));
+// RX Queen learning feed: only verified test outcomes, never unapproved fixes.
+const learningFeed={
+ kind:'rx-queen-verified-learning',schema:1,createdAt:new Date().toISOString(),
+ policy:'TEST_EVIDENCE_ONLY_NO_AUTONOMOUS_PATCHES',
+ lessons:incidents.map(f=>({
+  incidentId:f.id,source:f.source,priority:f.priority,occurrences:f.occurrences,
+  observation:f.problem,verifiedResolution:false,
+  panelArea:f.source.includes('live-panel')?'rx-admin-prototype.html':f.source.includes('browser-agent')?'RX Browser Agent / RX Admin preview':'RX BIBI tests',
+  nextStep:'Reproduce in isolated test, propose smallest patch, require approval and passing regression tests'
+ })),
+ healthyChecks:inputs.filter(file=>!findings.some(f=>f.source===file)).map(source=>({source,observation:'No findings in current triage',verifiedResolution:false})),
+ learningStatus:'EVIDENCE_COLLECTED_NOT_MODEL_RETRAINING'
+};
+fs.writeFileSync(path.join(dir,'rx-queen-learning-feed.json'),JSON.stringify(learningFeed,null,2)+'\n');
 const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,incidents,developerHandoff,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
 fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(path.join(dir,'rx-queen-bibi-triage.json'),JSON.stringify(report,null,2)+'\n');
