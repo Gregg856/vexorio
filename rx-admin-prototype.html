@@ -438,6 +438,19 @@ function queueChatProposal(message){
  catch{add('bot','⚠️ Nie udało się zapisać zadania. Sprawdź miejsce w przeglądarce.');}
  return true;
 }
+// RX Queen: only a deliberately selected local proposal may reach the existing approved coordinator.
+async function rxRunQueuedProposal(){
+ let queue;
+ try{queue=JSON.parse(localStorage.getItem(RX_CHAT_QUEUE_KEY)||'[]');if(!Array.isArray(queue))throw Error('invalid');}
+ catch{add('bot','⚠️ Lokalna kolejka jest uszkodzona. Nie uruchomiono testów.');return;}
+ const pending=queue.filter(t=>t?.kind==='rx-queen-proposal'&&t.approved!==true&&t.executed!==true&&typeof t.description==='string');
+ if(!pending.length){add('bot','🐜 Brak lokalnego zadania do przekazania. Wpisz „zadanie: opis”.');return;}
+ if(pending.length>1){add('bot','⚠️ W kolejce jest '+pending.length+' zadań. Dla bezpieczeństwa nie wybieram automatycznie. Przejrzyj je w Warsztacie.');return;}
+ const task=pending[0],description=task.description.trim();
+ if(description.length<3||description.length>1000){add('bot','⚠️ Zadanie musi mieć 3–1000 znaków.');return;}
+ add('bot','👑 Wybrano jedno zadanie z lokalnej kolejki. RX Coordinator może uruchomić tylko zatwierdzone testy; nie wdroży kodu ani nie wykona dowolnej pracy mrówek.');
+ await runApprovedCoordinator(description);
+}
 // Explicit confirmation required before research results become ant tasks.
 let rxLastTechHelp=null;
 function queueLastTechHelp(question){
@@ -626,7 +639,7 @@ function commandModule(query){
  if(/status|test|raport|system/.test(q))return 'status';
  return null;
 }
-document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^wykonaj testy dla:\s*.{3,1000}$/i.test(q))runApprovedCoordinator(q.replace(/^wykonaj testy dla:\s*/i,''));else if(/^(uruchom testy rx|uruchom testy|start testów rx|uruchom mega cloud computer|uruchom mrówki testowe)$/i.test(q))runApprovedCoordinator();else if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(!queueLastTechHelp(q)&&!queueChatProposal(q)){const isGeneralQuestion=/^(co |kto |gdzie |kiedy |ile |dlaczego |jak |czy |cześć|hej|witaj|szukaj pomocy:|zapamiętaj:|przypomnij:)/i.test(q);if(!isGeneralQuestion&&/^(napraw|popraw|zbuduj|stwórz|stworz|dodaj|zmień|zmien|sprawdź|sprawdz|przetestuj|uruchom|zrób|zrob|usuń|usun|przygotuj|wdroż|wdroz|zleć|zlec|chcę|chce)\b/i.test(q))queueChatProposal('Zadanie: '+q);answerServerBrainChat(q);if(!isGeneralQuestion)rxQueenReportRouting(q)}});show(0);
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('input');const q=input.value.trim();if(!q)return;input.value='';add('user',q);const module=commandModule(q);if(/^wykonaj testy dla:\s*.{3,1000}$/i.test(q))runApprovedCoordinator(q.replace(/^wykonaj testy dla:\s*/i,''));else if(/^(uruchom testy rx|uruchom testy|start testów rx|uruchom mega cloud computer|uruchom mrówki testowe)$/i.test(q))runApprovedCoordinator();else if(/^(przetestuj zadanie z kolejki|testuj zadanie królowej)$/i.test(q))rxRunQueuedProposal();else if(/^(gotowość rx|rx health|rx gotowość)$/i.test(q))loadExecutionReadiness();else if(/^(rx coordinator|koordynator|testy koordynatora|rx ci)$/i.test(q))loadCoordinatorCI();else if(/^(rx status|status na żywo|testy na żywo|ci)$/i.test(q))loadLiveStatus('ci');else if(/^(kolejka mrówek|mrówki na żywo|zadania do zatwierdzenia|kolejka królowej)$/i.test(q))loadLiveStatus('ants');else if(!queueLastTechHelp(q)&&!queueChatProposal(q)){const isGeneralQuestion=/^(co |kto |gdzie |kiedy |ile |dlaczego |jak |czy |cześć|hej|witaj|szukaj pomocy:|zapamiętaj:|przypomnij:)/i.test(q);if(!isGeneralQuestion&&/^(napraw|popraw|zbuduj|stwórz|stworz|dodaj|zmień|zmien|sprawdź|sprawdz|przetestuj|uruchom|zrób|zrob|usuń|usun|przygotuj|wdroż|wdroz|zleć|zlec|chcę|chce)\b/i.test(q))queueChatProposal('Zadanie: '+q);answerServerBrainChat(q);if(!isGeneralQuestion)rxQueenReportRouting(q)}});show(0);
 
 (function(){
  const name=document.getElementById('rxWorkName'),code=document.getElementById('rxWorkCode'),status=document.getElementById('rxWorkStatus');
