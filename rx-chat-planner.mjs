@@ -33,7 +33,7 @@ export function planRXChat(message,history=[],learning=null){
  const asksConversation=/(pogadajmy|porozmawiajmy|chce pogadac|mozemy pogadac)/.test(plain);
  const asksTests=/(jakie testy|ktore testy|wyniki testow|czy testy przeszly|testy zielone)/.test(plain);
  const asksError=/(blad|bledy|nie dziala|awaria|napraw)/.test(plain);
- const asksCloud=/(chmura|cloudflare|serwer|wdrozenie|deploy)/.test(plain);
+ const asksCloud=/(chmura|\bcloud\b|cloudflare|serwer|wdrozenie|deploy)/.test(plain);
  const asksQueue=/(kolejk|zadania w kolejce|ile zadan)/.test(plain);
  const asksSafety=/(bezpieczenstwo|bezpieczne|uprawnienia|dostep)/.test(plain);
  const asksCosts=/(koszt|platn|darmow|limit)/.test(plain);
