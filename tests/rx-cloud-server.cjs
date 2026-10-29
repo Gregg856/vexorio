@@ -30,6 +30,8 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.headersTimeout,15000,'Header timeout must be bounded');
   assert.equal(server.requestTimeout,30000,'Request timeout must be bounded');
   assert.equal(server.keepAliveTimeout,5000,'Keep-alive timeout must be bounded');
+  assert.equal(server.maxRequestsPerSocket,100,'Requests per socket must be bounded');
+  assert.equal(server.maxHeadersCount,100,'Header count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
   const health=await fetch(base+'/__rxcloud/health');
