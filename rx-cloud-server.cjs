@@ -40,11 +40,14 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   const {default:worker} = await import(pathToFileURL(path.join(__dirname,'worker.js')).href);
   const env = {ASSETS:{fetch:staticFetch},SUPABASE_URL:supabaseUrl,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||'',RX_ADMIN_USER_ID:process.env.RX_ADMIN_USER_ID||'',RX_GITHUB_DISPATCH_TOKEN:process.env.RX_GITHUB_DISPATCH_TOKEN||'',VIEW_COUNT_ENABLED:process.env.VIEW_COUNT_ENABLED||'false',VIEW_COUNT_SECRET:process.env.VIEW_COUNT_SECRET||'',SUPABASE_SERVICE_ROLE_KEY:process.env.SUPABASE_SERVICE_ROLE_KEY||'',RX_AI_ENABLED:'false'};
   const startedAt=Date.now();
+  let activeRequests=0,peakActiveRequests=0,completedRequests=0;
   const server=http.createServer(async(req,res)=>{
+    activeRequests++;
+    peakActiveRequests=Math.max(peakActiveRequests,activeRequests);
     try {
       const origin='http://localhost';
       const url=new URL(req.url||'/',origin);
-      if(url.pathname==='/__rxcloud/health') {if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'Allow':'GET, HEAD','Cache-Control':'no-store'});res.end();return;}res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),memory:{rssBytes:process.memoryUsage().rss,heapUsedBytes:process.memoryUsage().heapUsed,heapTotalBytes:process.memoryUsage().heapTotal},connectionsLimit:server.maxConnections}));return;}
+      if(url.pathname==='/__rxcloud/health') {if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'Allow':'GET, HEAD','Cache-Control':'no-store'});res.end();return;}res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),memory:{rssBytes:process.memoryUsage().rss,heapUsedBytes:process.memoryUsage().heapUsed,heapTotalBytes:process.memoryUsage().heapTotal},connectionsLimit:server.maxConnections,load:{activeRequests,peakActiveRequests,completedRequests}}));return;}
       const declaredLength=req.headers['content-length'];
       if(declaredLength!==undefined && /^\d+$/.test(declaredLength) && Number(declaredLength)>2*1024*1024){res.writeHead(413,{'Cache-Control':'no-store'});res.end();req.resume();return;}
       const chunks=[];let total=0;
@@ -59,6 +62,7 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       for await(const chunk of response.body) res.write(chunk);
       res.end();
     }catch(e){console.error('RX CLOUD request failed:',e?.name||'Error');if(!res.headersSent)res.writeHead(500,{'Content-Type':'text/plain','Cache-Control':'no-store'});res.end('Internal server error');}
+    finally {activeRequests--;completedRequests++;}
   });
   server.headersTimeout=15000;
   server.requestTimeout=30000;
