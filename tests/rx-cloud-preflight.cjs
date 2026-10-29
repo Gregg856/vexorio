@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const cp=require('node:child_process');
+const src=fs.readFileSync('deploy/rxcloud-preflight.sh','utf8');
+assert.match(src,/set -Eeuo pipefail/);
+assert.match(src,/read-only server readiness check/);
+assert.match(src,/No files, services, firewall, DNS or production systems were changed/);
+for(const forbidden of [/apt(-get)?\s+install/,/systemctl\s+(start|enable|restart)/,/ufw\s+(allow|enable)/,/wrangler\s+deploy/,/git\s+push/]) assert.doesNotMatch(src,forbidden);
+const syntax=cp.spawnSync('bash',['-n','deploy/rxcloud-preflight.sh'],{encoding:'utf8'});
+assert.equal(syntax.status,0,syntax.stderr);
+console.log('RX CLOUD preflight static checks: PASS');
