@@ -17,7 +17,7 @@ if [[ "$MODE" == "--dry-run" ]]; then
   echo "Would NOT start services, modify DNS, enable Caddy, or touch production."
   exit 0
 fi
-if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -d public ]]; then
+if [[ ! -f rx-cloud-server.cjs || ! -f worker.js || ! -f index.html ]]; then
   echo "Missing RX CLOUD source files or index.html asset. Installation refused." >&2; exit 1
 fi
 if [[ "$(uname -s)" != Linux || "$(id -u)" -ne 0 ]]; then
@@ -36,7 +36,11 @@ install -d -m 0750 -o rxcloud -g rxcloud /opt/rxcloud/vexorio
 # Exclude .git and sensitive local files; copy only required server sources.
 install -m 0644 -o rxcloud -g rxcloud rx-cloud-server.cjs worker.js /opt/rxcloud/vexorio/
 install -d -m 0755 -o rxcloud -g rxcloud /opt/rxcloud/vexorio/public
-find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.webp' -o -name '*.ico' -o -name '*.json' -o -name '*.txt' -o -name '*.webmanifest' \) -exec cp -- {} /opt/rxcloud/vexorio/public/ \;
+find . -maxdepth 1 -type f -name '*.html' -exec cp -t /opt/rxcloud/vexorio/public/ -- {} +
+for pattern in '*.js' '*.css' '*.svg' '*.png' '*.jpg' '*.jpeg' '*.webp' '*.ico' '*.json' '*.txt' '*.webmanifest'; do
+  find . -maxdepth 1 -type f -name "$pattern" -exec cp -t /opt/rxcloud/vexorio/public/ -- {} +
+done
+install -m 0644 -o rxcloud -g rxcloud ./*.mjs /opt/rxcloud/vexorio/
 chown -R rxcloud:rxcloud /opt/rxcloud/vexorio/public
 install -d -m 0700 -o root -g root /etc/rxcloud
 install -m 0600 -o root -g root deploy/rxcloud.env.example /etc/rxcloud/rxcloud.env
