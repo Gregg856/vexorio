@@ -75,12 +75,14 @@ export function planRXChat(message,history=[],learning=null){
  ];
  // Deterministic order for multiple requests: diagnose -> propose fix -> verify.
  // This is a read-only plan; no modules are executed by the chat planner.
- const compoundRequest=/(?:\\b(?:i|oraz|potem|nastepnie|a potem)\\b|,)/.test(plain);
+ const compoundRequest=/(?:\\b(?:i|oraz|potem|nastepnie)\\b|,)/.test(plain);
  const orderedWork=[];
  if(compoundRequest){
-  if(asksCheckChat||asksError||asksTests)orderedWork.push({module:'RX BIBI',action:'Sprawdź czat i zgromadź wynik testu',status:'proposed',requiresApproval:true});
-  if(asksFixChat||asksBuilding)orderedWork.push({module:'RX Developer',action:'Przygotuj poprawkę na podstawie wyniku',status:'proposed',requiresApproval:true});
-  if(orderedWork.length>1)orderedWork.push({module:'RX BIBI',action:'Uruchom test regresji po zatwierdzonej poprawce',status:'proposed',requiresApproval:true});
+  const wantsDiagnosis=asksCheckChat||/(sprawdz|testuj|przetestuj).{0,45}(czat|chat|panel)/.test(plain);
+  const wantsRepair=asksFixChat||/(popraw|napraw|usun bledy).{0,45}(czat|chat|panel)/.test(plain);
+  if(wantsDiagnosis||wantsRepair)orderedWork.push({module:'RX BIBI',action:'Sprawdź wskazany obszar i zgromadź wynik testu',status:'proposed',requiresApproval:true});
+  if(wantsRepair)orderedWork.push({module:'RX Developer',action:'Przygotuj poprawkę na podstawie wyniku',status:'proposed',requiresApproval:true});
+  if(wantsRepair)orderedWork.push({module:'RX BIBI',action:'Zweryfikuj poprawkę testem regresji',status:'proposed',requiresApproval:true});
  }
  if(orderedWork.length>1)plan.work={kind:'rx-ordered-work-proposal',status:'proposed',executed:false,requiresApproval:true,stages:orderedWork};
  const selectedParts=multiParts.filter(x=>x.match);
@@ -194,7 +196,7 @@ export function planRXChat(message,history=[],learning=null){
  // A plan is not execution; RX Developer must be connected to a real executor.
  const workIntent=/(zbuduj|stw[oó]rz|napisz|dodaj|ulepsz|rozbuduj|popraw|napraw|przygotuj|zaprojektuj)/i.test(message)
   &&/(rx|kr[oó]low|m[oó]zg|model|modu[lł]|panel|kod|mr[oó]wk|czat|bibi)/i.test(message);
- if(workIntent&&!matrixRequest&&!dotRequest){
+ if(workIntent&&!plan.work&&!matrixRequest&&!dotRequest){
   const requested=message.trim().slice(0,500);
   plan.work={
    kind:'rx-queen-work-order',request:requested,status:'proposed',executed:false,
