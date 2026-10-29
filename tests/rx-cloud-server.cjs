@@ -63,6 +63,8 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(await head.text(),'');
   const oversized=await fetch(base+'/nonexistent-rx-cloud-file-2026',{method:'POST',body:'x'.repeat(2*1024*1024+1)});
   assert.equal(oversized.status,413);
+  const declaredOversized=await fetch(base+'/nonexistent-rx-cloud-file-2026',{method:'POST',headers:{'Content-Length':String(2*1024*1024+1)},body:'x'.repeat(2*1024*1024+1)});
+  assert.equal(declaredOversized.status,413,'Oversized declared Content-Length must be rejected');
   const hostileHost=await fetch(base+'/__rxcloud/health',{headers:{Host:'invalid-host:bad-port'}});
   assert.equal(hostileHost.status,200,'Malformed Host must not break local request parsing');
   const stillHealthy=await fetch(base+'/__rxcloud/health');
