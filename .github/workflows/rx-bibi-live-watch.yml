@@ -218,7 +218,10 @@ jobs:
           const file='rx-bibi-reports/rx-bibi-smart-memory.json';
           const memory=JSON.parse(fs.readFileSync(file,'utf8'));
           const triage=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-queen-bibi-triage.json','utf8'));
-          memory.incidents=triage.incidents||[];
+          memory.incidents=(triage.incidents||[]).map(item=>{
+            const previous=Array.isArray(memory.incidents)?memory.incidents.find(x=>x.id===item.id):null;
+            return previous?.developerReview&&!item.developerReview?{...item,developerReview:previous.developerReview}:item;
+          });
           memory.developerHandoff=triage.developerHandoff||[];
           const reviewPath='rx-bibi-reports/rx-developer-review.json';
           if(fs.existsSync(reviewPath)){
@@ -228,7 +231,7 @@ jobs:
             if(!id||!incident)throw Error('RX Developer review has no matching BIBI incident');
             const candidates=Array.isArray(review.patchCandidates)?review.patchCandidates:[];
             if(candidates.some(x=>x.incidentId!==id))throw Error('RX Developer candidate incident mismatch');
-            const evidence={incidentId:id,target:review.target||null,candidates:candidates.length,passed:candidates.filter(x=>x.functionalValidation==='passed').length,failed:candidates.filter(x=>x.functionalValidation==='failed'||x.bibiValidation==='failed').length,requiresApproval:true,changesApplied:false};
+            const evidence={incidentId:id,target:review.target||null,candidates:candidates.length,passed:candidates.filter(x=>x.functionalValidation==='passed').length,failed:candidates.filter(x=>x.functionalValidation==='failed'||x.bibiValidation==='failed').length,status:candidates.length?'CANDIDATES_CHECKED':'NO_PATCH_CANDIDATES',requiresApproval:true,changesApplied:false};
             incident.developerReview=evidence;
             memory.developerReviews=[evidence];
           }
