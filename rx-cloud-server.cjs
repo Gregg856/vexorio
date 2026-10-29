@@ -13,6 +13,7 @@ async function staticFetch(request) {
   let name;
   try { name = decodeURIComponent(url.pathname); } catch { return new Response('Bad request',{status:400}); }
   if(name.includes('\\') || name.includes('\\0') || name.split('/').includes('..')) return new Response('Forbidden',{status:403});
+  if(name.includes('\0')) return new Response('Bad request',{status:400});
   const segments=name.split('/').filter(Boolean);
   if(segments.some(part=>part.startsWith('.') || /(?:secret|credential|private|backup|token|password|\.env)/i.test(part))) return new Response('Forbidden',{status:403});
   const allowed=new Set(['.html','.js','.css','.svg','.png','.jpg','.jpeg','.webp','.ico','.json','.txt','.webmanifest']);
