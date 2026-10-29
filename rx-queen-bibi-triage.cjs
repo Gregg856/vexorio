@@ -43,6 +43,7 @@ const nextWork=incidents.filter(f=>f.severity==='error'&&!f.developerReview).sli
  target:f.source.includes('live-panel')?'rx-command-bridge.cjs':f.source.includes('browser-agent')?'rx-coordinator.cjs':'rx-developer-patch-bridge.cjs',
  requiresApproval:true,executed:false
 }));
+const unresolvedReviews=incidents.filter(f=>f.severity==='error'&&f.developerReview&&f.developerReview.status==='NO_PATCH_CANDIDATES').map(f=>({incidentId:f.id,source:f.source,check:f.check||null,priority:f.priority,status:'NEEDS_INVESTIGATION',reason:'Developer found no safe patch candidate',requiresApproval:true,executed:false}));
 const developerHandoff=incidents.map(f=>({id:f.id,priority:f.priority,occurrences:f.occurrences,previouslySeen:f.previouslySeen,module:f.source.includes('browser-agent')?'RX Browser Agent':f.source.includes('visual')?'RX Visual':f.source.includes('live-panel')?'RX Admin':'RX Queen',source:f.source,check:f.check||null,problem:f.problem,proposedAction:f.suggestion,requiresApproval:true}));
 // RX Queen learning feed: only verified test outcomes, never unapproved fixes.
 const learningFeed={
@@ -58,7 +59,7 @@ const learningFeed={
  learningStatus:'EVIDENCE_COLLECTED_NOT_MODEL_RETRAINING'
 };
 fs.writeFileSync(path.join(dir,'rx-queen-learning-feed.json'),JSON.stringify(learningFeed,null,2)+'\n');
-const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,incidents,developerHandoff,nextWork,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
+const report={kind:'rx-queen-bibi-triage',createdAt:new Date().toISOString(),sources:inputs,findings,incidents,developerHandoff,nextWork,unresolvedReviews,historyEntriesAvailable:known.length,findingsCount:findings.length,status:findings.length?'REVIEW_REQUIRED':'NO_FINDINGS',automaticFixes:0,automaticDeploys:0};
 fs.mkdirSync(dir,{recursive:true});
 fs.writeFileSync(path.join(dir,'rx-queen-bibi-triage.json'),JSON.stringify(report,null,2)+'\n');
 console.log('RX QUEEN BIBI TRIAGE',JSON.stringify(report));
