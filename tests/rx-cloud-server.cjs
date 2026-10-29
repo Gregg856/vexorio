@@ -5,6 +5,10 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
 (async()=>{
  const traversal=await staticFetch(new Request('http://localhost/%2e%2e/%2e%2e/etc/passwd'));
  assert.notEqual(traversal.status,200);
+ for(const blocked of ['/config.env','/.git/config','/backup.json','/admin-token.txt','/rx-cloud-server.cjs','/secret-data.json','/nested/.hidden.js']){
+   const response=await staticFetch(new Request('http://localhost'+blocked));
+   assert.equal(response.status,403,'Static asset must be denied: '+blocked);
+ }
  const configured=process.env.SUPABASE_URL;
  delete process.env.SUPABASE_URL;
  await assert.rejects(start({port:0,host:'127.0.0.1'}),/explicit SUPABASE_URL/);
