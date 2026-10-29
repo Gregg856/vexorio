@@ -6,6 +6,11 @@ const fs=require('node:fs');
  const {planRXChat}=await import('../rx-chat-planner.mjs');
  const cases=[
   {id:'hello',message:'Cześć',expected:/cześć|witaj|hej|królow/i},
+  {id:'rx-help',message:'RX POMOC',expected:/RX DOT|RX MMUL|RX MADD/i},
+  {id:'math-dot',message:'RX DOT: [1,2]; [3,4]',expected:/11|iloczyn skalarny/i},
+  {id:'math-invalid',message:'RX DOT: [1,2]; [3]',expected:/Nieprawidłowe wektory/i},
+  {id:'math-matrix',message:'RX MMUL: [[1,2]]; [[3],[4]]',expected:/11|MMUL/i},
+
   {id:'tests',message:'Jakie testy przeszły?',expected:/test|raport|wynik/i},
   {id:'ants',message:'Co robią Mrówki?',expected:/mrów|zadani/i},
   {id:'memory',message:'Czy pamiętasz rozmowę?',expected:/pamię|histori|kontekst/i},
