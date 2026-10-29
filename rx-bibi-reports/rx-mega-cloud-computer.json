@@ -7,14 +7,14 @@
   "checks": [
     {
       "file": "tests/rx-ai-core.cjs",
-      "durationMs": 30,
+      "durationMs": 28,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-cloud-computer.cjs",
-      "durationMs": 29,
+      "durationMs": 28,
       "status": "passed",
       "exitCode": 0,
       "error": null
@@ -35,14 +35,14 @@
     },
     {
       "file": "tests/rx-cosmic-collider.cjs",
-      "durationMs": 30,
+      "durationMs": 27,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-energy-lab.cjs",
-      "durationMs": 28,
+      "durationMs": 29,
       "status": "passed",
       "exitCode": 0,
       "error": null
@@ -56,14 +56,14 @@
     },
     {
       "file": "tests/rx-ant-task-board.cjs",
-      "durationMs": 36,
+      "durationMs": 40,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-medusa-engine.cjs",
-      "durationMs": 31,
+      "durationMs": 32,
       "status": "passed",
       "exitCode": 0,
       "error": null

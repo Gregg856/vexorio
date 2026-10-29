@@ -19,7 +19,7 @@
     },
     "budget": {
       "state": "reported",
-      "kind": "rx-bibi-budget",
+      "kind": "rx-module-1-limits",
       "report": "rx-bibi-budget.json"
     },
     "browser": {

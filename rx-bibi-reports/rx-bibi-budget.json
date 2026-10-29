@@ -1,9 +1,14 @@
 {
   "schema": 1,
-  "kind": "rx-bibi-budget",
+  "kind": "rx-module-1-limits",
+  "limits": {
+    "maxTasks": 30,
+    "maxPerSource": 12,
+    "maxHighPriority": 10
+  },
   "planned": [],
   "deferred": [],
-  "limit": 30,
   "autoExecuted": 0,
-  "actualProviderUsage": null
+  "actualProviderUsage": null,
+  "providerQuotaKnown": false
 }
