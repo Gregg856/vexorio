@@ -65,6 +65,30 @@ jobs:
         id: triage
         if: always()
         run: node rx-queen-bibi-triage.cjs
+      - name: RX BIBI SMART — odczytaj pamięć poprzedniego przebiegu
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CURRENT_RUN: ${{ github.run_id }}
+        run: |
+          mkdir -p rx-bibi-reports/previous
+          node -e '
+          const fs=require("fs");
+          const https=require("https");
+          const api="https://api.github.com/repos/"+process.env.REPO;
+          const get=url=>new Promise((resolve,reject)=>https.get(url,{headers:{"Authorization":"Bearer "+process.env.GH_TOKEN,"Accept":"application/vnd.github+json","User-Agent":"rx-bibi-smart"}},r=>{let chunks=[];r.on("data",c=>chunks.push(c));r.on("end",()=>{if(r.statusCode!==200)return reject(Error("GitHub "+r.statusCode));resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));});}).on("error",reject));
+          (async()=>{
+            const runs=await get(api+"/actions/workflows/rx-bibi-live-watch.yml/runs?branch=main&status=success&per_page=10");
+            const prev=(runs.workflow_runs||[]).find(x=>String(x.id)!==process.env.CURRENT_RUN);
+            if(!prev)return;
+            const artifacts=await get(api+"/actions/runs/"+prev.id+"/artifacts?per_page=30");
+            const artifact=(artifacts.artifacts||[]).find(x=>x.name==="rx-bibi-live-watch"&&!x.expired);
+            if(!artifact)return;
+            fs.writeFileSync("rx-bibi-reports/previous/artifact-reference.json",JSON.stringify({runId:prev.id,artifactId:artifact.id,url:artifact.archive_download_url},null,2));
+          })().catch(e=>{console.log("Previous run lookup unavailable:",e.message);});
+          '
       - name: RX BIBI SMART — zbiorczy indeks wykonanych kontroli
         if: always()
         env:
