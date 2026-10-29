@@ -32,6 +32,8 @@ function lookup(text,language){
  if(typeof text!=='string'||!LANGUAGES.includes(language)||!text.trim())return null;
  const value=normalize(text);
  const found=ENTRIES.find(entry=>normalize(entry[language])===value);
+ // Some UI labels intentionally coincide (e.g. German Konto erstellen).
+ // First matching concept is returned; callers must not infer uniqueness.
  return found?{id:found.id,translations:Object.fromEntries(LANGUAGES.map(lang=>[lang,found[lang]]))}:null;
 }
 module.exports={LANGUAGES,ENTRIES,lookup};
