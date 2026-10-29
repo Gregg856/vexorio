@@ -5,7 +5,7 @@ assert.equal(vector('Zażółć').length,256);
 assert.equal(LABELS.length,4);
 const learner=createLearner({epochs:120});
 assert.equal(learner.kind,'rx-text-learner');
-assert.equal(learner.examples,12);
+assert.equal(learner.examples,24);
 assert.ok(Number.isFinite(learner.metrics.finalLoss));
 assert.ok(learner.metrics.finalLoss<learner.metrics.initialLoss,'Training must reduce loss');
 for(const text of ['cześć królowo','pokaż testy','przypomnij nasze ustalenia','policz 2 plus 3']){
