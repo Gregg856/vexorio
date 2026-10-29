@@ -316,6 +316,26 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
         record('RX Admin Android — moduł '+id,await admin.locator('#'+id).count()===1);
       }
       record('RX Admin Android — bez błędów składni JS',adminErrors.length===0,adminErrors.join('; '));
+      // Never create an admin account or bypass authorization. Optional existing session only.
+      if(process.env.RX_ADMIN_STORAGE_STATE){
+        try{
+          const statePath=path.resolve(process.env.RX_ADMIN_STORAGE_STATE);
+          if(!fs.existsSync(statePath))throw Error('Brak pliku istniejącej sesji administratora');
+          const authorized=await browser.newContext({...devices['Pixel 7'],locale:'pl-PL',storageState:statePath});
+          const adminPage=await authorized.newPage();
+          await adminPage.goto(base+'/rx-admin-prototype.html',{waitUntil:'domcontentloaded',timeout:30000});
+          await adminPage.locator('#rxApp').waitFor({state:'visible',timeout:15000});
+          await adminPage.locator('#rxCheckChat').click();
+          await adminPage.waitForFunction(()=>{const e=document.getElementById('rxCheckChatResult');return e&&!e.textContent.includes('Sprawdzam zalogowany czat')&&e.textContent.trim().length>0},{timeout:22000});
+          const chatResult=await adminPage.locator('#rxCheckChatResult').innerText();
+          record('RX Admin sesja — prawdziwa odpowiedź czatu',/działa|połącz|odpowied|gotow/i.test(chatResult)&&!/błąd|brak|nie działa|niedostępn/i.test(chatResult),chatResult.slice(0,250));
+          await adminPage.locator('#rxAntQueueRefresh').click();
+          record('RX Admin sesja — kolejka mrówek reaguje',await adminPage.locator('#rxApp').isVisible());
+          await authorized.close();
+        }catch(error){record('RX Admin sesja — test czatu i mrówek',false,error.message);}
+      }else{
+        record('RX Admin sesja — test czatu i mrówek',true,'NIEURUCHOMIONY: brak bezpiecznie dostarczonej istniejącej sesji administratora; nie potwierdza działania czatu.');
+      }
       await admin.close();
     }catch(error){record('RX Admin Android — audyt bramy i modułów',false,error.message);}
     record('Błędy JS RX BIBI', jsErrors.length === 0, jsErrors.join('; '));
