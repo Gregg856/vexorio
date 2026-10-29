@@ -1,5 +1,5 @@
 'use strict';
-// RX BIBI Browser Agent 1.1 — read-only public-page exploration.
+// RX BIBI Browser Agent 1.2 — read-only public-page exploration.
 // No login, no cookies from user sessions, no form submission or production writes.
 const {chromium,devices}=require('playwright');
 const fs=require('node:fs');
@@ -8,7 +8,7 @@ const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.de
 const allowed=new Set(['/rx-admin-prototype','/rx-bibi-manager.html']);
 const output='rx-bibi-reports/browser-agent';
 fs.mkdirSync(output,{recursive:true});
-const report={agent:'RX BIBI Browser Agent 1.0',mode:'PUBLIC_READ_ONLY',base,checks:[],limitations:['No authenticated Queen session','No autonomous code edits','Screenshots are evidence, not AI image understanding']};
+const report={agent:'RX BIBI Browser Agent 1.2',mode:'PUBLIC_READ_ONLY',base,checks:[],limitations:['No authenticated Queen session','No autonomous code edits','Screenshots are evidence, not AI image understanding']};
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
@@ -40,6 +40,29 @@ const report={agent:'RX BIBI Browser Agent 1.0',mode:'PUBLIC_READ_ONLY',base,che
    await page.screenshot({path:path.join(output,name+'-interactive-isolated.png'),fullPage:true});
    report.checks.push({device:name,kind:'isolated_click_type_verify',ok:interactiveOk,scope:'SYNTHETIC_DOCUMENT_NO_PRODUCTION_WRITES',result:answer});
    if(!interactiveOk)issues.push({type:'isolated_interaction',detail:answer});
+   // Exercise actual RX Admin markup and styles, isolated from all production APIs.
+   // No authenticated session is created; we reveal the UI only in a synthetic preview.
+   const adminHtml=await (await fetch(base+'/rx-admin-prototype.html',{signal:AbortSignal.timeout(15000)})).text();
+   await page.route('http://rx-preview.test/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>RX preview</title>'}));
+   await page.route('**/*',route=>{
+    if(route.request().url().startsWith('http://rx-preview.test/'))return route.continue();
+    return route.abort();
+   });
+   await page.goto('http://rx-preview.test/');
+   await page.setContent(adminHtml,{waitUntil:'domcontentloaded'});
+   await page.evaluate(()=>{const gate=document.querySelector('#rxGate'),app=document.querySelector('#rxApp');if(gate)gate.hidden=true;if(app)app.hidden=false;});
+   const input=page.locator('#input');
+   const send=page.locator('#form button[type="submit"]');
+   const menu=page.locator('#menu button');
+   const chatVisible=await input.isVisible()&&await send.isVisible();
+   if(chatVisible)await input.fill('RX test bez wysyłania');
+   const typed=chatVisible&&(await input.inputValue())==='RX test bez wysyłania';
+   const menuCount=await menu.count();
+   const layout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,chat:!!document.querySelector('#rxChatCard'),navigation:!!document.querySelector('#menu')}));
+   const realMarkupOk=chatVisible&&typed&&menuCount>=3&&layout.scrollWidth<=layout.width+4;
+   report.checks.push({device:name,kind:'rx_admin_real_markup_preview',ok:realMarkupOk,scope:'ISOLATED_DOM_NO_LOGIN_NO_SEND',menuCount,layout});
+   await page.screenshot({path:path.join(output,name+'-rx-admin-isolated-preview.png'),fullPage:true});
+   if(!realMarkupOk)issues.push({type:'rx_admin_preview',layout,menuCount});
    report.checks.push({device:name,kind:'browser_diagnostics',ok:issues.length===0,issues});
    await context.close();
   }
