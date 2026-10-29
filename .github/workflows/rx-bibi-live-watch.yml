@@ -168,6 +168,34 @@ jobs:
           const out={schema:1,kind:"rx-bibi-smart-test-index",runId:process.env.GITHUB_RUN_ID,scope:"THIS_WORKFLOW_ONLY",productionModified:false,items};
           fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-index.json",JSON.stringify(out,null,2)+"\\n");
           '
+      - name: RX BIBI SMART — scal historię incydentów i analizę Królowej
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const path=require('node:path');
+          const current='rx-bibi-reports/rx-bibi-smart-memory.json';
+          const previous='rx-bibi-previous/rx-bibi-smart-memory.json';
+          const read=p=>{try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return {};}};
+          const now=read(current),old=read(previous);
+          const historical=Array.isArray(old.incidents)?old.incidents:[];
+          const currentIncidents=Array.isArray(now.incidents)?now.incidents:[];
+          const byId=new Map(historical.filter(x=>x&&x.id).map(x=>[x.id,x]));
+          for(const item of currentIncidents){if(item&&item.id)byId.set(item.id,item);}
+          now.incidents=[...byId.values()].slice(-300);
+          fs.writeFileSync(current,JSON.stringify(now,null,2)+'\n');
+          fs.writeFileSync('rx-bibi-reports/rx-bibi-incident-history.json',JSON.stringify({history:now.incidents},null,2)+'\n');
+          NODE
+          node rx-queen-bibi-triage.cjs
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const file='rx-bibi-reports/rx-bibi-smart-memory.json';
+          const memory=JSON.parse(fs.readFileSync(file,'utf8'));
+          const triage=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-queen-bibi-triage.json','utf8'));
+          memory.incidents=triage.incidents||[];
+          memory.developerHandoff=triage.developerHandoff||[];
+          fs.writeFileSync(file,JSON.stringify(memory,null,2)+'\n');
+          NODE
       - name: RX BIBI SMART — prześlij raport do prywatnej skrzynki RX CLOUD
         if: always()
         continue-on-error: true
