@@ -37,7 +37,18 @@ main{min-height:0;height:100%;max-height:100%;overflow:hidden}
  .card{padding:12px;margin:4px 0}
  .chat{min-height:100px}
 }
-@media(min-width:721px){.section{display:flex;flex-direction:column}#rxChatCard{order:-10}.section>.card:has(#sub){order:-5}}@media(max-width:720px){#rxAdminCloudCheck,#rxAntQueueRefresh,#rxBibiScreenshot,#rxBibiSelfTest{font-size:.72rem!important;min-height:36px!important;padding:6px 7px!important;flex:1 1 42%!important;line-height:1.15}#rxChatCard .rx-actions button{font-size:.78rem!important;padding:7px 9px!important}}</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style><style>
+@media(min-width:721px){.section{display:flex;flex-direction:column}#rxChatCard{order:-10}.section>.card:has(#sub){order:-5}}@media(max-width:720px){#rxAdminCloudCheck,#rxAntQueueRefresh,#rxBibiScreenshot,#rxBibiSelfTest{font-size:.72rem!important;min-height:36px!important;padding:6px 7px!important;flex:1 1 42%!important;line-height:1.15}#rxChatCard .rx-actions button{font-size:.78rem!important;padding:7px 9px!important}}/* RX mobile keyboard: keep composer visible and reduce oversized action tiles. */
+@media(max-width:720px){
+ #rxChatCard .rx-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible!important;gap:7px!important}
+ #rxChatCard .rx-actions button{white-space:normal!important;min-width:0!important;width:100%!important;min-height:42px!important;line-height:1.2!important}
+ #rxChatCard .composer{position:relative!important;bottom:auto!important}
+ #rxChatCard .composer textarea{min-height:54px!important}
+ #rxChatCard .chat{min-height:90px!important;max-height:28dvh!important}
+ body.rx-keyboard-open #rxChatCard .rx-actions{display:none!important}
+ body.rx-keyboard-open #rxChatCard .chat{max-height:22dvh!important}
+ body.rx-keyboard-open #rxChatCard .composer{padding-bottom:4px!important}
+}
+</style><style>#rxGate{position:fixed;inset:0;z-index:999;background:#07121e;display:grid;place-items:center;padding:24px}#rxGate[hidden]{display:none}#rxGate .card{max-width:520px;width:100%}#rxGate a{color:#52d4e8}#rxGate button{padding:10px 14px;border-radius:9px;background:#183c50;color:white;border:1px solid #52d4e8}</style><style>
 /* Compact phone layout: chat first, readable composer, controls stay reachable. */
  #rxWorkbench summary{cursor:pointer;font-weight:700;font-size:1rem;padding:6px 0;list-style:auto}
  #rxWorkbench .rx-workbench-body{padding-top:12px}
@@ -668,4 +679,7 @@ document.getElementById('rxAdminCloudCheck').addEventListener('click',async()=>{
  }catch(_){add('bot','☁️ RX CLOUD nie jest dostępny na tym hoście. VEXORIO może nadal działać na Cloudflare.');}
  finally{button.disabled=false;}
 });
+</script><script>
+/* Android visual viewport: scroll the existing chat composer into view on keyboard opening. */
+(()=>{const input=document.getElementById('input');if(!input)return;const viewport=window.visualViewport;const update=()=>{const height=viewport?.height||window.innerHeight;const open=document.activeElement===input && height<window.innerHeight*0.82;document.body.classList.toggle('rx-keyboard-open',open);if(open)requestAnimationFrame(()=>input.scrollIntoView({block:'nearest',behavior:'instant'}));};input.addEventListener('focus',()=>{update();setTimeout(update,180)});input.addEventListener('blur',()=>document.body.classList.remove('rx-keyboard-open'));viewport?.addEventListener('resize',update);})();
 </script></body></html>
