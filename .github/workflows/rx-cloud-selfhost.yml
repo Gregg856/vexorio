@@ -5,6 +5,7 @@ on:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-cloud-staged.cjs'
+      - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-queen-panel.cjs'
       - 'rx-admin-prototype.html'
       - 'worker.js'
@@ -24,6 +25,7 @@ on:
     paths:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-cloud-modules.cjs'
       - 'worker.js'
       - 'public/**'
       - 'deploy/rxcloud-preflight.sh'
@@ -59,6 +61,8 @@ jobs:
         run: node tests/rx-cloud-preflight.cjs
       - name: Test Queen panel monitoring states
         run: node tests/rx-cloud-queen-panel.cjs
+      - name: Check RX module integration contracts
+        run: node tests/rx-cloud-modules.cjs
       - name: Validate deployment templates
         run: |
           grep -q 'Restart=on-failure' deploy/rxcloud.service
