@@ -19,6 +19,7 @@ function createTurbine({maxParallel=4,maxQueued=100}={}){
  return Object.freeze({submit,plan});
 }
 // Execute only explicitly approved, allowlisted work. Real concurrency is bounded.
+const executedTurbines=new WeakSet();
 async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2}={}){
  if(!approved)throw Error('Owner approval required');
  if(!Number.isSafeInteger(maxParallel)||maxParallel<1||maxParallel>8)throw Error('Invalid execution capacity');
@@ -29,6 +30,9 @@ async function executeApproved(turbine,{approved=false,handlers={},maxParallel=2
   !ALLOWED.includes(task.kind)||typeof task.target!=='string'||!/^[-A-Za-z0-9_./]{1,120}$/.test(task.target)||
   task.target.includes('..')||task.target.startsWith('/')||task.requiresApproval!==true||task.status!=='planned'))
   throw Error('Invalid approved turbine task');
+ // An execution instance is single-use: retry requires a fresh explicit approval.
+ if(executedTurbines.has(turbine))throw Error('Turbine plan already executed');
+ executedTurbines.add(turbine);
  const results=new Array(tasks.length);
  let cursor=0,active=0,peakActive=0;
  const started=Date.now();
