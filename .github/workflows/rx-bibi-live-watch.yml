@@ -153,6 +153,27 @@ jobs:
           const out={schema:1,kind:"rx-bibi-smart-test-index",runId:process.env.GITHUB_RUN_ID,scope:"THIS_WORKFLOW_ONLY",productionModified:false,items};
           fs.writeFileSync("rx-bibi-reports/rx-bibi-smart-index.json",JSON.stringify(out,null,2)+"\\n");
           '
+      - name: RX BIBI SMART — prześlij raport do prywatnej skrzynki RX CLOUD
+        if: always()
+        continue-on-error: true
+        env:
+          RX_CLOUD_INBOX_URL: ${{ secrets.RX_CLOUD_INBOX_URL }}
+          RX_CLOUD_INBOX_TOKEN: ${{ secrets.RX_CLOUD_INBOX_TOKEN }}
+        run: |
+          node -e '
+          const fs=require("fs");
+          const url=process.env.RX_CLOUD_INBOX_URL||"";
+          const token=process.env.RX_CLOUD_INBOX_TOKEN||"";
+          if(!url||!token){console.log("RX CLOUD inbox not configured; artifact retained in GitHub Actions.");process.exit(0);}
+          const parsed=new URL(url);
+          if(parsed.protocol!=="https:"||parsed.username||parsed.password||parsed.search||parsed.hash||parsed.pathname!=="/__rxcloud/bibi/inbox")throw Error("Invalid private RX CLOUD inbox endpoint");
+          const data=fs.readFileSync("rx-bibi-reports/rx-bibi-smart-memory.json");
+          if(data.length>262144)throw Error("RX BIBI report exceeds cloud inbox limit");
+          fetch(url,{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:data,signal:AbortSignal.timeout(10000),redirect:"error"}).then(async r=>{
+            if(!r.ok)throw Error("RX CLOUD inbox HTTP "+r.status);
+            console.log("RX BIBI SMART report accepted by RX CLOUD inbox.");
+          }).catch(e=>{console.error("RX CLOUD inbox delivery unavailable:",e.message);process.exitCode=1;});
+          '
       - name: Zachowaj raport i zdjęcia także przy błędzie
         if: always()
         uses: actions/upload-artifact@v4
