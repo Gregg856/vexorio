@@ -151,7 +151,9 @@ export function planRXChat(message,history=[],learning=null){
  else if(asksStatus)answer='👑 Czat RX odpowiada przez serwerowy planer. Aby poznać rzeczywisty stan pracy, wybierz „Odśwież raport RX Coordinator” albo „RX Wirnik — ostatni przebieg”. Nie mam tutaj transmisji pracy Mrówek na żywo.';
  else if(asksHelp)answer='👑 Napisz np. „Co robią Mrówki?”, „Jak działa Wirnik?”, „Jakie testy wykonać?” lub „Co budujemy dalej?”. Mogę prowadzić rozmowę i przygotowywać bezpieczne plany.';
  else if(topics.length)answer='👑 Rozumiem temat: '+[...new Set(topics)].join(', ')+'. Mogę pomóc przygotować plan testów i wyjaśnić kolejne kroki. Niczego nie uruchomiłam bez zatwierdzenia.';
- else answer='👑 Chcę dobrze zrozumieć. Czy pytasz o Mrówki, Wirnik, model RX czy o konkretny błąd? Napisz jednym zdaniem, co mam sprawdzić lub wyjaśnić.';
+ else if(/^(dlaczego|czemu|jak|co|kiedy|gdzie|kto|czy)\\b/.test(plain))answer='👑 To pytanie wykracza poza moje obecne reguły rozmowy. Nie chcę zgadywać odpowiedzi. Mogę pomóc je rozłożyć na części lub sprawdzić w module wiedzy, jeśli jest podłączony. Samo pytanie nie uruchamia wyszukiwania.';
+ else if(/^(wymysl|opowiedz|napisz historie|stworz historie)\\b/.test(plain))answer='👑 Mogę pomóc zaplanować historię, ale mój lokalny planer nie tworzy jeszcze swobodnych opowieści. Podaj bohatera i miejsce, a przygotuję zarys; nie będę udawać pełnego modelu językowego.';
+ else answer='👑 Nie rozpoznałam jeszcze tego tematu. Napisz, jaki efekt chcesz uzyskać; mogę pomóc zaplanować kroki albo wyjaśnić działanie RX.';
 
  // RX Queen work planner: natural-language work requests, with BIBI as verifier.
  // A plan is not execution; RX Developer must be connected to a real executor.
