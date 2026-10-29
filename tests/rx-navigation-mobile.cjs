@@ -28,7 +28,7 @@ const checks=[];
   await expectPath('/guard-lab.html');
   await page.getByRole('link',{name:/← VEXORIO/i}).first().click();
   await expectPath('/');
-  if(!/VEXORIO/i.test(await page.title()))throw Error('Portal home title missing');
+  await page.waitForFunction(()=>/VEXORIO/i.test(document.title),{timeout:15000});
   await go('/rx-center.html');
   await page.getByRole('link',{name:/← VEXORIO/i}).click();
   await expectPath('/');
