@@ -302,9 +302,14 @@ export function planRXChat(message,history=[],learning=null){
   const lesson=verifiedLessons[0];
   answer+='\\n🧠 RX BIBI wykrył wcześniej: '+lesson.observation.slice(0,180)+'. Obszar: '+String(lesson.panelArea||'RX').slice(0,90)+'. To wskazówka do diagnostyki, nie potwierdzona naprawa. Wymagana weryfikacja testem.';
  }
- if(everydayGreeting)answer='👑 Dziękuję, że pytasz! Jestem tutaj, żeby porozmawiać. Co u Ciebie słychać?';
- if(everydayThanks)answer='👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
- if(everydayQuestion)answer='👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
+ // Rotate harmless conversational wording when the immediately preceding answer is identical.
+ const recentAssistantAnswer=history.length>=2?String(history.at(-1)||''):'';
+ const repeatedGreeting=recentAssistantAnswer.includes('Co u Ciebie słychać?');
+ const repeatedThanks=recentAssistantAnswer.includes('Jeśli masz kolejne pytanie');
+ const repeatedQuestion=recentAssistantAnswer.includes('Jeśli nie będę znała odpowiedzi');
+ if(everydayGreeting)answer=repeatedGreeting?'👑 Miło Cię znowu słyszeć. O czym chcesz dziś porozmawiać?':'👑 Dziękuję, że pytasz! Jestem tutaj, żeby porozmawiać. Co u Ciebie słychać?';
+ if(everydayThanks)answer=repeatedThanks?'👑 Cała przyjemność po mojej stronie. Co jeszcze mogę wyjaśnić?':'👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
+ if(everydayQuestion)answer=repeatedQuestion?'👑 Słucham. Opisz konkretną sytuację albo zadaj pytanie, a postaram się pomóc.':'👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
  if(everydayGreeting||everydayThanks||everydayQuestion){tasks.length=0;plan.work=null;}
  return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
