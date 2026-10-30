@@ -116,6 +116,17 @@ console.log('RX multi-topic history regression OK');
 }
 console.log('RX clarification and explicit topic selection regression OK');
 
+// Regression for punctuation variants in ambiguous references.
+for(const prompt of ['A co z nim?','A co z nim','Co z tym?','A oni?']){
+ const history=['Co robią mrówki?','👑 Mrówki wykonują zadania.','Jak działa wirnik?','👑 Wirnik wykonuje testy.'];
+ const result=planRXChat(prompt,history);
+ assert.ok(result.answer.includes('O który temat pytasz'),prompt+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX ambiguous punctuation regression OK');
+
 for(const [question,history,expected] of [
  ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
  ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
