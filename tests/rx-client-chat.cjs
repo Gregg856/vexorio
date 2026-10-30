@@ -31,7 +31,7 @@ const pageScript=client.match(/<script type="module">([\s\S]*?)<\/script>/);
 assert.ok(pageScript,'Client module must exist');
 const moduleSource=pageScript[1];
 const submitStart=moduleSource.indexOf("$('form').onsubmit=async e=>");
-const submitStop=moduleSource.indexOf("$('message').addEventListener('keydown'",start);
+const submitStop=moduleSource.indexOf("$('message').addEventListener('keydown'",submitStart);
 assert.ok(submitStart>=0&&submitStop>submitStart,'Client submit handler found');
 const submitSource=moduleSource.slice(submitStart,submitStop);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
