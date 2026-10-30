@@ -88,7 +88,7 @@ function chatRX(message,{history=[],tasks=[]}={}){
    const userGoal=/^(?:chcę|chce|potrzebuję|potrzebuje|zależy mi na|zalezy mi na)\\s+(.{3,160})[.!?]?$/i.exec(message.trim());
    if(conversational)answer='Jestem tutaj i możemy rozmawiać. Nad czym chcesz dziś popracować albo o czym porozmawiać?';
    else if(userGoal)answer='Rozumiem, że zależy Ci na: '+userGoal[1].replace(/[.!?]+$/,'').slice(0,160)+'. Jaki pierwszy krok mam pomóc Ci zaplanować?';
-   else answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie mam jeszcze dobrej odpowiedzi na to pytanie. Napisz proszę więcej o tym, co chcesz osiągnąć.';
+   else answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
  }
  return {answer,plan,completedCount:completed.length,contextUsed:(contextual||continuation)&&(continuation?!!topic:!!previous),executed:0};
 }
