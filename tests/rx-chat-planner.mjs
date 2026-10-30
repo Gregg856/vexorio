@@ -401,6 +401,25 @@ assert.ok(!afterSwitch2FA.answer.includes('Aby włączyć 2FA'),afterSwitch2FA.a
 assert.equal(afterSwitch2FA.executed,0);
 console.log('RX 2FA context boundary regression OK');
 
+// RX BIBI 5.5: contextual how-to for supported account safety topics.
+for(const [question,history,expected] of [
+ ['A jak to zrobić?',['Co oznacza backup?','To dodatkowa kopia danych.'],'Aby zrobić kopię zapasową'],
+ ['Jak to ustawić?',['Czym jest menedżer haseł?','To aplikacja do haseł.'],'Aby ustawić menedżer haseł'],
+ ['Jak to uruchomić?',['Co oznacza 2FA?','To dodatkowe zabezpieczenie.'],'Aby włączyć 2FA'],
+ ['A jak to zrobić?',['Co oznacza backup?','Wyjaśnienie.','Czym jest password manager?','Wyjaśnienie.'],'Aby ustawić menedżer haseł']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+const afterSwitch55=planRXChat('A jak to zrobić?',['Co oznacza backup?','Wyjaśnienie.','Zmieńmy temat','Dobrze.']);
+assert.ok(!afterSwitch55.answer.includes('Aby zrobić kopię zapasową'),afterSwitch55.answer);
+assert.equal(afterSwitch55.executed,0);
+console.log('RX multi-topic contextual how-to regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
