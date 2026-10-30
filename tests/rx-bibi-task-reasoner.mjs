@@ -7,4 +7,8 @@ assert.match(answerRXTaskQuery('Co już zrobione?',tasks),/Test BIBI/);
 assert.match(answerRXTaskQuery('Jaki status zadania: Naprawić czat',tasks),/oczekujące/);
 assert.equal(answerRXTaskQuery('Cześć',tasks),null);
 assert.equal(answerRXTaskQuery('Co zostało do zrobienia?',[{title:'',status:'pending'}]),null);
+assert.match(answerRXTaskQuery('Co umiesz?',tasks),/lokalnym planerze reguł/);
+assert.match(answerRXTaskQuery('Co potrafisz?',tasks),/możliwe duplikaty/);
+assert.match(answerRXTaskQuery('Jak możemy cię ulepszać?',tasks),/ulepszać etapami/);
+assert.match(answerRXTaskQuery('Pokaż duplikaty',[{title:'Paprawić czat bibi',status:'pending'},{title:'Poprawić czat Bibi',status:'completed'}]),/Możliwe duplikaty/);
 console.log('RX BIBI shared task reasoner: passed');
