@@ -276,6 +276,39 @@ export function planRXChat(message,history=[],learning=null){
   };
   everydayGuide=guides[subject]??null;
  }
+ // RX BIBI 5.1: reusable intent + topic resolver, not one regex per question.
+ const conversationalTokens=plain.replace(/[?!.]+$/g,'').trim().split(/\s+/).filter(Boolean);
+ const intentPatterns=[
+  {intent:'definition',prefixes:[['co','oznacza'],['co','to','znaczy'],['czym','jest']]},
+  {intent:'example',prefixes:[['pokaz','przyklad'],['przyklad','dla']]},
+  {intent:'protection',prefixes:[['jak','unikac'],['jak','rozpoznac']]}
+ ];
+ const normalizedTopicAliases=[
+  {id:'phishing',words:['phishing','phishingu','fishing','fishingu']},
+  {id:'spam',words:['spam','spamu']},
+  {id:'haslo',words:['haslo','hasla']},
+  {id:'link',words:['link','linku']},
+  {id:'kopia zapasowa',words:['backup','backupu','kopii zapasowej','kopie zapasowa']}
+ ];
+ const matchedIntent=intentPatterns.flatMap(({intent,prefixes})=>prefixes.filter(prefix=>prefix.every((word,index)=>conversationalTokens[index]===word)).map(prefix=>({intent,rest:conversationalTokens.slice(prefix.length).join(' ')})))[0];
+ const matchedTopic=matchedIntent&&normalizedTopicAliases.find(topic=>topic.words.some(word=>matchedIntent.rest===word));
+ if(matchedTopic){
+  const subject=matchedTopic.id;
+  if(matchedIntent.intent==='definition'){
+   const definitions={
+    phishing:'👑 Phishing to oszustwo, w którym ktoś podszywa się pod zaufaną instytucję, aby wyłudzić dane.',
+    spam:'👑 Spam to niechciane wiadomości, często wysyłane masowo.',
+    haslo:'👑 Hasło to sekret chroniący dostęp do konta. Nie przekazuj go innym.',
+    link:'👑 Link to adres prowadzący do strony lub pliku. Sprawdź domenę przed otwarciem.',
+    'kopia zapasowa':'👑 Kopia zapasowa to dodatkowy zapis danych potrzebny do ich odzyskania.'
+   };
+   everydayGuide=definitions[subject];
+  }else if(matchedIntent.intent==='example'){
+   everydayGuide=subject==='phishing'?'👑 Przykład phishingu: fałszywy SMS od banku z linkiem do logowania.':subject==='spam'?'👑 Przykład spamu: niezamówiona reklama przesłana do wielu osób.':'👑 Podaj konkretną sytuację, a przygotuję bezpieczny przykład dotyczący: '+subject+'.';
+  }else if(matchedIntent.intent==='protection'){
+   everydayGuide=subject==='phishing'?'👑 Sprawdzaj nadawcę i adres strony; nie podawaj danych przez podejrzane linki.':subject==='spam'?'👑 Blokuj nadawców spamu i nie otwieraj podejrzanych załączników.':'👑 W sprawie '+subject+' najpierw sprawdź źródło i nie udostępniaj danych osobowych.';
+  }
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
