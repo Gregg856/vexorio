@@ -166,6 +166,23 @@ export function planRXChat(message,history=[],learning=null){
    arithmeticAnswer='🧮 '+count+' szt. po '+unit+' = '+String(Number((unit*count).toPrecision(12)));
   }
  }
+ // RX BIBI 4.4: combined quantity and discount from the latest user unit price.
+ const quantityDiscount=plain.match(/^(?:a\s+)?ile\s+zaplace\s+za\s+(dwa|dwie|trzy|cztery|piec|szesc|siedem|osiem|dziewiec|dziesiec|\d{1,2})\s+(?:sztuki|sztuk|takie\s+produkty|takich\s+produktow)\s+z\s+rabatem\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%[?!. ]*$/);
+ if(quantityDiscount){
+  const words={dwa:2,dwie:2,trzy:3,cztery:4,piec:5,szesc:6,siedem:7,osiem:8,dziewiec:9,dziesiec:10};
+  const count=words[quantityDiscount[1]]??Number(quantityDiscount[1]);
+  const rate=Number(quantityDiscount[2].replace(',','.'));
+  const turns=recentUserQuestions.slice().reverse();
+  const boundary=turns.findIndex(turn=>/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/.test(normalizeRX(turn).trim()));
+  const relevant=boundary<0?turns:turns.slice(0,boundary);
+  const source=relevant.find(turn=>/(?:produkt|towar|rzecz)\s+(?:kosztuje|za)\s+\d/.test(normalizeRX(turn)));
+  const price=source&&normalizeRX(source).match(/(?:produkt|towar|rzecz)\s+(?:kosztuje|za)\s+(\d{1,8}(?:[.,]\d{1,2})?)/);
+  if(rate>100)arithmeticAnswer='🧮 Rabat nie może przekraczać 100%.';
+  else if(price&&count>=1&&count<=20){
+   const unit=Number(price[1].replace(',','.'));
+   arithmeticAnswer='🧮 '+count+' szt. po '+unit+' z rabatem '+rate+'% = '+String(Number((unit*count*(1-rate/100)).toPrecision(12)));
+  }
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
