@@ -656,7 +656,7 @@ export function planRXChat(message,history=[],learning=null){
  }
  // Respond to an ordinary invitation to discuss a topic, without pretending to know facts.
  const ordinaryConversation=/^(?:(?:cześć|czesc|hej|witaj|dzień dobry|dzien dobry)(?:\s+bibi)?[,! ]+)?(?:chc[eę]|chcialbym|chciałbym|mozemy|możemy|porozmawiajmy|pogadajmy)\s+(?:(?:porozmawia[cć]|pogada[cć])\s+)?\s+o\s+(.{3,140})[.!? ]*$/i.exec(message.trim());
- if(ordinaryConversation){
+ if(ordinaryConversation&&!/\bogrod/i.test(normalizeRX(ordinaryConversation[1]))){
   const subject=ordinaryConversation[1].replace(/[.!? ]+$/g,'');
   answer='👑 Jasne, porozmawiajmy o '+subject+'. Co najbardziej Cię w tym temacie interesuje?';
   tasks.length=0;plan.work=null;
