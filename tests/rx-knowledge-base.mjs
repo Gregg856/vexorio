@@ -6,6 +6,10 @@ for(const q of ['Co to jest wirnik RX?','Opowiedz o mrówkach RX','Czym jest RX 
  assert.ok(answer,q);
  assert.ok(answer.source&&answer.summary&&answer.local);
 }
+assert.equal(findRXKnowledge('Opowiedz o mrówkach RX').title,'Mrówki RX');
+assert.equal(findRXKnowledge('Czym jest RX Wiedza Świata?').title,'RX Wiedza Świata');
+assert.equal(findRXKnowledge('Co to jest wirnik RX?').title,'Wirnik RX');
+assert.equal(findRXKnowledge('Co to jest RX?').title,'Mózg RX');
 assert.equal(findRXKnowledge('Co to jest fotosynteza?'),null);
 assert.equal(findRXKnowledge(''),null);
 console.log('RX local knowledge PASS');
