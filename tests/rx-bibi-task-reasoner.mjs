@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {answerRXTaskQuery} from '../rx-bibi-task-reasoner.mjs';
+const tasks=[{title:'Naprawić czat',status:'pending'},{title:'Test BIBI',status:'completed'}];
+assert.match(answerRXTaskQuery('Co zostało do zrobienia?',tasks),/Naprawić czat/);
+assert.match(answerRXTaskQuery('Jakie zadania czekają?',tasks),/Naprawić czat/);
+assert.match(answerRXTaskQuery('Co już zrobione?',tasks),/Test BIBI/);
+assert.match(answerRXTaskQuery('Jaki status zadania: Naprawić czat',tasks),/oczekujące/);
+assert.equal(answerRXTaskQuery('Cześć',tasks),null);
+assert.equal(answerRXTaskQuery('Co zostało do zrobienia?',[{title:'',status:'pending'}]),null);
+console.log('RX BIBI shared task reasoner: passed');
