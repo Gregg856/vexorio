@@ -68,5 +68,28 @@ function diagnoseWave2(){
   productionConnected:false};
 }
 
-if(require.main===module){console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));console.log('RX TRAINING WAVE2',JSON.stringify(compareWave2()));console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnoseWave2()));}
-module.exports={EXTRAS,WAVE2,compare,compareWave2,diagnoseWave2};
+
+const MEMORY_WAVE=Object.freeze([
+ ['przypomnij mi nasze wnioski','memory'],['co uzgodniliśmy ostatnio','memory'],
+ ['odtwórz wcześniejsze decyzje','memory'],['pokaż dawne ustalenia zespołu','memory'],
+ ['czy zachowałeś poprzedni kontekst','memory'],['jakie mieliśmy plany wcześniej','memory'],
+ ['przywołaj temat z naszej rozmowy','memory'],['wróć do ostatniego wspomnienia','memory'],
+ ['odszukaj wcześniejsze notatki','memory'],['co zostało zapamiętane z rozmowy','memory'],
+ ['przypomnij poprzednie kroki','memory'],['pamiętasz nasz dawny pomysł','memory'],
+ ['zapisz aktualne ustalenie','memory'],['wyświetl historię konwersacji','memory'],
+ ['pokaż stan automatycznych kontroli','tests'],['czy testowanie przeszło pomyślnie','tests'],
+ ['wypisz błędy z przeglądu','tests'],['jaki wynik kontroli jakości','tests']
+]);
+function compareMemoryWave(){
+ const settings={epochs:180,hidden:24,rate:0.06};
+ const previous=createLearner({...settings,additionalExamples:EXTRAS.concat(WAVE2)});
+ const next=createLearner({...settings,additionalExamples:EXTRAS.concat(WAVE2,MEMORY_WAVE)});
+ const old={holdout:score(previous,HOLDOUT),challenge:score(previous,CHALLENGE)};
+ const candidate={holdout:score(next,HOLDOUT),challenge:score(next,CHALLENGE)};
+ return {kind:'rx-offline-memory-wave',trainingSamples:next.examples,previous:old,candidate,
+  improvesBoth:candidate.holdout>=old.holdout&&candidate.challenge>=old.challenge&&(candidate.holdout>old.holdout||candidate.challenge>old.challenge),
+  productionConnected:false};
+}
+
+if(require.main===module){console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));console.log('RX TRAINING WAVE2',JSON.stringify(compareWave2()));console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnoseWave2()));console.log('RX MEMORY WAVE',JSON.stringify(compareMemoryWave()));}
+module.exports={EXTRAS,WAVE2,MEMORY_WAVE,compare,compareWave2,diagnoseWave2,compareMemoryWave};
