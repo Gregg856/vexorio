@@ -91,7 +91,7 @@ export function planRXChat(message,history=[],learning=null){
   arithmeticAnswer=value===null?'🧮 Nie można dzielić przez zero.':Number.isFinite(value)?'🧮 Wynik: '+String(Number(value.toPrecision(12))):'🧮 Nie mogę obliczyć tego działania.';
  }
  // RX BIBI 3.6: bounded percentage calculations, no eval or remote calls.
- const percentInput=plain.match(/^(?:ile to jest|oblicz|policz)\\s+(\\d{1,8}(?:[.,]\\d{1,4})?)\\s*%\\s*(?:z|od)\\s+(\\d{1,8}(?:[.,]\\d{1,4})?)[?!. ]*$/);
+ const percentInput=plain.match(/^(?:ile to jest|oblicz|policz)\s+(\d{1,8}(?:[.,]\d{1,4})?)\s*%\s*(?:z|od)\s+(\d{1,8}(?:[.,]\d{1,4})?)[?!. ]*$/);
  if(percentInput){
   const percentage=Number(percentInput[1].replace(',','.'));
   const base=Number(percentInput[2].replace(',','.'));
