@@ -3,17 +3,20 @@ const {planCommand}=require('./rx-command-bridge.cjs');
 function chatRX(message,{history=[]}={}){
  if(typeof message!=='string'||!message.trim()||message.length>1000)throw Error('Invalid message');
  if(!Array.isArray(history)||history.length>6||history.some(x=>typeof x!=='string'||x.length>1000))throw Error('Invalid history');
+ const isFollowup=text=>/^(dalej|sprawdź to|sprawdz to|a co z tym\\??|co dalej\\??)[.!?\\s]*$/i.test(text.trim());
  const previous=history.length?history[history.length-1]:'';
+ const topic=[...history].reverse().find(item=>!isFollowup(item.trim())&&!/^(ok|gotowe|zielone|błąd|blad)[.!?\\s]*$/i.test(item.trim()))||'';
+
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
- const continuation=/^(dalej|sprawdź to|sprawdz to|a co z tym\\??|co dalej\\??)[.!?\\s]*$/i.test(message.trim());
- const request=contextual&&previous?(continuation?previous:previous+' '+message):message;
+ const continuation=isFollowup(message);
+ const request=contextual&&(continuation?topic:previous)?(continuation?topic:previous+' '+message):message;
  const plan=planCommand(request,{energyBalance:100});
  const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
  let answer;
- if(continuation&&!previous){
+ if(continuation&&!topic){
    answer='Nie mam wcześniejszego kontekstu tej rozmowy. Napisz, który błąd lub test mam omówić.';
- }else if(continuation&&previous){
-   answer='Kontynuuję temat: '+previous.slice(0,180)+'. Mogę zaproponować kroki diagnostyczne, ale nie potwierdzam wyniku testu bez danych z GitHub Actions.';
+ }else if(continuation&&topic){
+   answer='Kontynuuję temat: '+topic.slice(0,180)+'. Mogę zaproponować kroki diagnostyczne, ale nie potwierdzam wyniku testu bez danych z GitHub Actions.';
  }else
  if(/(?:^|\s)(usuń|usun|usuwać|usuwac|skasuj|kasuj|wyczyść|wyczysc|zresetuj|wymaż|wymaz)(?=\s|$)/.test(phrase)&&/produkcyj|produkcj|wszystkie dane|bazę danych|baze danych/.test(phrase)){
    answer='Nie wykonam usunięcia danych produkcyjnych bez wyraźnego potwierdzenia, autoryzacji i bezpiecznej kopii zapasowej.';
@@ -30,6 +33,6 @@ function chatRX(message,{history=[]}={}){
  }else{
    answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
  }
- return {answer,plan,contextUsed:contextual&&!!previous,executed:0};
+ return {answer,plan,contextUsed:contextual&&(continuation?!!topic:!!previous),executed:0};
 }
 module.exports={chatRX};
