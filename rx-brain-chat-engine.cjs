@@ -1,10 +1,16 @@
 'use strict';
 const {planCommand}=require('./rx-command-bridge.cjs');
+const {LANGUAGES,lookup}=require('./rx-language-seed.cjs');
 const {findSimilarTasks,suggestRelatedTasks}=require('./rx-bibi-task-store.cjs');
 function chatRX(message,{history=[],tasks=[]}={}){
  if(typeof message!=='string'||!message.trim()||message.length>1000)throw Error('Invalid message');
  if(!Array.isArray(history)||history.length>6||history.some(x=>typeof x!=='string'||x.length>1000))throw Error('Invalid history');
  if(!Array.isArray(tasks)||tasks.length>50||tasks.some(t=>!t||typeof t!=='object'||typeof t.title!=='string'||!t.title.trim()||t.title.length>160||!['pending','completed'].includes(t.status)||Object.keys(t).some(k=>!['title','status'].includes(k))))throw Error('Invalid tasks');
+ const translation=/^(?:translate|przetlumacz) (pl|de|en|uk) to (pl|de|en|uk): (.{1,160})$/i.exec(message.trim());
+ if(translation){
+  const entry=LANGUAGES.includes(translation[1])&&LANGUAGES.includes(translation[2])?lookup(translation[3],translation[1]):null;
+  return {answer:entry?'Tlumaczenie ('+translation[2]+'): '+entry.translations[translation[2]]:'Nie znam tego zwrotu w sprawdzonym slowniku RX.',plan:{steps:[]},completedCount:0,contextUsed:false,executed:0};
+ }
  // Reuse the existing RX brain for bounded arithmetic; never evaluate arbitrary code.
  const mathMatch=/^(?:(?:ile to|oblicz|policz)\s+)?(-?\d{1,9}(?:[.,]\d{1,6})?)\s*([+*\/\-])\s*(-?\d{1,9}(?:[.,]\d{1,6})?)\s*\??$/i.exec(message.trim());
  if(mathMatch){
