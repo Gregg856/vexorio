@@ -102,6 +102,20 @@ console.log('RX natural arithmetic regression OK');
 }
 console.log('RX multi-topic history regression OK');
 
+// RX BIBI 3.4: a clarification must accept the client's explicit topic choice.
+{
+ const history=['Co robią mrówki?','👑 Mrówki wykonują zadania po zatwierdzeniu.','Jak działa wirnik?','👑 Wirnik obsługuje testy.'];
+ const clarification=planRXChat('A co z nim?',history);
+ assert.ok(clarification.answer.includes('O który temat pytasz'),clarification.answer);
+ assert.equal(clarification.executed,0);
+ const selection=planRXChat('Wirnik',[...history,'A co z nim?',clarification.answer]);
+ assert.ok(selection.answer.includes('Rozumiem, chodzi o wirnik'),selection.answer);
+ assert.equal(selection.executed,0);
+ assert.equal(selection.tasks.length,0);
+ assert.equal(selection.plan.work,null);
+}
+console.log('RX clarification and explicit topic selection regression OK');
+
 for(const [question,history,expected] of [
  ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
  ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
