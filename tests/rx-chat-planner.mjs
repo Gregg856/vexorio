@@ -293,6 +293,23 @@ const naturalSwitch=planRXChat('Dlaczego?',['Co to jest phishing?','Wyjaśnienie
 assert.ok(!naturalSwitch.answer.includes('oszuści próbują'),naturalSwitch.answer);
 console.log('RX natural follow-up regression OK');
 
+// RX BIBI 4.9: explanation versus requested execution, never perform account actions.
+for(const [question,expected] of [
+ ['Jak usunąć konto?','Aby zmienić lub usunąć dane konta'],
+ ['Jak zmienić hasło?','Aby zmienić lub zresetować hasło'],
+ ['Usuń moje konto','nie ma uprawnień'],
+ ['Zmień mi hasło','nie ma uprawnień'],
+ ['Zresetuj moje hasło','nie ma uprawnień']
+]){
+ const result=planRXChat(question,[]);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX action-intent regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
