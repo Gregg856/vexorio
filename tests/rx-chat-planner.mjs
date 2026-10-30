@@ -241,6 +241,24 @@ for(const [question,expected] of [
 }
 console.log('RX colloquial price regression OK');
 
+// RX BIBI 4.6: safe everyday digital literacy without privileged work.
+for(const [question,expected] of [
+ ['Co to jest phishing?','Phishing to próba wyłudzenia'],
+ ['Co to jest spam?','Spam to niechciane'],
+ ['Wyjaśnij kopia zapasowa','Kopia zapasowa to'],
+ ['Co to jest hasło jednorazowe?','Nie przekazuj go innym'],
+ ['Jak zrobić bezpieczne hasło?','unikalnego hasła'],
+ ['Pomóż mi ustawić kopię zapasową','Sprawdź, czy potrafisz ją przywrócić']
+]){
+ const result=planRXChat(question,[]);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX everyday digital safety regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
