@@ -154,6 +154,14 @@ export default {
           return new Response(JSON.stringify({ok:true,answer:'Nie mogę teraz potwierdzić wyników GitHub Actions. Sprawdź status ponownie później; nie będę zgadywać.',engine:'rx-bibi-readonly-github-status',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
         }
       }
+      // Client-safe RX facts: curated, source-attributed entries already reviewed in Git.
+      // Never read private RX CLOUD learning, tokens, or administrator-only memory here.
+      const publicKnowledgeIntent=/^(?:co to jest|czym jest|opowiedz o|powiedz mi o|wyjasnij|wyjaśnij)\s+/i.test(message.trim());
+      const publicKnowledge=publicKnowledgeIntent?findRXKnowledge(message):null;
+      if(publicKnowledge){
+        const answer='📘 '+publicKnowledge.title+'\n'+publicKnowledge.summary+'\nŹródło: '+publicKnowledge.source;
+        return new Response(JSON.stringify({ok:true,answer,knowledge:publicKnowledge,engine:'rx-bibi-client-public-knowledge',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+      }
       // Client requests use only the shared deterministic planner; no GitHub dispatch,
       // administrator commands, persistent memory writes, or privileged RX tools.
       const planned=planRXChat(message,history,null);
