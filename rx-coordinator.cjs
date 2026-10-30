@@ -42,4 +42,13 @@ async function executeCoordinatedRX(input,{approved=false,handlers={},initialCre
   planned:plan.turbine.planned,execution,productionModified:false,automaticDeployment:false,
   modelInferenceUsed:false};
 }
-module.exports={coordinateRX,executeCoordinatedRX};
+
+// RX BIBI 6.6: bounded bridge to the existing RX Mega Cloud test executor.
+// Explicit owner approval is mandatory; no arbitrary commands or deployments.
+function executeRXCloudChecks({approved=false,execute=false,maxChecks=2}={}){
+ if(approved!==true||execute!==true)throw Error('Owner approval required for cloud checks');
+ if(!Number.isSafeInteger(maxChecks)||maxChecks<1||maxChecks>2)throw Error('Invalid cloud check budget');
+ const {runCloudComputer}=require('./rx-mega-cloud-computer.cjs');
+ return runCloudComputer({execute:true,selectedChecks:['tests/rx-cloud-computer.cjs','tests/rx-integration.cjs'],maxChecks});
+}
+module.exports={coordinateRX,executeCoordinatedRX,executeRXCloudChecks};
