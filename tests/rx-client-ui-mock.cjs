@@ -55,6 +55,31 @@ window.supabase={createClient:()=>({
   if(afterRetry.filter(x=>x==='Wiadomość po awarii').length!==1)throw Error('Retry duplicated user bubble');
   if(report.requests.length!==4||report.requests[3].history.length!==4)throw Error('Retry history inconsistent');
   report.checks.push({name:'retry_no_duplicate_user_bubble',passed:true});
+  // Refresh after a simulated server outage: the draft and retry marker must survive.
+  failNext=true;
+  await page.locator('#message').fill('Ponów po odświeżeniu');
+  await page.locator('#send').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('Wiadomość przywrócona'));
+  await page.reload({waitUntil:'load'});
+  await page.locator('#chat').waitFor({state:'visible'});
+  if(await page.locator('#message').inputValue()!=='Ponów po odświeżeniu')throw Error('Draft missing after refresh');
+  report.checks.push({name:'retry_draft_survives_refresh',passed:true});
+  await page.locator('#send').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.');
+  const refreshedBubbles=await page.locator('#messages .bubble').allTextContents();
+  if(refreshedBubbles.filter(x=>x==='Ponów po odświeżeniu').length!==1)throw Error('Refresh retry duplicated user bubble');
+  report.checks.push({name:'refresh_retry_no_duplicate',passed:true});
+  // Changing a failed draft must discard its abandoned user bubble.
+  failNext=true;
+  await page.locator('#message').fill('Porzucona wiadomość');
+  await page.locator('#send').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('Wiadomość przywrócona'));
+  await page.locator('#message').fill('Poprawiona wiadomość');
+  await page.locator('#send').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.');
+  const changedBubbles=await page.locator('#messages .bubble').allTextContents();
+  if(changedBubbles.includes('Porzucona wiadomość')||changedBubbles.filter(x=>x==='Poprawiona wiadomość').length!==1)throw Error('Edited retry retained abandoned bubble');
+  report.checks.push({name:'edited_retry_discards_abandoned_bubble',passed:true});
   report.passed=true;
   console.log('PASS RX BIBI CLIENT UI MOCK:',report.checks.map(x=>x.name).join(', '));
  }catch(e){report.passed=false;report.error=e.message;process.exitCode=1;console.error('FAIL RX BIBI CLIENT UI MOCK:',e.message);}
