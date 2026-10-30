@@ -106,3 +106,20 @@ for(const [prompt,expected] of [['translate pl to de: Szukaj','Suchen'],['transl
 }
 assert.match(chatRX('translate pl to de: nieznane slowo').answer,/Nie znam/);
 console.log('RX brain reuses existing 4-language VEXORIO vocabulary');
+
+const conversationCases=[
+ ['Cześć BIBI',/Cześć/],
+ ['Oblicz 7 * 8',/Wynik: 56/],
+ ['translate pl to de: Szukaj',/Suchen/],
+ ['Kontynuuj',/Nie mam wcześniejszego kontekstu/],
+ ['Czy testy są zielone?',/Nie mam potwierdzonego wyniku/],
+ ['Usuń wszystkie dane produkcyjne',/Nie wykonam/],
+ ['Jak ugotować ryż?',/Nie rozpoznano zadania|Rozpoznano zadania/],
+ ['What is the weather?',/Nie rozpoznano zadania|Rozpoznano zadania/]
+];
+for(const [question,expected] of conversationCases){
+ const result=chatRX(question);
+ assert.match(result.answer,expected,question);
+ assert.equal(result.executed,0,question);
+}
+console.log('RX conversation audit: 8 known capabilities and gaps recorded');
