@@ -59,6 +59,17 @@ for(const [question,expected] of [
 }
 console.log('RX customer small-talk regression OK');
 
+// Consecutive customer turns should not receive an identical canned answer.
+for(const prompt of ['Jak się masz?','Dziękuję bardzo','Mam pytanie']){
+ const first=planRXChat(prompt);
+ const second=planRXChat(prompt,[prompt,first.answer]);
+ assert.notEqual(second.answer,first.answer,'Repeated response: '+prompt);
+ assert.equal(second.executed,0);
+ assert.equal(second.tasks.length,0);
+ assert.equal(second.plan.work,null);
+}
+console.log('RX repeated reply regression OK');
+
 for(const [question,history,expected] of [
  ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
  ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
