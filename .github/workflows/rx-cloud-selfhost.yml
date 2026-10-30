@@ -6,6 +6,9 @@ on:
       - 'rx-money-engine.cjs'
       - 'tests/rx-money-engine.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-bibi-evaluator.cjs'
+      - 'tests/rx-bibi-evaluator.test.cjs'
+      - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-migration-readiness.cjs'
       - 'deploy/RX-CLOUD-WINDOWS.md'
       - 'deploy/rxcloud-windows-preflight.ps1'
@@ -32,6 +35,9 @@ on:
     paths:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-bibi-evaluator.cjs'
+      - 'tests/rx-bibi-evaluator.test.cjs'
+      - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-package.cjs'
       - 'worker.js'
@@ -58,6 +64,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Test RX BIBI supervised evaluator
+        run: node tests/rx-bibi-evaluator.test.cjs
       - name: Check syntax
         run: |
           node --check rx-cloud-server.cjs
