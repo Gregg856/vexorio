@@ -761,3 +761,9 @@ const afterFreshTopic=planRXChat('Dalej',freshTopicHistory);
 assert.match(afterFreshTopic.answer,/muzyce/i);
 assert.doesNotMatch(afterFreshTopic.answer,/ogrodzie/i);
 console.log('RX BIBI topic reset boundary: PASS');
+
+// Old garden context must not answer a new topic's detail after reset.
+const switchedGardenHistory=['Chcę porozmawiać o moim ogrodzie','👑 Ile masz miejsca i czy jest tam dużo słońca?','Zmieńmy temat','👑 Jasne, zmieniamy temat','Chcę porozmawiać o muzyce','👑 Co najbardziej Cię interesuje?'];
+const unrelatedDetail=planRXChat('Jest w cieniu',switchedGardenHistory);
+assert.doesNotMatch(unrelatedDetail.answer,/funkie|paprocie|ogród jest zacieniony/i);
+console.log('RX BIBI garden memory isolation: PASS');
