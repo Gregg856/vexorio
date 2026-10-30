@@ -319,6 +319,12 @@ jobs:
           RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
           RX_REQUIRE_AUTH_E2E: '0'
         run: node tests/rx-admin-auth-e2e.cjs
+      - name: RX BIBI — zalogowany czat klienta (opcjonalny, prawdziwy serwer)
+        if: ${{ !cancelled() }}
+        env:
+          RX_BIBI_TEST_EMAIL: ${{ secrets.RX_BIBI_TEST_EMAIL }}
+          RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
+        run: node tests/rx-client-auth-e2e.cjs
       - name: RX — testuj nawigację mobilną Centrum i powrót do VEXORIO
         if: always()
         run: node tests/rx-navigation-mobile.cjs
