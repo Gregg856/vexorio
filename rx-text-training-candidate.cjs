@@ -27,5 +27,27 @@ function compare(){
   improvesBoth:next.holdout>=old.holdout&&next.challenge>=old.challenge&&(next.holdout>old.holdout||next.challenge>old.challenge),
   productionConnected:false};
 }
-if(require.main===module)console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));
-module.exports={EXTRAS,compare};
+
+const WAVE2=Object.freeze([
+ ['hejka witam ponownie','greeting'],['przyjemnego popołudnia','greeting'],
+ ['pozdrawiam serdecznie wszystkich','greeting'],['witajcie po dłuższej przerwie','greeting'],
+ ['jak wygląda kontrola jakości','tests'],['czy sprawdzian się powiódł','tests'],
+ ['podsumuj weryfikację działania','tests'],['czy automatyczne sprawdzanie działa','tests'],
+ ['odtwórz nasze wcześniejsze rozmowy','memory'],['pokaż co zostało zapamiętane','memory'],
+ ['wróć do wcześniejszego pomysłu','memory'],['przywołaj informacje z wczoraj','memory'],
+ ['oblicz sumę kilku wartości','math'],['jaki wynik podziału','math'],
+ ['pomnóż kwotę przez ilość','math'],['wyznacz połowę sumy','math']
+]);
+function compareWave2(){
+ const settings={epochs:180,hidden:24,rate:0.06};
+ const previous=createLearner({...settings,additionalExamples:EXTRAS});
+ const next=createLearner({...settings,additionalExamples:EXTRAS.concat(WAVE2)});
+ const old={holdout:score(previous,HOLDOUT),challenge:score(previous,CHALLENGE)};
+ const candidate={holdout:score(next,HOLDOUT),challenge:score(next,CHALLENGE)};
+ return {kind:'rx-offline-wave2',trainingSamples:next.examples,previous:old,candidate,
+  improvesBoth:candidate.holdout>=old.holdout&&candidate.challenge>=old.challenge&&(candidate.holdout>old.holdout||candidate.challenge>old.challenge),
+  productionConnected:false};
+}
+
+if(require.main===module){console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));console.log('RX TRAINING WAVE2',JSON.stringify(compareWave2()));}
+module.exports={EXTRAS,WAVE2,compare,compareWave2};
