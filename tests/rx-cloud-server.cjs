@@ -67,6 +67,15 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   const queen=await fetch(base+'/__rxcloud/queen/status',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
   assert.equal(queen.status,200);
   assert.equal((await queen.json()).taskExecution,false);
+  // Queen/BIBI local bridge: authenticated learning feed must be read-only and structured.
+  const learningDeniedMethod=await fetch(base+'/__rxcloud/bibi/learning',{method:'POST',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+  assert.equal(learningDeniedMethod.status,405,'Learning feed must not allow writes');
+  const learning=await fetch(base+'/__rxcloud/bibi/learning',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+  assert.equal(learning.status,200,'Queen must read BIBI learning feed with valid token');
+  const learningData=await learning.json();
+  assert.equal(learningData.kind,'rx-queen-verified-learning');
+  assert(Array.isArray(learningData.lessons),'Queen learning feed must return lessons array');
+  assert(learningData.lessons.every(item=>item.verifiedResolution===false),'Unverified reports must never be treated as learned fixes');
   assert.equal((await fetch(base+'/__rxcloud/queen/status',{method:'POST'})).status,405);
   // RX BIBI client must be served by our self-hosted RX CLOUD, with its own API route.
   const clientPage=await fetch(base+'/rx-client.html');
