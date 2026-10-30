@@ -44,7 +44,7 @@ async function simulateSubmit({networkFailure=false,authFailure=false}={}){
  const context={
   $:id=>nodes[id]||(nodes[id]={}),
   client:{auth:{getSession:()=>auth.promise,signOut:async()=>{}}},
-  history:[],sendInFlight:false,
+  history:[],tasks:[],sendInFlight:false,
   bubble:(value,me)=>messages.push({value,me:!!me}),
   saveConversation:()=>{},status:value=>statusMessages.push(value),
   scrollLatest:()=>{},syncSession:()=>{},
