@@ -4,6 +4,7 @@ const fs=require('node:fs/promises');
 const path=require('node:path');
 const net=require('node:net');
 process.env.SUPABASE_URL='https://rxcloud-staging-test.supabase.co';
+process.env.SUPABASE_ANON_KEY='rx-cloud-local-test-public-key';
 const {start,staticFetch}=require('../rx-cloud-server.cjs');
 (async()=>{
  const traversal=await staticFetch(new Request('http://localhost/%2e%2e/%2e%2e/etc/passwd'));
