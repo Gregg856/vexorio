@@ -691,3 +691,18 @@ if(process.env.GITHUB_STEP_SUMMARY){
  const {appendFileSync}=await import('node:fs');
  appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX BIBI — rozmowy testowe\\n\\nZaliczone: **'+bibiSummary.passed+'/'+bibiSummary.total+'**\\n\\n');
 }
+
+
+// RX BIBI 6.7: Polish diacritics and inflected catalog stems must keep routing.
+for(const phrase of ['Sprawdź testy','Sprawdz testy']){
+ const result=planRXChat(phrase);
+ assert.ok(result.tasks.some(t=>t.action==='inspect_tests'),phrase+': missing inspect_tests');
+ assert.equal(result.executed,0);
+ assert.equal(result.plan.queen.requiresApproval,true);
+}
+for(const phrase of ['Sprawdź mrówki','Sprawdz mrowki']){
+ const result=planRXChat(phrase);
+ assert.ok(result.tasks.some(t=>t.module==='ants'),phrase+': missing ants');
+ assert.equal(result.executed,0);
+}
+console.log('RX BIBI 6.7 Polish intent regression OK');
