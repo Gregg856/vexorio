@@ -34,6 +34,8 @@ function proposeStatusChange(tasks,title,status){
  const matches=tasks.filter(t=>t.title===title);
  if(matches.length!==1)throw Error('Task must match exactly one entry');
  const index=tasks.findIndex(t=>t.title===title);
+ if(tasks[index].status===status)throw Error('Task already has requested status');
+ if(tasks[index].status==='completed'&&status==='pending')throw Error('Completed task cannot be reopened without separate review');
  return {title,status,previousStatus:tasks[index].status,index};
 }
 function applyApprovedChange(file,proposal,{approved=false}={}){
@@ -42,6 +44,7 @@ function applyApprovedChange(file,proposal,{approved=false}={}){
  const tasks=readTasks(file);
  const current=tasks[proposal.index];
  if(!current||current.title!==proposal.title||current.status!==proposal.previousStatus)throw Error('Stale proposal');
+ if(current.status===proposal.status||current.status==='completed'&&proposal.status==='pending')throw Error('Unsafe status transition');
  const next=tasks.map((t,i)=>i===proposal.index?{title:t.title,status:proposal.status}:t);
  saveTasks(file,next);
  return next;
