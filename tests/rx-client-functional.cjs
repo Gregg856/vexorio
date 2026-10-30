@@ -82,6 +82,20 @@ const {pathToFileURL}=require('node:url');
     assert.equal(reply.adminToolsAvailable,false);
     assert.equal(reply.executed,0);
    }
+   // Regression from live Android chat screenshots: compound identity and task transparency.
+   for(const [question,expected] of [
+     ['Cześć BIBI, kim jesteś i w czym możesz mi pomóc?','Jestem RX BIBI'],
+     ['Co zostało do zrobienia?','Nie mam jeszcze dostępu do rejestru zadań']
+   ]){
+     const response=await call('/api/rx/client/chat',{body:JSON.stringify({message:question,history:[]})});
+     assert.equal(response.status,200,'Android regression: '+question);
+     const reply=await response.json();
+     assert.ok(reply.answer.includes(expected),'Unexpected response: '+reply.answer);
+     assert.doesNotMatch(reply.answer,/Królowa RX|Jestem Królową RX/,'Public chat must not impersonate Queen');
+     assert.equal(reply.executed,0);
+     assert.equal(reply.adminToolsAvailable,false);
+   }
+   console.log('RX BIBI Android screenshots regression passed');
    console.log('RX BIBI 6.5 public identity regression passed');
 
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls during dialogue');
