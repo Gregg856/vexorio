@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {EXTRAS,WAVE2,compare,compareWave2}=require('../rx-text-training-candidate.cjs');
+const {EXTRAS,WAVE2,compare,compareWave2,diagnoseWave2}=require('../rx-text-training-candidate.cjs');
 const {HOLDOUT,CHALLENGE}=require('../rx-text-evaluation.cjs');
 const norm=s=>s.normalize('NFC').toLocaleLowerCase('pl').trim();
 const seen=new Set([...HOLDOUT,...CHALLENGE].map(x=>norm(x[0])));
@@ -27,3 +27,14 @@ assert.equal(b.trainingSamples,64);
 assert.equal(b.productionConnected,false);
 assert.deepEqual(b.previous,a.candidate);
 console.log('RX TRAINING WAVE2',JSON.stringify(b));
+
+const diagnosis=diagnoseWave2();
+assert.equal(diagnosis.trainingSamples,64);
+assert.equal(diagnosis.productionConnected,false);
+for(const [setName,total] of [['holdout',24],['challenge',32]]){
+ const rows=Object.values(diagnosis[setName]);
+ assert.equal(rows.reduce((sum,row)=>sum+row.total,0),total);
+ assert.equal(rows.reduce((sum,row)=>sum+row.correct,0),b.candidate[setName]);
+ assert.equal(rows.reduce((sum,row)=>sum+row.errors.length,0),total-b.candidate[setName]);
+}
+console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnosis));
