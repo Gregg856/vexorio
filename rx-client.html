@@ -3,17 +3,46 @@
 <style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#06151a;color:#edfff7;font:16px system-ui,sans-serif}main{max-width:760px;margin:auto;height:100dvh;height:100svh;display:flex;flex-direction:column;padding:12px 16px;overflow:hidden}header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #235c4d;padding:6px 0 10px}h1{font-size:1.4rem;margin:0;color:#4df0a3}a{color:#a3f5d1}.note{color:#a5c8ba;font-size:.85rem}#messages{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:12px 0}.bubble{max-width:88%;padding:12px 15px;border-radius:15px;background:#15352f;white-space:pre-wrap;overflow-wrap:anywhere}.bubble.me{align-self:flex-end;background:#116c50}form{display:flex;gap:8px;flex-shrink:0;background:#06151a;padding:10px 0 max(12px,env(safe-area-inset-bottom))}textarea{flex:1;min-width:0;resize:none;max-height:110px;min-height:48px;border:1px solid #387b65;border-radius:12px;background:#102721;color:white;padding:13px;font:inherit;font-size:16px}button{border:0;border-radius:12px;background:#12aa72;color:#06251a;font-weight:800;padding:12px;cursor:pointer}button:disabled{opacity:.55}.header-actions{display:flex;align-items:center;gap:8px}.secondary{background:#15352f;color:#a3f5d1;border:1px solid #387b65;padding:10px;font-size:.85rem}#status{margin:4px 0;min-height:18px;font-size:.75rem}#chat{min-height:0;overflow:hidden}.note.intro{margin:10px 0 4px}#login{border:1px solid #387b65;border-radius:14px;padding:20px;margin-top:30px}#login input{width:100%;padding:12px;background:#102721;color:white;border:1px solid #387b65;border-radius:9px;font:inherit;margin:7px 0}#login button{margin-top:8px}#chat[hidden],#login[hidden]{display:none!important}</style></head>
 <body><main><header><h1>👑 RX BIBI</h1><div class="header-actions"><button id="tasks-toggle" class="secondary" type="button" hidden>Zadania</button><button id="new-chat" class="secondary" type="button" hidden>Nowa rozmowa</button><button id="logout" type="button" hidden>Wyloguj</button></div></header><p class="note intro">Nasz asystent RX. Odpowiedzi generuje obecnie lokalny planer — bez zewnętrznego modelu AI.</p>
 <section id="login"><h2>Zaloguj się</h2><p class="note">Użyj istniejącego konta VEXORIO.</p><label>Email<input id="email" type="email" autocomplete="email"></label><label>Hasło<input id="password" type="password" autocomplete="current-password"></label><button id="signin" type="button">Zaloguj</button></section>
-<section id="task-panel" hidden style="border:1px solid #387b65;border-radius:12px;padding:10px"><label>Nowe zadanie<input id="task-title" maxlength="160" placeholder="Nazwa zadania" style="width:100%;padding:10px;background:#102721;color:white;border:1px solid #387b65;border-radius:8px"></label><button id="task-add" type="button">Dodaj</button><div id="task-list" aria-live="polite"></div><p class="note">Zadania są zapisywane tylko w tej przeglądarce, osobno dla każdego konta. Nie są synchronizowane z GitHub.</p></section><section id="chat" hidden style="flex:1;display:flex;flex-direction:column"><div id="messages" aria-live="polite"></div><form id="form"><textarea id="message" rows="2" maxlength="2000" placeholder="Napisz wiadomość…" aria-label="Wiadomość"></textarea><button id="send" type="submit">Wyślij</button></form></section><p id="status" class="note" role="status"></p></main>
+<section id="task-panel" hidden style="border:1px solid #387b65;border-radius:12px;padding:10px"><label>Nowe zadanie<input id="task-title" maxlength="160" placeholder="Nazwa zadania" style="width:100%;padding:10px;background:#102721;color:white;border:1px solid #387b65;border-radius:8px"></label><button id="task-add" type="button">Dodaj</button><div id="task-list" aria-live="polite"></div><p class="note">Zadania są synchronizowane z kontem VEXORIO, gdy dostępny jest serwer. Przy problemach z siecią pozostają lokalne. Nie są synchronizowane z GitHub.</p></section><section id="chat" hidden style="flex:1;display:flex;flex-direction:column"><div id="messages" aria-live="polite"></div><form id="form"><textarea id="message" rows="2" maxlength="2000" placeholder="Napisz wiadomość…" aria-label="Wiadomość"></textarea><button id="send" type="submit">Wyślij</button></form></section><p id="status" class="note" role="status"></p></main>
 <script type="module">
 const $=id=>document.getElementById(id);let client=null,history=[],activeUserId=null,sendInFlight=false;
 const STORE_PREFIX='rx-bibi-chat-v1:';
 const TASK_PREFIX='rx-bibi-tasks-v1:';
+let taskSyncReady=false,taskSyncBusy=false;
+const taskTable=()=>client.from('rx_bibi_user_tasks');
+async function syncRemoteTasks(id){
+ if(!client||!id||taskSyncBusy)return;
+ taskSyncBusy=true;taskSyncReady=false;
+ try{
+  const {data,error}=await taskTable().select('id,title,status').order('created_at',{ascending:true}).limit(50);
+  if(error)throw error;
+  if(activeUserId!==id)return;
+  const remote=data||[];
+  // Import pre-existing local tasks once. Never overwrite server data or reimport on every login.
+  const marker=TASK_PREFIX+'imported:'+id;
+  if(!localStorage.getItem(marker)){
+   const existing=new Set(remote.map(t=>t.title.normalize('NFC').trim().toLocaleLowerCase('pl-PL')));
+   const pending=tasks.filter(t=>!existing.has(t.title.normalize('NFC').trim().toLocaleLowerCase('pl-PL'))).slice(0,Math.max(0,50-remote.length));
+   if(pending.length){
+    const {error:importError}=await taskTable().insert(pending.map(t=>({user_id:id,title:t.title,status:t.status})));
+    if(importError)throw importError;
+   }
+   localStorage.setItem(marker,'1');
+  }
+  const result=await taskTable().select('id,title,status').order('created_at',{ascending:true}).limit(50);
+  if(result.error)throw result.error;
+  if(activeUserId!==id)return;
+  tasks=result.data||[];taskSyncReady=true;saveTasks();status('Zadania zsynchronizowane.');
+ }catch{if(activeUserId===id)status('Zadania lokalne. Synchronizacja niedostępna — spróbuj ponownie później.');}
+ finally{taskSyncBusy=false;}
+}
+
 let tasks=[];
 function loadTasks(id){try{const parsed=JSON.parse(localStorage.getItem(TASK_PREFIX+id)||'[]');tasks=Array.isArray(parsed)?parsed.filter(t=>t&&typeof t.title==='string'&&['pending','completed'].includes(t.status)).slice(0,50):[];}catch{tasks=[];}renderTasks();}
 function saveTasks(){if(!activeUserId)return;try{localStorage.setItem(TASK_PREFIX+activeUserId,JSON.stringify(tasks));}catch{status('Nie udało się zapisać zadań.');}renderTasks();}
-function renderTasks(){const list=$('task-list');list.replaceChildren();tasks.forEach((task,i)=>{const line=document.createElement('div');line.style.marginTop='8px';const label=document.createElement('span');label.textContent=task.title+' — '+(task.status==='completed'?'ukończone':'oczekujące')+' ';const toggle=document.createElement('button');toggle.type='button';toggle.className='secondary';toggle.textContent=task.status==='completed'?'Cofnij':'Ukończ';toggle.onclick=()=>{if(!confirm('Zmienić status zadania?'))return;tasks[i].status=tasks[i].status==='completed'?'pending':'completed';saveTasks();};line.append(label,toggle);list.append(line);});}
+function renderTasks(){const list=$('task-list');list.replaceChildren();tasks.forEach((task,i)=>{const line=document.createElement('div');line.style.marginTop='8px';const label=document.createElement('span');label.textContent=task.title+' — '+(task.status==='completed'?'ukończone':'oczekujące')+' ';const toggle=document.createElement('button');toggle.type='button';toggle.className='secondary';toggle.textContent=task.status==='completed'?'Cofnij':'Ukończ';toggle.onclick=async()=>{if(!confirm('Zmienić status zadania?'))return;const next=task.status==='completed'?'pending':'completed';if(taskSyncReady){toggle.disabled=true;const {error}=await taskTable().update({status:next}).eq('id',task.id);toggle.disabled=false;if(error){status('Nie zapisano zmiany na serwerze.');return;}}tasks[i].status=next;saveTasks();};line.append(label,toggle);list.append(line);});}
 $('tasks-toggle').onclick=()=>{$('task-panel').hidden=!$('task-panel').hidden;};
-$('task-add').onclick=()=>{const title=$('task-title').value.trim();if(!activeUserId||!title||title.length>160||tasks.length>=50)return;tasks.push({title,status:'pending'});$('task-title').value='';saveTasks();};
+$('task-add').onclick=async()=>{const title=$('task-title').value.trim();if(!activeUserId||!title||title.length>160||tasks.length>=50)return;const owner=activeUserId;const button=$('task-add');button.disabled=true;try{let task={title,status:'pending'};if(taskSyncReady){const {data,error}=await taskTable().insert({user_id:owner,title,status:'pending'}).select('id,title,status').single();if(error)throw error;task=data;}if(activeUserId!==owner)return;tasks.push(task);$('task-title').value='';saveTasks();}catch{status('Nie zapisano zadania. Spróbuj ponownie.');}finally{button.disabled=false;}};
 const storageKey=id=>STORE_PREFIX+id;
 function saveConversation(){if(!activeUserId)return;try{localStorage.setItem(storageKey(activeUserId),JSON.stringify({history:history.slice(-20),messages:[...$('messages').children].slice(-40).map(el=>({text:el.textContent,me:el.classList.contains('me')}))}));}catch{status('Brak miejsca na zapis rozmowy.');}}
 function restoreConversation(id){history=[];$('messages').replaceChildren();if(!id)return;try{const data=JSON.parse(localStorage.getItem(storageKey(id))||'null');if(!data||!Array.isArray(data.messages))return;history=Array.isArray(data.history)?data.history.filter(x=>typeof x==='string'&&x.length<=2000).slice(-20):[];for(const item of data.messages.slice(-40)){if(item&&typeof item.text==='string'&&item.text.length<=4000)bubble(item.text, item.me===true);}scrollLatest();}catch{history=[];$('messages').replaceChildren();}}
@@ -34,7 +63,7 @@ async function init(){
   const {data}=await client.auth.getSession();syncSession(data.session);
   client.auth.onAuthStateChange((_event,session)=>syncSession(session));
 }
-function syncSession(session){const id=session?.user?.id||null;if(id!==activeUserId){activeUserId=id;restoreConversation(id);loadTasks(id);}show(!!session);}
+function syncSession(session){const id=session?.user?.id||null;if(id!==activeUserId){activeUserId=id;restoreConversation(id);loadTasks(id);taskSyncReady=false;if(id)syncRemoteTasks(id);}show(!!session);}
 function show(signed){const wasSigned=!$('chat').hidden;$('login').hidden=signed;$('chat').hidden=!signed;$('logout').hidden=!signed;$('new-chat').hidden=!signed;$('tasks-toggle').hidden=!signed;if(!signed)$('task-panel').hidden=true;if(!signed&&wasSigned){history=[];$('messages').replaceChildren();}status(signed?'Połączono z RX BIBI.':'Zaloguj się, aby rozpocząć.');}
 $('signin').onclick=async()=>{if(!client)return;status('Logowanie…');const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)status('Logowanie nie powiodło się.');};
 $('logout').onclick=async()=>{if(client)await client.auth.signOut();};
