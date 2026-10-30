@@ -40,7 +40,13 @@ export function planRXChat(message,history=[],learning=null){
  const topicLabel=turn=>{const normalized=normalizeRX(turn);return explicitTopicNames.find(([,pattern])=>pattern.test(normalized))?.[0]||null;};
  const previousLabel=topicLabel(previousUserTopic||'');
  const selectedTopic=returnTopic?(previousUserTopic||''):currentUserTopic;
- const contextual=(followup||correction||returnTopic||elaborate)&&last?selectedTopic+' '+message:message;
+ // A short continuation uses only an explicit recent user topic, never a guessed assistant topic.
+ // Explicit topic switches prevent carrying an old intent into a new conversation.
+ const topicSwitch=/^(?:zmienmy temat|zmiana tematu|nowy temat)[.!? ]*$/i;
+ const latestSwitch=userTurns.findLastIndex(turn=>topicSwitch.test(normalizeRX(turn.trim())));
+ const latestTopicIndex=userTurns.findLastIndex(turn=>hasTopic(turn)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(turn.trim())));
+ const activeTopic=latestTopicIndex>latestSwitch?userTurns[latestTopicIndex]:'';
+ const contextual=(followup||correction||returnTopic||elaborate)&&last?(returnTopic?selectedTopic:activeTopic)+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const normalizedQuery=normalizeRX(contextual);
  // Catalog words include Polish stems (e.g. 'awari', 'mrowk'); preserve prefix matching.
