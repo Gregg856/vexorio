@@ -236,6 +236,16 @@ export function planRXChat(message,history=[],learning=null){
     '👑 Przechowuj kopię oddzielnie od oryginału i okresowo sprawdzaj, czy możesz odzyskać pliki.';
   }
  }
+ // RX BIBI 5.4: bounded multi-turn 2FA follow-up; user turns only.
+ if(/^(?:a\s+)?jak\s+(?:to\s+)?(?:wlaczyc|ustawic|uruchomic)[?!. ]*$/.test(plain)&&!everydayGuide){
+  const turns=recentUserQuestions.slice().reverse().map(normalizeRX);
+  const boundary=turns.findIndex(turn=>/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/.test(turn.trim()));
+  const relevant=boundary<0?turns:turns.slice(0,boundary);
+  const lastTopic=relevant.find(turn=>/\b(2fa|weryfikacja dwuetapowa|uwierzytelnianie dwuskladnikowe)\b/.test(turn));
+  if(lastTopic){
+   everydayGuide='👑 Aby włączyć 2FA, otwórz ustawienia bezpieczeństwa konta i poszukaj opcji „Weryfikacja dwuetapowa” lub „2FA”. Wybierz metodę potwierdzania, zachowaj kody odzyskiwania w bezpiecznym miejscu. Podaj nazwę usługi, jeśli potrzebujesz dokładnych kroków.';
+  }
+ }
  // RX BIBI 4.8: natural short follow-ups, strictly limited to a recent user topic.
  const everydayNaturalFollowup=/^(dlaczego|a co dalej|co dalej|mozesz prosciej|powiedz prosciej)[?!. ]*$/.test(plain);
  if(everydayNaturalFollowup&&!everydayGuide){
