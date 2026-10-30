@@ -259,7 +259,7 @@ export function planRXChat(message,history=[],learning=null){
   const relevant=boundary<0?turns:turns.slice(0,boundary);
   const topic=relevant.map(normalizeRX).find(turn=>/\b(phishing|spam|haslo jednorazowe|kopia zapasowa|bezpieczne haslo|2fa|weryfikacja dwuetapowa|uwierzytelnianie dwuskladnikowe)\b/.test(turn));
   if(topic){
-   const why=/^dlaczego/.test(plain),simple=/prosciej/.test(plain);
+   const why=/^dlaczego/.test(plain),simple=/prosciej|^nie rozumiem tego[?!. ]*$/.test(plain);
    if(/phishing/.test(topic))everydayGuide=why?'👑 Bo oszuści próbują skłonić Cię do ujawnienia haseł lub danych przez fałszywe wiadomości.':simple?'👑 Phishing to oszustwo przez fałszywą wiadomość. Nie podawaj haseł po kliknięciu linku.':'👑 Jeśli dostaniesz podejrzaną wiadomość, nie klikaj linku. Sprawdź sprawę w oficjalnej aplikacji lub na znanej stronie.';
    else if(/spam/.test(topic))everydayGuide=why?'👑 Spam bywa wysyłany masowo, aby reklamować produkty albo nakłonić do kliknięcia niebezpiecznego linku.':simple?'👑 Spam to niechciane wiadomości. Możesz je zablokować lub zgłosić.':'👑 Zablokuj nadawcę, zgłoś spam i nie otwieraj podejrzanych załączników.';
    else if(/haslo jednorazowe|bezpieczne haslo/.test(topic))everydayGuide=why?'👑 Unikalne hasła i kody pomagają chronić konto przed przejęciem.':simple?'👑 Nie udostępniaj hasła ani kodu. Każde konto powinno mieć inne hasło.':'👑 Włącz weryfikację dwuetapową i użyj menedżera haseł.';
