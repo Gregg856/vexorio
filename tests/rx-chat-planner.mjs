@@ -709,3 +709,12 @@ for(const phrase of ['Trening modelu AI','Uczenie modelu AI']){
 // Asking about ants alone must not invent a privileged catalog task.
 assert.equal(planRXChat('Sprawdź mrówki').executed,0);
 console.log('RX BIBI 6.7 Polish intent regression OK');
+
+const genericHistory=['Chcę porozmawiać o moim ogrodzie','👑 Co konkretnie Cię interesuje?','Gotowe','👑 Jasne.'];
+const continued=planRXChat('Dalej',genericHistory);
+assert.match(continued.answer,/moim ogrodzie/);
+assert.equal(continued.executed,0);
+assert.equal(continued.plan.work,null);
+const reset=planRXChat('Dalej',['Chcę porozmawiać o moim ogrodzie','👑 Jasne','Zmieńmy temat','👑 OK']);
+assert.doesNotMatch(reset.answer,/moim ogrodzie/);
+console.log('RX client generic topic continuation: PASS');
