@@ -27,7 +27,8 @@ export function planRXChat(message,history=[],learning=null){
  const topicPattern=/(mrowk|wirnik|turbina|chmur|cloudflare|test|bled|blad|kolejk|pamiec|wiedz|neural|math|matematyk|neuron|model)/;
  const hasTopic=x=>topicPattern.test(normalizeRX(x))||RULES.some(r=>r.words.some(w=>normalizeRX(x).includes(normalizeRX(w))));
  const recentUserQuestions=history.slice(-10).filter((_,i,arr)=>i%2===arr.length%2);
- const recentTopic=recentUserQuestions.slice().reverse().find(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())))||previous.slice().reverse().find(hasTopic)||last;
+ // Never promote the assistant's own generic reply into a remembered user topic.
+ const recentTopic=recentUserQuestions.slice().reverse().find(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())))||'';
  const correction=/^(nie o to (mi )?chodzilo|nie o to chodzi|zle mnie zrozumialas|źle mnie zrozumiałaś)[.!? ]*$/i.test(normalizeRX(message.trim()));
  const returnTopic=/^(wroc do poprzedniego tematu|wróć do poprzedniego tematu)[.!? ]*$/i.test(message.trim());
  const elaborate=/^(wyjasnij dokladniej|wyjaśnij dokładniej|rozwin temat|rozwiń temat)[.!? ]*$/i.test(message.trim());
