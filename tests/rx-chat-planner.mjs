@@ -396,9 +396,9 @@ for(const [question,history,expected] of [
  assert.equal(result.plan.work??null,null);
  assert.equal(result.modelInferenceUsed,false);
 }
-const afterSwitch=planRXChat('A jak to włączyć?',['Czym jest 2FA?','Wyjaśnienie.','Zmieńmy temat','Dobrze.']);
-assert.ok(!afterSwitch.answer.includes('Aby włączyć 2FA'),afterSwitch.answer);
-assert.equal(afterSwitch.executed,0);
+const afterSwitch2FA=planRXChat('A jak to włączyć?',['Czym jest 2FA?','Wyjaśnienie.','Zmieńmy temat','Dobrze.']);
+assert.ok(!afterSwitch2FA.answer.includes('Aby włączyć 2FA'),afterSwitch2FA.answer);
+assert.equal(afterSwitch2FA.executed,0);
 console.log('RX 2FA context boundary regression OK');
 
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
