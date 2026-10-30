@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
       - name: Validate worker and client source
         run: |
-          node --check worker.js
+          node --experimental-default-type=module --check worker.js
           node --check tests/rx-client-chat.cjs
           node tests/rx-client-chat.cjs
-          node tests/rx-client-functional.cjs
+          node --experimental-default-type=module tests/rx-client-functional.cjs
