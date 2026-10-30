@@ -3,8 +3,8 @@
 export const RX_KNOWLEDGE=[
  {id:'rx',terms:['rx','krolowa rx','mozg rx'],title:'Mózg RX',summary:'RX to rozwijany w VEXORIO system rozmowy i planowania zadań. Regułowy planer nie jest samodzielnym modelem językowym.',source:'VEXORIO — rx-chat-planner.mjs'},
  {id:'ants',terms:['mrowki rx','mrowki','mrówki rx','mrówki','mrowkach rx','mrowkach','mrówkach rx','mrówkach'],title:'Mrówki RX',summary:'Mrówki RX reprezentują moduły i zadania testowe. Plan zadania nie oznacza jego wykonania; wykonanie wymaga zatwierdzenia.',source:'VEXORIO — rx-chat-planner.mjs'},
- {id:'turbine',terms:['wirnik rx','wirnik','rx turbine'],title:'Wirnik RX',summary:'Wirnik koordynuje ograniczone równoległe wykonywanie zatwierdzonych testów. Nie tworzy dodatkowej fizycznej mocy obliczeniowej.',source:'VEXORIO — rx-turbine-engine.cjs'},
- {id:'knowledge',terms:['wiedza swiata','rx wiedza swiata','encyklopedia rx'],title:'RX Wiedza Świata',summary:'Moduł udostępnia lokalne wpisy i wyszukiwanie zewnętrznej encyklopedii z podaniem źródła. Nie jest pełną kopią Wikipedii.',source:'VEXORIO — rx-world-knowledge.mjs'}
+ {id:'turbine',terms:['wirnik rx','wirnik','wirniku rx','wirniku','rx turbine'],title:'Wirnik RX',summary:'Wirnik koordynuje ograniczone równoległe wykonywanie zatwierdzonych testów. Nie tworzy dodatkowej fizycznej mocy obliczeniowej.',source:'VEXORIO — rx-turbine-engine.cjs'},
+ {id:'knowledge',terms:['wiedza swiata','wiedzy swiata','rx wiedza swiata','encyklopedia rx'],title:'RX Wiedza Świata',summary:'Moduł udostępnia lokalne wpisy i wyszukiwanie zewnętrznej encyklopedii z podaniem źródła. Nie jest pełną kopią Wikipedii.',source:'VEXORIO — rx-world-knowledge.mjs'}
 ];
 export function findRXKnowledge(question){
  if(typeof question!=='string'||question.length>300)return null;
