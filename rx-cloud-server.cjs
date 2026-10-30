@@ -149,7 +149,10 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
                 evidence=JSON.parse(await fs.readFile(evidenceFile,'utf8'));
               }catch{continue;}
               if(evidence?.kind!=='rx-github-actions-evidence'||evidence.runId!==runId||evidence.repository!=='Gregg856/vexorio'||evidence.status!=='completed'||evidence.conclusion!=='success'||evidence.source!=='github-api')continue;
-              verified.push({incidentId:item.incidentId.slice(0,120),resolution:item.resolution.slice(0,500),testReference:item.testReference,verifiedResolution:true});
+              // Tie each resolution to the exact tested commit, not merely any successful workflow.
+              if(typeof item.commitSha!=='string'||!(/^[a-f0-9]{40}$/i.test(item.commitSha)))continue;
+              if(typeof evidence.headSha!=='string'||evidence.headSha.toLowerCase()!==item.commitSha.toLowerCase())continue;
+              verified.push({incidentId:item.incidentId.slice(0,120),resolution:item.resolution.slice(0,500),testReference:item.testReference,commitSha:item.commitSha,verifiedResolution:true});
             }catch{}
           }
         }catch(e){if(e.code!=='ENOENT')throw e;}
