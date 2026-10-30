@@ -184,7 +184,7 @@ for(const switchPhrase of ['Zmieńmy temat','Zmiana tematu','Nowy temat']){
  assert.ok(!result.answer.includes('150'),switchPhrase+': '+result.answer);
  assert.equal(result.executed,0);
  assert.equal(result.tasks.length,0);
- assert.equal(result.plan.work,null);
+ assert.equal(result.plan.work??null,null);
 }
 console.log('RX topic-switch price regression OK');
 
