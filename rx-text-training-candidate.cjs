@@ -49,5 +49,24 @@ function compareWave2(){
   productionConnected:false};
 }
 
-if(require.main===module){console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));console.log('RX TRAINING WAVE2',JSON.stringify(compareWave2()));}
-module.exports={EXTRAS,WAVE2,compare,compareWave2};
+
+function errorBreakdown(learner,set){
+ const labels=['greeting','tests','memory','math'];
+ const byLabel=Object.fromEntries(labels.map(label=>[label,{correct:0,total:0,errors:[]}]));
+ for(const [phrase,expected] of set){
+  const predicted=learner.classify(phrase).label;
+  const row=byLabel[expected];row.total++;
+  if(predicted===expected)row.correct++;
+  else row.errors.push({phrase,predicted});
+ }
+ return byLabel;
+}
+function diagnoseWave2(){
+ const model=createLearner({epochs:180,hidden:24,rate:0.06,additionalExamples:EXTRAS.concat(WAVE2)});
+ return {kind:'rx-offline-wave2-diagnosis',trainingSamples:model.examples,
+  holdout:errorBreakdown(model,HOLDOUT),challenge:errorBreakdown(model,CHALLENGE),
+  productionConnected:false};
+}
+
+if(require.main===module){console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));console.log('RX TRAINING WAVE2',JSON.stringify(compareWave2()));console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnoseWave2()));}
+module.exports={EXTRAS,WAVE2,compare,compareWave2,diagnoseWave2};
