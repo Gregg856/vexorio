@@ -79,6 +79,6 @@ function chatRX(message,{history=[],tasks=[]}={}){
  }else{
    answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
  }
- return {answer,plan,completedCount:completed.length,contextUsed:contextual&&(continuation?!!topic:!!previous),executed:0};
+ return {answer,plan,completedCount:completed.length,contextUsed:(contextual||continuation)&&(continuation?!!topic:!!previous),executed:0};
 }
 module.exports={chatRX};
