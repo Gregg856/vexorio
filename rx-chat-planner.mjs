@@ -43,8 +43,8 @@ export function planRXChat(message,history=[],learning=null){
  // A short continuation uses only an explicit recent user topic, never a guessed assistant topic.
  // Explicit topic switches prevent carrying an old intent into a new conversation.
  const topicSwitch=/^(?:zmienmy temat|zmiana tematu|nowy temat)[.!? ]*$/i;
- const latestSwitch=userTurns.findLastIndex(turn=>topicSwitch.test(normalizeRX(turn.trim())));
- const latestTopicIndex=userTurns.findLastIndex(turn=>hasTopic(turn)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(turn.trim())));
+ const latestSwitch=userTurns.map(turn=>topicSwitch.test(normalizeRX(turn.trim()))).lastIndexOf(true);
+ const latestTopicIndex=userTurns.map(turn=>hasTopic(turn)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(turn.trim()))).lastIndexOf(true);
  const activeTopic=latestTopicIndex>latestSwitch?userTurns[latestTopicIndex]:'';
  const contextual=(followup||correction||returnTopic||elaborate)&&last?(returnTopic?selectedTopic:activeTopic)+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
