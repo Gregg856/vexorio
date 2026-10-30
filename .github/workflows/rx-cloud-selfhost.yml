@@ -10,6 +10,9 @@ on:
       - 'tests/rx-bibi-evaluator.test.cjs'
       - 'tests/rx-bibi-live-evaluation.cjs'
       - 'tests/rx-bibi-live-evaluation.test.cjs'
+      - 'tests/rx-bibi-real-brain.test.cjs'
+      - 'rx-bibi-local-chat-adapter.cjs'
+      - 'rx-brain-chat-engine.cjs'
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-migration-readiness.cjs'
       - 'deploy/RX-CLOUD-WINDOWS.md'
@@ -41,6 +44,9 @@ on:
       - 'tests/rx-bibi-evaluator.test.cjs'
       - 'tests/rx-bibi-live-evaluation.cjs'
       - 'tests/rx-bibi-live-evaluation.test.cjs'
+      - 'tests/rx-bibi-real-brain.test.cjs'
+      - 'rx-bibi-local-chat-adapter.cjs'
+      - 'rx-brain-chat-engine.cjs'
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-package.cjs'
@@ -72,6 +78,8 @@ jobs:
         run: node tests/rx-bibi-evaluator.test.cjs
       - name: Test RX BIBI local chat adapter
         run: node tests/rx-bibi-live-evaluation.test.cjs
+      - name: Evaluate existing RX BIBI brain baseline
+        run: node tests/rx-bibi-real-brain.test.cjs
       - name: Check syntax
         run: |
           node --check rx-cloud-server.cjs
