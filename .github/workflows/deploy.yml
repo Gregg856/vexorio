@@ -28,6 +28,9 @@ jobs:
           cp index.html public/index.html
           cp guard-lab.html public/guard-lab.html
           cp rx-bibi-manager.html public/rx-bibi-manager.html
+          # Client-only RX BIBI chat is a separate static page, not the VEXORIO homepage.
+          cp rx-client.html public/rx-client.html
+          test -s public/rx-client.html
           cp rx-admin-prototype.html public/rx-admin-prototype.html
           cp rx-center.html public/rx-center.html
           test -s public/rx-center.html
