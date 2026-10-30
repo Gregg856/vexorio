@@ -19,18 +19,20 @@ function vector(text){
  if(typeof text!=='string'||!text.trim())throw Error('Invalid text');
  return toFrequencyVector(text.toLocaleLowerCase('pl'));
 }
-function createLearner({epochs=180,hidden=24,rate=0.06}={}){
+function createLearner({epochs=180,hidden=24,rate=0.06,additionalExamples=[]}={}){
+ if(!Array.isArray(additionalExamples)||additionalExamples.length>128||additionalExamples.some(row=>!Array.isArray(row)||row.length!==2||typeof row[0]!=='string'||!row[0].trim()||row[0].length>256||!LABELS.includes(row[1])))throw Error('Invalid additional examples');
+ const samples=EXAMPLES.concat(additionalExamples);
  if(!Number.isSafeInteger(epochs)||epochs<1||epochs>1000||!Number.isSafeInteger(hidden)||hidden<1||hidden>128||!Number.isFinite(rate)||rate<=0||rate>0.2)throw Error('Invalid training settings');
  const net=createNetwork(256,hidden,LABELS.length);
- const x=new Float32Array(EXAMPLES.length*256),y=new Float32Array(EXAMPLES.length*LABELS.length);
- EXAMPLES.forEach(([phrase,label],i)=>{x.set(vector(phrase),i*256);y[i*LABELS.length+LABELS.indexOf(label)]=1;});
+ const x=new Float32Array(samples.length*256),y=new Float32Array(samples.length*LABELS.length);
+ samples.forEach(([phrase,label],i)=>{x.set(vector(phrase),i*256);y[i*LABELS.length+LABELS.indexOf(label)]=1;});
  const metrics=train(net,x,y,{epochs,rate});
  function classify(text){
   const scores=Array.from(forward(net,vector(text)).pred);
   const best=scores.indexOf(Math.max(...scores));
   return {label:LABELS[best],scores,kind:'rx-text-intent',model:'local-neural-classifier'};
  }
- return {kind:'rx-text-learner',metrics,labels:LABELS,classify,examples:EXAMPLES.length};
+ return {kind:'rx-text-learner',metrics,labels:LABELS,classify,examples:samples.length};
 }
 
 // RX lexical-neighbor probe: independent of neural scores, never overrides classify().
