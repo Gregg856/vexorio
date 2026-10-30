@@ -742,3 +742,12 @@ assert.equal(gardenWater.executed,0);
 const gardenNoContext=planRXChat('Dalej',['Chcę porozmawiać o moim ogrodzie','👑 OK','Zmieńmy temat','👑 Jasne']);
 assert.doesNotMatch(gardenNoContext.answer,/Zacznijmy od Twojego ogrodu/);
 console.log('RX BIBI contextual garden dialogue: PASS');
+
+const detailHistory=['Chcę porozmawiać o moim ogrodzie','👑 Jasne, porozmawiajmy o moim ogrodzie.','Dalej','👑 Ile masz miejsca i czy jest tam dużo słońca?'];
+for(const [input,expected] of [['Mam mały ogród','małym ogrodzie'],['Jest słonecznie','słonecznym miejscu'],['Jest w cieniu','zacieniony'],['Chcę warzywa','warzywach']]){
+ const result=planRXChat(input,detailHistory);
+ assert.match(result.answer,new RegExp(expected,'i'),input);
+ assert.equal(result.executed,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX BIBI garden detail follow-up regression: PASS');
