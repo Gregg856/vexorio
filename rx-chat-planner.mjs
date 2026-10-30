@@ -650,6 +650,13 @@ export function planRXChat(message,history=[],learning=null){
   answer='👑 Kontynuujemy temat: „'+lastUserTopic.slice(0,140)+'”. Napisz, który aspekt mam rozwinąć, żebym nie dopowiadała nieznanych faktów.';
   tasks.length=0;plan.work=null;
  }
+ // Respond to an ordinary invitation to discuss a topic, without pretending to know facts.
+ const ordinaryConversation=/^(?:chc[eę]|chcialbym|chciałbym|mozemy|możemy)\s+(?:porozmawia[cć]|pogada[cć])\s+o\s+(.{3,140})[.!? ]*$/i.exec(message.trim());
+ if(ordinaryConversation){
+  const subject=ordinaryConversation[1].replace(/[.!? ]+$/g,'');
+  answer='👑 Jasne, porozmawiajmy o '+subject+'. Co najbardziej Cię w tym temacie interesuje?';
+  tasks.length=0;plan.work=null;
+ }
  if(shortReplyAnswer!==null)answer=shortReplyAnswer;
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
  if(everydayGuide!==null)answer=everydayGuide;
