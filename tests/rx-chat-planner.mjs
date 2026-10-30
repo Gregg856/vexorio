@@ -114,6 +114,21 @@ for(const [question,expected] of [
 }
 console.log('RX price change regression OK');
 
+// RX BIBI 3.8: natural language price queries.
+for(const [question,expected] of [
+ ['Produkt kosztuje 200 euro, ile zapłacę po rabacie 15%?','Cena po rabacie: 170'],
+ ['Towar kosztuje 100 euro, ile zapłacę po podwyżce 10%?','Cena po podwyżce: 110'],
+ ['Produkt kosztuje 80 euro, ile zapłacę po rabacie 12,5%?','Cena po rabacie: 70'],
+ ['Produkt kosztuje 200 euro, ile zapłacę po rabacie 120%?','Rabat nie może przekraczać 100%']
+]){
+ const result=planRXChat(question);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX natural price regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
