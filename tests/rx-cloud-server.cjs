@@ -142,6 +142,30 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
     assert.equal(memory.verified[0].verifiedResolution,true);
     assert(Array.isArray(memory.suggestions),'Queen feed must expose suggestions');
     assert(memory.suggestions.every(s=>s.matches.every(m=>m.verifiedResolution===true&&m.automaticApplication===false)),'Suggestions must never execute repairs');
+    // Same incident must match its tested fix even when text differs.
+    const suggestionIncidentDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-neuron-match-'));
+    const previousInboxDir=process.env.RX_BIBI_INBOX_DIR;
+    process.env.RX_BIBI_INBOX_DIR=suggestionIncidentDir;
+    try{
+      await fs.writeFile(path.join(suggestionIncidentDir,'rx-bibi-900.json'),JSON.stringify({
+        kind:'rx-bibi-smart-error-memory',runId:'900',
+        developerHandoff:[
+          {id:'incident-1',module:'Czat',problem:'Wiadomości nie docierają'},
+          {id:'unrelated-77',module:'Płatności',problem:'Błąd faktury'}
+        ]
+      }));
+      const matchingResponse=await fetch(base+'/__rxcloud/bibi/learning',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+      assert.equal(matchingResponse.status,200);
+      const matching=await matchingResponse.json();
+      assert.equal(matching.suggestions.length,1,'Unrelated incidents must not receive unrelated fix suggestions');
+      assert.equal(matching.suggestions[0].incidentId,'incident-1');
+      assert.equal(matching.suggestions[0].matches[0].matchType,'same-incident');
+      assert.equal(matching.suggestions[0].matches[0].automaticApplication,false);
+    }finally{
+      if(previousInboxDir===undefined)delete process.env.RX_BIBI_INBOX_DIR;
+      else process.env.RX_BIBI_INBOX_DIR=previousInboxDir;
+      await fs.rm(suggestionIncidentDir,{recursive:true,force:true});
+    }
   }finally{
     if(previousEvidenceDir===undefined)delete process.env.RX_NEURON_EVIDENCE_DIR;
     else process.env.RX_NEURON_EVIDENCE_DIR=previousEvidenceDir;
