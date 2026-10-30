@@ -672,7 +672,7 @@ export function planRXChat(message,history=[],learning=null){
   tasks.length=0;plan.work=null;
  }
  // RX BIBI: interpret the user's answer to a previous garden question, not just "Dalej".
- const recentGardenTopic=userTurns.slice(-6).some(turn=>/\b(ogrod|ogrodzie|ogrodu|ogrodem|rosliny|warzywa|kwiaty)\b/i.test(normalizeRX(turn)));
+ const recentGardenTopic=topicTurns.slice(-6).some(turn=>/\b(ogrod|ogrodzie|ogrodu|ogrodem|rosliny|warzywa|kwiaty)\b/i.test(normalizeRX(turn)));
  const recentGardenAnswer=history.slice(-4).some(turn=>/warzywnik|kwiaty czy|słoneczne|zacienione|ile masz miejsca|dużo słońca/i.test(turn));
  const gardenDetail=/\b(slonce|sloneczn\w*|cien\w*|zacienion\w*|maly|niewielki|duzy|warzywa|kwiaty|krzewy|pomidor\w*|ziemia|gleba)\b/i.test(plain);
  if(recentGardenTopic&&recentGardenAnswer&&gardenDetail&&!gardenPlanting&&!gardenCare&&!gardenNext&&!ordinaryConversation){
