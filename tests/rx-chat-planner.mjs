@@ -924,3 +924,10 @@ if(dialogueIssues.length){
  console.error('RX BIBI classified dialogue failures:',JSON.stringify(dialogueIssues));
  process.exitCode=1;
 }
+
+// Customer follow-up must retain the user's previous question, not pretend to know the answer.
+const rememberedFollowup=planRXChat('A dlaczego?',['Dlaczego niebo jest niebieskie?','Potrzebuję więcej szczegółów.']);
+assert.match(rememberedFollowup.answer,/Dlaczego niebo jest niebieskie/);
+assert.doesNotMatch(rememberedFollowup.answer,/Nie rozumiem jeszcze tego pytania/);
+const noHistoryFollowup=planRXChat('A dlaczego?');
+assert.doesNotMatch(noHistoryFollowup.answer,/undefined|null/);
