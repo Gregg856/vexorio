@@ -118,6 +118,7 @@ const scenarios=[
  {name:'mrówki',turns:['Co robią mrówki?','A co z nimi?'],expected:/Mrówki/i},
  {name:'RX Neural Core',turns:['Opowiedz o RX Neural Core','A jak działa?'],expected:/RX Neural Core/i}
 ];
+let bibiScenariosPassed=0;
 for(const scenario of scenarios){
  const conversation=[];
  for(let i=0;i<scenario.turns.length;i++){
@@ -130,5 +131,13 @@ for(const scenario of scenarios){
   if(i>0){assert.equal(reply.contextUsed,true,scenario.name+' context missing');assert.match(reply.answer,scenario.expected,scenario.name+' wrong topic');}
   conversation.push(question,reply.answer);
  }
+ bibiScenariosPassed++;
  console.log('RX BIBI multi-turn dialogue OK:',scenario.name);
+}
+
+const bibiSummary={suite:'RX BIBI dialogues',passed:bibiScenariosPassed,total:scenarios.length,failed:scenarios.length-bibiScenariosPassed};
+console.log('RX BIBI SCORE:',JSON.stringify(bibiSummary));
+if(process.env.GITHUB_STEP_SUMMARY){
+ const {appendFileSync}=await import('node:fs');
+ appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## RX BIBI — rozmowy testowe\\n\\nZaliczone: **'+bibiSummary.passed+'/'+bibiSummary.total+'**\\n\\n');
 }
