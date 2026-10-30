@@ -67,6 +67,12 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(queen.status,200);
   assert.equal((await queen.json()).taskExecution,false);
   assert.equal((await fetch(base+'/__rxcloud/queen/status',{method:'POST'})).status,405);
+  // RX BIBI client must be served by our self-hosted RX CLOUD, with its own API route.
+  const clientPage=await fetch(base+'/rx-client.html');
+  assert.equal(clientPage.status,200,'RX BIBI client page must load on RX CLOUD');
+  assert.match(await clientPage.text(),/api\/rx\/client\/chat/,'Client must use RX chat API');
+  const chatWithoutLogin=await fetch(base+'/api/rx/client/chat',{method:'POST',headers:{'Content-Type':'application/json','Origin':'http://localhost'},body:JSON.stringify({message:'Cześć',history:[]})});
+  assert.equal(chatWithoutLogin.status,401,'RX BIBI must reject unauthenticated chat on RX CLOUD');
   const home=await fetch(base+'/');
   assert.equal(home.status,200,'VEXORIO home must load on RX CLOUD');
   assert.match(home.headers.get('content-type')||'',/text\/html/);
