@@ -30,10 +30,10 @@ const vm=require('node:vm');
 const pageScript=client.match(/<script type="module">([\s\S]*?)<\/script>/);
 assert.ok(pageScript,'Client module must exist');
 const moduleSource=pageScript[1];
-const start=moduleSource.indexOf("$('form').onsubmit=async e=>");
-const stop=moduleSource.indexOf("$('message').addEventListener('keydown'",start);
-assert.ok(start>=0&&stop>start,'Client submit handler found');
-const submitSource=moduleSource.slice(start,stop);
+const submitStart=moduleSource.indexOf("$('form').onsubmit=async e=>");
+const submitStop=moduleSource.indexOf("$('message').addEventListener('keydown'",start);
+assert.ok(submitStart>=0&&submitStop>submitStart,'Client submit handler found');
+const submitSource=moduleSource.slice(submitStart,submitStop);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
 async function simulateSubmit({networkFailure=false,authFailure=false}={}){
