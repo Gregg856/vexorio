@@ -37,6 +37,30 @@ const {pathToFileURL}=require('node:url');
    assert.equal(data.executed,0);
    assert.equal(data.modelInferenceUsed,false);
    assert.ok(typeof data.answer==='string'&&data.answer.length>0);
+   // RX BIBI 6.1: real Worker route, authenticated multi-turn dialogue.
+   const dialogue=[];
+   const dialogueTurns=[
+    ['Czym jest 2FA?',null],
+    ['Nie rozumiem tego','2FA to dodatkowe'],
+    ['Podaj przykład','Przykład 2FA'],
+    ['Zmieńmy temat',null],
+    ['Co oznacza backup?',null],
+    ['A jak to zrobić?','Aby zrobić kopię zapasową']
+   ];
+   for(const [message,expected] of dialogueTurns){
+    const result=await call('/api/rx/client/chat',{body:JSON.stringify({message,history:dialogue.slice(-10)})});
+    assert.equal(result.status,200,'Authenticated dialogue: '+message);
+    const reply=await result.json();
+    assert.equal(reply.ok,true,'Response shape: '+message);
+    assert.equal(reply.executed,0,'No execution: '+message);
+    assert.equal(reply.adminToolsAvailable,false,'No admin privileges: '+message);
+    assert.equal(reply.modelInferenceUsed,false,'No claimed model inference: '+message);
+    assert.ok(typeof reply.answer==='string'&&reply.answer.trim(),'Nonempty answer: '+message);
+    if(expected)assert.ok(reply.answer.includes(expected),'Wrong context: '+message+' => '+reply.answer);
+    dialogue.push(message,reply.answer);
+   }
+   assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls during dialogue');
+   console.log('RX BIBI 6.1 authenticated Worker dialogue passed:',dialogueTurns.length);
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls');
    console.log('RX client functional authentication and isolation checks passed');
  }finally{global.fetch=oldFetch;}
