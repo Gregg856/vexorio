@@ -876,6 +876,17 @@ runDialogueScenario('ambiguous followup after topic reset',[
  {input:'Chcę porozmawiać o muzyce',match:/muzyce/i}
 ]);
 
+// Regression from the real customer screenshots: explicit topic must win over generic greeting.
+runDialogueScenario('customer screenshot: ants then memory',[
+ {input:'Porozmawiajmy o mrówkach',match:/mrówkach/i,reject:/Co dziś najbardziej chcesz ulepszyć/i},
+ {input:'Dalej',match:/mrów|mrówki/i,reject:/Co dziś najbardziej chcesz ulepszyć/i},
+ {input:'Zmieńmy temat',reject:/Kontynuujemy temat:.*mrów/i},
+ {input:'Porozmawiajmy o pamięci',match:/pamięci/i,reject:/Co dziś najbardziej chcesz ulepszyć/i},
+ {input:'Dalej',match:/pamię|pamięci/i,reject:/Co dziś najbardziej chcesz ulepszyć/i}
+]);
+runDialogueScenario('customer screenshot: topic invitation on first turn',[
+ {input:'Porozmawiajmy o mrówkach',match:/porozmawiajmy o mrówkach/i,reject:/Co dziś najbardziej chcesz ulepszyć/i}
+]);
 // Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
 const dialogueIssues=dialogueReports.flatMap(scenario=>scenario.turns.flatMap(turn=>turn.issues.map(issue=>({scenario:scenario.scenario,turn:turn.turn,code:issue.code,detail:issue.detail||null}))));
 
