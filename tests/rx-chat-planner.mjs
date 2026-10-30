@@ -727,3 +727,18 @@ const ordinaryFollowup=planRXChat('Dalej',['Chcę porozmawiać o moim ogrodzie',
 assert.match(ordinaryFollowup.answer,/moim ogrodzie/);
 assert.equal(ordinaryFollowup.executed,0);
 console.log('RX client real screenshot reproduction: PASS');
+
+const gardenHistory=['Chcę porozmawiać o moim ogrodzie','👑 Jasne, porozmawiajmy o moim ogrodzie.'];
+const gardenNext=planRXChat('Dalej',gardenHistory);
+assert.match(gardenNext.answer,/warzywnik|słońca/i);
+assert.equal(gardenNext.executed,0);
+assert.equal(gardenNext.plan.work,null);
+const gardenPlants=planRXChat('Co mogę posadzić?',gardenHistory);
+assert.match(gardenPlants.answer,/warzywa|kwiaty|krzewy/i);
+assert.equal(gardenPlants.executed,0);
+const gardenWater=planRXChat('Jak podlewać?',gardenHistory);
+assert.match(gardenWater.answer,/wilgotność ziemi/i);
+assert.equal(gardenWater.executed,0);
+const gardenNoContext=planRXChat('Dalej',['Chcę porozmawiać o moim ogrodzie','👑 OK','Zmieńmy temat','👑 Jasne']);
+assert.doesNotMatch(gardenNoContext.answer,/Zacznijmy od Twojego ogrodu/);
+console.log('RX BIBI contextual garden dialogue: PASS');
