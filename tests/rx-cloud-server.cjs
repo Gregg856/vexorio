@@ -140,6 +140,8 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
     assert.equal(memory.verified.length,1,'Only explicitly approved and test-backed fixes may enter verified memory');
     assert.equal(memory.verified[0].incidentId,'incident-1');
     assert.equal(memory.verified[0].verifiedResolution,true);
+    assert(Array.isArray(memory.suggestions),'Queen feed must expose suggestions');
+    assert(memory.suggestions.every(s=>s.matches.every(m=>m.verifiedResolution===true&&m.automaticApplication===false)),'Suggestions must never execute repairs');
   }finally{
     if(previousEvidenceDir===undefined)delete process.env.RX_NEURON_EVIDENCE_DIR;
     else process.env.RX_NEURON_EVIDENCE_DIR=previousEvidenceDir;
