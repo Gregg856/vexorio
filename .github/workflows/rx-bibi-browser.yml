@@ -341,7 +341,9 @@ jobs:
         run: node tests/rx-million-hearts.cjs
       - name: Sprawdź RX COMMAND BRIDGE
         run: node tests/rx-command-bridge.cjs
+      # Customer chat checks must run even when an unrelated RX module fails.
       - name: Uruchom testy RX BIBI
+        if: ${{ !cancelled() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node tests/rx-bibi-browser.cjs
@@ -359,6 +361,7 @@ jobs:
         if: always()
         run: node tests/rx-live-panel.cjs
       - name: RX BIBI — sprawdź czat RX na telefonie
+        if: ${{ !cancelled() }}
         run: node tests/rx-chat-mobile.cjs
       - name: RX BIBI — audyt wizualny wszystkich kategorii i czatu
         run: node tests/rx-visual-audit.cjs
