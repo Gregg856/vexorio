@@ -162,6 +162,22 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
       assert.equal(matching.suggestions[0].matches[0].matchType,'same-incident');
       assert.equal(matching.suggestions[0].matches[0].similarityScore,1,'Exact incident must rank highest');
       assert.equal(matching.suggestions[0].matches[0].automaticApplication,false);
+      // Training-quality regression: keyword overlap alone must not trigger unrelated fixes.
+      await fs.writeFile(path.join(suggestionIncidentDir,'rx-bibi-901.json'),JSON.stringify({
+        kind:'rx-bibi-smart-error-memory',runId:'901',
+        developerHandoff:[
+          {id:'incident-1',module:'Czat',problem:'Wiadomości nie docierają'},
+          {id:'unrelated-88',module:'Płatności',problem:'Błąd panel test'},
+          {id:'unrelated-89',module:'Powiadomienia',problem:'System moduł naprawa'}
+        ]
+      }));
+      const qualityResponse=await fetch(base+'/__rxcloud/bibi/learning',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+      assert.equal(qualityResponse.status,200);
+      const quality=await qualityResponse.json();
+      assert.equal(quality.suggestions.length,1,'Generic filler words must not suggest a chat repair for unrelated errors');
+      assert.equal(quality.suggestions[0].incidentId,'incident-1');
+      assert(quality.suggestions[0].matches.every(m=>m.similarityScore>=0&&m.similarityScore<=1));
+
     }finally{
       if(previousInboxDir===undefined)delete process.env.RX_BIBI_INBOX_DIR;
       else process.env.RX_BIBI_INBOX_DIR=previousInboxDir;
