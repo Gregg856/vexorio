@@ -120,7 +120,17 @@ export default {
       // Client requests use only the shared deterministic planner; no GitHub dispatch,
       // administrator commands, persistent memory writes, or privileged RX tools.
       const planned=planRXChat(message,history,null);
-      return new Response(JSON.stringify({ok:true,answer:String(planned.answer||'Nie mam jeszcze odpowiedzi.').slice(0,4000),engine:'rx-client-local-planner',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+      // RX BIBI 6.5: public identity is distinct from the private RX Queen.
+      const normalizedMessage=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\\p{M}/gu,'').replace(/ł/g,'l');
+      const publicGreeting=/^(czesc|hej|witaj|witam|dzien dobry)[!?. ]*$/.test(normalizedMessage);
+      const publicIdentity=/^(kim jestes|jak sie nazywasz|przedstaw sie)[!?. ]*$/.test(normalizedMessage);
+      const publicThanks=/^(dzieki|dziekuje|dziekuje bardzo|wielkie dzieki)[!?. ]*$/.test(normalizedMessage);
+      let clientAnswer=String(planned.answer||'Nie mam jeszcze odpowiedzi.');
+      if(publicGreeting)clientAnswer='Cześć! Jestem RX BIBI, asystentem do rozmowy i prostych wyjaśnień. W czym mogę Ci pomóc?';
+      else if(publicIdentity)clientAnswer='Jestem RX BIBI — asystentem VEXORIO. Pomagam wyjaśniać zagadnienia i odpowiadać na pytania. Obecnie korzystam z lokalnego planera odpowiedzi, nie z generatywnego modelu AI.';
+      else if(publicThanks)clientAnswer='Nie ma za co! Jeśli masz kolejne pytanie, chętnie pomogę.';
+      else clientAnswer=clientAnswer.replace(/^👑\\s*/u,'');
+      return new Response(JSON.stringify({ok:true,answer:clientAnswer.slice(0,4000),engine:'rx-client-local-planner',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
     }
     if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
