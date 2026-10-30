@@ -28,3 +28,10 @@ assert.ok(heldOut.accuracy>=0&&heldOut.accuracy<=1);
 assert.equal(heldOut.correct,heldOut.cases.filter(c=>c.expected===c.predicted).length);
 assert.throws(()=>evaluateHeldOut({}),/Invalid learner/);
 console.log('RX QUEEN HELD-OUT:',heldOut.correct+'/'+heldOut.total,'accuracy',heldOut.accuracy);
+
+for(const label of LABELS){
+ const group=heldOut.perLabel[label];
+ assert.equal(group.total,2);
+ assert.equal(group.correct,heldOut.cases.filter(c=>c.expected===label&&c.predicted===label).length);
+}
+console.log('RX QUEEN HELD-OUT BY INTENT',JSON.stringify(heldOut.perLabel));
