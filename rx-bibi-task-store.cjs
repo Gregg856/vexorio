@@ -30,7 +30,7 @@ function saveTasks(file,tasks){
 }
 function normalizeTaskTitle(title){
  if(typeof title!=='string'||!title.trim()||title.length>160)throw Error('Invalid title');
- return title.normalize('NFC').toLocaleLowerCase('pl-PL').replace(/\\s+/g,' ').trim();
+ return title.normalize('NFC').toLocaleLowerCase('pl-PL').replace(/\s+/g,' ').trim();
 }
 function findSimilarTasks(tasks,title){
  validate(tasks);
@@ -45,7 +45,7 @@ function proposeStatusChange(tasks,title,status){
  const index=tasks.findIndex(t=>t===matches[0]);
  if(tasks[index].status===status)throw Error('Task already has requested status');
  if(tasks[index].status==='completed'&&status==='pending')throw Error('Completed task cannot be reopened without separate review');
- return {title,status,previousStatus:tasks[index].status,index};
+ return {title:tasks[index].title,status,previousStatus:tasks[index].status,index};
 }
 function applyApprovedChange(file,proposal,{approved=false}={}){
  if(approved!==true)throw Error('Explicit approval required');
