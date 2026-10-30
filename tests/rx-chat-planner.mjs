@@ -456,6 +456,24 @@ const afterSwitch57=planRXChat('Podaj przykład',['Czym jest 2FA?','Wyjaśnienie
 assert.ok(!afterSwitch57.answer.includes('Przykład 2FA'),afterSwitch57.answer);
 console.log('RX expanded context examples regression OK');
 
+// RX BIBI 5.8: short replies must not execute anything.
+for(const [question,history,expected] of [
+ ['Tak',[],'Do czego odnosi się'],
+ ['Nie',[],'Do czego odnosi się'],
+ ['Dokładnie',[],'dobrze uchwyciłam temat'],
+ ['Właśnie o to chodzi',[],'dobrze uchwyciłam temat'],
+ ['Tak',['Mam pytanie','O czym chcesz porozmawiać?'],'Napisz, jaki szczegół'],
+ ['Nie',['Mam pytanie','O czym chcesz porozmawiać?'],'Możemy zmienić temat']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX short replies regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
