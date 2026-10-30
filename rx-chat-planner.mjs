@@ -11,6 +11,12 @@ export function planRXChat(message,history=[],learning=null){
  const recentUserTurns=history.filter((_,index)=>index%2===0).slice(-10);
  const preferences=recentUserTurns.filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/i.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
+ // Client follow-ups use the latest user turn, never the assistant's broad answer.
+ const latestUserTurn=history.length>=2?history.at(-2):history.at(-1);
+ const briefReference=/^(?:a (?:to|ten|tamten|one|oni|jak|dlaczego|co z tym)|co z tym|co z nimi|dalej|rozwin(?: to)?|jak to dziala|dlaczego)[?.! ]*$/i.test(message.trim());
+ if(briefReference&&(!latestUserTurn||!latestUserTurn.trim())){
+  return {ok:true,answer:'👑 Do czego nawiązujesz? Napisz proszę temat lub powtórz pytanie, żebym nie zgadywała.',topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:false,multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
+ }
  const last=history.at(-1)||'';
  const previous=history.slice(-5).filter(x=>x.trim());
  const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez|a ten |a tamten |co z tym|co z nim|co z nimi|zrob drugi punkt|zrób drugi punkt)/i.test(message.trim());
