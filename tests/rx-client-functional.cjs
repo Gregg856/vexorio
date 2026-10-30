@@ -19,7 +19,7 @@ const {pathToFileURL}=require('node:url');
    }
    throw Error('Unexpected upstream request: '+url);
  };
- const call=(pathname,options={})=>worker.fetch(new Request(origin+pathname,{method:'POST',headers:{Origin:origin,Authorization:'Bearer valid-user','Content-Type':'application/json',...options.headers},body:JSON.stringify({message:'Cześć',history:[]}),...options}),env);
+ const call=(pathname,options={})=>{const {headers={},...rest}=options;return worker.fetch(new Request(origin+pathname,{method:'POST',body:JSON.stringify({message:'Cześć',history:[]}),...rest,headers:{Origin:origin,Authorization:'Bearer valid-user','Content-Type':'application/json',...headers}}),env);};
  try{
    let response=await call('/api/rx/client/chat',{headers:{Authorization:'Bearer invalid'}});
    assert.equal(response.status,401,'Invalid session rejected');
