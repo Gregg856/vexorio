@@ -11,4 +11,6 @@ assert.match(answerRXTaskQuery('Co umiesz?',tasks),/lokalnym planerze reguł/);
 assert.match(answerRXTaskQuery('Co potrafisz?',tasks),/możliwe duplikaty/);
 assert.match(answerRXTaskQuery('Jak możemy cię ulepszać?',tasks),/ulepszać etapami/);
 assert.match(answerRXTaskQuery('Pokaż duplikaty',[{title:'Paprawić czat bibi',status:'pending'},{title:'Poprawić czat Bibi',status:'completed'}]),/Możliwe duplikaty/);
+assert.match(answerRXTaskQuery('BIBI, co umiesz? Opowiedz mi o swoich możliwościach i ograniczeniach. Chcę cię dalej rozwijać, żebyś mogła pomagać mi w budowaniu naszego systemu RX.',tasks),/lokalnym planerze reguł/);
+assert.equal(answerRXTaskQuery('Co umiesz?',[{title:'',status:'pending'}]),null);
 console.log('RX BIBI shared task reasoner: passed');
