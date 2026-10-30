@@ -17,4 +17,14 @@ assert.match(chatRX('Co dalej?',{history:['Testy modelu','Gotowe','Napraw czat',
 assert.match(chatRX('Wróć do poprzedniego tematu',{history:['Testy modelu','Gotowe','Napraw czat','Zielone']}).answer,/Testy modelu/);
 assert.match(chatRX('Wróć do poprzedniego tematu',{history:['Testy modelu','ok']}).answer,/Nie widzę wcześniejszego/);
 assert.match(chatRX('Wróć do poprzedniego tematu',{history:['Testy modelu','Testy modelu','Napraw czat']}).answer,/Testy modelu/);
+for(const [command,expected] of [['Napraw to',/propozycję poprawki/],['Sprawdź jeszcze raz',/Ponowny test/],['Co proponujesz?',/Proponuję najpierw/]]){
+ const result=chatRX(command,{history:['Błąd klawiatury Android','Gotowe']});
+ assert.match(result.answer,/Błąd klawiatury Android/);
+ assert.match(result.answer,expected);
+ assert.equal(result.contextUsed,true);
+ assert.equal(result.executed,0);
+}
+assert.match(chatRX('Napraw to').answer,/Nie mam kontekstu/);
+assert.match(chatRX('Sprawdź jeszcze raz',{history:['Gotowe']}).answer,/Nie mam kontekstu/);
+assert.match(chatRX('Co proponujesz?',{history:['Testy RX','Napraw czat']}).answer,/Napraw czat/);
 console.log('PASS RX QUEEN CONVERSATIONAL RESPONSES');
