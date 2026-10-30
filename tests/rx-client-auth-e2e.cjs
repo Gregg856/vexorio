@@ -14,11 +14,16 @@ const password=process.env.RX_BIBI_TEST_PASSWORD;
   const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
   const response=await page.goto(base+'/rx-client',{waitUntil:'domcontentloaded',timeout:30000});
   if(!response?.ok())throw Error('Client panel HTTP '+response?.status());
-  await page.locator('#login').waitFor({state:'visible',timeout:20000});
-  await page.locator('#email').fill(email);
-  await page.locator('#password').fill(password);
-  await page.locator('#signin').click();
-  await page.locator('#chat').waitFor({state:'visible',timeout:20000});
+  // Existing sessions may restore the chat directly; otherwise use the normal sign-in form.
+  const chat=page.locator('#chat');
+  const login=page.locator('#login');
+  await Promise.race([chat.waitFor({state:'visible',timeout:20000}),login.waitFor({state:'visible',timeout:20000})]);
+  if(!(await chat.isVisible())){
+   await page.locator('#email').fill(email);
+   await page.locator('#password').fill(password);
+   await page.locator('#signin').click();
+   await chat.waitFor({state:'visible',timeout:20000});
+  }
   report.checks.push('authenticated_customer_chat_visible');
   // Real multi-turn regression: check the actual authenticated API, not just HTTP 200.
   const scenarios=[
