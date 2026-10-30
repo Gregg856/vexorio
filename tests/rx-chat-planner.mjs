@@ -474,6 +474,23 @@ for(const [question,history,expected] of [
 }
 console.log('RX short replies regression OK');
 
+// RX BIBI 5.9: corrections must clarify, not guess or execute actions.
+for(const [question,history,expected] of [
+ ['Nie o to mi chodziło',[],'poprzednia odpowiedź nie trafiła'],
+ ['Źle mnie zrozumiałaś',[],'poprzednia odpowiedź nie trafiła'],
+ ['Chodziło mi o inny temat',[],'chodziło Ci o inny temat'],
+ ['Miałem na myśli coś innego',[],'chodziło Ci o inny temat'],
+ ['Nie o to chodzi',['Pytanie o testy','Wyjaśnienie.'],'napisz proszę, co konkretnie']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX correction clarification regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
