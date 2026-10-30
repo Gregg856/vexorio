@@ -25,4 +25,63 @@ assert.match(client,/if\(!data\?\.session\)\{sendInFlight=false;/,'Missing sessi
 assert.match(client,/finally\{sendInFlight=false;\$\('send'\)\.disabled=false;/,'Network failure must release guard');
 assert.match(client,/response\.status===401\|\|response\.status===403/,'Expired session handled');
 console.log('RX BIBI 6.4 client submission lifecycle source checks passed');
+// Simulate the actual form handler with minimal DOM and deferred auth/network promises.
+const vm=require('node:vm');
+const pageScript=client.match(/<script type="module">([\s\S]*?)<\/script>/);
+assert.ok(pageScript,'Client module must exist');
+const moduleSource=pageScript[1];
+const start=moduleSource.indexOf("$('form').onsubmit=async e=>");
+const stop=moduleSource.indexOf("$('message').addEventListener('keydown'",start);
+assert.ok(start>=0&&stop>start,'Client submit handler found');
+const submitSource=moduleSource.slice(start,stop);
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+async function simulateSubmit({networkFailure=false,authFailure=false}={}){
+ const auth=deferred(),network=deferred(),nodes={
+  message:{value:'Czym jest 2FA?'},send:{disabled:false},form:{},messages:{children:[],replaceChildren(){}}
+ };
+ const messages=[],statusMessages=[],requests=[];
+ const context={
+  $:id=>nodes[id]||(nodes[id]={}),
+  client:{auth:{getSession:()=>auth.promise,signOut:async()=>{}}},
+  history:[],sendInFlight:false,
+  bubble:(value,me)=>messages.push({value,me:!!me}),
+  saveConversation:()=>{},status:value=>statusMessages.push(value),
+  scrollLatest:()=>{},syncSession:()=>{},
+  fetch:async(url,opts)=>{requests.push({url,opts});return network.promise;}
+ };
+ vm.createContext(context);
+ vm.runInContext(submitSource,context);
+ const submit=()=>nodes.form.onsubmit({preventDefault(){}});
+ const first=submit(),second=submit();
+ assert.equal(context.sendInFlight,true,'Guard engaged before auth resolves');
+ assert.equal(messages.length,0,'No duplicate user bubble during auth');
+ auth.resolve(authFailure?Promise.reject(Error('Auth offline')):{data:{session:{access_token:'valid-user'}}});
+ await tick();
+ if(authFailure){
+  await Promise.all([first,second]);
+  assert.equal(context.sendInFlight,false,'Guard released on auth error');
+  assert.equal(requests.length,0,'No request after auth error');
+  assert.ok(statusMessages.some(x=>x.includes('Nie można sprawdzić sesji')),'Auth error visible');
+  return;
+ }
+ assert.equal(requests.length,1,'Exactly one API call after double click');
+ assert.equal(messages.filter(x=>x.me).length,1,'Exactly one user bubble');
+ if(networkFailure)network.reject(Error('Network disconnected'));
+ else network.resolve({ok:true,status:200,json:async()=>({answer:'2FA to dodatkowe zabezpieczenie.'})});
+ await Promise.all([first,second]);
+ assert.equal(context.sendInFlight,false,'Guard released after request');
+ assert.equal(nodes.send.disabled,false,'Send button restored');
+ assert.equal(requests.length,1,'No duplicate API call');
+ assert.ok(statusMessages.includes(networkFailure?'Błąd sieci lub serwera. Możesz ponowić pytanie.':'Gotowe.'),'Appropriate result status');
+ if(networkFailure)assert.equal(context.history.length,0,'Failed request must not pollute conversation context');
+ else assert.equal(context.history.length,2,'Successful request recorded once');
+}
+(async()=>{
+ await simulateSubmit();
+ await simulateSubmit({networkFailure:true});
+ await simulateSubmit({authFailure:true});
+ console.log('RX BIBI 6.4 simulated double-submit, network and auth failures passed');
+})().catch(error=>{console.error(error);process.exitCode=1;});
+
 console.log('RX client route isolation: source checks passed');
