@@ -7,6 +7,18 @@ export function answerRXTaskQuery(message,tasks){
  const completed=/^(?:co (?:już|juz) (?:zrobione|ukończone)|pokaż (?:ukończone|ukonczone|zakończone) zadania|co (?:jest )?gotowe)[?!.\\s]*$/i.test(text);
  const status=/^(?:jaki status zadania|sprawdź status zadania|sprawdz status zadania):?\s+(.+)$/i.exec(text);
  const normalize=s=>s.normalize('NFC').toLocaleLowerCase('pl-PL').replace(/\s+/g,' ').trim();
+ const duplicateQuery=/^(?:czy (?:mam |są |sa )?(?:duplikaty|podobne zadania)|pokaż (?:duplikaty|podobne zadania)|sprawdź (?:duplikaty|podobne zadania)|sprawdz (?:duplikaty|podobne zadania))[?!.\\s]*$/i.test(text);
+ if(duplicateQuery){
+  const groups=new Map();
+  for(const task of tasks){
+   const key=normalize(task.title).replace(/^(?:po|na)praw(?:ić|ic|a|a)?\\s+/,'naprawić ').replace(/\\bbibi\\b/g,'bibi');
+   if(!groups.has(key))groups.set(key,[]);
+   groups.get(key).push(task);
+  }
+  const repeats=[...groups.values()].filter(group=>group.length>1);
+  if(!repeats.length)return 'Nie znalazłam zadań o tej samej lub znormalizowanej nazwie. Inne podobieństwa wymagają ręcznej oceny.';
+  return 'Możliwe duplikaty do sprawdzenia: '+repeats.map(group=>group.map(t=>t.title+' ['+(t.status==='completed'?'ukończone':'oczekujące')+']').join(' / ')).join('; ')+'. Nie zmieniłam żadnego statusu.';
+ }
  if(status){
   const matched=tasks.filter(t=>normalize(t.title)===normalize(status[1]));
   if(matched.length===1)return 'Status zadania „'+matched[0].title+'”: '+(matched[0].status==='completed'?'ukończone':'oczekujące')+'.';
