@@ -51,7 +51,15 @@ export function planRXChat(message,history=[],learning=null){
  const plain=plainRaw.replace(/\b(sorawdz|sprwadz|sprawdx)\b/g,'sprawdz')
   .replace(/\b(zrib|zrob|zrub)\b/g,'zrob')
   .replace(/\b(poprawke|poprawka)\b/g,'popraw')
-  .replace(/\b(mrowkami|mrowkach|mrowki)\b/g,'mrowki');
+  .replace(/\b(mrowkami|mrowkach|mrowki)\b/g,'mrowki')
+  // RX BIBI 4.5: narrowly scoped colloquial forms and frequent price typos.
+  // Only change exact words; never rewrite amounts, percentages or user history.
+  .replace(/\b(rabatm|rabtem|rabate[mn])\b/g,'rabatem')
+  .replace(/\b(zaplacce|zaplce|zaplacee)\b/g,'zaplace')
+  .replace(/\b(produktow|produktoww)\b/g,'produktow')
+  .replace(/\b(sztukii|sztukiie)\b/g,'sztuki')
+  .replace(/\b(podwyzkee|podwyzceee)\b/g,'podwyzce')
+  .replace(/\b(ile wyjdzie za)\b/g,'ile zaplace za');
  const greet=/^(czesc|hej|halo|witaj|dzien dobry|siema|bibi|krolowa|rx)[!.? ]*$/.test(plain);
  const thanks=/^(dzieki|dziekuje|super|dobrze|ok|gotowe)[!.? ]*$/.test(plain);
  const contextPlain=contextual.toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
