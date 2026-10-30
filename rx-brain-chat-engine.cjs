@@ -9,7 +9,7 @@ function chatRX(message,{history=[]}={}){
  const plan=planCommand(request,{energyBalance:100});
  const phrase=request.toLocaleLowerCase('pl-PL');
  let answer;
- if(/(?:^|\\s)(usuń|usun|skasuj|wyczyść|wyczysc|zresetuj)(?=\\s|$)/.test(phrase)&&/produkcyj|produkcj|wszystkie dane|bazę danych|baze danych/.test(phrase)){
+ if(/(?:^|\s)(usuń|usun|skasuj|wyczyść|wyczysc|zresetuj)(?=\s|$)/.test(phrase)&&/produkcyj|produkcj|wszystkie dane|bazę danych|baze danych/.test(phrase)){
    answer='Nie wykonam usunięcia danych produkcyjnych bez wyraźnego potwierdzenia, autoryzacji i bezpiecznej kopii zapasowej.';
  }else if(/(24 godziny|24\/7|całą dobę|cala dobe|bez przerwy)/.test(phrase)&&/(rx|działa|dziala|pracuje|status)/.test(phrase)){
    answer='Nie mogę potwierdzić działania RX 24/7 bez bieżących danych uptime i monitoringu. Sprawdź rzeczywisty status usługi.';
