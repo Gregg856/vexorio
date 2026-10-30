@@ -212,6 +212,30 @@ export function planRXChat(message,history=[],learning=null){
    '👑 Użyj długiego, unikalnego hasła do każdego konta. Pomocny jest menedżer haseł i weryfikacja dwuetapowa.':
    '👑 Zapisz kopię ważnych plików na osobnym nośniku lub w zaufanej chmurze. Sprawdź, czy potrafisz ją przywrócić.';
  }
+ // RX BIBI 4.7: bounded follow-up on the latest USER digital-safety question.
+ // Ignore assistant text and stop at explicit topic switches.
+ const everydayFollowup=/^(a jak (?:sie przed tym chronic|tego uniknac|to rozpoznac)|jak sie (?:przed tym chronic|zabezpieczyc)|podaj przyklad|daj przyklad)[?!. ]*$/.test(plain);
+ if(everydayFollowup&&!everydayGuide){
+  const turns=recentUserQuestions.slice().reverse();
+  const boundary=turns.findIndex(turn=>/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/.test(normalizeRX(turn).trim()));
+  const relevant=boundary<0?turns:turns.slice(0,boundary);
+  const topic=relevant.map(normalizeRX).find(turn=>/\b(phishing|spam|haslo jednorazowe|kopia zapasowa|bezpieczne haslo)\b/.test(turn));
+  if(topic){
+   const example=/przyklad/.test(plain);
+   if(/phishing/.test(topic))everydayGuide=example?
+    '👑 Przykład phishingu: wiadomość udająca bank prosi o pilne kliknięcie linku i podanie hasła. Nie wpisuj danych przez taki link.':
+    '👑 Aby unikać phishingu, nie otwieraj podejrzanych linków i sprawdzaj nadawcę. Do banku wchodź przez własną aplikację lub znany adres.';
+   else if(/spam/.test(topic))everydayGuide=example?
+    '👑 Przykład spamu: niezamówiona wiadomość reklamująca rzekomą nagrodę i prosząca o kliknięcie linku.':
+    '👑 Nie odpowiadaj na podejrzany spam, nie otwieraj załączników i użyj funkcji zgłaszania lub blokowania nadawcy.';
+   else if(/haslo jednorazowe|bezpieczne haslo/.test(topic))everydayGuide=example?
+    '👑 Przykład silnego hasła: kilka losowych, niepowiązanych słów. Nie używaj przykładów podanych publicznie jako własnego hasła.':
+    '👑 Nie udostępniaj haseł ani kodów jednorazowych. Stosuj unikalne hasła i weryfikację dwuetapową.';
+   else if(/kopia zapasowa/.test(topic))everydayGuide=example?
+    '👑 Przykład: trzymaj ważne zdjęcia na telefonie i osobną kopię na dysku zewnętrznym lub w zaufanej chmurze.':
+    '👑 Przechowuj kopię oddzielnie od oryginału i okresowo sprawdzaj, czy możesz odzyskać pliki.';
+  }
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
