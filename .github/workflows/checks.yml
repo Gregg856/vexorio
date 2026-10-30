@@ -37,6 +37,11 @@ jobs:
           node tests/rx-persistent-memory.mjs
           node tests/rx-chat-panel-contract.cjs
           node tests/rx-chat-worker-e2e.cjs
+          node tests/rx-bibi-task-store.test.cjs
+          node tests/rx-bibi-chat-task-integration.test.cjs
+          node tests/rx-bibi-real-brain.test.cjs
+          node tests/rx-bibi-evaluator.test.cjs
+          node tests/rx-bibi-live-evaluation.test.cjs
           node tests/rx-queen-handoff.mjs
           node tests/rx-queen-approval.mjs
           node tests/rx-queen-queue.mjs
