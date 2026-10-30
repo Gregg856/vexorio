@@ -85,6 +85,23 @@ for(const [question,expected] of [
 }
 console.log('RX natural arithmetic regression OK');
 
+// RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
+{
+ const history=[];
+ for(const [question,expected] of [
+  ['Co robią mrówki?','Mrówki'],
+  ['Jak działa wirnik?','Wirnik'],
+  ['Co robi chmura RX?','chmur'],
+  ['Wróć do poprzedniego tematu','wirnik']
+ ]){
+  const reply=planRXChat(question,history.slice(-10));
+  assert.ok(reply.answer.toLocaleLowerCase('pl-PL').includes(expected.toLocaleLowerCase('pl-PL')),question+': '+reply.answer);
+  assert.equal(reply.executed,0);
+  history.push(question,reply.answer);
+ }
+}
+console.log('RX multi-topic history regression OK');
+
 for(const [question,history,expected] of [
  ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
  ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
