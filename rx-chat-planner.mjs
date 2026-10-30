@@ -251,6 +251,19 @@ export function planRXChat(message,history=[],learning=null){
    else if(/kopia zapasowa/.test(topic))everydayGuide=why?'👑 Bo telefon lub dysk może się zepsuć, a dodatkowa kopia pozwala odzyskać pliki.':simple?'👑 Kopia zapasowa to dodatkowy zapis Twoich plików na wypadek ich utraty.':'👑 Zapisz kopię ważnych plików osobno i sprawdź, czy można ją odtworzyć.';
   }
  }
+ // RX BIBI 4.9: distinguish explaining an action from asking to execute it.
+ // Customer chat stays read-only; do not suggest an account action was performed.
+ const actionExplain=/^(?:jak|w jaki sposob)\s+(?:usunac|zmienic|zresetowac)\s+(?:moje\s+)?(konto|haslo|dane)[?!. ]*$/.test(plain);
+ const actionExecute=/^(?:usun|usun mi|zmien|zmien mi|zresetuj|zresetuj mi)\s+(?:moje\s+)?(konto|haslo|dane)[?!. ]*$/.test(plain);
+ if(actionExplain){
+  const subject=plain.match(/(konto|haslo|dane)[?!. ]*$/)?.[1];
+  everydayGuide=subject==='haslo'?
+   '👑 Aby zmienić lub zresetować hasło, otwórz ustawienia konta albo oficjalny formularz odzyskiwania dostępu. Nie podawaj hasła w czacie.':
+   '👑 Aby zmienić lub usunąć dane konta, sprawdź ustawienia prywatności i konta w danej usłudze. Napisz, o którą usługę chodzi, a pomogę znaleźć właściwą instrukcję.';
+ }
+ if(actionExecute){
+  everydayGuide='👑 Rozumiem prośbę o wykonanie działania na koncie. Ten czat nie ma uprawnień do zmiany ani usuwania konta, hasła lub danych. Mogę wyjaśnić, jak zrobić to bezpiecznie w ustawieniach odpowiedniej usługi.';
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
