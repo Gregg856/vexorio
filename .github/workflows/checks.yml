@@ -62,4 +62,5 @@ jobs:
           node tests/rx-language-seed.cjs
           node tests/rx-text-learner.cjs
           node tests/rx-text-evaluation.cjs
+          node tests/rx-text-training-benchmark.cjs
           node rx-text-evaluation.cjs
