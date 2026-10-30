@@ -116,6 +116,15 @@ export function planRXChat(message,history=[],learning=null){
   arithmeticAnswer=discount&&rate>100?'🧮 Rabat nie może przekraczać 100%.':
    '🧮 Cena po '+(discount?'rabacie':'podwyżce')+': '+String(Number((amount*(1+(discount?-1:1)*rate/100)).toPrecision(12)));
  }
+ // RX BIBI 3.9: additional natural price phrasings, still read-only.
+ const alternativePrice=plain.match(/^(?:(?:ile\s+(?:zaplac[eę]|bedzie\s+kosztowac)\s+(?:za\s+)?)?(?:produkt|towar|rzecz)\s+(?:za|kosztujacy)\s+(\d{1,8}(?:[.,]\d{1,2})?)\s*(?:zl|eur|euro)?\s+po\s+(rabacie|podwyzce)\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%|(?:jaka\s+(?:bedzie|jest)\s+cena|ile\s+(?:zaplac[eę]|wyniesie))\s+po\s+(rabacie|podwyzce)\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%\s+(?:od|z|dla)\s+(\d{1,8}(?:[.,]\d{1,2})?)\s*(?:zl|eur|euro)?)[?!. ]*$/);
+ if(alternativePrice){
+  const amount=Number((alternativePrice[1]||alternativePrice[6]).replace(',','.'));
+  const rate=Number((alternativePrice[3]||alternativePrice[5]).replace(',','.'));
+  const discount=(alternativePrice[2]||alternativePrice[4])==='rabacie';
+  arithmeticAnswer=discount&&rate>100?'🧮 Rabat nie może przekraczać 100%.':
+   '🧮 Cena po '+(discount?'rabacie':'podwyżce')+': '+String(Number((amount*(1+(discount?-1:1)*rate/100)).toPrecision(12)));
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
