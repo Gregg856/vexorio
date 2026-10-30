@@ -76,6 +76,10 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(learningData.kind,'rx-queen-verified-learning');
   assert(Array.isArray(learningData.lessons),'Queen learning feed must return lessons array');
   assert(learningData.lessons.every(item=>item.verifiedResolution===false),'Unverified reports must never be treated as learned fixes');
+  // The private learning reader must never follow symlinks or load unbounded report files.
+  const cloudSource=await fs.readFile(path.join(__dirname,'..','rx-cloud-server.cjs'),'utf8');
+  assert.match(cloudSource,/reportStat\.isSymbolicLink\(\)/,'Learning feed rejects symlink reports');
+  assert.match(cloudSource,/reportStat\.size>65536/,'Learning feed bounds report file size');
   // RX NEURON GitHub API sync: authentication, input validation, and fail-closed responses.
   const syncPath='/__rxcloud/neuron/sync-run';
   assert.equal((await fetch(base+syncPath+'?runId=41040503573',{method:'POST'})).status,401);
