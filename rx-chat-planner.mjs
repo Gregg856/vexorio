@@ -267,6 +267,20 @@ export function planRXChat(message,history=[],learning=null){
    else if(/\b(2fa|weryfikacja dwuetapowa|uwierzytelnianie dwuskladnikowe)\b/.test(topic))everydayGuide=why?'👑 2FA dodaje drugi krok sprawdzania tożsamości, żeby samo hasło nie wystarczyło do zalogowania.':simple?'👑 2FA to dodatkowe potwierdzenie logowania, na przykład kodem z aplikacji.':'👑 Otwórz ustawienia bezpieczeństwa konta i włącz weryfikację dwuetapową.';
   }
  }
+ // RX BIBI 5.7: examples and reasons for additional recent safety topics.
+ // Never use assistant text or a topic older than an explicit switch.
+ if(/^(?:a )?dlaczego|^(?:podaj|daj) przyklad[?!. ]*$/.test(plain)&&!everydayGuide){
+  const turns=recentUserQuestions.slice().reverse().map(normalizeRX);
+  const boundary=turns.findIndex(turn=>/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/.test(turn.trim()));
+  const relevant=boundary<0?turns:turns.slice(0,boundary);
+  const supported=[
+   {pattern:/\b(2fa|weryfikacja dwuetapowa|uwierzytelnianie dwuskladnikowe)\b/,why:'👑 2FA chroni konto dodatkowym potwierdzeniem, nawet gdy ktoś pozna hasło.',example:'👑 Przykład 2FA: po wpisaniu hasła potwierdzasz logowanie kodem z aplikacji.'},
+   {pattern:/\b(menedzer hasel|manager hasel|password manager)\b/,why:'👑 Menedżer haseł pomaga używać różnych, silnych haseł bez zapamiętywania każdego z nich.',example:'👑 Przykład: menedżer tworzy osobne hasło dla poczty i sklepu, a Ty pamiętasz tylko hasło główne.'},
+   {pattern:/\b(aktualizacja|aktualizacje|update|aktualizacja oprogramowania)\b/,why:'👑 Aktualizacje często usuwają luki bezpieczeństwa i naprawiają błędy.',example:'👑 Przykład: aktualizacja telefonu naprawia błąd systemu i poprawia zabezpieczenia.'}
+  ];
+  const latest=relevant.map(turn=>supported.find(entry=>entry.pattern.test(turn))).find(Boolean);
+  if(latest)everydayGuide=/przyklad/.test(plain)?latest.example:latest.why;
+ }
  // RX BIBI 4.9: distinguish explaining an action from asking to execute it.
  // Customer chat stays read-only; do not suggest an account action was performed.
  const actionExplain=/^(?:jak|w jaki sposob)\s+(?:usunac|zmienic|zresetowac)\s+(?:moje\s+)?(konto|haslo|dane)[?!. ]*$/.test(plain);
