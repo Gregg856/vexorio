@@ -126,5 +126,21 @@ const {pathToFileURL}=require('node:url');
    console.log('RX BIBI 6.1 authenticated Worker dialogue passed:',dialogueTurns.length);
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls');
    console.log('RX client functional authentication and isolation checks passed');
+   const authFetch=global.fetch;
+   global.fetch=async(url,options={})=>{
+     if(String(url).startsWith('https://api.github.com/repos/Gregg856/vexorio/actions/runs?')){
+       assert.equal(options.headers.Authorization,undefined,'No GitHub token sent');
+       return Response.json({workflow_runs:[{name:'VEXORIO checks',status:'completed',conclusion:'success',head_sha:'abcdef123456'}]});
+     }
+     return authFetch(url,options);
+   };
+   const ciStatus=await call('/api/rx/client/chat',{body:JSON.stringify({message:'Sprawdź testy GitHub',tasks:[]})});
+   assert.equal(ciStatus.status,200);
+   const ciReply=await ciStatus.json();
+   assert.match(ciReply.answer,/VEXORIO checks: success/);
+   assert.equal(ciReply.executed,0);
+   assert.equal(ciReply.adminToolsAvailable,false);
+   console.log('RX BIBI read-only GitHub status passed');
+
  }finally{global.fetch=oldFetch;}
 })().catch(error=>{console.error(error);process.exitCode=1;});
