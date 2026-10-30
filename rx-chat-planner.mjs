@@ -90,6 +90,14 @@ export function planRXChat(message,history=[],learning=null){
   const value=(op==='plus'||op==='+')?left+right:(op==='minus'||op==='-')?left-right:(op==='razy'||op==='*'||op==='x')?left*right:right===0?null:left/right;
   arithmeticAnswer=value===null?'🧮 Nie można dzielić przez zero.':Number.isFinite(value)?'🧮 Wynik: '+String(Number(value.toPrecision(12))):'🧮 Nie mogę obliczyć tego działania.';
  }
+ // RX BIBI 3.6: bounded percentage calculations, no eval or remote calls.
+ const percentInput=plain.match(/^(?:ile to jest|oblicz|policz)\\s+(\\d{1,8}(?:[.,]\\d{1,4})?)\\s*%\\s*(?:z|od)\\s+(\\d{1,8}(?:[.,]\\d{1,4})?)[?!. ]*$/);
+ if(percentInput){
+  const percentage=Number(percentInput[1].replace(',','.'));
+  const base=Number(percentInput[2].replace(',','.'));
+  const value=base*percentage/100;
+  arithmeticAnswer=Number.isFinite(value)?'🧮 Wynik: '+String(Number(value.toPrecision(12))):'🧮 Nie mogę obliczyć tego procentu.';
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
