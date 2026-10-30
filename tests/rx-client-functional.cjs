@@ -68,6 +68,22 @@ const {pathToFileURL}=require('node:url');
    assert.equal(recover.status,200,'Valid session can chat after expired token attempt');
    assert.equal((await recover.json()).executed,0,'Recovery must not execute admin work');
    console.log('RX BIBI 6.2 expired-session and recovery API checks passed');
+   // RX BIBI 6.5: public-facing identity must not impersonate the private Queen.
+   for(const [question,expected] of [
+    ['Cześć','Jestem RX BIBI'],
+    ['Kim jesteś?','Jestem RX BIBI'],
+    ['Dziękuję','Nie ma za co']
+   ]){
+    const response=await call('/api/rx/client/chat',{body:JSON.stringify({message:question,history:[]})});
+    assert.equal(response.status,200,question);
+    const reply=await response.json();
+    assert.ok(reply.answer.includes(expected),question+': '+reply.answer);
+    assert.doesNotMatch(reply.answer,/Królowa RX|Mrówkach|Wirniku/,'Internal identity leaked: '+question);
+    assert.equal(reply.adminToolsAvailable,false);
+    assert.equal(reply.executed,0);
+   }
+   console.log('RX BIBI 6.5 public identity regression passed');
+
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls during dialogue');
    console.log('RX BIBI 6.1 authenticated Worker dialogue passed:',dialogueTurns.length);
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls');
