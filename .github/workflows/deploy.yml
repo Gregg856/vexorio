@@ -1,8 +1,7 @@
 name: Deploy VEXORIO
 
+# Production release is manual: test changes on main before explicit approval.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 # Prevent an older deployment from overwriting a newer revision.
