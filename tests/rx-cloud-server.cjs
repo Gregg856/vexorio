@@ -58,6 +58,11 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(healthPost.status,405);
   assert.equal(healthPost.headers.get('allow'),'GET, HEAD');
   assert.equal((await fetch(base+'/__rxcloud/queen/status')).status,401);
+  // RX CLOUD security regression: local Queen and BIBI inbox require a valid private token.
+  for(const endpoint of ['/__rxcloud/queen/status','/__rxcloud/bibi/learning','/__rxcloud/bibi/inbox']){
+    const denied=await fetch(base+endpoint,{headers:{Authorization:'Bearer invalid-token'}});
+    assert.equal(denied.status,401,'Invalid token must be rejected: '+endpoint);
+  }
   const queen=await fetch(base+'/__rxcloud/queen/status',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
   assert.equal(queen.status,200);
   assert.equal((await queen.json()).taskExecution,false);
