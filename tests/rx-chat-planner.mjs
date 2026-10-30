@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import {planRXChat} from '../rx-chat-planner.mjs';
+// Regression for the exact customer message (Polish genitive plural: "mrówek").
+assert.match(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Aby zwiększyć moc mrówek RX/);
+assert.doesNotMatch(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Co najbardziej Cię w tym temacie interesuje/);
 const p=planRXChat('Sprawdź testy i chmurę');
 assert.deepEqual(p.tasks.map(x=>x.action),['inspect_tests','plan_cloud_checks']);
 assert.equal(p.executed,0);
