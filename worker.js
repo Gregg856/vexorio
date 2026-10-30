@@ -88,6 +88,33 @@ export default {
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
       return new Response(JSON.stringify({ready,configured:ready,service:'RX Tester',missing:['RX_GITHUB_DISPATCH_TOKEN','RX_ADMIN_USER_ID','SUPABASE_URL','SUPABASE_ANON_KEY'].filter(name=>!env[name]),note:ready?'Serwer gotowy do sprawdzania uprawnień.':'Wymagana konfiguracja po stronie Cloudflare.'}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
+    // RX BIBI client: authenticated, read-only planner; never enters admin dispatch routes.
+    if(url.pathname==='/api/rx/client/chat'){
+      const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+      const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
+      if(request.headers.get('Origin')!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Logowanie jest niedostępne.');
+      const auth=request.headers.get('Authorization')||'';
+      if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Zaloguj się.');
+      let base;try{base=new URL(env.SUPABASE_URL);}catch{return reply(503,'Błędna konfiguracja.');}
+      if(base.protocol!=='https:'||!/^[a-z0-9-]+[.]supabase[.]co$/.test(base.hostname)||base.pathname!=='/'||base.search||base.hash||base.port||base.username||base.password)return reply(503,'Błędna konfiguracja.');
+      try{
+        const userResponse=await fetch(new URL('/auth/v1/user',base),{headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},signal:AbortSignal.timeout(8000)});
+        if(!userResponse.ok)return reply(401,'Sesja wygasła.');
+        const user=await userResponse.json();
+        if(!user?.id||user.is_anonymous===true)return reply(403,'Wymagane konto użytkownika.');
+      }catch{return reply(502,'Nie udało się sprawdzić sesji.');}
+      let payload;try{payload=await request.json();}catch{return reply(400,'Nieprawidłowy JSON.');}
+      const message=payload?.message;
+      if(typeof message!=='string'||!message.trim()||message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
+      const history=payload?.history??[];
+      if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
+      // Client requests use only the shared deterministic planner; no GitHub dispatch,
+      // administrator commands, persistent memory writes, or privileged RX tools.
+      const planned=planRXChat(message,history,null);
+      return new Response(JSON.stringify({ok:true,answer:String(planned.answer||'Nie mam jeszcze odpowiedzi.').slice(0,4000),engine:'rx-client-local-planner',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+    }
     if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
