@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><meta name="robots" content="noindex,nofollow"><title>RX BIBI — Czat</title>
+<style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#06151a;color:#edfff7;font:16px system-ui,sans-serif}main{max-width:760px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;padding:16px}header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #235c4d;padding:10px 0 18px}h1{font-size:1.4rem;margin:0;color:#4df0a3}a{color:#a3f5d1}.note{color:#a5c8ba;font-size:.85rem}#messages{flex:1;min-height:250px;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:18px 0}.bubble{max-width:88%;padding:12px 15px;border-radius:15px;background:#15352f;white-space:pre-wrap;overflow-wrap:anywhere}.bubble.me{align-self:flex-end;background:#116c50}form{display:flex;gap:8px;position:sticky;bottom:0;background:#06151a;padding:10px 0 max(12px,env(safe-area-inset-bottom))}textarea{flex:1;min-width:0;resize:vertical;max-height:150px;min-height:52px;border:1px solid #387b65;border-radius:12px;background:#102721;color:white;padding:13px;font:inherit;font-size:16px}button{border:0;border-radius:12px;background:#12aa72;color:#06251a;font-weight:800;padding:12px;cursor:pointer}button:disabled{opacity:.55}#status{margin:8px 0}#login{border:1px solid #387b65;border-radius:14px;padding:20px;margin-top:30px}#login input{width:100%;padding:12px;background:#102721;color:white;border:1px solid #387b65;border-radius:9px;font:inherit;margin:7px 0}#login button{margin-top:8px}#chat[hidden],#login[hidden]{display:none!important}</style></head>
+<body><main><header><h1>👑 RX BIBI</h1><button id="logout" type="button" hidden>Wyloguj</button></header><p class="note">Nasz asystent RX. Odpowiedzi generuje obecnie lokalny planer — bez zewnętrznego modelu AI.</p>
+<section id="login"><h2>Zaloguj się</h2><p class="note">Użyj istniejącego konta VEXORIO.</p><label>Email<input id="email" type="email" autocomplete="email"></label><label>Hasło<input id="password" type="password" autocomplete="current-password"></label><button id="signin" type="button">Zaloguj</button></section>
+<section id="chat" hidden style="flex:1;display:flex;flex-direction:column"><div id="messages" aria-live="polite"></div><form id="form"><textarea id="message" rows="2" maxlength="2000" placeholder="Napisz wiadomość…" aria-label="Wiadomość"></textarea><button id="send" type="submit">Wyślij</button></form></section><p id="status" class="note" role="status"></p></main>
+<script type="module">
+const $=id=>document.getElementById(id);let client=null,history=[];
+const status=text=>$('status').textContent=text;
+const bubble=(text,me=false)=>{const el=document.createElement('div');el.className='bubble'+(me?' me':'');el.textContent=text;$('messages').append(el);$('messages').scrollTop=$('messages').scrollHeight;};
+async function init(){
+  // Reuse the same public Supabase project configuration as VEXORIO, never a service key.
+  const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  const response=await fetch('/api/rx/client/config',{cache:'no-store'});
+  if(!response.ok)throw Error('Konfiguracja logowania nie jest dostępna.');
+  const config=await response.json();
+  client=window.supabase.createClient(config.url,config.anonKey);
+  const {data}=await client.auth.getSession();show(!!data.session);
+  client.auth.onAuthStateChange((_event,session)=>show(!!session));
+}
+function show(signed){$('login').hidden=signed;$('chat').hidden=!signed;$('logout').hidden=!signed;if(!signed){history=[];$('messages').replaceChildren();}status(signed?'Połączono z RX BIBI.':'Zaloguj się, aby rozpocząć.');}
+$('signin').onclick=async()=>{if(!client)return;status('Logowanie…');const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)status('Logowanie nie powiodło się.');};
+$('logout').onclick=async()=>{if(client)await client.auth.signOut();};
+$('form').onsubmit=async e=>{e.preventDefault();const message=$('message').value.trim();if(!message||!client)return;const {data}=await client.auth.getSession();if(!data.session){show(false);return;}const prior=history.slice(-10);$('send').disabled=true;$('message').value='';bubble(message,true);status('RX odpowiada…');try{const response=await fetch('/api/rx/client/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+data.session.access_token},body:JSON.stringify({message,history:prior})});const result=await response.json();if(!response.ok)throw Error(result.message||'Błąd połączenia');bubble(result.answer||'Brak odpowiedzi.');history.push(message,String(result.answer||''));history=history.slice(-10);status('Gotowe.');}catch(error){bubble('Nie udało się pobrać odpowiedzi.');status(error.message);}finally{$('send').disabled=false;}};
+init().catch(error=>status(error.message));
+</script></body></html>
