@@ -1,21 +1,11 @@
 {
   "schema": 1,
   "kind": "rx-ant-ci-triage",
-  "tasks": [
-    {
-      "source": "github-actions",
-      "action": "Sprawdź nieudany przebieg CI: failure",
-      "target": "RX CLOUD self-host smoke tests",
-      "priority": "high",
-      "runId": 41060402444,
-      "status": "needs_review",
-      "requiresApproval": true
-    }
-  ],
+  "tasks": [],
   "executed": 0,
   "autoFixesApplied": 0,
   "note": "Proposals only. Human approval required before any code change.",
   "source": "github-actions",
-  "checkedAt": "2026-10-30T13:18:53.146Z",
+  "checkedAt": "2026-10-30T19:08:26.054Z",
   "sourceAvailable": true
 }\n
