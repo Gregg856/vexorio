@@ -7,6 +7,8 @@ on:
       - worker.js
       - rx-client.html
       - rx-chat-planner.mjs
+      - rx-bibi-task-reasoner.mjs
+      - tests/rx-bibi-task-reasoner.mjs
       - tests/rx-client-chat.cjs
       - tests/rx-client-functional.cjs
       - tests/rx-chat-planner.mjs
@@ -29,3 +31,4 @@ jobs:
           node tests/rx-client-chat.cjs
           node --experimental-default-type=module tests/rx-client-functional.cjs
           node tests/rx-chat-planner.mjs
+          node tests/rx-bibi-task-reasoner.mjs
