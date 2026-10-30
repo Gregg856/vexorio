@@ -88,6 +88,13 @@ export default {
       const ready=Boolean(env.RX_GITHUB_DISPATCH_TOKEN&&env.RX_ADMIN_USER_ID&&env.SUPABASE_URL&&env.SUPABASE_ANON_KEY);
       return new Response(JSON.stringify({ready,configured:ready,service:'RX Tester',missing:['RX_GITHUB_DISPATCH_TOKEN','RX_ADMIN_USER_ID','SUPABASE_URL','SUPABASE_ANON_KEY'].filter(name=>!env[name]),note:ready?'Serwer gotowy do sprawdzania uprawnień.':'Wymagana konfiguracja po stronie Cloudflare.'}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
+    if(url.pathname==='/api/rx/client/config'){
+      if(request.method!=='GET')return new Response(null,{status:405,headers:{Allow:'GET'}});
+      const base=String(env.SUPABASE_URL||'');
+      const key=String(env.SUPABASE_ANON_KEY||'');
+      if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(base)||!key)return new Response(JSON.stringify({ok:false}),{status:503,headers:{'Cache-Control':'no-store'}});
+      return new Response(JSON.stringify({url:base,anonKey:key}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+    }
     // RX BIBI client: authenticated, read-only planner; never enters admin dispatch routes.
     if(url.pathname==='/api/rx/client/chat'){
       const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
