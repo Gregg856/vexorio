@@ -127,8 +127,8 @@ export default {
       const publicThanks=/^(dzieki|dziekuje|dziekuje bardzo|wielkie dzieki)[!?. ]*$/.test(normalizedMessage);
       let clientAnswer=String(planned.answer||'Nie mam jeszcze odpowiedzi.');
       // Public RX BIBI identity and task transparency: no access to the local task store.
-      const asksPublicIdentity=/\\b(kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz)\\b/i.test(message);
-      const asksPublicTasks=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania)[?!.\\s]*$/i.test(message.trim());
+      const asksPublicIdentity=/(?:kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz)/i.test(message);
+      const asksPublicTasks=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania)[?!.\s]*$/i.test(message.trim());
       if(asksPublicIdentity)clientAnswer='Jestem RX BIBI, asystentem VEXORIO. Pomagam w rozmowie i prostym planowaniu. Nie jestem Królową RX ani samodzielnym modelem generatywnym.';
       else if(asksPublicTasks)clientAnswer='Nie mam jeszcze dostępu do rejestru zadań w oficjalnym czacie. Nie mogę wiarygodnie podać listy oczekujących prac. Funkcja jest testowana w lokalnym silniku BIBI.';
       else if(publicGreeting)clientAnswer='Cześć! Jestem RX BIBI, asystentem do rozmowy i prostych wyjaśnień. W czym mogę Ci pomóc?';
