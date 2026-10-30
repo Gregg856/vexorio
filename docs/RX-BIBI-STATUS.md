@@ -66,3 +66,8 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - PR #315: do istniejącego `rx-text-learner.cjs` dodano pomiar na ośmiu odłożonych, niewidzianych w treningu przykładach; nie oznaczać jako zatwierdzony przed zielonym CI.
 - Otwarte zadanie: wybrać JEDEN istniejący moduł do przyszłego treningu generowania tekstu, określić legalny zbiór danych i niezależny benchmark sensowności zdań. Sam spadek straty treningowej nie oznacza umiejętności rozmowy.
 - Bez automatycznego wdrożenia, zmian produkcyjnych, nowej aplikacji, kont i płatnych API.
+
+## RX Królowa — kontynuacja po PR #315 (2026-10-30)
+- PR #315 scalony do main: `ddbe8285`, smoke SUCCESS. Nie powtarzać tego testu.
+- Następna zmiana (PR #316) rozszerza ten sam test o dokładność na każdej kategorii; nie tworzy nowego modelu.
+- Kryterium dla przyszłego generatora: oddzielne przykłady treningowe i niewidziane pytania, ocena czytelności i sensu, nie tylko spadek błędu; dopiero po pozytywnym wyniku rozważyć podłączenie do prywatnego czatu.
