@@ -173,6 +173,21 @@ for(const [history,question,expected] of [
 }
 console.log('RX multi-turn price regression OK');
 
+// RX BIBI 4.2: an explicit topic switch must prevent stale price reuse.
+for(const switchPhrase of ['Zmieńmy temat','Zmiana tematu','Nowy temat']){
+ const result=planRXChat('A przy 25%?',[
+  'Produkt kosztuje 200 euro, ile zapłacę po rabacie 15%?',
+  '🧮 Cena po rabacie: 170',
+  switchPhrase,
+  'Jasne, zmieńmy temat.'
+ ]);
+ assert.ok(!result.answer.includes('150'),switchPhrase+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX topic-switch price regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
