@@ -191,6 +191,27 @@ export function planRXChat(message,history=[],learning=null){
    arithmeticAnswer='🧮 '+count+' szt. po '+unit+' z rabatem '+rate+'% = '+String(Number((unit*count*(1-rate/100)).toPrecision(12)));
   }
  }
+ // RX BIBI 4.6: everyday questions with honest, bounded advice.
+ const everydayExplain=/^(co to jest|wyjasnij)\s+(haslo|link|spam|phishing|haslo jednorazowe|kopia zapasowa)[?!. ]*$/.test(plain);
+ const everydayHelp=/^(jak (?:zrobic|ustawic)|pomoz mi (?:zrobic|ustawic))\s+(bezpieczne haslo|kopie zapasowa)[?!. ]*$/.test(plain);
+ let everydayGuide=null;
+ if(everydayExplain){
+  const subject=plain.match(/^(?:co to jest|wyjasnij)\s+(.+?)[?!. ]*$/)?.[1];
+  const explanations={
+   haslo:'Hasło to sekret chroniący dostęp do konta. Nie podawaj go innym.',
+   link:'Link to adres prowadzący do strony lub zasobu. Przed kliknięciem sprawdź adres.',
+   spam:'Spam to niechciane wiadomości, często wysyłane masowo.',
+   phishing:'Phishing to próba wyłudzenia danych przez podszywanie się pod zaufaną osobę lub firmę.',
+   'haslo jednorazowe':'Hasło jednorazowe to kod ważny zwykle przez krótki czas. Nie przekazuj go innym.',
+   'kopia zapasowa':'Kopia zapasowa to dodatkowa kopia danych, która pomaga je odzyskać po utracie.'
+  };
+  everydayGuide='👑 '+explanations[subject];
+ }
+ if(everydayHelp){
+  everydayGuide=/haslo/.test(plain)?
+   '👑 Użyj długiego, unikalnego hasła do każdego konta. Pomocny jest menedżer haseł i weryfikacja dwuetapowa.':
+   '👑 Zapisz kopię ważnych plików na osobnym nośniku lub w zaufanej chmurze. Sprawdź, czy potrafisz ją przywrócić.';
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
@@ -456,11 +477,12 @@ export function planRXChat(message,history=[],learning=null){
  if(everydayThanks)answer=repeatedThanks?'👑 Cała przyjemność po mojej stronie. Co jeszcze mogę wyjaśnić?':'👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
  if(everydayQuestion)answer=repeatedQuestion?'👑 Słucham. Opisz konkretną sytuację albo zadaj pytanie, a postaram się pomóc.':'👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
+ if(everydayGuide!==null)answer=everydayGuide;
  if(returnTopic&&previousLabel)answer='👑 Wracamy do tematu: '+previousLabel+'. Napisz, co konkretnie chcesz o nim wiedzieć, a nie będę zgadywać.';
  if(everydayIdentity)answer='👑 Jestem BIBI, asystentką rozmowy RX. Mogę wyjaśniać wybrane tematy i pomagać w planowaniu, ale nie jestem niezależnym modelem AI.';
  if(everydayWeather)answer='👑 Nie mam tutaj dostępu do aktualnej prognozy pogody. Podaj miejscowość, a podpowiem, gdzie sprawdzić wiarygodną prognozę.';
  if(everydayTime)answer='👑 Nie mam w tym czacie wiarygodnego zegara ani bieżącej daty. Sprawdź godzinę i datę w telefonie.';
  if(everydayJoke)answer='👑 Dlaczego programista zabrał parasol? Bo zapowiadali chmurę! ☁️';
- if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null||(returnTopic&&previousLabel)){tasks.length=0;plan.work=null;}
+ if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null||everydayGuide!==null||(returnTopic&&previousLabel)){tasks.length=0;plan.work=null;}
  return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
