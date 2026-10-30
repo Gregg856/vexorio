@@ -129,6 +129,21 @@ for(const [question,expected] of [
 }
 console.log('RX natural price regression OK');
 
+// RX BIBI 3.9: alternate word order and amount-first questions.
+for(const [question,expected] of [
+ ['Produkt za 200 euro po rabacie 15%','Cena po rabacie: 170'],
+ ['Jaka będzie cena po rabacie 20% od 150 euro?','Cena po rabacie: 120'],
+ ['Ile zapłacę po podwyżce 10% od 100 euro?','Cena po podwyżce: 110'],
+ ['Produkt za 80 euro po rabacie 12,5%','Cena po rabacie: 70']
+]){
+ const result=planRXChat(question);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX alternate price regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
