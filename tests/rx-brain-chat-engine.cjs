@@ -47,3 +47,15 @@ assert.match(chatRX('Dalej').answer,/Nie mam wcześniejszego kontekstu/);
 assert.equal(chatRX('Dalej').contextUsed,false);
 assert.equal(chatRX('Dalej').executed,0);
 console.log('RX BIBI level 3: context follow-ups and missing context checked');
+
+const multiTurn=chatRX('Dalej',{history:['Czat zasłania klawiatura Android','Gotowe','Sprawdź to','Zielone']});
+assert.equal(multiTurn.contextUsed,true);
+assert.match(multiTurn.answer,/Czat zasłania klawiatura Android/);
+assert.doesNotMatch(multiTurn.answer,/Kontynuuję temat: Zielone/);
+assert.equal(multiTurn.executed,0);
+const missingTopic=chatRX('Dalej',{history:['Gotowe','Zielone','Ok']});
+assert.equal(missingTopic.contextUsed,false);
+assert.match(missingTopic.answer,/Nie mam wcześniejszego kontekstu/);
+const recentTopic=chatRX('Sprawdź to',{history:['Błąd faktury','Gotowe','Klawiatura Android zasłania czat','Zielone']});
+assert.match(recentTopic.answer,/Klawiatura Android zasłania czat/);
+console.log('RX BIBI level 4: multi-turn topic retrieval checked');
