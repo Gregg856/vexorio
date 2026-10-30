@@ -111,3 +111,24 @@ assert.equal(planRXChat('Jak sprawdzić stan RX?',[],{kind:'rx-queen-verified-le
 assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj:|Przypomnij:/i);
 assert.match(planRXChat('A jak będzie działała Twoja nauka z naszych rozmów?').answer,/uczyć|uczenia|poprawk/i);
 console.log('RX NAUKA 3.0 verified lessons and safety regression OK');
+
+// RX BIBI dialogue regression: the client sends the latest ten alternating turns.
+const scenarios=[
+ {name:'wirnik',turns:['Jak działa wirnik?','A jak działa?','Dalej'],expected:/Wirnik/i},
+ {name:'mrówki',turns:['Co robią mrówki?','A co z nimi?'],expected:/Mrówki/i},
+ {name:'RX Neural Core',turns:['Opowiedz o RX Neural Core','A jak działa?'],expected:/RX Neural Core/i}
+];
+for(const scenario of scenarios){
+ const conversation=[];
+ for(let i=0;i<scenario.turns.length;i++){
+  const question=scenario.turns[i];
+  const reply=planRXChat(question,conversation.slice(-10));
+  assert.equal(typeof reply.answer,'string',scenario.name);
+  assert.ok(reply.answer.trim().length>0,scenario.name+' empty answer');
+  assert.equal(reply.executed,0,scenario.name+' must not execute admin tasks');
+  assert.equal(reply.modelInferenceUsed,false,scenario.name+' must not claim external inference');
+  if(i>0){assert.equal(reply.contextUsed,true,scenario.name+' context missing');assert.match(reply.answer,scenario.expected,scenario.name+' wrong topic');}
+  conversation.push(question,reply.answer);
+ }
+ console.log('RX BIBI multi-turn dialogue OK:',scenario.name);
+}
