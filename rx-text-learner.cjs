@@ -58,6 +58,11 @@ function evaluateHeldOut(learner){
  if(!learner||typeof learner.classify!=='function')throw Error('Invalid learner');
  const cases=HELD_OUT.map(([text,expected])=>({text,expected,predicted:learner.classify(text).label}));
  const correct=cases.filter(c=>c.expected===c.predicted).length;
- return {kind:'rx-text-held-out-evaluation',correct,total:cases.length,accuracy:correct/cases.length,cases};
+ const perLabel=Object.fromEntries(LABELS.map(label=>{
+  const subset=cases.filter(c=>c.expected===label);
+  const hits=subset.filter(c=>c.predicted===label).length;
+  return [label,{correct:hits,total:subset.length,accuracy:subset.length?hits/subset.length:null}];
+ }));
+ return {kind:'rx-text-held-out-evaluation',correct,total:cases.length,accuracy:correct/cases.length,perLabel,cases};
 }
 module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT};
