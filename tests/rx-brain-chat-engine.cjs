@@ -98,3 +98,11 @@ for(const followup of ['Kontynuuj','Wróć do tego','Wroc do tego']){
 }
 assert.match(chatRX('Kontynuuj').answer,/Nie mam wcześniejszego kontekstu/);
 console.log('RX Polish follow-up and acknowledgement memory tests OK');
+
+for(const [prompt,expected] of [['translate pl to de: Szukaj','Suchen'],['translate de to en: Suchen','Search'],['translate en to uk: Search','Пошук'],['przetlumacz uk to pl: Пошук','Szukaj']]){
+ const result=chatRX(prompt);
+ assert.ok(result.answer.includes(expected),prompt);
+ assert.equal(result.executed,0,prompt);
+}
+assert.match(chatRX('translate pl to de: nieznane slowo').answer,/Nie znam/);
+console.log('RX brain reuses existing 4-language VEXORIO vocabulary');
