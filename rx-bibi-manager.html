@@ -1026,6 +1026,26 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(key){const action=document.createElement('button');action.type='button';action.textContent='Otwórz: '+buttons.get(key).textContent;action.addEventListener('click',()=>activate(key));log.append(action);}
    log.scrollTop=log.scrollHeight;
   };
+  // Read-only admin memory lookup; existing deterministic chat stays unchanged for other commands.
+  if(/(?:pamięć|pamiec|uczeni|doświadczen|doswiadczen|poprzedni(?:e|ch)? błęd|poprzedni(?:e|ch)? bled|potwierdzon(?:a|e|ych) napraw|histori[ae] napraw)/i.test(value)){
+   (async()=>{
+    send.disabled=true;
+    try{
+     if(!window.supabase?.createClient)throw Error('Logowanie Supabase nie jest dostępne.');
+     const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+     const {data,error}=await client.auth.getSession();
+     if(error||!data?.session?.access_token)throw Error('Zaloguj się jako administrator VEXORIO.');
+     const response=await fetch('/api/rx/admin/learning',{headers:{Authorization:'Bearer '+data.session.access_token,Accept:'application/json'},cache:'no-store'});
+     const feed=await response.json();
+     if(!response.ok||!feed.ok)throw Error(feed.message||'Nie udało się pobrać pamięci.');
+     const observations=(Array.isArray(feed.lessons)?feed.lessons:[]).slice(0,5).map(x=>'• '+String(x.observation||'Brak opisu').slice(0,220));
+     const verified=(Array.isArray(feed.verified)?feed.verified:[]).slice(0,5).map(x=>'• '+String(x.resolution||'Brak opisu').slice(0,220)+' (test: '+String(x.testReference||'brak').slice(0,140)+')');
+     explain('Pamięć RX CLOUD — odczyt, bez wykonywania napraw.\\nObserwacje (niepotwierdzone):\\n'+(observations.join('\\n')||'Brak zapisanych obserwacji.')+'\\nNaprawy potwierdzone testami:\\n'+(verified.join('\\n')||'Brak potwierdzonych napraw.'));
+    }catch(error){explain('Nie mogę teraz odczytać pamięci RX CLOUD: '+String(error.message||'błąd połączenia').slice(0,180));}
+    finally{send.disabled=false;}
+   })();
+   return;
+  }
   const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\s+zadani[ea]\s*[:,-]?\s*(.+)$/i);
   if(taskMatch){
    const title=taskMatch[1].trim().slice(0,180);
