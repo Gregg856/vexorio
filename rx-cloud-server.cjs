@@ -109,7 +109,10 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         let latestRunId=null;
         for(const name of names.slice(0,10)){
           try{
-            const data=JSON.parse(await fs.readFile(path.join(dir,name),'utf8'));
+            const reportFile=path.join(dir,name);
+            const reportStat=await fs.lstat(reportFile);
+            if(!reportStat.isFile()||reportStat.isSymbolicLink()||reportStat.size>65536)continue;
+            const data=JSON.parse(await fs.readFile(reportFile,'utf8'));
             if(data.kind!=='rx-bibi-smart-error-memory'||!Array.isArray(data.developerHandoff))continue;
             if(latestRunId===null)latestRunId=data.runId;
             for(const item of data.developerHandoff.slice(0,10)){
