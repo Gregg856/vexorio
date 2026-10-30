@@ -39,6 +39,13 @@ function ask(port,message){
   assert.match(pending.reply,/Test czatu/);
   assert.doesNotMatch(pending.reply,/Naprawa czatu Android/);
   assert.equal(pending.executed,0);
+  const pendingStatus=await ask(port,'Jaki status zadania: Test czatu');
+  assert.match(pendingStatus.reply,/oczekujące/);
+  const completedStatus=await ask(port,'Sprawdź status zadania: NAPRAWA  CZATU ANDROID');
+  assert.match(completedStatus.reply,/ukończone/);
+  const missingStatus=await ask(port,'Jaki status zadania: Nieznane zadanie');
+  assert.match(missingStatus.reply,/Nie znalazłam/);
+  assert.equal(completedStatus.executed,0);
   const related=await ask(port,'Czy to zadanie już było: Poprawienie czatu na telefonie');
   assert.equal(related.status,200);
   assert.match(related.reply,/Naprawa czatu Android/);
