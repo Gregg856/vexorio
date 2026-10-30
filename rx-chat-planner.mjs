@@ -107,6 +107,15 @@ export function planRXChat(message,history=[],learning=null){
   arithmeticAnswer=rate>100&&discount?'🧮 Rabat nie może przekraczać 100%.':
    '🧮 Cena po '+(discount?'rabacie':'podwyżce')+': '+String(Number((amount*(1+(discount?-1:1)*rate/100)).toPrecision(12)));
  }
+ // RX BIBI 3.8: natural price question, with bounded numeric inputs.
+ const naturalPrice=plain.match(/^(?:produkt|towar|rzecz)\s+kosztuje\s+(\d{1,8}(?:[.,]\d{1,2})?)\s*(?:zl|eur|euro)?[,]?\s*ile\s+(?:zaplac[eę]|wyniesie\s+cena)\s+po\s+(rabacie|podwyzce)\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%[?!. ]*$/);
+ if(naturalPrice){
+  const amount=Number(naturalPrice[1].replace(',','.'));
+  const rate=Number(naturalPrice[3].replace(',','.'));
+  const discount=naturalPrice[2]==='rabacie';
+  arithmeticAnswer=discount&&rate>100?'🧮 Rabat nie może przekraczać 100%.':
+   '🧮 Cena po '+(discount?'rabacie':'podwyżce')+': '+String(Number((amount*(1+(discount?-1:1)*rate/100)).toPrecision(12)));
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
