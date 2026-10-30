@@ -25,7 +25,10 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const isFollowup=text=>/^(?:dalej|sprawdź to|sprawdz to|a co z tym\??|co dalej\??|kontynuuj|wróć do tego|wroc do tego)[.!?\s]*$/i.test(text.trim());
  const isAcknowledgement=text=>/^(?:ok|gotowe|zielone|błąd|blad|dzięki|dzieki|super)[.!?\s]*$/i.test(text.trim());
  const previous=history.length?history[history.length-1]:'';
- const topic=[...history].reverse().find(item=>!isFollowup(item)&&!isAcknowledgement(item))||'';
+ const meaningful=[...history].reverse().filter(item=>!isFollowup(item)&&!isAcknowledgement(item));
+ const topic=meaningful[0]||'';
+ const wantsPreviousTopic=/^(?:wróć|wroc) do poprzedniego tematu[.!?\\s]*$/i.test(message.trim());
+ const olderTopic=meaningful.find(item=>item!==topic)||'';
  // Acknowledgements do not replace the actual topic when the user adds a short follow-up.
  const contextAnchor=isAcknowledgement(previous)?topic:previous;
 
@@ -67,6 +70,8 @@ function chatRX(message,{history=[],tasks=[]}={}){
    answer=completed.length?'Zadania oznaczone jako ukończone w przekazanym rejestrze: '+completed.map(t=>t.title).join('; ')+'. Nie potwierdzam ich testów bez niezależnych danych.':'Brak zadań oznaczonych jako ukończone w przekazanym rejestrze.';
  }else if(asksEvidence){
    answer='Nie mam potwierdzonego wyniku GitHub Actions dla tej rozmowy. Samo słowo „zielone” nie jest dowodem. Podaj link do przebiegu lub sprawdź jego status.';
+ }else if(wantsPreviousTopic){
+   answer=olderTopic?'Wracam do wcześniejszego tematu: '+olderTopic.slice(0,180)+'. Mogę zaproponować kolejne kroki, ale nie potwierdzam wykonania bez testów.':'Nie widzę wcześniejszego, odrębnego tematu w przekazanej historii rozmowy.';
  }else if(continuation&&!topic){
    answer='Nie mam wcześniejszego kontekstu tej rozmowy. Napisz, który błąd lub test mam omówić.';
  }else if(continuation&&topic){
