@@ -16,9 +16,10 @@ function chatRX(message,{history=[],tasks=[]}={}){
  }
  const completed=tasks.filter(t=>t.status==='completed');
  const asksCompleted=/^(co (już|juz) (zrobione|ukończone)|pokaż (ukończone|zakończone) zadania|co (jest )?gotowe)[?!\\s]*$/i.test(message.trim());
- const isFollowup=text=>/^(dalej|sprawdź to|sprawdz to|a co z tym\\??|co dalej\\??)[.!?\\s]*$/i.test(text.trim());
+ const isFollowup=text=>/^(?:dalej|sprawdź to|sprawdz to|a co z tym\??|co dalej\??|kontynuuj|wróć do tego|wroc do tego)[.!?\s]*$/i.test(text.trim());
+ const isAcknowledgement=text=>/^(?:ok|gotowe|zielone|błąd|blad|dzięki|dzieki|super)[.!?\s]*$/i.test(text.trim());
  const previous=history.length?history[history.length-1]:'';
- const topic=[...history].reverse().find(item=>!isFollowup(item.trim())&&!/^(ok|gotowe|zielone|błąd|blad)[.!?\\s]*$/i.test(item.trim()))||'';
+ const topic=[...history].reverse().find(item=>!isFollowup(item)&&!isAcknowledgement(item))||'';
 
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const continuation=isFollowup(message);
