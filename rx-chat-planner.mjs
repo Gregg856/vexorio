@@ -330,6 +330,14 @@ export function planRXChat(message,history=[],learning=null){
   answer='👑 O który temat pytasz: '+distinctRecentTopics.join(' czy ')+'? Doprecyzuj, żebym nie pomyliła wątków.';
   tasks.length=0;plan.work=null;
  }
+ // RX BIBI 3.4: honor an explicit answer to the immediately preceding clarification.
+ const previousClarification=history.length>=2?String(history.at(-1)||''):'';
+ const clarificationOptions=previousClarification.match(/^👑 O który temat pytasz: (.+)\\? Doprecyzuj,/);
+ const chosenTopic=clarificationOptions?explicitTopicNames.find(([label])=>normalizeRX(message.trim()).replace(/[?.! ]+$/g,'')===normalizeRX(label)&&clarificationOptions[1].includes(label))?.[0]:null;
+ if(chosenTopic){
+  answer='👑 Rozumiem, chodzi o '+chosenTopic+'. Napisz, co konkretnie chcesz wiedzieć o tym temacie.';
+  tasks.length=0;plan.work=null;
+ }
  const recentAssistantAnswer=history.length>=2?String(history.at(-1)||''):'';
  const repeatedGreeting=recentAssistantAnswer.includes('Co u Ciebie słychać?');
  const repeatedThanks=recentAssistantAnswer.includes('Jeśli masz kolejne pytanie');
