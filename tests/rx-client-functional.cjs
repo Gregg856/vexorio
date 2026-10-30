@@ -103,6 +103,12 @@ const {pathToFileURL}=require('node:url');
      assert.ok(reply.answer.includes(expected),reply.answer);
      assert.equal(reply.executed,0);
    }
+   const longCapability=await call('/api/rx/client/chat',{body:JSON.stringify({message:'BIBI, co umiesz? Opowiedz mi o swoich możliwościach i ograniczeniach. Chcę cię dalej rozwijać, żebyś mogła pomagać mi w budowaniu naszego systemu RX.',tasks:[{title:'Test BIBI',status:'completed'}]})});
+   assert.equal(longCapability.status,200,'Long-form capability request accepted');
+   const capabilityReply=await longCapability.json();
+   assert.match(capabilityReply.answer,/lokalnym planerze reguł/,'BIBI should transparently describe its capabilities');
+   assert.equal(capabilityReply.executed,0);
+   assert.equal(capabilityReply.adminToolsAvailable,false);
    const invalidTasks=await call('/api/rx/client/chat',{body:JSON.stringify({message:'Co zostało do zrobienia?',tasks:[{title:'Zadanie',status:'admin'}]})});
    assert.equal(invalidTasks.status,400);
    console.log('RX BIBI local task snapshot regression passed');
