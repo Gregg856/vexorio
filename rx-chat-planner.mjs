@@ -128,7 +128,12 @@ export function planRXChat(message,history=[],learning=null){
  // RX BIBI 4.0: one-turn contextual price recalculation; only from a user price question.
  const rateFollowup=plain.match(/^(?:a\s+)?(?:przy|po\s+(?:rabacie|podwyzce))\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%[?!. ]*$/);
  if(rateFollowup){
-  const previous=recentUserQuestions.at(-1)||'';
+  // Search only recent USER turns, never assistant text; stop at a new unrelated price.
+  const previous=recentUserQuestions.slice().reverse().find(turn=>{
+   const t=normalizeRX(turn);
+   return /(?:produkt|towar|rzecz)\s+(?:kosztuje|za)\s+\d/.test(t)
+    ||/(?:rabacie|podwyzce)\s+\d{1,3}(?:[.,]\d{1,2})?\s*%\s+(?:od|z|dla)\s+\d/.test(t);
+  })||'';
   const normalizedPrevious=normalizeRX(previous);
   const previousPrice=normalizedPrevious.match(/(?:produkt|towar|rzecz)\s+(?:kosztuje|za)\s+(\d{1,8}(?:[.,]\d{1,2})?)/)
     ||normalizedPrevious.match(/(?:rabacie|podwyzce)\s+\d{1,3}(?:[.,]\d{1,2})?\s*%\s+(?:od|z|dla)\s+(\d{1,8}(?:[.,]\d{1,2})?)/);
