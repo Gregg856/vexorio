@@ -160,6 +160,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
       assert.equal(matching.suggestions.length,1,'Unrelated incidents must not receive unrelated fix suggestions');
       assert.equal(matching.suggestions[0].incidentId,'incident-1');
       assert.equal(matching.suggestions[0].matches[0].matchType,'same-incident');
+      assert.equal(matching.suggestions[0].matches[0].similarityScore,1,'Exact incident must rank highest');
       assert.equal(matching.suggestions[0].matches[0].automaticApplication,false);
     }finally{
       if(previousInboxDir===undefined)delete process.env.RX_BIBI_INBOX_DIR;
