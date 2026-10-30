@@ -775,3 +775,12 @@ assert.match(gardenSecondNext.answer,/prostego planu/i);
 assert.doesNotMatch(gardenSecondNext.answer,/Ile masz miejsca, czy jest tam dużo słońca/i);
 assert.equal(gardenSecondNext.executed,0);
 console.log('RX BIBI garden repeated continuation: PASS');
+
+// A greeting prefix must not hide a legitimate topic invitation.
+for(const greeting of ['Cześć BIBI, chcę porozmawiać o moim ogrodzie.','Hej, chcę porozmawiać o moim ogrodzie.']){
+ const result=planRXChat(greeting,[]);
+ assert.match(result.answer,/porozmawiajmy o moim ogrodzie/i);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+}
+console.log('RX BIBI greeting-prefix conversation regression: PASS');
