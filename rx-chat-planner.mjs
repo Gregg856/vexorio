@@ -321,6 +321,15 @@ export function planRXChat(message,history=[],learning=null){
   answer+='\\n🧠 RX BIBI wykrył wcześniej: '+lesson.observation.slice(0,180)+'. Obszar: '+String(lesson.panelArea||'RX').slice(0,90)+'. To wskazówka do diagnostyki, nie potwierdzona naprawa. Wymagana weryfikacja testem.';
  }
  // Rotate harmless conversational wording when the immediately preceding answer is identical.
+ // RX BIBI 3.3: safe clarification for an ambiguous reference after topic changes.
+ // Do not silently attach a pronoun to an unrelated module or invent a topic.
+ const vagueReference=/^(?:a co z (?:nim|nia|nimi|tym)|co z (?:nim|nia|nimi|tym)|a (?:on|ona|one|oni|to))\\??[!. ]*$/i.test(plain);
+ const explicitUserTopics=userTurns.map(topicLabel).filter(Boolean);
+ const distinctRecentTopics=[...new Set(explicitUserTopics.slice(-3))];
+ if(vagueReference&&distinctRecentTopics.length>1){
+  answer='👑 O który temat pytasz: '+distinctRecentTopics.join(' czy ')+'? Doprecyzuj, żebym nie pomyliła wątków.';
+  tasks.length=0;plan.work=null;
+ }
  const recentAssistantAnswer=history.length>=2?String(history.at(-1)||''):'';
  const repeatedGreeting=recentAssistantAnswer.includes('Co u Ciebie słychać?');
  const repeatedThanks=recentAssistantAnswer.includes('Jeśli masz kolejne pytanie');
