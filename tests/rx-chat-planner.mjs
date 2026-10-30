@@ -85,6 +85,20 @@ for(const [question,expected] of [
 }
 console.log('RX natural arithmetic regression OK');
 
+for(const [question,expected] of [
+ ['Ile to jest 20% z 150?','Wynik: 30'],
+ ['Oblicz 12,5% z 80','Wynik: 10'],
+ ['Policz 0% z 999','Wynik: 0'],
+ ['Ile to jest 100% z 24?','Wynik: 24']
+]){
+ const result=planRXChat(question);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX percentage arithmetic regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
