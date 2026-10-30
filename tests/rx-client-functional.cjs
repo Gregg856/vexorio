@@ -59,6 +59,22 @@ const {pathToFileURL}=require('node:url');
     if(expected)assert.ok(reply.answer.includes(expected),'Wrong context: '+message+' => '+reply.answer);
     dialogue.push(message,reply.answer);
    }
+   // Real authenticated Worker responses: curated knowledge, not generic task proposals.
+   for(const [question,expectedTitle] of [
+     ['Opowiedz o mrówkach RX','Mrówki RX'],
+     ['Czym jest RX Wiedza Świata?','RX Wiedza Świata'],
+     ['Co to jest wirnik RX?','Wirnik RX']
+   ]){
+     const result=await call('/api/rx/client/chat',{body:JSON.stringify({message:question,history:[]})});
+     assert.equal(result.status,200,question);
+     const reply=await result.json();
+     assert.equal(reply.engine,'rx-bibi-client-public-knowledge',question);
+     assert.equal(reply.knowledge.title,expectedTitle,question);
+     assert.match(reply.answer,/Źródło:/,'Sourced reply: '+question);
+     assert.equal(reply.executed,0);
+     assert.equal(reply.adminToolsAvailable,false);
+     assert.equal(reply.modelInferenceUsed,false);
+   }
    // RX BIBI 6.2: expired session and temporary authentication upstream outage.
    let denied=await call('/api/rx/client/chat',{headers:{Authorization:'Bearer expired-user'}});
    assert.equal(denied.status,401,'Expired token must be rejected');
