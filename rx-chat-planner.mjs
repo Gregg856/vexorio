@@ -325,6 +325,8 @@ export function planRXChat(message,history=[],learning=null){
  // Do not silently attach a pronoun to an unrelated module or invent a topic.
  const vagueReference=/^(?:a co z (?:nim|nia|nimi|tym)|co z (?:nim|nia|nimi|tym)|a (?:on|ona|one|oni|to))[?!. ]*$/i.test(plain);
  const explicitUserTopics=userTurns.map(topicLabel).filter(Boolean);
+ // Keep only distinct recent subjects in conversational order; avoid asking
+ // the customer to choose between duplicates of the same subject.
  const distinctRecentTopics=[...new Set(explicitUserTopics.slice(-3))];
  if(vagueReference&&distinctRecentTopics.length>1){
   answer='👑 O który temat pytasz: '+distinctRecentTopics.join(' czy ')+'? Doprecyzuj, żebym nie pomyliła wątków.';
@@ -333,6 +335,8 @@ export function planRXChat(message,history=[],learning=null){
  // RX BIBI 3.4: honor an explicit answer to the immediately preceding clarification.
  const previousClarification=history.length>=2?String(history.at(-1)||''):'';
  const clarificationOptions=previousClarification.match(/^👑 O który temat pytasz: (.+)\\? Doprecyzuj,/);
+ // A one-word topic answer is valid only when that option was actually offered.
+
  const chosenTopic=clarificationOptions?explicitTopicNames.find(([label])=>normalizeRX(message.trim()).replace(/[?.! ]+$/g,'')===normalizeRX(label)&&clarificationOptions[1].includes(label))?.[0]:null;
  if(chosenTopic){
   answer='👑 Rozumiem, chodzi o '+chosenTopic+'. Napisz, co konkretnie chcesz wiedzieć o tym temacie.';
