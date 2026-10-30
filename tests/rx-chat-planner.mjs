@@ -603,6 +603,49 @@ assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj|Przypomn
 assert.match(planRXChat('A jak będzie działała Twoja nauka z naszych rozmów?').answer,/uczyć|uczenia|poprawk/i);
 console.log('RX NAUKA 3.0 verified lessons and safety regression OK');
 
+// RX BIBI 6.0: full alternating-turn dialogue tests, including topic boundaries.
+// Test the actual planner after every turn, not merely a hard-coded reply fixture.
+const longDialogues=[
+ {name:'2FA → explanation → switch → backup',turns:[
+  ['Czym jest 2FA?',null],
+  ['Nie rozumiem tego','2FA to dodatkowe'],
+  ['Podaj przykład','Przykład 2FA'],
+  ['Zmieńmy temat',null],
+  ['Co oznacza backup?',null],
+  ['A jak to zrobić?','Aby zrobić kopię zapasową']
+ ]},
+ {name:'password manager → followup → correction → new subject',turns:[
+  ['Czym jest menedżer haseł?',null],
+  ['A dlaczego?','Menedżer haseł pomaga'],
+  ['Nie o to mi chodziło','poprzednia odpowiedź nie trafiła'],
+  ['Chodziło mi o inny temat','chodziło Ci o inny temat'],
+  ['Co oznacza 2FA?',null],
+  ['A jak to włączyć?','Aby włączyć 2FA']
+ ]},
+ {name:'update → example → unrelated topic',turns:[
+  ['Co oznacza update?',null],
+  ['Daj przykład','aktualizacja telefonu'],
+  ['Zmieńmy temat',null],
+  ['Czym jest 2FA?',null],
+  ['Podaj przykład','Przykład 2FA']
+ ]}
+];
+for(const scenario of longDialogues){
+ const dialogue=[];
+ for(const [question,expected] of scenario.turns){
+  const reply=planRXChat(question,dialogue.slice(-10));
+  assert.ok(reply.ok&&typeof reply.answer==='string'&&reply.answer.trim(),scenario.name+': '+question);
+  if(expected)assert.ok(reply.answer.includes(expected),scenario.name+': '+question+' => '+reply.answer);
+  assert.equal(reply.executed,0,scenario.name+': '+question);
+  assert.equal(reply.modelInferenceUsed,false,scenario.name+': '+question);
+  if(/^(nie o to|chodziło mi o inny temat)/i.test(question)){
+   assert.equal(reply.tasks.length,0,scenario.name+': correction tasks');
+   assert.equal(reply.plan.work??null,null,scenario.name+': correction plan');
+  }
+  dialogue.push(question,reply.answer);
+ }
+}
+console.log('RX BIBI 6.0 full dialogue regression OK:',longDialogues.length);
 // RX BIBI dialogue regression: the client sends the latest ten alternating turns.
 const scenarios=[
  {name:'wirnik',turns:['Jak działa wirnik?','A jak działa?','Dalej'],expected:/Wirnik/i},
