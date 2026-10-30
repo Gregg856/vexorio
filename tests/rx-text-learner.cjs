@@ -79,3 +79,8 @@ assert.deepEqual(experiment.generate({variant:2}),experiment.generate({variant:2
 assert.throws(()=>experiment.generate({variant:-1}),/Invalid generation/);
 assert.equal(experiment.generate({seed:'Witaj',variant:3}).text.startsWith('Witaj,'),true);
 console.log('RX GENERATION VARIANTS:',new Set(variants).size);
+
+// Training data expansion must not leak held-out evaluation prompts into the corpus.
+assert.equal(heldOut.total,8);
+assert.equal(learner.examples,24);
+console.log('RX TRAINING BASELINE (batch rolled back after regression):',JSON.stringify({examples:learner.examples,heldOutCorrect:heldOut.correct,heldOutTotal:heldOut.total,lossBefore:learner.metrics.initialLoss,lossAfter:learner.metrics.finalLoss}));
