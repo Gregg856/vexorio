@@ -5,7 +5,7 @@ const os=require('node:os');
 const path=require('node:path');
 const http=require('node:http');
 const {start}=require('../rx-bibi-local-chat-adapter.cjs');
-const {saveTasks}=require('../rx-bibi-task-store.cjs');
+const {saveTasks,readTasks}=require('../rx-bibi-task-store.cjs');
 function ask(port,message){
  return new Promise((resolve,reject)=>{
   const req=http.request({hostname:'127.0.0.1',port,path:'/chat',method:'POST',headers:{'Content-Type':'application/json'}},res=>{
@@ -33,6 +33,17 @@ function ask(port,message){
   assert.match(second.reply,/Test czatu/);
   assert.doesNotMatch(second.reply,/Naprawa panelu RX/);
   assert.equal(second.executed,0);
+  saveTasks(taskFile,[{title:'Naprawa czatu Android',status:'completed'},{title:'Test czatu',status:'pending'}]);
+  const related=await ask(port,'Czy to zadanie już było: Poprawienie czatu na telefonie');
+  assert.equal(related.status,200);
+  assert.match(related.reply,/Naprawa czatu Android/);
+  assert.match(related.reply,/ręcznej weryfikacji/);
+  assert.equal(related.executed,0);
+  const exact=await ask(port,'Czy to zadanie już było: NAPRAWA  CZATU ANDROID');
+  assert.match(exact.reply,/tej samej nazwie/);
+  const unrelated=await ask(port,'Czy to zadanie już było: Rozliczenie ogrodu');
+  assert.match(unrelated.reply,/Nie znalazłam/);
+  assert.deepEqual(readTasks(taskFile).map(t=>t.status),['completed','pending']);
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
