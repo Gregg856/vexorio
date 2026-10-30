@@ -82,3 +82,8 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - Sprawdzono `rx-text-evaluation.cjs`, `rx-text-learner.cjs`, `rx-brain-chat-engine.cjs`, `rx-language-tokenizer.cjs`, `rx-neural-core.cjs`, `guard/local-model.cjs` przed zmianą.
 - Bieżący PR: dodaje do ISTNIEJĄCEGO `rx-text-learner.cjs` odizolowany eksperyment uczenia przejść między słowami na 8 jawnych, sztucznych zdaniach. Generuje krótkie sekwencje słów bez gotowych odpowiedzi czatu; nie używa danych użytkowników. To nie jest LLM, nie daje jeszcze płynnej, niezależnej rozmowy.
 - Nie łączyć z produkcyjnym czatem i nie wdrażać; najpierw testy i uczciwa ocena jakości nowych, niewidzianych zdań. Nie tworzyć kolejnego pliku modelu.
+
+## RX Queen — jakość generowania, 2026-10-30
+- PR #318 scalony: `8abdc655`, smoke SUCCESS. Nie budować drugiego generatora.
+- Bieżąca zmiana: pomiar kopiowania zdań treningowych, interpunkcji i różnorodności wyników w `rx-text-learner.cjs`; to NIE jest miara płynności ani generalizacji do nowych tematów.
+- Kolejny warunek przed podłączeniem do czatu: oddzielny zbiór niewidzianych tematów i ludzka ocena sensowności; bez produkcji.
