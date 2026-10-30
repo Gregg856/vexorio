@@ -1,5 +1,6 @@
 'use strict';
 const {planCommand}=require('./rx-command-bridge.cjs');
+const {findSimilarTasks,suggestRelatedTasks}=require('./rx-bibi-task-store.cjs');
 function chatRX(message,{history=[],tasks=[]}={}){
  if(typeof message!=='string'||!message.trim()||message.length>1000)throw Error('Invalid message');
  if(!Array.isArray(history)||history.length>6||history.some(x=>typeof x!=='string'||x.length>1000))throw Error('Invalid history');
@@ -17,7 +18,19 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
  let answer;
  const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\\s]*$/i.test(message.trim());
- if(asksCompleted){
+ const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\\s+(.+)$/i.exec(message.trim());
+ if(relatedQuery){
+   const title=relatedQuery[1].trim();
+   const exact=findSimilarTasks(tasks,title);
+   const related=suggestRelatedTasks(tasks,title).filter(t=>!exact.some(e=>e.title===t.title));
+   if(exact.length){
+     answer='Znalazłam zadanie o tej samej nazwie (po normalizacji): '+exact.map(t=>t.title+' ['+t.status+']').join('; ')+'. Nie zmieniłam żadnego zadania.';
+   }else if(related.length){
+     answer='Możliwe powiązane zadania (wymagają ręcznej weryfikacji): '+related.slice(0,5).map(t=>t.title+' ['+t.status+']').join('; ')+'. Nie uznaję ich automatycznie za duplikaty i nie zmieniam statusów.';
+   }else{
+     answer='Nie znalazłam zadania o tej samej nazwie ani wystarczająco podobnego w przekazanym rejestrze. Nie jest to dowód, że praca nigdy nie była wykonywana.';
+   }
+ }else if(asksCompleted){
    answer=completed.length?'Zadania oznaczone jako ukończone w przekazanym rejestrze: '+completed.map(t=>t.title).join('; ')+'. Nie potwierdzam ich testów bez niezależnych danych.':'Brak zadań oznaczonych jako ukończone w przekazanym rejestrze.';
  }else if(asksEvidence){
    answer='Nie mam potwierdzonego wyniku GitHub Actions dla tej rozmowy. Samo słowo „zielone” nie jest dowodem. Podaj link do przebiegu lub sprawdź jego status.';
