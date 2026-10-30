@@ -47,4 +47,17 @@ function lexicalProbe(text){
  }).sort((a,b)=>b.overlap-a.overlap);
  return {kind:'rx-lexical-probe',label:ranked[0].label,overlap:ranked[0].overlap,matched:ranked[0].overlap>0};
 }
-module.exports={createLearner,vector,LABELS,lexicalProbe};
+// Fixed unseen prompts: benchmark generalization, not memorization of training phrases.
+const HELD_OUT=Object.freeze([
+ ['hej królowo','greeting'],['miłego wieczoru','greeting'],
+ ['sprawdź testy','tests'],['raport z testów','tests'],
+ ['przypomnij historię','memory'],['czy coś pamiętasz','memory'],
+ ['policz 5 razy 6','math'],['ile wynosi suma','math']
+]);
+function evaluateHeldOut(learner){
+ if(!learner||typeof learner.classify!=='function')throw Error('Invalid learner');
+ const cases=HELD_OUT.map(([text,expected])=>({text,expected,predicted:learner.classify(text).label}));
+ const correct=cases.filter(c=>c.expected===c.predicted).length;
+ return {kind:'rx-text-held-out-evaluation',correct,total:cases.length,accuracy:correct/cases.length,cases};
+}
+module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT};

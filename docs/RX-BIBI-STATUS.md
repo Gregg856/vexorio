@@ -57,3 +57,12 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - Istniejąca pamięć: `rx-persistent-memory.mjs` (jawne polecenia i Supabase RLS), `guard/confirmed-fix-memory.cjs` i `docs/rx-confirmed-fixes.md` (potwierdzone naprawy), `rx-ant-task-board.cjs` (deduplikacja propozycji). Nie budować ich od nowa.
 - RX CLOUD 6.0: kod/testy self-host, nie oznaczać jako wdrożone na własnym fizycznym serwerze bez osobnego potwierdzenia.
 - Zasada: przed zmianą czytać ten dziennik i istniejące moduły; nie powtarzać zamkniętych prac. Nie zmieniać wyglądu `index.html` bez zgody; bez nowych kont i bez płatnych usług.
+
+## RX Królowa — checkpoint nauki 2026-10-30 (nie powtarzać)
+- Przed zmianami zawsze sprawdzić ten plik, `PROJECT_STATUS.md`, drzewo repozytorium, testy i istniejące implementacje. Nie deklarować zakończenia bez wyników CI.
+- Istniejący mechanizm nauki języka: `rx-text-learner.cjs` + `rx-neural-core.cjs` + `rx-language-tokenizer.cjs`. `rx-ant-ai-trainer.cjs` trenuje odrębny syntetyczny model i obsługuje checkpoint. `rx-queen-ai-bridge.cjs` tylko planuje, nie wykonuje.
+- PR #313 (commit `5fa1648f`) wprowadził podobny klasyfikator `rx-fast-learn.cjs`; NIE tworzyć kolejnych klasyfikatorów i nie przedstawiać ich jako samodzielnie piszącego AI.
+- PR #314 zamknięty bez merge po wykryciu dublowania; prosty generator następnego bajtu nie dawał wiarygodnej rozmowy.
+- PR #315: do istniejącego `rx-text-learner.cjs` dodano pomiar na ośmiu odłożonych, niewidzianych w treningu przykładach; nie oznaczać jako zatwierdzony przed zielonym CI.
+- Otwarte zadanie: wybrać JEDEN istniejący moduł do przyszłego treningu generowania tekstu, określić legalny zbiór danych i niezależny benchmark sensowności zdań. Sam spadek straty treningowej nie oznacza umiejętności rozmowy.
+- Bez automatycznego wdrożenia, zmian produkcyjnych, nowej aplikacji, kont i płatnych API.

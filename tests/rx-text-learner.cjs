@@ -19,3 +19,12 @@ assert.equal(lexicalProbe('niezwiązane wyrazy').matched,false);
 assert.throws(()=>lexicalProbe(''),/Invalid/);
 assert.throws(()=>createLearner({epochs:1001}),/Invalid/);
 console.log('PASS RX TEXT LEARNER',learner.metrics.initialLoss,learner.metrics.finalLoss);
+
+const {evaluateHeldOut,HELD_OUT}=require('../rx-text-learner.cjs');
+const heldOut=evaluateHeldOut(learner);
+assert.equal(heldOut.total,8);
+assert.equal(HELD_OUT.length,8);
+assert.ok(heldOut.accuracy>=0&&heldOut.accuracy<=1);
+assert.equal(heldOut.correct,heldOut.cases.filter(c=>c.expected===c.predicted).length);
+assert.throws(()=>evaluateHeldOut({}),/Invalid learner/);
+console.log('RX QUEEN HELD-OUT:',heldOut.correct+'/'+heldOut.total,'accuracy',heldOut.accuracy);
