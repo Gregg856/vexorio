@@ -124,6 +124,30 @@ export default {
       if(/(?:pamiec|rx cloud|potwierdzone naprawy|historia napraw)/.test(normalizedIntent)&&/(?:pokaz|odczytaj|sprawdz|wyswietl|jakie|co jest|dostep)/.test(normalizedIntent)){
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
+      // Read-only RX module results from verified workflow names. Never infer live activity from CI.
+      const moduleStatusMatch=/^(?:sprawdz|pokaz|podaj)\s+(?:aktualny\s+)?(?:status|wynik|wyniki)\s+(?:modulu\s+)?(rx\s+fast|rx\s+developer|rx\s+bibi|rx\s+queen)[?!. ]*$/i.exec(normalizedIntent);
+      if(moduleStatusMatch){
+        const modules={
+          'rx fast':{name:'RX FAST',workflow:'rx-performance-benchmark.yml'},
+          'rx developer':{name:'RX Developer',workflow:'rx-developer-bridge.yml'},
+          'rx bibi':{name:'RX BIBI',workflow:'rx-bibi-browser.yml'},
+          'rx queen':{name:'RX Queen',workflow:'rx-queen-dashboard.yml'}
+        };
+        const module=modules[moduleStatusMatch[1].replace(/\s+/g,' ')];
+        try{
+          const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/'+module.workflow+'/runs?branch=main&per_page=1',{
+            headers:{Accept:'application/vnd.github+json','User-Agent':'RX-BIBI-Module-ReadOnly'},signal:AbortSignal.timeout(7000)
+          });
+          if(!response.ok)throw new Error('github_unavailable');
+          const data=await response.json();
+          const run=data?.workflow_runs?.[0];
+          const state=run?(run.status==='completed'?(run.conclusion||'brak wyniku'):run.status):'brak przebiegu na main';
+          const answer='🔎 '+module.name+': ostatni powiązany przebieg CI na main — '+state+(run?'. Numer: '+String(run.run_number||'nieznany'):'')+'. To wynik workflow, nie potwierdzenie pracy modułu na żywo.';
+          return new Response(JSON.stringify({ok:true,answer,engine:'rx-bibi-module-ci-readonly',source:'github-actions',live:false,modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }catch{
+          return new Response(JSON.stringify({ok:true,answer:'🔎 Nie udało się odczytać wyników '+module.name+' z GitHub Actions. Nie potwierdzam pracy modułu na żywo.',engine:'rx-bibi-module-ci-readonly',live:false,modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }
+      }
       // RX BIBI: authenticated read-only CI evidence for the ants. This is NOT live worker status.
       if(/^(?:sprawdz|pokaz|jaki jest|podaj)\s+(?:aktualny\s+)?(?:status|wyniki?)\s+(?:naszych\s+)?(?:mrowek|mrowki|mrowek rx|rx mrowek|rx mrowki)[?!. ]*$/i.test(normalizedIntent)){
         try{
