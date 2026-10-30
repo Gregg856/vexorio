@@ -858,6 +858,24 @@ runDialogueScenario('technical discussion stays read-only',[
  {input:'Co robi RX Math Core?',match:/RX Math Core/i}
 ]);
 
+// Longer realistic conversations: no new panel, no privileged actions.
+runDialogueScenario('long garden conversation with explicit reset',[
+ {input:'Cześć BIBI, chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
+ {input:'Dalej',match:/słońca|warzywnik/i,newAnswer:true},
+ {input:'Dalej',match:/prostego planu/i,newAnswer:true},
+ {input:'Mam mały ogród i chcę posadzić pomidory.',match:/pomidor/i},
+ {input:'Jak podlewać?',match:/wilgotność ziemi/i},
+ {input:'Zmieńmy temat',reject:/pomidory|warzywnik/i},
+ {input:'Chcę porozmawiać o muzyce',match:/muzyce/i,reject:/ogrodzie|pomidory/i},
+ {input:'Dalej',match:/muzyce/i,reject:/ogrodzie|pomidory/i}
+]);
+runDialogueScenario('ambiguous followup after topic reset',[
+ {input:'Chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
+ {input:'Zmieńmy temat',reject:/pomidory|warzywnik/i},
+ {input:'Dalej',reject:/pomidory|warzywnik|Kontynuujemy temat:.*ogrodzie/i},
+ {input:'Chcę porozmawiać o muzyce',match:/muzyce/i}
+]);
+
 // Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
 const dialogueIssues=dialogueReports.flatMap(scenario=>scenario.turns.flatMap(turn=>turn.issues.map(issue=>({scenario:scenario.scenario,turn:turn.turn,code:issue.code,detail:issue.detail||null}))));
 
