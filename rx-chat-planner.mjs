@@ -76,6 +76,16 @@ export function planRXChat(message,history=[],learning=null){
  const everydayGreeting=/^(co u ciebie|jak sie masz|jak mija dzien|jak leci)[?!. ]*$/.test(plain);
  const everydayThanks=/^(dziekuje bardzo|wielkie dzieki|dzieki za pomoc)[?!. ]*$/.test(plain);
  const everydayQuestion=/^(czy mozesz mi pomoc|potrzebuje porady|mam pytanie)[?!. ]*$/.test(plain);
+ // RX BIBI 3.0: bounded natural-language arithmetic without eval or external AI.
+ const arithmeticInput=plain.match(/^(?:ile to jest|oblicz|policz)\s+(-?\d{1,8}(?:[.,]\d{1,4})?)\s*(plus|minus|razy|podzielic przez|\+|\-|\*|\/|x)\s*(-?\d{1,8}(?:[.,]\d{1,4})?)[?!. ]*$/);
+ let arithmeticAnswer=null;
+ if(arithmeticInput){
+  const left=Number(arithmeticInput[1].replace(',','.'));
+  const right=Number(arithmeticInput[3].replace(',','.'));
+  const op=arithmeticInput[2];
+  const value=(op==='plus'||op==='+')?left+right:(op==='minus'||op==='-')?left-right:(op==='razy'||op==='*'||op==='x')?left*right:right===0?null:left/right;
+  arithmeticAnswer=value===null?'🧮 Nie można dzielić przez zero.':Number.isFinite(value)?'🧮 Wynik: '+String(Number(value.toPrecision(12))):'🧮 Nie mogę obliczyć tego działania.';
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
@@ -314,10 +324,11 @@ export function planRXChat(message,history=[],learning=null){
  if(everydayGreeting)answer=repeatedGreeting?'👑 Miło Cię znowu słyszeć. O czym chcesz dziś porozmawiać?':'👑 Dziękuję, że pytasz! Jestem tutaj, żeby porozmawiać. Co u Ciebie słychać?';
  if(everydayThanks)answer=repeatedThanks?'👑 Cała przyjemność po mojej stronie. Co jeszcze mogę wyjaśnić?':'👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
  if(everydayQuestion)answer=repeatedQuestion?'👑 Słucham. Opisz konkretną sytuację albo zadaj pytanie, a postaram się pomóc.':'👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
+ if(arithmeticAnswer!==null)answer=arithmeticAnswer;
  if(everydayIdentity)answer='👑 Jestem BIBI, asystentką rozmowy RX. Mogę wyjaśniać wybrane tematy i pomagać w planowaniu, ale nie jestem niezależnym modelem AI.';
  if(everydayWeather)answer='👑 Nie mam tutaj dostępu do aktualnej prognozy pogody. Podaj miejscowość, a podpowiem, gdzie sprawdzić wiarygodną prognozę.';
  if(everydayTime)answer='👑 Nie mam w tym czacie wiarygodnego zegara ani bieżącej daty. Sprawdź godzinę i datę w telefonie.';
  if(everydayJoke)answer='👑 Dlaczego programista zabrał parasol? Bo zapowiadali chmurę! ☁️';
- if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke){tasks.length=0;plan.work=null;}
+ if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null){tasks.length=0;plan.work=null;}
  return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
