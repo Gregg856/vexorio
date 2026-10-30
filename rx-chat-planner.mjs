@@ -279,7 +279,7 @@ export function planRXChat(message,history=[],learning=null){
  // RX BIBI 5.1: reusable intent + topic resolver, not one regex per question.
  // RX BIBI 5.3: remove only known polite question prefixes.
  // Keep the rest intact so intent and topic matching stay deterministic.
- const politeIntentQuestion=plain.replace(/^(?:(?:czy\s+)?mozesz\s+(?:mi\s+)?|prosze\s+)(?=(?:wyjasnic|wyjasnij|powiedziec|powiedz)\b)/,'')
+ const politeIntentQuestion=plain.replace(/,\s*/g,' ').replace(/^(?:(?:czy\s+)?mozesz\s+(?:mi\s+)?|prosze\s+)(?=(?:wyjasnic|wyjasnij|powiedziec|powiedz)\b)/,'')
   .replace(/^(?:wyjasnic|wyjasnij|powiedziec|powiedz)\s+(?:mi\s+)?(?=(?:czym|co)\b)/,'')
   .replace(/^(?:czy\s+)?moglabys\s+(?:mi\s+)?wyjasnic\s+(?=(?:czym|co)\b)/,'');
  const conversationalTokens=politeIntentQuestion.replace(/[?!.]+$/g,'').trim().split(/\s+/).filter(Boolean);
