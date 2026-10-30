@@ -905,6 +905,11 @@ runDialogueScenario('rapid topic switching never leaks previous context',[
  {input:'Dalej',match:/pamięci/i,reject:/Kontynuujemy temat:.*mrówkach/i},
  {input:'Porozmawiajmy o mrówkach',match:/mrówkach/i,reject:/Kontynuujemy temat:.*pamięci/i}
 ]);
+runDialogueScenario('customer screenshot: improving RX ants is not a repeated definition',[
+ {input:'Porozmawiajmy o mrówkach',match:/mrówkach/i},
+ {input:'Dalej',match:/mrów/i},
+ {input:'A jak możemy zwiększyć moc naszych mrówek RX?',match:/zadania|testy|równolegle|grupować/i,reject:/Mrówki RX to moduły zadań i testów/i,newAnswer:true}
+]);
 // Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
 const dialogueIssues=dialogueReports.flatMap(scenario=>scenario.turns.flatMap(turn=>turn.issues.map(issue=>({scenario:scenario.scenario,turn:turn.turn,code:issue.code,detail:issue.detail||null}))));
 
