@@ -43,17 +43,8 @@ export function planRXChat(message,history=[],learning=null){
  const contextual=(followup||correction||returnTopic||elaborate)&&last?selectedTopic+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const normalizedQuery=normalizeRX(contextual);
- const containsIntent=(haystack,needle)=>{
-  let at=haystack.indexOf(needle);
-  while(at!==-1){
-   const before=at===0?'':haystack[at-1];
-   const after=haystack[at+needle.length]||'';
-   if(!/[a-z0-9]/i.test(before)&&!/[a-z0-9]/i.test(after))return true;
-   at=haystack.indexOf(needle,at+1);
-  }
-  return false;
- };
- const found=RULES.filter(r=>r.words.some(word=>containsIntent(normalizedQuery,normalizeRX(word))));
+ // Catalog words include Polish stems (e.g. 'awari', 'mrowk'); preserve prefix matching.
+ const found=RULES.filter(r=>r.words.some(word=>normalizedQuery.includes(normalizeRX(word))));
  const topics=found.map(r=>r.topic);
  const tasks=found.map(r=>({module:r.module,role:r.role,action:r.id,status:'proposed',requiresApproval:true}));
  const plan={kind:'rx-coordinated-chat-proposal',queen:{status:'awaiting_approval',requiresApproval:true},ants:tasks.filter(t=>t.module==='ants'),cloud:{executionConnected:false},executed:0};
