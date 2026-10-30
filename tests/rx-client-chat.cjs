@@ -14,6 +14,12 @@ assert.match(route,/is_anonymous===true/,'Anonymous users rejected');
 assert.match(route,/planRXChat\(message,history,null\)/,'Shared local planner used');
 assert.doesNotMatch(route,/RX_GITHUB_DISPATCH_TOKEN|workflow_dispatch|handleRXMemory|service_role/i,'No privileged dispatch or memory writes');
 assert.match(route,/adminToolsAvailable:false/,'Explicit client restrictions');
+// Public sourced RX knowledge must stay on the client-safe path, never private RX CLOUD memory.
+assert.match(route,/publicKnowledgeIntent\?findRXKnowledge\(message\):null/,'Client queries curated public knowledge');
+assert.match(route,/engine:'rx-bibi-client-public-knowledge'/,'Client identifies sourced knowledge response');
+assert.match(route,/publicKnowledge\.source/,'Client includes the source in knowledge answers');
+assert.match(route,/if\(publicKnowledge\)[\s\S]*?adminToolsAvailable:false/,'Knowledge response has no admin tools');
+assert.match(route,/private RX CLOUD learning/,'Private learning remains excluded');
 assert.match(client,/\/api\/rx\/client\/chat/,'Client uses isolated route');
 assert.doesNotMatch(client,/\/api\/rx\/chat['"`]/,'Client must not use admin route');
 assert.match(client,/textContent=text/,'Chat messages rendered as text');
