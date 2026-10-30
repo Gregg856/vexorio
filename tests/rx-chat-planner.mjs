@@ -159,6 +159,20 @@ for(const [previous,followup,expected] of [
 }
 console.log('RX contextual price regression OK');
 
+// RX BIBI 4.1: retrieve a price from several prior USER turns.
+for(const [history,question,expected] of [
+ [['Produkt kosztuje 200 euro, ile zapłacę po rabacie 15%?','🧮 Cena po rabacie: 170','Dziękuję','Nie ma za co!'],'A przy 25%?','150'],
+ [['Towar kosztuje 100 euro, ile zapłacę po podwyżce 10%?','🧮 Cena po podwyżce: 110','Mam pytanie','Słucham.'],'A przy 20%?','120'],
+ [['Produkt kosztuje 200 euro, ile zapłacę po rabacie 15%?','🧮 Cena po rabacie: 170','Towar kosztuje 80 euro, ile zapłacę po rabacie 10%?','🧮 Cena po rabacie: 72'],'A przy 25%?','60']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX multi-turn price regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
