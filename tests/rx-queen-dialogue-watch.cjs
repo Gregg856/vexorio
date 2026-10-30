@@ -14,7 +14,7 @@ const fs=require('node:fs');
   {id:'wishes',message:'Napisz życzenia dla mamy',expected:/Dla mamy:.*Wszystkiego najlepszego/i},
   {id:'proofread',message:'Popraw: witaj  świecie',expected:/Witaj świecie[.]/i},
   {id:'arithmetic',message:'Ile to 7 * 8?',expected:/56/},
-  {id:'division-zero',message:'Oblicz 4 / 0',expected:/dzielenie przez zero/i},
+  {id:'division-zero',message:'Oblicz 4 / 0',expected:/dzielenie przez zero|dzielić przez zero/i},
   {id:'translation-honesty',message:'Przetłumacz na niemiecki: Miłego dnia',expected:/nie mam jeszcze silnika tłumaczeń/i},
   {id:'tests',message:'Jakie testy przeszły?',expected:/test|raport|wynik/i},
   {id:'ants',message:'Co robią Mrówki?',expected:/mrów|zadani/i},
