@@ -67,3 +67,18 @@ for(const question of ['Czy testy są zielone?','Jaki wynik testów?','Czy to ju
 }
 assert.match(chatRX('Czy testy są zielone?').answer,/Nie mam potwierdzonego wyniku/);
 console.log('RX BIBI level 5: unverified status claims are not treated as evidence');
+
+const taskRegister=[
+ {title:'Naprawa klawiatury Android',status:'completed'},
+ {title:'Weryfikacja czatu',status:'pending'}
+];
+const completedReport=chatRX('Co już zrobione?',{tasks:taskRegister});
+assert.match(completedReport.answer,/Naprawa klawiatury Android/);
+assert.doesNotMatch(completedReport.answer,/Weryfikacja czatu/);
+assert.match(completedReport.answer,/Nie potwierdzam ich testów/);
+assert.equal(completedReport.completedCount,1);
+assert.equal(completedReport.executed,0);
+assert.match(chatRX('Co już zrobione?').answer,/Brak zadań oznaczonych/);
+assert.throws(()=>chatRX('Hej',{tasks:[{title:'Zadanie',status:'verified'}]}),/Invalid tasks/);
+assert.throws(()=>chatRX('Hej',{tasks:[{title:'',status:'completed'}]}),/Invalid tasks/);
+console.log('RX BIBI level 6: explicit task register and safe completion reporting checked');
