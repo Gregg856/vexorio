@@ -659,8 +659,8 @@ export function planRXChat(message,history=[],learning=null){
  }
  // RX BIBI: a safe, useful next step for a garden conversation, using recent user context.
  // This is practical guidance, not a claim of live weather, soil measurements or AI inference.
- const gardenContext=/\\b(ogrod|ogrodzie|ogrodu|ogrodem|roslin|rosliny|kwiat|warzyw|grzadk|trawnik)\\b/i.test(plain)
-  ||userTurns.slice(-6).some(turn=>/\\b(ogrod|ogrodzie|ogrodu|ogrodem|roslin|rosliny|kwiat|warzyw|grzadk|trawnik)\\b/i.test(normalizeRX(turn)));
+ const gardenContext=/\b(ogrod|ogrodzie|ogrodu|ogrodem|roslin|rosliny|kwiat|warzyw|grzadk|trawnik)\b/i.test(plain)
+  ||userTurns.slice(-6).some(turn=>/\b(ogrod|ogrodzie|ogrodu|ogrodem|roslin|rosliny|kwiat|warzyw|grzadk|trawnik)\b/i.test(normalizeRX(turn)));
  const gardenNext=/^(?:dalej|kontynuuj|rozwin to|rozwiń to|co dalej)[.!? ]*$/i.test(message.trim());
  const gardenPlanting=/(co|jakie|ktore|kiedy|gdzie).{0,45}(posadzic|sadzic|wysiac|uprawiac)|(?:chce|chcialbym).{0,30}(posadzic|sadzic)/i.test(plain);
  const gardenCare=/(jak|czym|kiedy).{0,40}(podlewac|nawozic|pielegnowac)|(?:podlewanie|nawozenie)/i.test(plain);
