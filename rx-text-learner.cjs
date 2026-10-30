@@ -126,4 +126,32 @@ function evaluateSentenceExperiment(model,{sentences=SAFE_SENTENCES}={}){
   exactCopyRate:copies/count,completeSentences:complete,completeRate:complete/count,
   distinctOutputs:distinct,distinctRate:distinct/count,productionConnected:false,cases};
 }
-module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES,evaluateSentenceExperiment};
+// RX DNA Myśli: opt-in, auditable candidate selection. This cannot verify factual truth.
+function reviewSentenceCandidates(candidates,{prompt='',training=SAFE_SENTENCES,minScore=0.55}={}){
+ if(!Array.isArray(candidates)||candidates.length<1||candidates.length>12||
+    candidates.some(x=>typeof x!=='string'||!x.trim()||x.length>300)||
+    typeof prompt!=='string'||prompt.length>160||
+    !Array.isArray(training)||training.length<2||training.length>100||
+    training.some(x=>typeof x!=='string'||!x.trim())||
+    !Number.isFinite(minScore)||minScore<0||minScore>1)throw Error('Invalid RX thought review');
+ const words=s=>s.normalize('NFC').toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]+/gu)||[];
+ const source=new Set(training.map(x=>x.trim().normalize('NFC')));
+ const knownPairs=new Set();
+ for(const sentence of training){const ws=words(sentence);for(let i=1;i<ws.length;i++)knownPairs.add(ws[i-1]+' '+ws[i]);}
+ const promptWords=new Set(words(prompt).filter(w=>w.length>3));
+ const results=candidates.map((text,index)=>{
+  const ws=words(text),pairs=[];
+  for(let i=1;i<ws.length;i++)pairs.push(ws[i-1]+' '+ws[i]);
+  const coherence=pairs.length?pairs.filter(p=>knownPairs.has(p)).length/pairs.length:0;
+  const punctuation=/[.!?]$/u.test(text.trim())?1:0;
+  const topic=promptWords.size?[...promptWords].some(w=>ws.includes(w))?1:0:1;
+  const copied=source.has(text.trim().normalize('NFC'));
+  const score=0.6*coherence+0.2*punctuation+0.2*topic-(copied?0.2:0);
+  return {index,text,score:Number(score.toFixed(4)),coherence:Number(coherence.toFixed(4)),copied,topicMatched:!!topic};
+ }).sort((a,b)=>b.score-a.score||a.index-b.index);
+ const best=results[0],accepted=best.score>=minScore;
+ return {kind:'rx-dna-thought-review',accepted,answer:accepted?best.text:null,
+  reason:accepted?'heuristic-pass':'insufficient-evidence',candidates:results,productionConnected:false,
+  warning:'Heuristic overlap is not factual verification or human-level language understanding'};
+}
+module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES,evaluateSentenceExperiment,reviewSentenceCandidates};
