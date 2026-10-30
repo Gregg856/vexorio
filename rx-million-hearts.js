@@ -21,6 +21,10 @@ class RXMillionHearts {
     if(!Number.isSafeInteger(index)||index<0||index>=this.logicalHeads)throw new RangeError('Invalid logical head index');
     return 'RX-'+String(index+1).padStart(6,'0');
   }
+  // Event-driven impulse: one bounded task per signal, no polling or mass worker creation.
+  pulse(name,payload,{signal,priority=0}={}){
+    return this.dispatch(name,payload,{signal,priority});
+  }
   dispatch(name,payload,{signal,priority=0}={}){
     if(!Number.isSafeInteger(priority)||priority<0||priority>9)return Promise.reject(new RangeError('Priority must be 0..9'));
     if(!this.handlers.has(name))return Promise.reject(new Error('Unknown cell: '+name));
