@@ -28,4 +28,22 @@ function saveTasks(file,tasks){
  }
  return tasks.length;
 }
-module.exports={readTasks,saveTasks};
+function proposeStatusChange(tasks,title,status){
+ validate(tasks);
+ if(typeof title!=='string'||!title.trim()||title.length>160||!['pending','completed'].includes(status))throw Error('Invalid change');
+ const matches=tasks.filter(t=>t.title===title);
+ if(matches.length!==1)throw Error('Task must match exactly one entry');
+ const index=tasks.findIndex(t=>t.title===title);
+ return {title,status,previousStatus:tasks[index].status,index};
+}
+function applyApprovedChange(file,proposal,{approved=false}={}){
+ if(approved!==true)throw Error('Explicit approval required');
+ if(!proposal||typeof proposal!=='object'||typeof proposal.title!=='string'||!['pending','completed'].includes(proposal.status)||!['pending','completed'].includes(proposal.previousStatus)||!Number.isInteger(proposal.index))throw Error('Invalid proposal');
+ const tasks=readTasks(file);
+ const current=tasks[proposal.index];
+ if(!current||current.title!==proposal.title||current.status!==proposal.previousStatus)throw Error('Stale proposal');
+ const next=tasks.map((t,i)=>i===proposal.index?{title:t.title,status:proposal.status}:t);
+ saveTasks(file,next);
+ return next;
+}
+module.exports={readTasks,saveTasks,proposeStatusChange,applyApprovedChange};
