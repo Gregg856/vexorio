@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {EXTRAS,WAVE2,compare,compareWave2,diagnoseWave2}=require('../rx-text-training-candidate.cjs');
+const {EXTRAS,WAVE2,MEMORY_WAVE,compare,compareWave2,diagnoseWave2,compareMemoryWave}=require('../rx-text-training-candidate.cjs');
 const {HOLDOUT,CHALLENGE}=require('../rx-text-evaluation.cjs');
 const norm=s=>s.normalize('NFC').toLocaleLowerCase('pl').trim();
 const seen=new Set([...HOLDOUT,...CHALLENGE].map(x=>norm(x[0])));
@@ -38,3 +38,16 @@ for(const [setName,total] of [['holdout',24],['challenge',32]]){
  assert.equal(rows.reduce((sum,row)=>sum+row.errors.length,0),total-b.candidate[setName]);
 }
 console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnosis));
+
+assert.equal(MEMORY_WAVE.length,18);
+const trained=new Set([...EXTRAS,...WAVE2].map(x=>norm(x[0])));
+for(const [phrase] of MEMORY_WAVE){
+ assert.ok(!seen.has(norm(phrase)),'Evaluation leakage: '+phrase);
+ assert.ok(!trained.has(norm(phrase)),'Duplicate training phrase: '+phrase);
+}
+const memoryResult=compareMemoryWave();
+assert.deepEqual(memoryResult,compareMemoryWave());
+assert.equal(memoryResult.trainingSamples,82);
+assert.equal(memoryResult.productionConnected,false);
+assert.deepEqual(memoryResult.previous,b.candidate);
+console.log('RX MEMORY WAVE',JSON.stringify(memoryResult));
