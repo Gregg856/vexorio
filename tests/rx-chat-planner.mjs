@@ -797,3 +797,33 @@ assert.match(tomatoReply.answer,/pomidor/i,'BIBI should acknowledge tomatoes spe
 assert.doesNotMatch(tomatoReply.answer,/czy chcesz warzywa, kwiaty czy krzewy/i,'BIBI must not ask for a category already specified');
 assert.equal(tomatoReply.executed,0);
 console.log('RX BIBI real multi-turn tomato dialogue: PASS');
+
+
+// Multi-turn automated dialogue checks: repetition, topic reset, and answer relevance.
+function runDialogueScenario(name,steps){
+ const history=[];
+ for(const [index,step] of steps.entries()){
+  const result=planRXChat(step.input,history);
+  assert.equal(result.ok,true,name+' step '+index+' failed');
+  assert.equal(result.executed,0,name+' step '+index+' unexpectedly executed a task');
+  assert.ok(result.answer?.trim(),name+' step '+index+' has empty answer');
+  if(step.match)assert.match(result.answer,step.match,name+' step '+index+' ignored topic');
+  if(step.reject)assert.doesNotMatch(result.answer,step.reject,name+' step '+index+' repeated or ignored detail');
+  if(step.newAnswer)assert.notEqual(result.answer,history.at(-1),name+' step '+index+' repeated the last answer');
+  history.push(step.input,result.answer);
+ }
+ console.log('RX BIBI dialogue scenario PASS:',name,'turns:',steps.length);
+}
+runDialogueScenario('garden continuation and tomatoes',[
+ {input:'Cześć BIBI, chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
+ {input:'Dalej',match:/słońca|warzywnik/i,newAnswer:true},
+ {input:'Dalej',match:/prostego planu/i,newAnswer:true},
+ {input:'Mam mały ogród i chcę posadzić pomidory.',match:/pomidor/i,reject:/czy chcesz warzywa, kwiaty czy krzewy/i,newAnswer:true}
+]);
+runDialogueScenario('topic switch prevents garden leakage',[
+ {input:'Chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
+ {input:'Dalej',match:/ogrodzie|słońca/i},
+ {input:'Zmieńmy temat',reject:/warzywnik|pomidory/i},
+ {input:'Chcę porozmawiać o muzyce',match:/muzyce/i,reject:/ogrodzie|warzywnik/i},
+ {input:'Dalej',match:/muzyce/i,reject:/ogrodzie|warzywnik/i}
+]);
