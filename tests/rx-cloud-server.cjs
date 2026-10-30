@@ -76,6 +76,27 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(learningData.kind,'rx-queen-verified-learning');
   assert(Array.isArray(learningData.lessons),'Queen learning feed must return lessons array');
   assert(learningData.lessons.every(item=>item.verifiedResolution===false),'Unverified reports must never be treated as learned fixes');
+  // Verified fixes are isolated from raw incidents and require explicit approval + test evidence.
+  const verifiedDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-verified-test-'));
+  const previousVerifiedDir=process.env.RX_NEURON_VERIFIED_DIR;
+  process.env.RX_NEURON_VERIFIED_DIR=verifiedDir;
+  try{
+    const testReference='https://github.com/Gregg856/vexorio/actions/runs/41040503573';
+    const approved={kind:'rx-neuron-verified-fix',ownerApproved:true,testResult:'passed',incidentId:'incident-1',resolution:'Naprawa sprawdzona testem',testReference};
+    await fs.writeFile(path.join(verifiedDir,'rx-fix-approved.json'),JSON.stringify(approved));
+    await fs.writeFile(path.join(verifiedDir,'rx-fix-unapproved.json'),JSON.stringify({...approved,incidentId:'incident-2',ownerApproved:false}));
+    await fs.writeFile(path.join(verifiedDir,'rx-fix-failed.json'),JSON.stringify({...approved,incidentId:'incident-3',testResult:'failed'}));
+    const response=await fetch(base+'/__rxcloud/bibi/learning',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+    assert.equal(response.status,200);
+    const memory=await response.json();
+    assert.equal(memory.verified.length,1,'Only explicitly approved and test-backed fixes may enter verified memory');
+    assert.equal(memory.verified[0].incidentId,'incident-1');
+    assert.equal(memory.verified[0].verifiedResolution,true);
+  }finally{
+    if(previousVerifiedDir===undefined)delete process.env.RX_NEURON_VERIFIED_DIR;
+    else process.env.RX_NEURON_VERIFIED_DIR=previousVerifiedDir;
+    await fs.rm(verifiedDir,{recursive:true,force:true});
+  }
   // RX NEURON regression: aggregate two local BIBI reports and deduplicate observations.
   const neuronDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-neuron-test-'));
   const priorInbox=process.env.RX_BIBI_INBOX_DIR;
