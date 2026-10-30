@@ -87,3 +87,8 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - PR #318 scalony: `8abdc655`, smoke SUCCESS. Nie budować drugiego generatora.
 - Bieżąca zmiana: pomiar kopiowania zdań treningowych, interpunkcji i różnorodności wyników w `rx-text-learner.cjs`; to NIE jest miara płynności ani generalizacji do nowych tematów.
 - Kolejny warunek przed podłączeniem do czatu: oddzielny zbiór niewidzianych tematów i ludzka ocena sensowności; bez produkcji.
+
+## RX Queen — topic gate 2026-10-30
+- PR #321 RX IMPULS: smoke SUCCESS, but merge blocked by tool safeguards, remains OPEN. Do not claim main integration.
+- Extend existing `rx-text-learner.cjs` experiment with `generateRelevant`: unknown topic returns null, not misleading generic text; known topic matched by lexical overlap only. This is not fluent writing, factual knowledge, semantic understanding or production-connected.
+- Test in existing `tests/rx-text-learner.cjs`; no new model or deployment.
