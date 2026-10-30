@@ -383,6 +383,24 @@ for(const [question,expected] of [
 }
 console.log('RX polite question regression OK');
 
+// RX BIBI 5.4: bounded 2FA follow-ups and explicit topic switch.
+for(const [question,history,expected] of [
+ ['A jak to włączyć?',['Czym jest 2FA?','To dodatkowe potwierdzenie logowania.'],'Aby włączyć 2FA'],
+ ['Jak to ustawić?',['Co oznacza weryfikacja dwuetapowa?','Wyjaśnienie.'],'Aby włączyć 2FA'],
+ ['Jak uruchomić?',['Czym jest uwierzytelnianie dwuskładnikowe?','Wyjaśnienie.'],'Aby włączyć 2FA']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+const afterSwitch=planRXChat('A jak to włączyć?',['Czym jest 2FA?','Wyjaśnienie.','Zmieńmy temat','Dobrze.']);
+assert.ok(!afterSwitch.answer.includes('Aby włączyć 2FA'),afterSwitch.answer);
+assert.equal(afterSwitch.executed,0);
+console.log('RX 2FA context boundary regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
