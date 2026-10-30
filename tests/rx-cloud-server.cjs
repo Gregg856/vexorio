@@ -82,6 +82,39 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal((await fetch(base+syncPath+'?runId=41040503573',{method:'GET',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}})).status,405);
   assert.equal((await fetch(base+syncPath+'?runId=not-a-number',{method:'POST',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}})).status,400);
   assert.equal((await fetch(base+syncPath+'?runId=123/../../bad',{method:'POST',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}})).status,400);
+  // Offline GitHub API simulation: only real successful completed runs create evidence.
+  const githubMockDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-github-sync-test-'));
+  const originalFetch=globalThis.fetch;
+  const originalEvidenceDir=process.env.RX_NEURON_EVIDENCE_DIR;
+  process.env.RX_NEURON_EVIDENCE_DIR=githubMockDir;
+  try{
+    const tokenHeaders={Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN};
+    const scenarios=[
+      {runId:'12345678901',conclusion:'success',repository:'Gregg856/vexorio',expected:200,stored:true},
+      {runId:'12345678902',conclusion:'failure',repository:'Gregg856/vexorio',expected:409,stored:false},
+      {runId:'12345678903',conclusion:'success',repository:'foreign/repo',expected:409,stored:false},
+      {runId:'12345678904',conclusion:'success',repository:'Gregg856/vexorio',status:'in_progress',expected:409,stored:false}
+    ];
+    for(const scenario of scenarios){
+      globalThis.fetch=(input,options)=>String(input).startsWith('https://api.github.com/')
+        ? Promise.resolve(new Response(JSON.stringify({id:Number(scenario.runId),repository:{full_name:scenario.repository},status:scenario.status||'completed',conclusion:scenario.conclusion,head_sha:'abc123'}),{status:200,headers:{'Content-Type':'application/json'}}))
+        : originalFetch(input,options);
+      const result=await originalFetch(base+syncPath+'?runId='+scenario.runId,{method:'POST',headers:tokenHeaders});
+      assert.equal(result.status,scenario.expected,'GitHub sync scenario '+scenario.runId);
+      const filename=path.join(githubMockDir,'rx-run-'+scenario.runId+'.json');
+      assert.equal(await fs.stat(filename).then(()=>true,()=>false),scenario.stored,'Evidence file mismatch '+scenario.runId);
+    }
+    globalThis.fetch=(input,options)=>String(input).startsWith('https://api.github.com/')
+      ? Promise.resolve(new Response('unavailable',{status:503}))
+      : originalFetch(input,options);
+    assert.equal((await originalFetch(base+syncPath+'?runId=12345678905',{method:'POST',headers:tokenHeaders})).status,502);
+    assert.equal(await fs.stat(path.join(githubMockDir,'rx-run-12345678905.json')).then(()=>true,()=>false),false);
+  }finally{
+    globalThis.fetch=originalFetch;
+    if(originalEvidenceDir===undefined)delete process.env.RX_NEURON_EVIDENCE_DIR;
+    else process.env.RX_NEURON_EVIDENCE_DIR=originalEvidenceDir;
+    await fs.rm(githubMockDir,{recursive:true,force:true});
+  }
   // Verified fixes are isolated from raw incidents and require explicit approval + test evidence.
   const verifiedDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-verified-test-'));
   const previousVerifiedDir=process.env.RX_NEURON_VERIFIED_DIR;
