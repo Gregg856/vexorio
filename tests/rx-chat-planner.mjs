@@ -99,6 +99,21 @@ for(const [question,expected] of [
 }
 console.log('RX percentage arithmetic regression OK');
 
+// RX BIBI 3.7: price changes must calculate correctly, not just pass syntax checks.
+for(const [question,expected] of [
+ ['Oblicz rabat 20% od 150 euro','Cena po rabacie: 120'],
+ ['Policz podwyżce 10% od 200 euro','Cena po podwyżce: 220'],
+ ['Oblicz rabat 110% od 150 euro','Rabat nie może przekraczać 100%'],
+ ['Oblicz rabat 12,5% od 80 euro','Cena po rabacie: 70']
+]){
+ const result=planRXChat(question);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX price change regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
