@@ -3,6 +3,12 @@ const assert=require('node:assert/strict');
 const {handleQueenCommand,COMMANDS}=require('../rx-queen-chat-router.cjs');
 const report={kind:'rx-bibi-dashboard-summary',runId:'sample',signals:2,tasks:3,recurring:1,awaitingApproval:2,proposedPatches:4};
 assert.equal(COMMANDS.length,6);
+const research=handleQueenCommand('Znajdź informacje o komputerach kwantowych',report);
+assert.equal(research.command,'research_info');
+assert.equal(research.type,'proposal');
+assert.equal(research.executed,0);
+assert.equal(research.readOnly,true);
+assert.match(research.message,/nie zostało uruchomione/);
 for(const command of COMMANDS){
  const response=handleQueenCommand(command.words[0],report);
  assert.equal(response.type,'answer');
