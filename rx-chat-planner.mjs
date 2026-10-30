@@ -46,7 +46,9 @@ export function planRXChat(message,history=[],learning=null){
  const latestSwitch=userTurns.map(turn=>topicSwitch.test(normalizeRX(turn.trim()))).lastIndexOf(true);
  const latestTopicIndex=userTurns.map(turn=>hasTopic(turn)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(turn.trim()))).lastIndexOf(true);
  const activeTopic=latestTopicIndex>latestSwitch?userTurns[latestTopicIndex]:'';
- const contextual=(followup||correction||returnTopic||elaborate)&&last?(returnTopic?selectedTopic:activeTopic)+' '+message:message;
+ // A topic switch is a hard boundary for short continuations, including explicit returns.
+ const boundedSelectedTopic=returnTopic&&latestSwitch>=0&&latestTopicIndex<=latestSwitch?'':selectedTopic;
+ const contextual=(followup||correction||returnTopic||elaborate)&&last?(returnTopic?boundedSelectedTopic:activeTopic)+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
  const normalizedQuery=normalizeRX(contextual);
  // Catalog words include Polish stems (e.g. 'awari', 'mrowk'); preserve prefix matching.
