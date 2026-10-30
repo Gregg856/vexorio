@@ -48,3 +48,16 @@ assert.ok(experiment.generate({maxWords:2}).text.trim().split(/\s+/u).length<=2)
 assert.throws(()=>createSentenceExperiment({sentences:[]}),/Invalid training/);
 assert.throws(()=>experiment.generate({maxWords:1000}),/Invalid generation/);
 console.log('RX EXPERIMENTAL SENTENCE MODEL:',generated.text);
+
+const {evaluateSentenceExperiment}=require('../rx-text-learner.cjs');
+const quality=evaluateSentenceExperiment(experiment);
+assert.equal(quality.total,SAFE_SENTENCES.length);
+assert.ok(quality.exactCopyRate>=0&&quality.exactCopyRate<=1);
+assert.equal(quality.exactTrainingCopies,quality.cases.filter(x=>x.exactTrainingCopy).length);
+assert.equal(quality.completeSentences,quality.cases.filter(x=>x.endsWithPunctuation).length);
+assert.equal(quality.distinctOutputs,new Set(quality.cases.map(x=>x.text)).size);
+assert.equal(quality.productionConnected,false);
+assert.throws(()=>evaluateSentenceExperiment({}),/Invalid sentence evaluation/);
+console.log('RX SENTENCE QUALITY (memorization, not fluency):',JSON.stringify({
+ total:quality.total,exactCopyRate:quality.exactCopyRate,completeRate:quality.completeRate,distinctRate:quality.distinctRate
+}));

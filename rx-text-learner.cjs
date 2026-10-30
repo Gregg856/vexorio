@@ -104,4 +104,26 @@ function createSentenceExperiment({sentences=SAFE_SENTENCES}={}){
  }
  return {kind:'rx-experimental-sentence-model',trainedSentences:sentences.length,generate};
 }
-module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES};
+// Evaluate memorization and structural completeness before claiming language quality.
+function evaluateSentenceExperiment(model,{sentences=SAFE_SENTENCES}={}){
+ if(!model||typeof model.generate!=='function'||!Array.isArray(sentences)||!sentences.length||
+    sentences.some(s=>typeof s!=='string'||!s.trim()))throw Error('Invalid sentence evaluation');
+ const normalize=s=>s.normalize('NFC').trim().replace(/\\s+/gu,' ');
+ const corpus=new Set(sentences.map(normalize));
+ const prompts=[...new Set(sentences.map(s=>s.trim().split(/\\s+/u)[0]))];
+ const cases=prompts.map(seed=>{
+  const output=model.generate({seed,maxWords:40});
+  if(!output||typeof output.text!=='string')throw Error('Invalid generated text');
+  const text=normalize(output.text);
+  return {seed,text,wordCount:text?text.split(/\\s+/u).length:0,exactTrainingCopy:corpus.has(text),
+   endsWithPunctuation:/[.!?]$/u.test(text)};
+ });
+ const count=cases.length;
+ const copies=cases.filter(x=>x.exactTrainingCopy).length;
+ const complete=cases.filter(x=>x.endsWithPunctuation).length;
+ const distinct=new Set(cases.map(x=>x.text)).size;
+ return {kind:'rx-sentence-quality-evaluation',total:count,exactTrainingCopies:copies,
+  exactCopyRate:copies/count,completeSentences:complete,completeRate:complete/count,
+  distinctOutputs:distinct,distinctRate:distinct/count,productionConnected:false,cases};
+}
+module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES,evaluateSentenceExperiment};
