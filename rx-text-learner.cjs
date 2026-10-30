@@ -65,4 +65,43 @@ function evaluateHeldOut(learner){
  }));
  return {kind:'rx-text-held-out-evaluation',correct,total:cases.length,accuracy:correct/cases.length,perLabel,cases};
 }
-module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT};
+// Experimental corpus-only word continuation. This is a trained word transition model,
+// not a neural LLM. It never executes text, accesses users' conversations, or changes chat.
+const SAFE_SENTENCES=Object.freeze([
+ 'Cześć, możemy dziś wspólnie sprawdzić wyniki testów.',
+ 'Witaj, pomogę Ci uporządkować zadania projektu.',
+ 'Najpierw sprawdzę dostępne informacje, potem przedstawię wynik.',
+ 'Nie potwierdzę zakończenia zadania bez sprawdzenia testów.',
+ 'Pamięć rozmowy pomaga zachować kontekst kolejnych pytań.',
+ 'Wynik obliczenia należy sprawdzić przed zapisaniem.',
+ 'Jeżeli pojawi się błąd, sprawdzimy jego przyczynę.',
+ 'Dobrze jest zapisać postępy przed następnym etapem.'
+]);
+function createSentenceExperiment({sentences=SAFE_SENTENCES}={}){
+ if(!Array.isArray(sentences)||sentences.length<2||sentences.length>100||
+    sentences.some(x=>typeof x!=='string'||!x.trim()||x.length>240))throw Error('Invalid training sentences');
+ const transitions=new Map();
+ const add=(from,to)=>{const next=transitions.get(from)||new Map();next.set(to,(next.get(to)||0)+1);transitions.set(from,next);};
+ for(const sentence of sentences){
+  const words=sentence.normalize('NFC').split(/\s+/u);
+  let previous='<START>';
+  for(const word of words){add(previous,word);previous=word;}
+  add(previous,'<END>');
+ }
+ function generate({seed='',maxWords=18}={}){
+  if(typeof seed!=='string'||seed.length>80||!Number.isSafeInteger(maxWords)||maxWords<1||maxWords>40)throw Error('Invalid generation request');
+  const starts=transitions.get('<START>');
+  const matching=[...starts.keys()].filter(w=>w.toLocaleLowerCase('pl').startsWith(seed.toLocaleLowerCase('pl')));
+  const first=matching[0]||[...starts.keys()][0];
+  let word=first;const output=[];
+  for(let i=0;i<maxWords&&word!=='<END>';i++){
+   output.push(word);
+   const options=transitions.get(word);
+   if(!options)break;
+   word=[...options].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pl'))[0][0];
+  }
+  return {text:output.join(' '),kind:'rx-experimental-word-continuation',trainedSentences:sentences.length,productionConnected:false};
+ }
+ return {kind:'rx-experimental-sentence-model',trainedSentences:sentences.length,generate};
+}
+module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES};

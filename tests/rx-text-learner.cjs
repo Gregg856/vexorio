@@ -35,3 +35,16 @@ for(const label of LABELS){
  assert.equal(group.correct,heldOut.cases.filter(c=>c.expected===label&&c.predicted===label).length);
 }
 console.log('RX QUEEN HELD-OUT BY INTENT',JSON.stringify(heldOut.perLabel));
+
+const {createSentenceExperiment,SAFE_SENTENCES}=require('../rx-text-learner.cjs');
+const experiment=createSentenceExperiment();
+const generated=experiment.generate({seed:'Cześć'});
+assert.match(generated.text,/^Cześć,/);
+assert.ok(generated.text.length>10);
+assert.equal(generated.productionConnected,false);
+assert.equal(generated.trainedSentences,SAFE_SENTENCES.length);
+assert.deepEqual(experiment.generate({seed:'Cześć'}),generated,'Generation must be reproducible');
+assert.ok(experiment.generate({maxWords:2}).text.trim().split(/\s+/u).length<=2);
+assert.throws(()=>createSentenceExperiment({sentences:[]}),/Invalid training/);
+assert.throws(()=>experiment.generate({maxWords:1000}),/Invalid generation/);
+console.log('RX EXPERIMENTAL SENTENCE MODEL:',generated.text);
