@@ -28,6 +28,12 @@ try{
  assert.equal(readTasks(file)[1].status,'completed');
  assert.throws(()=>applyApprovedChange(file,proposal,{approved:true}),/Stale proposal/);
  assert.throws(()=>proposeStatusChange(tasks,'Nie istnieje','completed'),/exactly one/);
+ assert.throws(()=>proposeStatusChange(tasks,'Naprawa czatu Android','completed'),/already has requested status/);
+ assert.throws(()=>proposeStatusChange(tasks,'Naprawa czatu Android','pending'),/cannot be reopened/);
+ assert.throws(()=>proposeStatusChange(readTasks(file),'Test panelu','completed'),/already has requested status/);
+ assert.throws(()=>applyApprovedChange(file,{title:'Test panelu',index:1,previousStatus:'completed',status:'pending'},{approved:true}),/Unsafe status transition/);
+ assert.equal(readTasks(file)[1].status,'completed');
+
  fs.writeFileSync(file,'{broken json');
  assert.throws(()=>readTasks(file),SyntaxError);
  console.log('RX BIBI level 7: persistence, reload, validation and corrupt file tests passed');
