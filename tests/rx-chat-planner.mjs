@@ -259,6 +259,23 @@ for(const [question,expected] of [
 }
 console.log('RX everyday digital safety regression OK');
 
+// RX BIBI 4.7: follow-up uses USER history only and honors topic boundaries.
+for(const [history,question,expected] of [
+ [['Co to jest phishing?','Wyjaśnienie.'],'A jak się przed tym chronić?','Aby unikać phishingu'],
+ [['Co to jest phishing?','Wyjaśnienie.'],'Podaj przykład','Przykład phishingu'],
+ [['Co to jest spam?','Wyjaśnienie.'],'Jak się przed tym chronić?','Nie odpowiadaj na podejrzany spam'],
+ [['Co to jest kopia zapasowa?','Wyjaśnienie.'],'Daj przykład','Przykład: trzymaj ważne zdjęcia']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+}
+const afterSwitch=planRXChat('Podaj przykład',['Co to jest phishing?','Wyjaśnienie.','Zmieńmy temat','Jasne.']);
+assert.ok(!afterSwitch.answer.includes('Przykład phishingu'),afterSwitch.answer);
+console.log('RX everyday contextual follow-up regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
