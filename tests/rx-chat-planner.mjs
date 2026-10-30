@@ -188,6 +188,25 @@ for(const switchPhrase of ['Zmieńmy temat','Zmiana tematu','Nowy temat']){
 }
 console.log('RX topic-switch price regression OK');
 
+// RX BIBI 4.3: quantities use unit prices from USER turns only.
+for(const [history,question,expected] of [
+ [['Produkt kosztuje 50 euro','Rozumiem.'],'A ile za dwa takie produkty?','2 szt. po 50 = 100'],
+ [['Towar za 12,5 euro','Rozumiem.'],'A ile za trzy takie produkty?','3 szt. po 12.5 = 37.5'],
+ [['Produkt kosztuje 20 euro','Rozumiem.','Produkt kosztuje 7 euro','Rozumiem.'],'A ile za cztery takie produkty?','4 szt. po 7 = 28']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+}
+const changedTopic=planRXChat('A ile za dwa takie produkty?',[
+ 'Produkt kosztuje 50 euro','Rozumiem.','Zmieńmy temat','Jasne.'
+]);
+assert.ok(!changedTopic.answer.includes('100'),changedTopic.answer);
+assert.equal(changedTopic.executed,0);
+console.log('RX quantity follow-up regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
