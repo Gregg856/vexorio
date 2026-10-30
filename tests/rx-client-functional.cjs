@@ -128,6 +128,10 @@ const {pathToFileURL}=require('node:url');
    console.log('RX client functional authentication and isolation checks passed');
    const authFetch=global.fetch;
    global.fetch=async(url,options={})=>{
+     if(String(url)==='https://api.github.com/repos/Gregg856/vexorio/actions/runs/41062304558'){
+       assert.equal(options.headers.Authorization,undefined,'Run lookup must not send GitHub token');
+       return Response.json({id:41062304558,status:'completed',conclusion:'success',head_sha:'ca22d2871234',repository:{full_name:'Gregg856/vexorio'}});
+     }
      if(String(url).startsWith('https://api.github.com/repos/Gregg856/vexorio/actions/runs?')){
        assert.equal(options.headers.Authorization,undefined,'No GitHub token sent');
        return Response.json({workflow_runs:[{name:'VEXORIO checks',status:'completed',conclusion:'success',head_sha:'abcdef123456'}]});
@@ -141,6 +145,15 @@ const {pathToFileURL}=require('node:url');
    assert.equal(ciReply.executed,0);
    assert.equal(ciReply.adminToolsAvailable,false);
    console.log('RX BIBI read-only GitHub status passed');
+   const runResult=await call('/api/rx/client/chat',{body:JSON.stringify({message:'Sprawdź test 41062304558',tasks:[]})});
+   assert.equal(runResult.status,200);
+   const runReply=await runResult.json();
+   assert.match(runReply.answer,/41062304558: success/);
+   assert.match(runReply.answer,/ca22d287/);
+   assert.equal(runReply.executed,0);
+   assert.equal(runReply.adminToolsAvailable,false);
+   console.log('RX BIBI authenticated read-only individual run lookup passed');
+
 
  }finally{global.fetch=oldFetch;}
 })().catch(error=>{console.error(error);process.exitCode=1;});
