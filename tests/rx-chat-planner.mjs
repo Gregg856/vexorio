@@ -56,10 +56,10 @@ for(const [question,history,expected] of [
 for(const [prompt,expected] of [
  ['Jakie testy wykonać?','Mogę wskazać testy'],
  ['Mam błąd','Opisz błąd'],
- ['Pokaż kolejkę','Kolejka Warsztatu'],
+ ['Pokaż kolejkę','Czat klienta nie udostępnia kolejki Warsztatu'],
  ['Czy to bezpieczne?','Wykonanie zatwierdzonych'],
  ['Czy to darmowe?','RX korzysta'],
- ['Jak działa Wikipedia?','Mogę szukać faktów'],
+ ['Jak działa Wikipedia?','nie mam podłączonego wyszukiwania'],
  ['Co z moimi danymi?','Panel administratora RX'],
  ['Co dalej?','Najpierw sprawdź'],
  ['Co umiesz?','Mogę rozmawiać'],
