@@ -205,7 +205,7 @@ export default {
       }
       // Public factual research uses the same sourced RX World Knowledge as the Queen.
       // Never grant client access to Queen commands, private learning or privileged actions.
-      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji)(?: o)?\\s+/i.test(message.trim());
+      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji)(?: o)?\\s+/i.test(message.trim()) || /^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\\s+.{3,160}[?!.]?$/i.test(message.trim());
       const rxInternalTopic=/\\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\\b/i.test(message);
       if(clientResearch&&!rxInternalTopic){
         try{
