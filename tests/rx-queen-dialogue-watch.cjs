@@ -105,16 +105,24 @@ const fs=require('node:fs');
   if(!rejected)throw Error('Unknown Queen executor was accepted');
   results.push({id:'queen-executor-approval-gate',ok:true});
  }catch(e){results.push({id:'queen-executor-approval-gate',ok:false,error:e.message});}
- // RX NAUKA 3.3: candidates are synthetic and require independent verification.
- // Never automatically promote a failed answer to a trusted lesson.
+ // RX NAUKA 3.4: independent deterministic verification of candidate metadata.
+ // A failing test proves a problem, NOT the correctness of a suggested answer.
  const lessonCandidates=results.filter(x=>!x.ok).slice(0,10).map(x=>({
-  id:x.id,source:'synthetic-dialogue-test',observation:x.error||'Failed dialogue check',
+  id:x.id,source:'synthetic-dialogue-test',observation:String(x.error||'Failed dialogue check').slice(0,250),
   status:'pending-review',verified:false
  }));
- fs.writeFileSync('rx-bibi-reports/rx-lesson-candidates.json',JSON.stringify({
-  kind:'rx-lesson-candidates',generatedAt:new Date().toISOString(),
-  candidates:lessonCandidates,automaticallyApproved:0,modelTrained:false
- },null,2)+'\\n');
+ const reviewed=lessonCandidates.map(x=>{
+  const valid=/^[a-z0-9-]{1,80}$/i.test(x.id)&&x.observation.length>0&&x.observation.length<=250;
+  return {...x,validation:valid?'valid-candidate':'invalid-candidate',
+   status:valid?'pending-review':'rejected',verified:false};
+ });
+ const lessonReport={kind:'rx-lesson-candidates',generatedAt:new Date().toISOString(),
+  candidates:reviewed,validated:reviewed.filter(x=>x.validation==='valid-candidate').length,
+  rejected:reviewed.filter(x=>x.validation==='invalid-candidate').length,
+  automaticallyApproved:0,modelTrained:false};
+ fs.mkdirSync('rx-bibi-reports',{recursive:true});
+ fs.writeFileSync('rx-bibi-reports/rx-lesson-candidates.json',JSON.stringify(lessonReport,null,2)+'\n');
+ if(lessonReport.candidates.some(x=>x.verified||x.status==='approved'))throw Error('Unverified lesson promoted');
  const report={kind:'rx-bibi-queen-dialogue',mode:'SYNTHETIC_LOCAL_PLANNER',authenticatedProductionChat:'NOT_TESTED',checkedAt:new Date().toISOString(),checks:results,ok:results.every(x=>x.ok)};
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  fs.writeFileSync('rx-bibi-reports/rx-queen-dialogue.json',JSON.stringify(report,null,2)+'\n');
