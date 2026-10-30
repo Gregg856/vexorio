@@ -207,6 +207,25 @@ assert.ok(!changedTopic.answer.includes('100'),changedTopic.answer);
 assert.equal(changedTopic.executed,0);
 console.log('RX quantity follow-up regression OK');
 
+// RX BIBI 4.4: quantity plus discount uses the most recent unit price.
+for(const [history,question,expected] of [
+ [['Produkt kosztuje 50 euro','Rozumiem.'],'A ile zapłacę za trzy sztuki z rabatem 10%?','3 szt. po 50 z rabatem 10% = 135'],
+ [['Towar za 12,5 euro','Rozumiem.'],'Ile zapłacę za dwa sztuki z rabatem 20%?','2 szt. po 12.5 z rabatem 20% = 20'],
+ [['Produkt kosztuje 20 euro','Rozumiem.','Produkt kosztuje 7 euro','Rozumiem.'],'A ile zapłacę za cztery sztuki z rabatem 0%?','4 szt. po 7 z rabatem 0% = 28'],
+ [['Produkt kosztuje 50 euro','Rozumiem.'],'A ile zapłacę za trzy sztuki z rabatem 110%?','Rabat nie może przekraczać 100%']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+}
+const switched=planRXChat('A ile zapłacę za trzy sztuki z rabatem 10%?',[
+ 'Produkt kosztuje 50 euro','Rozumiem.','Zmieńmy temat','Jasne.'
+]);
+assert.ok(!switched.answer.includes('135'),switched.answer);
+console.log('RX quantity discount regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
