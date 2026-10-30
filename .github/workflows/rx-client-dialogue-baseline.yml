@@ -8,6 +8,8 @@ on:
       - 'rx-task-catalog.cjs'
       - 'rx-math-core.cjs'
       - 'tests/rx-client-dialogue-baseline.cjs'
+      - 'tests/rx-client-knowledge-regex.cjs'
+      - 'worker.js'
       - '.github/workflows/rx-client-dialogue-baseline.yml'
 jobs:
   dialogue:
@@ -22,6 +24,8 @@ jobs:
           node-version: '22'
       - name: Sprawdź istniejące testy rozmów i kontekstu
         run: node tests/rx-chat-planner.mjs
+      - name: Sprawdź rozpoznawanie pytań o wiedzę
+        run: node tests/rx-client-knowledge-regex.cjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
