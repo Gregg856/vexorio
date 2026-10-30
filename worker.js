@@ -118,6 +118,21 @@ export default {
       if(typeof message!=='string'||!message.trim()||message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
       const history=payload?.history??[];
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
+      // Public, read-only lookup of one GitHub Actions run; no tokens or dispatch.
+      const runLookup=message.trim().match(/^(?:sprawdź|sprawdz|pokaż|pokaz)\\s+(?:wynik\\s+|status\\s+)?(?:testu?\\s+|github\\s+actions\\s+)?(?:run\\s+|przebiegu\\s+)?(\\d{8,20})[?!.\\s]*$/iu);
+      if(runLookup){
+        try{
+          const runResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+runLookup[1],{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-BIBI-readonly-run'},signal:AbortSignal.timeout(6000)});
+          if(!runResponse.ok)throw Error('github_unavailable');
+          const run=await runResponse.json();
+          if(String(run.id)!==runLookup[1]||run.repository?.full_name!=='Gregg856/vexorio'||!['queued','in_progress','completed','waiting','requested','pending'].includes(run.status))throw Error('invalid_run');
+          const outcome=run.status==='completed'?(run.conclusion||'wynik nieznany'):'w toku ('+run.status+')';
+          const answer='Test GitHub Actions '+runLookup[1]+': '+outcome+'. Commit '+String(run.head_sha||'nieznany').slice(0,8)+'. To zweryfikowany odczyt publicznego API, bez uruchamiania testów.';
+          return new Response(JSON.stringify({ok:true,answer,engine:'rx-bibi-readonly-github-run',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }catch{
+          return new Response(JSON.stringify({ok:true,answer:'Nie mogę teraz potwierdzić wyniku testu '+runLookup[1]+'. Nie będę zgadywać.',engine:'rx-bibi-readonly-github-run',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }
+      }
       // Public, read-only CI status. Fixed repository and endpoint; no user-provided URLs or tokens.
       if(/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:ostatnie )?(?:testy github|wyniki testów github|wyniki testow github|status github actions)[?!.\s]*$/i.test(message.trim())){
         try{
