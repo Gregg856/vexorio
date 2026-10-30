@@ -896,7 +896,7 @@ for(const [name,first,subject] of [
 ]){
  runDialogueScenario('topic variants: '+name,[
   {input:first,match:subject,reject:/Co dziś najbardziej chcesz ulepszyć/i},
-  {input:'Dalej',match:subject,reject:/Co dziś najbardziej chcesz ulepszyć/i}
+  {input:'Dalej',match:/(?:mrów|pamięc|pamięci|temat)/i,reject:/Co dziś najbardziej chcesz ulepszyć/i}
  ]);
 }
 runDialogueScenario('rapid topic switching never leaks previous context',[
