@@ -76,3 +76,9 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - PR #316 scalony, commit `e318b2a5`, smoke SUCCESS. Nie tworzyć ponownie benchmarków; istnieją `rx-text-evaluation.cjs` i `rx-text-learner.cjs`.
 - Zidentyfikowano istniejący `rx-brain-chat-engine.cjs` jako właściwy silnik odpowiedzi. Nowy PR #317 poprawia tylko obsługę prostych wypowiedzi rozmownych i celów użytkownika w tym samym silniku; testuje zachowanie matematyki i kontekstu.
 - WAŻNE: odpowiedzi w #317 są deterministyczne, NIE pochodzą z treningu modelu generatywnego. Dalszy cel to sensowne generowanie tekstu z niezależną oceną jakości; nie deklarować gotowego LLM.
+
+## RX Queen — eksperyment generowania tekstu, 2026-10-30
+- PR #317 scalony do main: `9e7fdc5c`, oba smoke SUCCESS; nie powtarzać naprawy czatu.
+- Sprawdzono `rx-text-evaluation.cjs`, `rx-text-learner.cjs`, `rx-brain-chat-engine.cjs`, `rx-language-tokenizer.cjs`, `rx-neural-core.cjs`, `guard/local-model.cjs` przed zmianą.
+- Bieżący PR: dodaje do ISTNIEJĄCEGO `rx-text-learner.cjs` odizolowany eksperyment uczenia przejść między słowami na 8 jawnych, sztucznych zdaniach. Generuje krótkie sekwencje słów bez gotowych odpowiedzi czatu; nie używa danych użytkowników. To nie jest LLM, nie daje jeszcze płynnej, niezależnej rozmowy.
+- Nie łączyć z produkcyjnym czatem i nie wdrażać; najpierw testy i uczciwa ocena jakości nowych, niewidzianych zdań. Nie tworzyć kolejnego pliku modelu.
