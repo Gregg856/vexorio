@@ -88,6 +88,22 @@ export function planRXChat(message,history=[],learning=null){
  const everydayGreeting=/^(co u ciebie|jak sie masz|jak mija dzien|jak leci)[?!. ]*$/.test(plain);
  const everydayThanks=/^(dziekuje bardzo|wielkie dzieki|dzieki za pomoc)[?!. ]*$/.test(plain);
  const everydayQuestion=/^(czy mozesz mi pomoc|potrzebuje porady|mam pytanie)[?!. ]*$/.test(plain);
+ // RX BIBI 5.8: short acknowledgements without inventing an implied action.
+ const shortReply=/^(tak|nie|wlasnie o to chodzi|dokladnie|zgadza sie)[?!. ]*$/.test(plain);
+ const lastAssistantQuestion=history.length>=2&&history.length%2===0&&/[?]\s*$/.test(String(history.at(-1)||'').trim());
+ let shortReplyAnswer=null;
+ if(shortReply){
+  if(/^(wlasnie o to chodzi|dokladnie|zgadza sie)/.test(plain)){
+   shortReplyAnswer='👑 Rozumiem, dobrze uchwyciłam temat. Napisz, co chcesz wiedzieć dalej.';
+  }else if(lastAssistantQuestion){
+   shortReplyAnswer=/^tak/.test(plain)?
+    '👑 Dobrze. Napisz, jaki szczegół mam wyjaśnić, a odpowiem konkretnie.':
+    '👑 Rozumiem. Możemy zmienić temat albo zakończyć ten wątek.';
+  }else{
+   shortReplyAnswer='👑 Do czego odnosi się Twoje „'+(/^(tak)/.test(plain)?'tak':'nie')+'”? Doprecyzuj proszę, żebym nie zgadywała.';
+  }
+ }
+
  // RX BIBI 3.0: bounded natural-language arithmetic without eval or external AI.
  const arithmeticInput=plain.match(/^(?:ile to jest|oblicz|policz)\s+(-?\d{1,8}(?:[.,]\d{1,4})?)\s*(plus|minus|razy|podzielic przez|\+|\-|\*|\/|x)\s*(-?\d{1,8}(?:[.,]\d{1,4})?)[?!. ]*$/);
  let arithmeticAnswer=null;
@@ -614,6 +630,7 @@ export function planRXChat(message,history=[],learning=null){
  if(everydayGreeting)answer=repeatedGreeting?'👑 Miło Cię znowu słyszeć. O czym chcesz dziś porozmawiać?':'👑 Dziękuję, że pytasz! Jestem tutaj, żeby porozmawiać. Co u Ciebie słychać?';
  if(everydayThanks)answer=repeatedThanks?'👑 Cała przyjemność po mojej stronie. Co jeszcze mogę wyjaśnić?':'👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
  if(everydayQuestion)answer=repeatedQuestion?'👑 Słucham. Opisz konkretną sytuację albo zadaj pytanie, a postaram się pomóc.':'👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
+ if(shortReplyAnswer!==null)answer=shortReplyAnswer;
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
  if(everydayGuide!==null)answer=everydayGuide;
  if(returnTopic&&previousLabel)answer='👑 Wracamy do tematu: '+previousLabel+'. Napisz, co konkretnie chcesz o nim wiedzieć, a nie będę zgadywać.';
@@ -621,6 +638,6 @@ export function planRXChat(message,history=[],learning=null){
  if(everydayWeather)answer='👑 Nie mam tutaj dostępu do aktualnej prognozy pogody. Podaj miejscowość, a podpowiem, gdzie sprawdzić wiarygodną prognozę.';
  if(everydayTime)answer='👑 Nie mam w tym czacie wiarygodnego zegara ani bieżącej daty. Sprawdź godzinę i datę w telefonie.';
  if(everydayJoke)answer='👑 Dlaczego programista zabrał parasol? Bo zapowiadali chmurę! ☁️';
- if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null||everydayGuide!==null||(returnTopic&&previousLabel)){tasks.length=0;plan.work=null;}
+ if(shortReplyAnswer!==null||everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null||everydayGuide!==null||(returnTopic&&previousLabel)){tasks.length=0;plan.work=null;}
  return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
