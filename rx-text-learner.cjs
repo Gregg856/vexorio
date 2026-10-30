@@ -102,7 +102,24 @@ function createSentenceExperiment({sentences=SAFE_SENTENCES}={}){
   }
   return {text:output.join(' '),kind:'rx-experimental-word-continuation',trainedSentences:sentences.length,productionConnected:false};
  }
- return {kind:'rx-experimental-sentence-model',trainedSentences:sentences.length,generate};
+ // Reject unseen topics instead of silently returning the first memorized sentence.
+ function generateRelevant({prompt='',maxWords=18}={}){
+  if(typeof prompt!=='string'||!prompt.trim()||prompt.length>160)throw Error('Invalid topic prompt');
+  const tokens=text=>text.toLocaleLowerCase('pl').match(/[\p{L}\p{N}]+/gu)||[];
+  const stop=new Set(['jest','oraz','przed','potem','możemy','dzisiaj','dzis','jak','czy','dla','się','sie','ten','tego','tym','który','która','ktore','proszę','prosze','chcę','chce']);
+  const query=[...new Set(tokens(prompt).filter(w=>w.length>3&&!stop.has(w)))];
+  const ranked=sentences.map((sentence,index)=>{
+   const words=new Set(tokens(sentence));
+   const hits=query.filter(w=>words.has(w));
+   return {index,hits:hits.length};
+  }).sort((a,b)=>b.hits-a.hits||a.index-b.index);
+  if(!query.length||ranked[0].hits===0)return {kind:'rx-topic-gated-continuation',matched:false,text:null,reason:'unseen-topic',productionConnected:false};
+  const selected=sentences[ranked[0].index];
+  const first=selected.split(/\s+/u)[0];
+  const generated=generate({seed:first,maxWords});
+  return {kind:'rx-topic-gated-continuation',matched:true,text:generated.text,matchedTrainingIndex:ranked[0].index,reason:'lexical-overlap-only',productionConnected:false};
+ }
+ return {kind:'rx-experimental-sentence-model',trainedSentences:sentences.length,generate,generateRelevant};
 }
 // Evaluate memorization and structural completeness before claiming language quality.
 function evaluateSentenceExperiment(model,{sentences=SAFE_SENTENCES}={}){
