@@ -60,7 +60,7 @@ for(const [prompt,expected] of [
  ['Czy to bezpieczne?','Wykonanie zatwierdzonych'],
  ['Czy to darmowe?','RX korzysta'],
  ['Jak działa Wikipedia?','Mogę szukać faktów'],
- ['Co z moimi danymi?','Dostęp do panelu'],
+ ['Co z moimi danymi?','Panel administratora RX'],
  ['Co dalej?','Najpierw sprawdź'],
  ['Co umiesz?','Mogę rozmawiać'],
  ['Jak działa Cloudflare?','Cloudflare udostępnia']
