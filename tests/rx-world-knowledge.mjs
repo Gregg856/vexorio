@@ -16,3 +16,12 @@ const again=await searchWorldKnowledge('Co to jest Warszawa?',{fetcher});
 assert.equal(calls,1,'repeated query should use cache');
 assert.equal(again.cached,true);
 assert.equal(again.retrievedAt,result.retrievedAt);
+
+// Queen and BIBI share the same search normalization, not two separate brains.
+const requested=[];
+const recordFetcher=async(url)=>{requested.push(new URL(url).searchParams.get('gsrsearch'));return {ok:true,json:async()=>({query:{pages:{'2':{title:'Kwanty',extract:'Weryfikowana wiedza o kwantach.',fullurl:'https://pl.wikipedia.org/wiki/Kwant'}}}})}};
+for(const phrase of ['Znajdź informacje o komputerach kwantowych','Wyszukaj informacje o fizyce kwantowej','Poszukaj informacji o mechanice kwantowej']){
+ const answer=await searchWorldKnowledge(phrase,{fetcher:recordFetcher});
+ assert.match(answer.summary,/kwantach/);
+}
+assert.deepEqual(requested,['komputerach kwantowych','fizyce kwantowej','mechanice kwantowej']);
