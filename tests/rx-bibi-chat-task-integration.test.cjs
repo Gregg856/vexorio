@@ -34,6 +34,11 @@ function ask(port,message){
   assert.doesNotMatch(second.reply,/Naprawa panelu RX/);
   assert.equal(second.executed,0);
   saveTasks(taskFile,[{title:'Naprawa czatu Android',status:'completed'},{title:'Test czatu',status:'pending'}]);
+  const pending=await ask(port,'Co zostało do zrobienia?');
+  assert.equal(pending.status,200);
+  assert.match(pending.reply,/Test czatu/);
+  assert.doesNotMatch(pending.reply,/Naprawa czatu Android/);
+  assert.equal(pending.executed,0);
   const related=await ask(port,'Czy to zadanie już było: Poprawienie czatu na telefonie');
   assert.equal(related.status,200);
   assert.match(related.reply,/Naprawa czatu Android/);
