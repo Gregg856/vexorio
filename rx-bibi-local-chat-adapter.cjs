@@ -2,7 +2,8 @@
 // Explicit local adapter to the EXISTING RX brain. No production deployment or actions.
 const http=require('node:http');
 const {chatRX}=require('./rx-brain-chat-engine.cjs');
-function start({port=0,host='127.0.0.1'}={}){
+const {readTasks}=require('./rx-bibi-task-store.cjs');
+function start({port=0,host='127.0.0.1',taskFile=null}={}){
  if(!['127.0.0.1','::1'].includes(host))throw Error('Local host only');
  const server=http.createServer((req,res)=>{
   res.setHeader('Content-Type','application/json');
@@ -14,7 +15,8 @@ function start({port=0,host='127.0.0.1'}={}){
    try{
     const data=JSON.parse(body);
     if(data.source!=='rx-bibi-learning-test'||typeof data.message!=='string')throw Error('Invalid request');
-    const result=chatRX(data.message);
+    const tasks=taskFile?readTasks(taskFile):[];
+    const result=chatRX(data.message,{tasks});
     res.writeHead(200);res.end(JSON.stringify({reply:result.answer,executed:result.executed}));
    }catch{res.writeHead(400);res.end(JSON.stringify({error:'Invalid request'}));}
   });
