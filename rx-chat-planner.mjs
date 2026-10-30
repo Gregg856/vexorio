@@ -288,7 +288,10 @@ export function planRXChat(message,history=[],learning=null){
   {id:'spam',words:['spam','spamu']},
   {id:'haslo',words:['haslo','hasla']},
   {id:'link',words:['link','linku']},
-  {id:'kopia zapasowa',words:['backup','backupu','kopii zapasowej','kopie zapasowa']}
+  {id:'kopia zapasowa',words:['backup','backupu','kopii zapasowej','kopie zapasowa']},
+  {id:'weryfikacja dwuetapowa',words:['2fa','weryfikacja dwuetapowa','uwierzytelnianie dwuskladnikowe']},
+  {id:'aktualizacja',words:['aktualizacja','aktualizacje','update','aktualizacja oprogramowania']},
+  {id:'menedzer hasel',words:['menedzer hasel','manager hasel','password manager']}
  ];
  const matchedIntent=intentPatterns.flatMap(({intent,prefixes})=>prefixes.filter(prefix=>prefix.every((word,index)=>conversationalTokens[index]===word)).map(prefix=>({intent,rest:conversationalTokens.slice(prefix.length).join(' ')})))[0];
  const matchedTopic=matchedIntent&&normalizedTopicAliases.find(topic=>topic.words.some(word=>matchedIntent.rest===word));
@@ -300,7 +303,10 @@ export function planRXChat(message,history=[],learning=null){
     spam:'👑 Spam to niechciane wiadomości, często wysyłane masowo.',
     haslo:'👑 Hasło to sekret chroniący dostęp do konta. Nie przekazuj go innym.',
     link:'👑 Link to adres prowadzący do strony lub pliku. Sprawdź domenę przed otwarciem.',
-    'kopia zapasowa':'👑 Kopia zapasowa to dodatkowy zapis danych potrzebny do ich odzyskania.'
+    'kopia zapasowa':'👑 Kopia zapasowa to dodatkowy zapis danych potrzebny do ich odzyskania.',
+    'weryfikacja dwuetapowa':'👑 Weryfikacja dwuetapowa (2FA) wymaga dodatkowego potwierdzenia logowania oprócz hasła.',
+    aktualizacja:'👑 Aktualizacja oprogramowania wprowadza poprawki bezpieczeństwa, naprawy błędów lub nowe funkcje.',
+    'menedzer hasel':'👑 Menedżer haseł pomaga przechowywać i tworzyć unikalne hasła do różnych kont.'
    };
    everydayGuide=definitions[subject];
   }else if(matchedIntent.intent==='example'){
