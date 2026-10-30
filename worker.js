@@ -510,6 +510,45 @@ export default {
       if(github.status!==204)return reply(502,'GitHub odrzucił uruchomienie (HTTP '+github.status+').');
       return new Response(JSON.stringify({ok:true,message:'Test zlecony. Odśwież wyniki za chwilę.'}),{status:202,headers});
     }
+    // Admin-only read bridge to the EXISTING private RX CLOUD learning feed.
+    // Both the cloud URL and token are server-side secrets; never return either to browsers.
+    if (url.pathname === '/api/rx/admin/learning') {
+      const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
+      const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='GET')return reply(405,'Dozwolone tylko GET.');
+      const origin=request.headers.get('Origin');
+      if(origin&&origin!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      const site=request.headers.get('Sec-Fetch-Site');
+      if(site&&site!=='same-origin'&&site!=='none')return reply(403,'Żądanie spoza witryny.');
+      const auth=request.headers.get('Authorization')||'';
+      if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Wymagane logowanie administratora.');
+      if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Logowanie nie jest skonfigurowane.');
+      let base;
+      try{base=new URL(env.SUPABASE_URL);}catch{return reply(503,'Błędna konfiguracja logowania.');}
+      if(base.protocol!=='https:'||!/^[a-z0-9-]+[.]supabase[.]co$/.test(base.hostname)||base.pathname!=='/'||base.search||base.hash||base.username||base.password||base.port)return reply(503,'Błędna konfiguracja logowania.');
+      try{
+        const identity=await fetch(new URL('/auth/v1/user',base),{headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},signal:AbortSignal.timeout(8000)});
+        if(!identity.ok)return reply(401,'Sesja jest nieważna.');
+        const user=await identity.json();
+        if(!user?.id||user.is_anonymous===true)return reply(403,'Brak uprawnień.');
+        const check=await fetch(new URL('/rest/v1/rpc/is_vexorio_admin',base),{method:'POST',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)});
+        if(!check.ok)return reply(502,'Nie można sprawdzić uprawnień.');
+        if((await check.json())!==true)return reply(403,'Brak uprawnień administratora.');
+      }catch{return reply(502,'Weryfikacja administratora niedostępna.');}
+      const privateToken=env.RX_QUEEN_LOCAL_TOKEN||'';
+      let endpoint;
+      try{endpoint=new URL(env.RX_CLOUD_LEARNING_URL||'');}catch{return reply(503,'Pamięć RX CLOUD nie jest skonfigurowana.');}
+      if(privateToken.length<32||endpoint.protocol!=='https:'||endpoint.username||endpoint.password||endpoint.port||endpoint.search||endpoint.hash||endpoint.pathname!=='/__rxcloud/bibi/learning'||!endpoint.hostname||endpoint.hostname==='localhost'||endpoint.hostname.endsWith('.localhost'))return reply(503,'Pamięć RX CLOUD nie jest skonfigurowana.');
+      try{
+        const response=await fetch(endpoint.toString(),{headers:{Authorization:'Bearer '+privateToken,Accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(7000)});
+        if(!response.ok)return reply(502,'Pamięć RX CLOUD jest niedostępna.');
+        const raw=await response.text();
+        if(raw.length>100000)return reply(502,'Odpowiedź pamięci jest zbyt duża.');
+        const data=JSON.parse(raw);
+        if(data?.kind!=='rx-queen-verified-learning'||!Array.isArray(data.lessons)||!Array.isArray(data.verified))return reply(502,'Nieprawidłowa odpowiedź pamięci.');
+        return new Response(JSON.stringify({ok:true,kind:data.kind,lessons:data.lessons.slice(0,30),verified:data.verified.slice(0,30),suggestions:Array.isArray(data.suggestions)?data.suggestions.slice(0,20):[],source:data.source||'UNKNOWN'}),{status:200,headers});
+      }catch{return reply(502,'Pamięć RX CLOUD jest niedostępna.');}
+    }
     if (url.pathname === '/api/rx/failed-steps') {
       const headers={'Cache-Control':'no-store','Content-Type':'application/json','X-Content-Type-Options':'nosniff'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
