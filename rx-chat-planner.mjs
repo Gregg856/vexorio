@@ -42,7 +42,8 @@ export function planRXChat(message,history=[],learning=null){
  const selectedTopic=returnTopic?(previousUserTopic||''):currentUserTopic;
  const contextual=(followup||correction||returnTopic||elaborate)&&last?selectedTopic+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
- const found=RULES.filter(r=>r.words.some(word=>q.includes(word)));
+ const normalizedQuery=normalizeRX(contextual);
+ const found=RULES.filter(r=>r.words.some(word=>normalizedQuery.includes(normalizeRX(word))));
  const topics=found.map(r=>r.topic);
  const tasks=found.map(r=>({module:r.module,role:r.role,action:r.id,status:'proposed',requiresApproval:true}));
  const plan={kind:'rx-coordinated-chat-proposal',queen:{status:'awaiting_approval',requiresApproval:true},ants:tasks.filter(t=>t.module==='ants'),cloud:{executionConnected:false},executed:0};
