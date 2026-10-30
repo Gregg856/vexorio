@@ -5,6 +5,12 @@ export function answerRXTaskQuery(message,tasks){
  const text=message.trim();
  const capabilities=/^(?:(?:bibi[,! ]*)?(?:co (?:ty |bibi )?umiesz|co potrafisz|jakie masz możliwości|jakie masz mozliwosci|w czym możesz mi pomóc|w czym mozesz mi pomoc|przedstaw swoje funkcje|pokaż możliwości|pokaz mozliwosci|jak możemy cię ulepszać|jak mozemy cie ulepszac|jak cię rozwijać|jak cie rozwijac))(?:[?!.,\\s]+.*)?$/i.test(text);
  if(capabilities)return 'Jestem RX BIBI, asystentem opartym obecnie na lokalnym planerze reguł, bez zewnętrznego modelu AI. Potrafię rozmawiać o obsługiwanych tematach, odpowiadać na pytania o zadania z Twojego rejestru, sprawdzać ich statusy i wskazywać możliwe duplikaty. Nie wykonuję samodzielnie zmian w kodzie, nie uruchamiam testów ani nie uczę się autonomicznie między rozmowami. Możemy mnie ulepszać etapami: opisz, czego potrzebujesz, a przygotujemy wymagania i sprawdzimy działanie po wdrożeniu.';
+ const repairHistory=/^(?:pokaż historię napraw|pokaz historie napraw|co już naprawiliśmy|co juz naprawilismy|jakie naprawy zakończono|jakie naprawy zakonczono)[?!.\s]*$/i.test(text);
+ if(repairHistory){
+  const done=tasks.filter(t=>t.status==='completed');
+  if(!done.length)return 'Nie widzę ukończonych zadań w Twoim rejestrze. Nie mam osobnego potwierdzonego dziennika napraw.';
+  return 'Ukończone wpisy z Twojego rejestru: '+done.map(t=>t.title).join('; ')+'. To statusy zadań, a nie dowód wykonania naprawy ani pozytywnego testu. Nie mam jeszcze podłączonej historii commitów i testów GitHub.';
+ }
  const pending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\s]*$/i.test(text);
  const completed=/^(?:co (?:już|juz) (?:zrobione|ukończone)|pokaż (?:ukończone|ukonczone|zakończone) zadania|co (?:jest )?gotowe)[?!.\s]*$/i.test(text);
  const status=/^(?:jaki status zadania|sprawdź status zadania|sprawdz status zadania):?\s+(.+)$/i.exec(text);
