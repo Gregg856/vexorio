@@ -34,6 +34,9 @@ function chatRX(message,{history=[],tasks=[]}={}){
 
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const continuation=isFollowup(message);
+ const asksFix=/^(?:napraw to|popraw to)[.!?\\s]*$/i.test(message.trim());
+ const asksRecheck=/^(?:sprawdź jeszcze raz|sprawdz jeszcze raz|sprawdź ponownie|sprawdz ponownie)[.!?\\s]*$/i.test(message.trim());
+ const asksSuggestion=/^(?:co proponujesz|co byś zaproponował|co bys zaproponowal)[.!?\\s]*$/i.test(message.trim());
  // A standalone continuation should use the last meaningful topic, not a short acknowledgement.
  const request=(contextual||continuation)&&(continuation?topic:contextAnchor)?(continuation?topic:contextAnchor+' '+message):message;
  const plan=planCommand(request,{energyBalance:100});
@@ -70,6 +73,16 @@ function chatRX(message,{history=[],tasks=[]}={}){
    answer=completed.length?'Zadania oznaczone jako ukończone w przekazanym rejestrze: '+completed.map(t=>t.title).join('; ')+'. Nie potwierdzam ich testów bez niezależnych danych.':'Brak zadań oznaczonych jako ukończone w przekazanym rejestrze.';
  }else if(asksEvidence){
    answer='Nie mam potwierdzonego wyniku GitHub Actions dla tej rozmowy. Samo słowo „zielone” nie jest dowodem. Podaj link do przebiegu lub sprawdź jego status.';
+ }else if(asksFix||asksRecheck||asksSuggestion){
+   if(!topic){
+     answer='Nie mam kontekstu zadania. Napisz, czego dotyczy poprawka lub ponowny test.';
+   }else if(asksFix){
+     answer='W temacie: '+topic.slice(0,180)+'. Mogę przygotować propozycję poprawki, ale niczego nie zmieniłam ani nie uruchomiłam. Potrzebne są dane błędu i zatwierdzenie wykonania.';
+   }else if(asksRecheck){
+     answer='W temacie: '+topic.slice(0,180)+'. Ponowny test wymaga uruchomienia wykonawcy i sprawdzenia wyniku; nie mam tu dowodu wykonania testu.';
+   }else{
+     answer='W temacie: '+topic.slice(0,180)+'. Proponuję najpierw ustalić aktualny stan, potem wybrać najmniejszą poprawkę i potwierdzić ją testem.';
+   }
  }else if(wantsPreviousTopic){
    answer=olderTopic?'Wracam do wcześniejszego tematu: '+olderTopic.slice(0,180)+'. Mogę zaproponować kolejne kroki, ale nie potwierdzam wykonania bez testów.':'Nie widzę wcześniejszego, odrębnego tematu w przekazanej historii rozmowy.';
  }else if(continuation&&!topic){
@@ -97,7 +110,7 @@ function chatRX(message,{history=[],tasks=[]}={}){
    else if(userGoal)answer='Rozumiem, że zależy Ci na: '+userGoal[1].replace(/[.!?]+$/,'').slice(0,160)+'. Jaki pierwszy krok mam pomóc Ci zaplanować?';
    else answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
  }
- return {answer,plan,completedCount:completed.length,contextUsed:(contextual||continuation)&&(continuation?!!topic:!!contextAnchor),executed:0};
+ return {answer,plan,completedCount:completed.length,contextUsed:(asksFix||asksRecheck||asksSuggestion)?!!topic:(contextual||continuation)&&(continuation?!!topic:!!contextAnchor),executed:0};
 }
 // Optional sourced knowledge response. Existing deterministic chat remains unchanged.
 async function chatRXWithKnowledge(message,options={}){
