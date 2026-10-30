@@ -264,6 +264,18 @@ export function planRXChat(message,history=[],learning=null){
  if(actionExecute){
   everydayGuide='👑 Rozumiem prośbę o wykonanie działania na koncie. Ten czat nie ma uprawnień do zmiany ani usuwania konta, hasła lub danych. Mogę wyjaśnić, jak zrobić to bezpiecznie w ustawieniach odpowiedniej usługi.';
  }
+ // RX BIBI 5.0: useful everyday questions, without pretending to access a device.
+ const everydayPractical=/^(?:jak|w jaki sposob)\s+(?:sprawdzic|zrobic)\s+(?:czy\s+)?(link jest bezpieczny|aktualizacje telefonu|miejsce w telefonie|kopia zapasowa telefonu)[?!. ]*$/.test(plain);
+ if(everydayPractical){
+  const subject=plain.match(/(link jest bezpieczny|aktualizacje telefonu|miejsce w telefonie|kopia zapasowa telefonu)[?!. ]*$/)?.[1];
+  const guides={
+   'link jest bezpieczny':'👑 Sprawdź dokładny adres i domenę, nie otwieraj podejrzanych skrótów i nie podawaj danych po kliknięciu linku. Sam wygląd strony nie dowodzi bezpieczeństwa.',
+   'aktualizacje telefonu':'👑 Otwórz ustawienia telefonu i znajdź Aktualizacja oprogramowania lub System → Aktualizacje. Nazwy opcji zależą od modelu.',
+   'miejsce w telefonie':'👑 Otwórz Ustawienia → Pamięć lub Pamięć urządzenia. Sprawdź, co zajmuje miejsce, zanim usuniesz pliki.',
+   'kopia zapasowa telefonu':'👑 Otwórz ustawienia kopii zapasowej telefonu, wybierz zaufane miejsce zapisu i sprawdź, czy można przywrócić dane.'
+  };
+  everydayGuide=guides[subject]??null;
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
