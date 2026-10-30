@@ -1,0 +1,32 @@
+name: RX BIBI — szybki test rozmów klientów
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'rx-chat-planner.mjs'
+      - 'rx-task-catalog.cjs'
+      - 'rx-math-core.cjs'
+      - 'tests/rx-client-dialogue-baseline.cjs'
+      - '.github/workflows/rx-client-dialogue-baseline.yml'
+jobs:
+  dialogue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Zmierz rozmowy klientów BIBI
+        run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
+      - name: Pokaż podsumowanie
+        run: |
+          node -e 'const r=require("./rx-client-dialogue-baseline.json");console.log("Rozmowy:",r.cases,"Ograniczenia:",r.unsupportedOrLimited,"Model językowy:",r.languageModel)'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rx-client-dialogue-baseline
+          path: rx-client-dialogue-baseline.json
+          retention-days: 7
