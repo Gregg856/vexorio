@@ -11,7 +11,7 @@ const SETTINGS=Object.freeze([
 ]);
 function evaluateSet(learner,set){
  const cases=set.map(([phrase,expected])=>({expected,predicted:learner.classify(phrase).label}));
- return {correct:cases.filter(x=>x.expected===x.predicted).length,total:cases.length};
+ return {correct:cases.filter(x=>x.expected===x.predicted).length,total:cases.length,errors:set.flatMap(([phrase,expected],i)=>cases[i].predicted===expected?[]:[{phrase,expected,predicted:cases[i].predicted}])};
 }
 function benchmark(){
  return {kind:'rx-offline-training-benchmark',productionConnected:false,settingsChanged:false,

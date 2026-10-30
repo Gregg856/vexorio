@@ -10,6 +10,15 @@ for(const run of a.runs){
  assert.equal(run.holdout.total,24);
  assert.equal(run.challenge.total,32);
  assert.ok(run.training.finalLoss<run.training.initialLoss);
+ for(const [setName,total] of [['holdout',24],['challenge',32]]){
+  const set=run[setName];
+  assert.equal(set.errors.length,total-set.correct);
+  for(const error of set.errors){
+   assert.equal(typeof error.phrase,'string');
+   assert.ok(error.phrase.length>0);
+   assert.notEqual(error.expected,error.predicted);
+  }
+ }
  assert.ok(run.holdout.correct>=0&&run.holdout.correct<=24);
  assert.ok(run.challenge.correct>=0&&run.challenge.correct<=32);
 }
