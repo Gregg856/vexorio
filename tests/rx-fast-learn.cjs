@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {EXAMPLES,LABELS,fit,classify}=require('../rx-fast-learn.cjs');
+const result=fit({epochs:180});
+assert.equal(result.trainingCount,16);
+assert.ok(result.metrics.finalLoss<result.metrics.initialLoss,'Training must reduce loss');
+let correct=0;
+for(const [text,label] of EXAMPLES)if(classify(result.net,text).intent===label)correct++;
+assert.ok(correct>=12,'At least 75% training examples should be classified');
+assert.ok(LABELS.includes(classify(result.net,'co to jest planeta').intent));
+assert.throws(()=>classify(result.net,''),/Invalid text/);
+console.log('RX FAST LEARN training:',correct,'/',EXAMPLES.length,'loss',result.metrics.initialLoss,'->',result.metrics.finalLoss);
