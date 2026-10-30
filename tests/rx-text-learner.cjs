@@ -61,3 +61,19 @@ assert.throws(()=>evaluateSentenceExperiment({}),/Invalid sentence evaluation/);
 console.log('RX SENTENCE QUALITY (memorization, not fluency):',JSON.stringify({
  total:quality.total,exactCopyRate:quality.exactCopyRate,completeRate:quality.completeRate,distinctRate:quality.distinctRate
 }));
+
+const {reviewSentenceCandidates}=require('../rx-text-learner.cjs');
+const reviewed=reviewSentenceCandidates([
+ 'Cześć, możemy dziś wspólnie sprawdzić wyniki testów.',
+ 'Niespójne słowa i zupełnie przypadkowy ciąg'
+],{prompt:'sprawdzić testów'});
+assert.equal(reviewed.accepted,true);
+assert.equal(reviewed.answer,'Cześć, możemy dziś wspólnie sprawdzić wyniki testów.');
+assert.equal(reviewed.productionConnected,false);
+assert.equal(reviewed.candidates.length,2);
+assert.ok(reviewed.candidates[0].score>reviewed.candidates[1].score);
+const rejected=reviewSentenceCandidates(['Losowe fragmenty bez związku'],{prompt:'nowy temat',minScore:0.8});
+assert.equal(rejected.accepted,false);
+assert.equal(rejected.answer,null);
+assert.throws(()=>reviewSentenceCandidates([]),/Invalid RX thought review/);
+console.log('RX DNA THOUGHT REVIEW:',JSON.stringify({accepted:reviewed.accepted,rejected:rejected.reason}));
