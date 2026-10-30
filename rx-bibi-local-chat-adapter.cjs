@@ -1,10 +1,10 @@
 'use strict';
 // Explicit local adapter to the EXISTING RX brain. No production deployment or actions.
 const http=require('node:http');
-const {chatRX}=require('./rx-brain-chat-engine.cjs');
+const {chatRX,chatRXWithKnowledge}=require('./rx-brain-chat-engine.cjs');
 const {readTasks}=require('./rx-bibi-task-store.cjs');
 const {getVerifiedRun}=require('./rx-bibi-github-evidence.cjs');
-function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fetch}={}){
+function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fetch,knowledgeLookup}={}){
  if(!['127.0.0.1','::1'].includes(host))throw Error('Local host only');
  const server=http.createServer((req,res)=>{
   res.setHeader('Content-Type','application/json');
@@ -17,7 +17,7 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
     const data=JSON.parse(body);
     if(data.source!=='rx-bibi-learning-test'||typeof data.message!=='string')throw Error('Invalid request');
     const tasks=taskFile?readTasks(taskFile):[];
-    const result=chatRX(data.message,{tasks});
+    const result=await chatRXWithKnowledge(data.message,{tasks,...(knowledgeLookup?{knowledgeLookup}:{})});
     const evidenceQuery=/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:wynik |status )?(?:testu |testów |github actions )?(?:run |przebiegu )?(\d{8,20})[?!. ]*$/i.exec(data.message.trim());
     if(evidenceQuery){
       const evidence=await getVerifiedRun(evidenceQuery[1],{fetchImpl:githubFetch});
