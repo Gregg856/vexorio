@@ -310,6 +310,27 @@ for(const [question,expected] of [
 }
 console.log('RX action-intent regression OK');
 
+// RX BIBI 5.0: cross-feature smoke matrix (daily life, math, context, privacy).
+for(const [question,history,expected] of [
+ ['Jak sprawdzić link jest bezpieczny?',[],'Sprawdź dokładny adres'],
+ ['Jak sprawdzić aktualizacje telefonu?',[],'Aktualizacja oprogramowania'],
+ ['Jak sprawdzić miejsce w telefonie?',[],'Ustawienia'],
+ ['Jak zrobić kopia zapasowa telefonu?',[],'ustawienia kopii zapasowej'],
+ ['Co to jest phishing?',[],'Phishing to próba wyłudzenia'],
+ ['Możesz prościej?',['Co to jest spam?','Wyjaśnienie.'],'Spam to niechciane wiadomości'],
+ ['A ile za dwa takie produkty?',['Produkt kosztuje 50 euro','Rozumiem.'],'2 szt. po 50 = 100'],
+ ['A ile zapłacę za trzy sztuki z rabatem 10%?',['Produkt kosztuje 50 euro','Rozumiem.'],'135'],
+ ['Usuń moje konto',[],'nie ma uprawnień']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0,question);
+ assert.equal(result.tasks.length,0,question);
+ assert.equal(result.plan.work??null,null,question);
+ assert.equal(result.modelInferenceUsed,false,question);
+}
+console.log('RX BIBI 5.0 cross-feature smoke OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
