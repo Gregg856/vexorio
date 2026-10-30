@@ -8,6 +8,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-evaluator.cjs'
       - 'tests/rx-bibi-evaluator.test.cjs'
+      - 'tests/rx-bibi-live-evaluation.cjs'
+      - 'tests/rx-bibi-live-evaluation.test.cjs'
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-migration-readiness.cjs'
       - 'deploy/RX-CLOUD-WINDOWS.md'
@@ -37,6 +39,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-evaluator.cjs'
       - 'tests/rx-bibi-evaluator.test.cjs'
+      - 'tests/rx-bibi-live-evaluation.cjs'
+      - 'tests/rx-bibi-live-evaluation.test.cjs'
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-package.cjs'
@@ -66,6 +70,8 @@ jobs:
           node-version: '22'
       - name: Test RX BIBI supervised evaluator
         run: node tests/rx-bibi-evaluator.test.cjs
+      - name: Test RX BIBI local chat adapter
+        run: node tests/rx-bibi-live-evaluation.test.cjs
       - name: Check syntax
         run: |
           node --check rx-cloud-server.cjs
