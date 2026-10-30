@@ -2,6 +2,7 @@ import {handleRXMemory} from './rx-persistent-memory.mjs';
 import {findRXKnowledge} from './rx-knowledge-base.mjs';
 import {searchWorldKnowledge} from './rx-world-knowledge.mjs';
 import {planRXChat} from './rx-chat-planner.mjs';
+import {answerRXTaskQuery} from './rx-bibi-task-reasoner.mjs';
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -121,14 +122,11 @@ export default {
       // administrator commands, persistent memory writes, or privileged RX tools.
       const planned=planRXChat(message,history,null);
       // RX BIBI: user-supplied, read-only task snapshot; never access server/admin tasks.
-      const taskQuery=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|co (?:już|juz) (?:zrobione|ukończone)|pokaż (?:oczekujące|oczekujace|ukończone|ukonczone) zadania)[?!.\\s]*$/i.test(message.trim());
       const taskSnapshot=payload?.tasks;
-      if(taskQuery&&taskSnapshot!==undefined){
+      if(taskSnapshot!==undefined){
         if(!Array.isArray(taskSnapshot)||taskSnapshot.length>50||taskSnapshot.some(t=>!t||typeof t!=='object'||typeof t.title!=='string'||!t.title.trim()||t.title.length>160||!['pending','completed'].includes(t.status)||Object.keys(t).some(k=>!['title','status'].includes(k))))return reply(400,'Nieprawidłowy rejestr zadań.');
-        const completedQuery=/(?:już|juz|ukończone|ukonczone|zrobione)/i.test(message);
-        const selected=taskSnapshot.filter(t=>t.status===(completedQuery?'completed':'pending'));
-        const answer=selected.length?'Zadania '+(completedQuery?'ukończone':'oczekujące')+' w Twoim lokalnym rejestrze: '+selected.map(t=>t.title).join('; ')+'.':'W Twoim lokalnym rejestrze nie ma '+(completedQuery?'ukończonych':'oczekujących')+' zadań.';
-        return new Response(JSON.stringify({ok:true,answer:answer.slice(0,4000),engine:'rx-client-local-tasks',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        const answer=answerRXTaskQuery(message,taskSnapshot);
+        if(answer!==null)return new Response(JSON.stringify({ok:true,answer:answer.slice(0,4000),engine:'rx-bibi-shared-task-reasoner',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
       // RX BIBI 6.5: public identity is distinct from the private RX Queen.
       const normalizedMessage=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
