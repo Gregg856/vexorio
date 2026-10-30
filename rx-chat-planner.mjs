@@ -667,7 +667,7 @@ export function planRXChat(message,history=[],learning=null){
  if(gardenContext&&(latestSwitch<0||userTurns.slice(latestSwitch+1).some(turn=>/ogrod|roslin|kwiat|warzyw|grzadk|trawnik/i.test(normalizeRX(turn))))&&(gardenNext||gardenPlanting||gardenCare)){
   if(gardenPlanting)answer='👑 Dobór roślin zależy od słońca, rodzaju ziemi i miejsca. Na początek ustalmy: czy chcesz warzywa, kwiaty czy krzewy? I czy miejsce jest słoneczne, czy zacienione? Wtedy podam konkretne propozycje.';
   else if(gardenCare)answer='👑 Najpierw sprawdź wilgotność ziemi kilka centymetrów pod powierzchnią; nie podlewaj wyłącznie według kalendarza. Powiedz, jakie rośliny masz w ogrodzie i czy rosną w gruncie czy donicach, a dopasujemy pielęgnację.';
-  else answer='👑 Zacznijmy od Twojego ogrodu: ile masz miejsca, czy jest tam dużo słońca i co chcesz osiągnąć — warzywnik, kwiaty czy miejsce do odpoczynku? Od tego zależy sensowny plan.';
+  else answer='👑 Wracamy do rozmowy o moim ogrodzie. Ile masz miejsca, czy jest tam dużo słońca i co chcesz osiągnąć — warzywnik, kwiaty czy miejsce do odpoczynku? Od tego zależy sensowny plan.';
   tasks.length=0;plan.work=null;
  }
  if(shortReplyAnswer!==null)answer=shortReplyAnswer;
