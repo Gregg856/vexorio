@@ -236,6 +236,21 @@ export function planRXChat(message,history=[],learning=null){
     '👑 Przechowuj kopię oddzielnie od oryginału i okresowo sprawdzaj, czy możesz odzyskać pliki.';
   }
  }
+ // RX BIBI 4.8: natural short follow-ups, strictly limited to a recent user topic.
+ const everydayNaturalFollowup=/^(dlaczego|a co dalej|co dalej|mozesz prosciej|powiedz prosciej)[?!. ]*$/.test(plain);
+ if(everydayNaturalFollowup&&!everydayGuide){
+  const turns=recentUserQuestions.slice().reverse();
+  const boundary=turns.findIndex(turn=>/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/.test(normalizeRX(turn).trim()));
+  const relevant=boundary<0?turns:turns.slice(0,boundary);
+  const topic=relevant.map(normalizeRX).find(turn=>/\b(phishing|spam|haslo jednorazowe|kopia zapasowa|bezpieczne haslo)\b/.test(turn));
+  if(topic){
+   const why=/^dlaczego/.test(plain),simple=/prosciej/.test(plain);
+   if(/phishing/.test(topic))everydayGuide=why?'👑 Bo oszuści próbują skłonić Cię do ujawnienia haseł lub danych przez fałszywe wiadomości.':simple?'👑 Phishing to oszustwo przez fałszywą wiadomość. Nie podawaj haseł po kliknięciu linku.':'👑 Jeśli dostaniesz podejrzaną wiadomość, nie klikaj linku. Sprawdź sprawę w oficjalnej aplikacji lub na znanej stronie.';
+   else if(/spam/.test(topic))everydayGuide=why?'👑 Spam bywa wysyłany masowo, aby reklamować produkty albo nakłonić do kliknięcia niebezpiecznego linku.':simple?'👑 Spam to niechciane wiadomości. Możesz je zablokować lub zgłosić.':'👑 Zablokuj nadawcę, zgłoś spam i nie otwieraj podejrzanych załączników.';
+   else if(/haslo jednorazowe|bezpieczne haslo/.test(topic))everydayGuide=why?'👑 Unikalne hasła i kody pomagają chronić konto przed przejęciem.':simple?'👑 Nie udostępniaj hasła ani kodu. Każde konto powinno mieć inne hasło.':'👑 Włącz weryfikację dwuetapową i użyj menedżera haseł.';
+   else if(/kopia zapasowa/.test(topic))everydayGuide=why?'👑 Bo telefon lub dysk może się zepsuć, a dodatkowa kopia pozwala odzyskać pliki.':simple?'👑 Kopia zapasowa to dodatkowy zapis Twoich plików na wypadek ich utraty.':'👑 Zapisz kopię ważnych plików osobno i sprawdź, czy można ją odtworzyć.';
+  }
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
