@@ -640,6 +640,16 @@ export function planRXChat(message,history=[],learning=null){
  if(everydayGreeting)answer=repeatedGreeting?'👑 Miło Cię znowu słyszeć. O czym chcesz dziś porozmawiać?':'👑 Dziękuję, że pytasz! Jestem tutaj, żeby porozmawiać. Co u Ciebie słychać?';
  if(everydayThanks)answer=repeatedThanks?'👑 Cała przyjemność po mojej stronie. Co jeszcze mogę wyjaśnić?':'👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
  if(everydayQuestion)answer=repeatedQuestion?'👑 Słucham. Opisz konkretną sytuację albo zadaj pytanie, a postaram się pomóc.':'👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
+ // Keep an explicit recent user topic even when it has no RX-specific keywords.
+ // This is a conversational reply only: never infer an action or execute a tool.
+ const genericContinuation=/^(?:dalej|kontynuuj|rozwin to|rozwiń to)[.!? ]*$/i.test(message.trim());
+ const nonTopicTurn=/^(?:dalej|kontynuuj|gotowe|ok|super|zielone|blad|błąd|dzieki|dzięki|tak|nie)[.!? ]*$/i;
+ const lastUserTopic=userTurns.slice().reverse().find(turn=>turn.trim().length>=8&&!nonTopicTurn.test(turn.trim())&&!topicSwitch.test(normalizeRX(turn.trim())))||'';
+ const genericTopicAllowed=latestSwitch<0||userTurns.lastIndexOf(lastUserTopic)>latestSwitch;
+ if(genericContinuation&&!activeTopic&&lastUserTopic&&genericTopicAllowed){
+  answer='👑 Kontynuujemy temat: „'+lastUserTopic.slice(0,140)+'”. Napisz, który aspekt mam rozwinąć, żebym nie dopowiadała nieznanych faktów.';
+  tasks.length=0;plan.work=null;
+ }
  if(shortReplyAnswer!==null)answer=shortReplyAnswer;
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
  if(everydayGuide!==null)answer=everydayGuide;
