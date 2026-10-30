@@ -76,6 +76,12 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(learningData.kind,'rx-queen-verified-learning');
   assert(Array.isArray(learningData.lessons),'Queen learning feed must return lessons array');
   assert(learningData.lessons.every(item=>item.verifiedResolution===false),'Unverified reports must never be treated as learned fixes');
+  // RX NEURON GitHub API sync: authentication, input validation, and fail-closed responses.
+  const syncPath='/__rxcloud/neuron/sync-run';
+  assert.equal((await fetch(base+syncPath+'?runId=41040503573',{method:'POST'})).status,401);
+  assert.equal((await fetch(base+syncPath+'?runId=41040503573',{method:'GET',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}})).status,405);
+  assert.equal((await fetch(base+syncPath+'?runId=not-a-number',{method:'POST',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}})).status,400);
+  assert.equal((await fetch(base+syncPath+'?runId=123/../../bad',{method:'POST',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}})).status,400);
   // Verified fixes are isolated from raw incidents and require explicit approval + test evidence.
   const verifiedDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-verified-test-'));
   const previousVerifiedDir=process.env.RX_NEURON_VERIFIED_DIR;
