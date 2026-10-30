@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Sprawdź istniejące testy rozmów i kontekstu
+        run: node tests/rx-chat-planner.mjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
