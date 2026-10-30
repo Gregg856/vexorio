@@ -79,5 +79,15 @@ const {RXMillionHearts,createRXHearts}=require('../rx-million-hearts.js');
  await Promise.resolve();await Promise.resolve();
  assert.equal(watch.stalledJobs(1).length,0);
 
+ const impulses=new RXMillionHearts({maxConcurrent:1,maxQueue:2,logicalHeads:1000000});
+ let fired=0;
+ impulses.register('neuron',async input=>{fired++;return input+1;});
+ assert.equal(impulses.snapshot().active,0,'No work before an impulse');
+ assert.equal(impulses.snapshot().queued,0,'No background polling');
+ assert.equal(await impulses.pulse('neuron',41),42);
+ assert.equal(fired,1,'Exactly one handler execution per impulse');
+ assert.equal(impulses.snapshot().stats.completed,1);
+ assert.equal(impulses.headId(999999),'RX-1000000');
+ assert.equal(impulses.snapshot().active,0,'Idle after impulse');
  console.log('RX MILION SERC 1.0: PASS');
 })().catch(err=>{console.error(err);process.exitCode=1;});
