@@ -23,7 +23,8 @@ function chatRX(message,{history=[],tasks=[]}={}){
 
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const continuation=isFollowup(message);
- const request=contextual&&(continuation?topic:previous)?(continuation?topic:previous+' '+message):message;
+ // A standalone continuation should use the last meaningful topic, not a short acknowledgement.
+ const request=(contextual||continuation)&&(continuation?topic:previous)?(continuation?topic:previous+' '+message):message;
  const plan=planCommand(request,{energyBalance:100});
  const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
  let answer;
