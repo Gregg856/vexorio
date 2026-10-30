@@ -20,8 +20,18 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const asksPending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\\s]*$/i.test(message.trim());
  const pending=tasks.filter(t=>t.status==='pending');
  const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\\s]*$/i.test(message.trim());
+ const statusQuery=/^(?:jaki status zadania|sprawdź status zadania|sprawdz status zadania):?\s+(.+)$/i.exec(message.trim());
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
- if(relatedQuery){
+ if(statusQuery){
+   const matches=findSimilarTasks(tasks,statusQuery[1].trim());
+   if(matches.length===1){
+     answer='Status zadania „'+matches[0].title+'” w przekazanym rejestrze: '+(matches[0].status==='completed'?'ukończone':'oczekujące')+'. Nie potwierdzam wykonania bez niezależnych testów.';
+   }else if(matches.length>1){
+     answer='Znalazłam kilka zadań o tej samej nazwie po normalizacji. Wybierz dokładny wpis; nie zgaduję statusu.';
+   }else{
+     answer='Nie znalazłam tego zadania w przekazanym rejestrze. Nie oznacza to, że nigdy go nie wykonywano.';
+   }
+ }else if(relatedQuery){
    const title=relatedQuery[1].trim();
    const exact=findSimilarTasks(tasks,title);
    const related=suggestRelatedTasks(tasks,title).filter(t=>!exact.some(e=>e.title===t.title));
