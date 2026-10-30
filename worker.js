@@ -119,7 +119,7 @@ export default {
       const history=payload?.history??[];
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
       // Public, read-only lookup of one GitHub Actions run; no tokens or dispatch.
-      const runLookup=message.trim().match(/^(?:sprawdź|sprawdz|pokaż|pokaz)\\s+(?:wynik\\s+|status\\s+)?(?:testu?\\s+|github\\s+actions\\s+)?(?:run\\s+|przebiegu\\s+)?(\\d{8,20})[?!.\\s]*$/iu);
+      const runLookup=message.trim().match(/^(?:sprawdź|sprawdz|pokaż|pokaz)\s+(?:wynik\s+|status\s+)?(?:testu?\s+|github\s+actions\s+)?(?:run\s+|przebiegu\s+)?(\d{8,20})[?!.\s]*$/iu);
       if(runLookup){
         try{
           const runResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+runLookup[1],{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-BIBI-readonly-run'},signal:AbortSignal.timeout(6000)});
