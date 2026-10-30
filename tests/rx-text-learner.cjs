@@ -5,7 +5,7 @@ assert.equal(vector('Zażółć').length,256);
 assert.equal(LABELS.length,4);
 const learner=createLearner({epochs:120});
 assert.equal(learner.kind,'rx-text-learner');
-assert.equal(learner.examples,36);
+assert.equal(learner.examples,24);
 assert.ok(Number.isFinite(learner.metrics.finalLoss));
 assert.ok(learner.metrics.finalLoss<learner.metrics.initialLoss,'Training must reduce loss');
 for(const text of ['cześć królowo','pokaż testy','przypomnij nasze ustalenia','policz 2 plus 3']){
@@ -82,5 +82,5 @@ console.log('RX GENERATION VARIANTS:',new Set(variants).size);
 
 // Training data expansion must not leak held-out evaluation prompts into the corpus.
 assert.equal(heldOut.total,8);
-assert.equal(learner.examples,36);
-console.log('RX TRAINING BATCH:',JSON.stringify({examples:learner.examples,heldOutCorrect:heldOut.correct,heldOutTotal:heldOut.total,lossBefore:learner.metrics.initialLoss,lossAfter:learner.metrics.finalLoss}));
+assert.equal(learner.examples,24);
+console.log('RX TRAINING BASELINE (batch rolled back after regression):',JSON.stringify({examples:learner.examples,heldOutCorrect:heldOut.correct,heldOutTotal:heldOut.total,lossBefore:learner.metrics.initialLoss,lossAfter:learner.metrics.finalLoss}));
