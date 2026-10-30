@@ -26,11 +26,13 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const isAcknowledgement=text=>/^(?:ok|gotowe|zielone|błąd|blad|dzięki|dzieki|super)[.!?\s]*$/i.test(text.trim());
  const previous=history.length?history[history.length-1]:'';
  const topic=[...history].reverse().find(item=>!isFollowup(item)&&!isAcknowledgement(item))||'';
+ // Acknowledgements do not replace the actual topic when the user adds a short follow-up.
+ const contextAnchor=isAcknowledgement(previous)?topic:previous;
 
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const continuation=isFollowup(message);
  // A standalone continuation should use the last meaningful topic, not a short acknowledgement.
- const request=(contextual||continuation)&&(continuation?topic:previous)?(continuation?topic:previous+' '+message):message;
+ const request=(contextual||continuation)&&(continuation?topic:contextAnchor)?(continuation?topic:contextAnchor+' '+message):message;
  const plan=planCommand(request,{energyBalance:100});
  const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
  let answer;
@@ -90,7 +92,7 @@ function chatRX(message,{history=[],tasks=[]}={}){
    else if(userGoal)answer='Rozumiem, że zależy Ci na: '+userGoal[1].replace(/[.!?]+$/,'').slice(0,160)+'. Jaki pierwszy krok mam pomóc Ci zaplanować?';
    else answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
  }
- return {answer,plan,completedCount:completed.length,contextUsed:(contextual||continuation)&&(continuation?!!topic:!!previous),executed:0};
+ return {answer,plan,completedCount:completed.length,contextUsed:(contextual||continuation)&&(continuation?!!topic:!!contextAnchor),executed:0};
 }
 // Optional sourced knowledge response. Existing deterministic chat remains unchanged.
 async function chatRXWithKnowledge(message,options={}){
