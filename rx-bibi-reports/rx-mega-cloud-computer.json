@@ -7,63 +7,63 @@
   "checks": [
     {
       "file": "tests/rx-ai-core.cjs",
-      "durationMs": 22,
+      "durationMs": 29,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-cloud-computer.cjs",
-      "durationMs": 21,
+      "durationMs": 32,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-integration.cjs",
-      "durationMs": 24,
+      "durationMs": 69,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-higgs-lab.cjs",
-      "durationMs": 26,
+      "durationMs": 29,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-cosmic-collider.cjs",
-      "durationMs": 23,
+      "durationMs": 30,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-energy-lab.cjs",
-      "durationMs": 23,
-      "status": "passed",
-      "exitCode": 0,
-      "error": null
-    },
-    {
-      "file": "tests/rx-ant-ai-trainer.cjs",
-      "durationMs": 25,
-      "status": "passed",
-      "exitCode": 0,
-      "error": null
-    },
-    {
-      "file": "tests/rx-ant-task-board.cjs",
       "durationMs": 28,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
+      "file": "tests/rx-ant-ai-trainer.cjs",
+      "durationMs": 35,
+      "status": "passed",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "file": "tests/rx-ant-task-board.cjs",
+      "durationMs": 37,
+      "status": "passed",
+      "exitCode": 0,
+      "error": null
+    },
+    {
       "file": "tests/rx-medusa-engine.cjs",
-      "durationMs": 22,
+      "durationMs": 30,
       "status": "passed",
       "exitCode": 0,
       "error": null
@@ -76,7 +76,7 @@
   "passed": 9,
   "failed": 0,
   "planned": 0,
-  "totalTestDurationMs": 214,
+  "totalTestDurationMs": 319,
   "queue": {
     "schema": 1,
     "kind": "rx-cloud-computer-plan",
