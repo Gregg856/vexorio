@@ -162,6 +162,16 @@ export default {
         const answer='📘 '+publicKnowledge.title+'\n'+publicKnowledge.summary+'\nŹródło: '+publicKnowledge.source;
         return new Response(JSON.stringify({ok:true,answer,knowledge:publicKnowledge,engine:'rx-bibi-client-public-knowledge',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
+      // Public factual research uses the same sourced RX World Knowledge as the Queen.
+      // Never grant client access to Queen commands, private learning or privileged actions.
+      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji)(?: o)?\\s+/i.test(message.trim());
+      const rxInternalTopic=/\\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\\b/i.test(message);
+      if(clientResearch&&!rxInternalTopic){
+        try{
+          const knowledge=await searchWorldKnowledge(message);
+          if(knowledge)return new Response(JSON.stringify({ok:true,answer:'📚 '+knowledge.title+'\\n'+knowledge.summary+'\\nŹródło: '+knowledge.url+' (Wikipedia; sprawdź aktualność informacji)',knowledge,engine:'rx-bibi-client-world-knowledge',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }catch{/* External source failures must not break the authenticated chat. */}
+      }
       // Client requests use only the shared deterministic planner; no GitHub dispatch,
       // administrator commands, persistent memory writes, or privileged RX tools.
       const planned=planRXChat(message,history,null);
