@@ -415,7 +415,7 @@ jobs:
           RX_JOB_STATUS: ${{ job.status }}
         run: |
           mkdir -p rx-bibi-reports
-          node -e 'const fs=require("node:fs");const e=process.env;const report={schema:1,kind:"rx-black-box-ci",repository:e.RX_REPO,workflow:e.RX_WORKFLOW,runId:e.RX_RUN_ID,commit:e.RX_SHA,jobStatus:e.RX_JOB_STATUS,recordedAt:new Date().toISOString(),note:"CI job metadata; see GitHub Actions for per-step outcomes"};fs.writeFileSync("rx-bibi-reports/rx-black-box-run.json",JSON.stringify(report,null,2)+"\\n")'
+          node -e 'const fs=require("node:fs");const e=process.env;const report={schema:1,kind:"rx-black-box-ci",repository:e.RX_REPO,workflow:e.RX_WORKFLOW,runId:e.RX_RUN_ID,commit:e.RX_SHA,jobStatus:e.RX_JOB_STATUS,recordedAt:new Date().toISOString(),note:"CI job metadata; see GitHub Actions for per-step outcomes"};fs.writeFileSync("rx-bibi-reports/rx-black-box-run.json",JSON.stringify(report,null,2))'
       - name: RX QUEEN — wspólny raport istniejących silników
         if: ${{ always() }}
         env:
