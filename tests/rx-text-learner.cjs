@@ -61,3 +61,14 @@ assert.throws(()=>evaluateSentenceExperiment({}),/Invalid sentence evaluation/);
 console.log('RX SENTENCE QUALITY (memorization, not fluency):',JSON.stringify({
  total:quality.total,exactCopyRate:quality.exactCopyRate,completeRate:quality.completeRate,distinctRate:quality.distinctRate
 }));
+
+const unknownTopic=experiment.generateRelevant({prompt:'Czy potrafisz naprawić teleskop kwantowy?'});
+assert.equal(unknownTopic.matched,false);
+assert.equal(unknownTopic.text,null);
+assert.equal(unknownTopic.reason,'unseen-topic');
+const knownTopic=experiment.generateRelevant({prompt:'sprawdzić wyniki testów'});
+assert.equal(knownTopic.matched,true);
+assert.ok(knownTopic.text.length>0);
+assert.equal(knownTopic.productionConnected,false);
+assert.throws(()=>experiment.generateRelevant({prompt:''}),/Invalid topic prompt/);
+console.log('RX TOPIC GATE:',JSON.stringify({unknown:unknownTopic.reason,known:knownTopic.matched}));
