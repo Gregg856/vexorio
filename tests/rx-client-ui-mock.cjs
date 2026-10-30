@@ -1,0 +1,46 @@
+'use strict';
+// Isolated UI integration: real rx-client.html, mocked auth and API. No production login.
+const {chromium,devices}=require('playwright');
+const fs=require('node:fs');
+const path=require('node:path');
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const report={mode:'ISOLATED_UI_MOCK_NOT_AUTHENTICATED_PRODUCTION',checks:[],requests:[]};
+ try{
+  const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
+  const origin='https://vexorio.grzegorzbub1985.workers.dev';
+  const html=fs.readFileSync(path.join(__dirname,'../rx-client.html'),'utf8');
+  await page.route(origin+'/rx-client',route=>route.fulfill({status:200,contentType:'text/html',body:html}));
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:`
+window.supabase={createClient:()=>({
+ auth:{getSession:async()=>({data:{session:{user:{id:'rx-ui-test-user'},access_token:'test-token'}}}),onAuthStateChange:()=>{},signOut:async()=>{}},
+ from:()=>({select:()=>({order:()=>({limit:async()=>({data:[],error:null})})})})
+})};`}));
+  await page.route(origin+'/api/rx/client/config',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({url:'https://mock.invalid',anonKey:'public-test'})}));
+  await page.route(origin+'/api/rx/client/chat',async route=>{
+   const request=route.request();
+   const data=request.postDataJSON();
+   report.requests.push({message:data.message,history:data.history,authorized:request.headers().authorization==='Bearer test-token'});
+   const answer=data.message==='Dalej'?'Kontynuujemy rozmowę o ogrodzie.':'Porozmawiajmy o ogrodzie.';
+   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({answer})});
+  });
+  await page.goto(origin+'/rx-client',{waitUntil:'load'});
+  await page.locator('#chat').waitFor({state:'visible',timeout:15000});
+  report.checks.push({name:'chat_visible_after_mock_session',passed:true});
+  for(const message of ['Chcę porozmawiać o ogrodzie','Dalej']){
+   await page.locator('#message').fill(message);
+   await page.locator('#send').click();
+   await page.locator('#status').getByText('Gotowe.').waitFor({timeout:10000});
+  }
+  const bubbles=await page.locator('#messages .bubble').allTextContents();
+  const expected=['Chcę porozmawiać o ogrodzie','Porozmawiajmy o ogrodzie.','Dalej','Kontynuujemy rozmowę o ogrodzie.'];
+  if(JSON.stringify(bubbles)!==JSON.stringify(expected))throw Error('Unexpected chat bubbles: '+JSON.stringify(bubbles));
+  report.checks.push({name:'user_and_assistant_bubbles',passed:true});
+  if(report.requests.length!==2||!report.requests.every(x=>x.authorized))throw Error('Missing authenticated mock API calls');
+  if(!Array.isArray(report.requests[1].history)||report.requests[1].history.length!==2)throw Error('Missing multi-turn history');
+  report.checks.push({name:'api_request_and_multiturn_history',passed:true});
+  report.passed=true;
+  console.log('PASS RX BIBI CLIENT UI MOCK:',report.checks.map(x=>x.name).join(', '));
+ }catch(e){report.passed=false;report.error=e.message;process.exitCode=1;console.error('FAIL RX BIBI CLIENT UI MOCK:',e.message);}
+ finally{fs.mkdirSync('rx-bibi-reports',{recursive:true});fs.writeFileSync('rx-bibi-reports/rx-client-ui-mock.json',JSON.stringify(report,null,2));await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1});
