@@ -121,7 +121,7 @@ export default {
       // administrator commands, persistent memory writes, or privileged RX tools.
       const planned=planRXChat(message,history,null);
       // RX BIBI 6.5: public identity is distinct from the private RX Queen.
-      const normalizedMessage=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\\p{M}/gu,'').replace(/ł/g,'l');
+      const normalizedMessage=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
       const publicGreeting=/^(czesc|hej|witaj|witam|dzien dobry)[!?. ]*$/.test(normalizedMessage);
       const publicIdentity=/^(kim jestes|jak sie nazywasz|przedstaw sie)[!?. ]*$/.test(normalizedMessage);
       const publicThanks=/^(dzieki|dziekuje|dziekuje bardzo|wielkie dzieki)[!?. ]*$/.test(normalizedMessage);
