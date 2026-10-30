@@ -689,6 +689,13 @@ export function planRXChat(message,history=[],learning=null){
   else answer='👑 Rozumiem. Żeby dobrze dobrać rośliny, potrzebuję jeszcze informacji o słońcu i rodzaju ziemi w Twoim ogrodzie.';
   tasks.length=0;plan.work=null;
  }
+ // A direct topic invitation takes priority over the generic conversation greeting.
+ const directTopicInvitation=/^(?:porozmawiajmy|pogadajmy)\s+o\s+(.{3,140})[.!? ]*$/i.exec(message.trim());
+ if(directTopicInvitation){
+  const subject=directTopicInvitation[1].replace(/[.!? ]+$/g,'');
+  answer='👑 Jasne, porozmawiajmy o '+subject+'. Co najbardziej Cię w tym temacie interesuje?';
+  tasks.length=0;plan.work=null;
+ }
  if(shortReplyAnswer!==null)answer=shortReplyAnswer;
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
  if(everydayGuide!==null)answer=everydayGuide;
