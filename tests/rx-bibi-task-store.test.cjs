@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {readTasks,saveTasks,proposeStatusChange,applyApprovedChange,findSimilarTasks}=require('../rx-bibi-task-store.cjs');
+const {readTasks,saveTasks,proposeStatusChange,applyApprovedChange,findSimilarTasks,suggestRelatedTasks}=require('../rx-bibi-task-store.cjs');
 const {chatRX}=require('../rx-brain-chat-engine.cjs');
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rx-bibi-store-'));
 try{
@@ -38,6 +38,12 @@ try{
  assert.equal(findSimilarTasks(tasks,'Naprawa czatu i płatności').length,0);
  assert.throws(()=>proposeStatusChange([{title:'Naprawa czatu Android',status:'pending'},{title:'naprawa  CZATU android',status:'pending'}],'NAPRAWA CZATU ANDROID','completed'),/exactly one/);
  assert.equal(proposeStatusChange(tasks,'  TEST   PANELU  ','completed').index,1);
+ const related=suggestRelatedTasks(tasks,'Poprawienie czatu na telefonie');
+ assert.equal(related.length,1);
+ assert.equal(related[0].title,'Naprawa czatu Android');
+ assert.equal(related[0].status,'completed');
+ assert.equal(suggestRelatedTasks(tasks,'Rozliczenie faktury za ogród').length,0);
+ assert.deepEqual(readTasks(file).map(t=>t.status),['completed','completed']);
  fs.writeFileSync(file,'{broken json');
  assert.throws(()=>readTasks(file),SyntaxError);
  console.log('RX BIBI level 7: persistence, reload, validation and corrupt file tests passed');
