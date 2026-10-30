@@ -236,15 +236,20 @@ export function planRXChat(message,history=[],learning=null){
     '👑 Przechowuj kopię oddzielnie od oryginału i okresowo sprawdzaj, czy możesz odzyskać pliki.';
   }
  }
- // RX BIBI 5.4: bounded multi-turn 2FA follow-up; user turns only.
- if(/^(?:a\s+)?jak\s+(?:to\s+)?(?:wlaczyc|ustawic|uruchomic)[?!. ]*$/.test(plain)&&!everydayGuide){
+ // RX BIBI 5.5: bounded contextual how-to for supported account safety topics.
+ // Resolve only from USER turns and stop at an explicit topic switch.
+ const contextualHowTo=/^(?:a\s+)?jak\s+(?:to\s+)?(?:wlaczyc|ustawic|uruchomic|zrobic)[?!. ]*$/.test(plain);
+ if(contextualHowTo&&!everydayGuide){
   const turns=recentUserQuestions.slice().reverse().map(normalizeRX);
   const boundary=turns.findIndex(turn=>/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/.test(turn.trim()));
   const relevant=boundary<0?turns:turns.slice(0,boundary);
-  const lastTopic=relevant.find(turn=>/\b(2fa|weryfikacja dwuetapowa|uwierzytelnianie dwuskladnikowe)\b/.test(turn));
-  if(lastTopic){
-   everydayGuide='👑 Aby włączyć 2FA, otwórz ustawienia bezpieczeństwa konta i poszukaj opcji „Weryfikacja dwuetapowa” lub „2FA”. Wybierz metodę potwierdzania, zachowaj kody odzyskiwania w bezpiecznym miejscu. Podaj nazwę usługi, jeśli potrzebujesz dokładnych kroków.';
-  }
+  const topicPatterns=[
+   {pattern:/\b(2fa|weryfikacja dwuetapowa|uwierzytelnianie dwuskladnikowe)\b/,answer:'👑 Aby włączyć 2FA, otwórz ustawienia bezpieczeństwa konta i poszukaj opcji „Weryfikacja dwuetapowa” lub „2FA”. Wybierz metodę potwierdzania, zachowaj kody odzyskiwania w bezpiecznym miejscu. Podaj nazwę usługi, jeśli potrzebujesz dokładnych kroków.'},
+   {pattern:/\b(kopia zapasowa|kopie zapasowa|backup|backupu)\b/,answer:'👑 Aby zrobić kopię zapasową, otwórz ustawienia kopii w urządzeniu lub aplikacji, wybierz zaufane miejsce zapisu i sprawdź możliwość przywrócenia danych. Podaj model telefonu lub nazwę aplikacji, jeśli chcesz dokładne kroki.'},
+   {pattern:/\b(menedzer hasel|manager hasel|password manager)\b/,answer:'👑 Aby ustawić menedżer haseł, wybierz zaufaną aplikację, utwórz silne hasło główne i włącz 2FA, jeśli jest dostępne. Nie przesyłaj nikomu hasła głównego.'}
+  ];
+  const latestRelevant=relevant.map((turn,index)=>({turn,index,topic:topicPatterns.find(entry=>entry.pattern.test(turn))})).find(entry=>entry.topic);
+  if(latestRelevant)everydayGuide=latestRelevant.topic.answer;
  }
  // RX BIBI 4.8: natural short follow-ups, strictly limited to a recent user topic.
  const everydayNaturalFollowup=/^(dlaczego|a co dalej|co dalej|mozesz prosciej|powiedz prosciej)[?!. ]*$/.test(plain);
