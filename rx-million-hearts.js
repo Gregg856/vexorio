@@ -46,9 +46,13 @@ class RXMillionHearts {
       this.active++;
       this.running.set(job.id,{cell:job.name,startedAt:Date.now()});
       Promise.resolve().then(()=>this.handlers.get(job.name)(job.payload,{signal:job.signal}))
-        .then(result=>{this.stats.completed++;this._remember(job.name,'ok');job.resolve(result);},
-          error=>{this.stats.failed++;this._remember(job.name,'error');job.reject(error);})
-        .finally(()=>{this.running.delete(job.id);this.active--;this._drain();});
+        .then(result=>{this.stats.completed++;this._remember(job.name,'ok');return {ok:true,result};},
+          error=>{this.stats.failed++;this._remember(job.name,'error');return {ok:false,error};})
+        .then(outcome=>{
+          // Finish bookkeeping before settling the public promise: await pulse() means idle.
+          this.running.delete(job.id);this.active--;this._drain();
+          if(outcome.ok)job.resolve(outcome.result);else job.reject(outcome.error);
+        });
     }
   }
   stalledJobs(thresholdMs=30000){
