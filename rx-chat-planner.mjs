@@ -176,7 +176,7 @@ export function planRXChat(message,history=[],learning=null){
  else if(asksCheckChat)answer='🧪 Rozumiem: chcesz sprawdzić czat RX. Mogę zaproponować test wiadomości, kontekstu i obsługi błędów. Nie uruchomiłam testu ani nie znam jego wyniku bez raportu.';
  else if(asksFixChat)answer='🔧 Rozumiem: chcesz poprawić czat RX. Potrzebuję objawu lub wyniku testu, żeby przygotować konkretną poprawkę. Samo polecenie nie zmienia kodu.';
  else if(asksError)answer='🔧 Opisz błąd albo wklej dokładny komunikat. Pomogę ustalić możliwą przyczynę i zaproponować test. Bez raportu nie potwierdzę naprawy.';
- else if(asksQueue)answer='🐜 Czat klienta nie udostępnia kolejki Warsztatu administratora. Rozwiń Warsztat, aby zobaczyć liczbę zadań i pobrać paczkę. Sama kolejka nie uruchamia kodu.';
+ else if(asksQueue)answer='🐜 Czat klienta nie udostępnia kolejki Warsztatu administratora ani nie uruchamia kodu. Stan zadań można sprawdzić wyłącznie w uprawnionym panelu RX.';
  else if(asksSafety)answer='🔒 Wykonanie zatwierdzonych testów wymaga sesji administratora i osobnego potwierdzenia. Wklejony kod nie jest uruchamiany automatycznie.';
  else if(asksCosts)answer='💰 RX korzysta z własnego planera i dostępnych usług. Nie uruchamiam płatnego modelu bez konfiguracji. Limity GitHub i Cloudflare nadal obowiązują.';
  else if(asksKnowledge)answer='📚 W tym czacie nie mam podłączonego wyszukiwania w internecie z podaniem źródła. Nie oznacza to, że cała Wikipedia jest zapisana lokalnie.';
