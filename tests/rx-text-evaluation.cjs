@@ -30,6 +30,7 @@ const trainedPhrases=[
 const normalize=text=>text.toLocaleLowerCase('pl').normalize('NFC').trim();
 const seen=new Set(trainedPhrases.map(normalize));
 for(const [phrase] of HOLDOUT)assert.ok(!seen.has(normalize(phrase)),`Evaluation leakage: ${phrase}`);
+for(const [phrase] of CHALLENGE)assert.ok(!seen.has(normalize(phrase)),`Challenge leakage: ${phrase}`);
 console.log('PASS RX TEXT HELDOUT EVALUATION',report.correct+'/'+report.sampleCount);
 
 const challenge=evaluateChallenge({epochs:120});
