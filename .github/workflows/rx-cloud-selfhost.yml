@@ -15,6 +15,7 @@ on:
       - 'rx-brain-chat-engine.cjs'
       - 'rx-bibi-task-store.cjs'
       - 'tests/rx-bibi-task-store.test.cjs'
+      - 'tests/rx-bibi-chat-task-integration.test.cjs'
       - 'tests/rx-brain-chat-engine.cjs'
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-migration-readiness.cjs'
@@ -52,6 +53,7 @@ on:
       - 'rx-brain-chat-engine.cjs'
       - 'rx-bibi-task-store.cjs'
       - 'tests/rx-bibi-task-store.test.cjs'
+      - 'tests/rx-bibi-chat-task-integration.test.cjs'
       - 'tests/rx-brain-chat-engine.cjs'
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-modules.cjs'
@@ -90,6 +92,8 @@ jobs:
         run: node tests/rx-brain-chat-engine.cjs
       - name: RX BIBI persistent task register
         run: node tests/rx-bibi-task-store.test.cjs
+      - name: RX BIBI local chat task integration
+        run: node tests/rx-bibi-chat-task-integration.test.cjs
       - name: Check syntax
         run: |
           node --check rx-cloud-server.cjs
