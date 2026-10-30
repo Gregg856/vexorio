@@ -12,12 +12,7 @@ const EXAMPLES=[
  ['witaj przyjacielu','greeting'],['serdeczne pozdrowienia','greeting'],['miłego dnia','greeting'],
  ['pokaż raport kontroli','tests'],['uruchom sprawdzanie','tests'],['jaki status testu','tests'],
  ['zachowaj w pamięci','memory'],['przywołaj wspomnienia','memory'],['historia naszych wiadomości','memory'],
- ['dodaj dwie liczby','math'],['wykonaj mnożenie','math'],['policz procent','math'],
- // Extra supervised training data: varied wording, same four verified intents.
- ['siema RX','greeting'],['dobry wieczór królowo','greeting'],['miło cię widzieć','greeting'],
- ['czy pipeline przeszedł','tests'],['pokaż czerwone kontrole','tests'],['zweryfikuj regresję','tests'],
- ['co ustaliliśmy wcześniej','memory'],['wróć do zapamiętanych informacji','memory'],['przywołaj poprzednie rozmowy','memory'],
- ['ile wynosi iloczyn','math'],['podziel liczby','math'],['oblicz różnicę','math']
+ ['dodaj dwie liczby','math'],['wykonaj mnożenie','math'],['policz procent','math']
 ];
 const LABELS=Object.freeze(['greeting','tests','memory','math']);
 function vector(text){
