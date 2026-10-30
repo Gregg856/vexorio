@@ -416,6 +416,39 @@ jobs:
         run: |
           mkdir -p rx-bibi-reports
           node -e 'const fs=require("node:fs");const e=process.env;const report={schema:1,kind:"rx-black-box-ci",repository:e.RX_REPO,workflow:e.RX_WORKFLOW,runId:e.RX_RUN_ID,commit:e.RX_SHA,jobStatus:e.RX_JOB_STATUS,recordedAt:new Date().toISOString(),note:"CI job metadata; see GitHub Actions for per-step outcomes"};fs.writeFileSync("rx-bibi-reports/rx-black-box-run.json",JSON.stringify(report,null,2)+"\\n")'
+      - name: RX QUEEN — wspólny raport istniejących silników
+        if: ${{ always() }}
+        env:
+          RX_JOB_STATUS: ${{ job.status }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const dir='rx-bibi-reports';
+          const read=(name)=>{try{return JSON.parse(fs.readFileSync(dir+'/'+name,'utf8'))}catch{return null}};
+          const chat=read('rx-client-auth-e2e.json');
+          const dialogue=read('rx-dialogue-tests.json');
+          const memory=read('rx-signal-memory.json');
+          const blackbox=read('rx-black-box-run.json');
+          const fast=read('rx-fast-test-engine.json');
+          const verified=chat?.clientChatVerified===true&&chat?.status==='PASS';
+          const report={schema:1,kind:'rx-queen-unified-test-report',jobStatus:process.env.RX_JOB_STATUS,
+            authenticatedChat:{status:verified?'VERIFIED':chat?.status||'NOT_RUN',verified,turns:chat?.turns?.length||0},
+            localDialogue:{status:dialogue?dialogue.summary?.failedScenarios===0?'PASS':'FAIL':'NOT_RUN',scenarios:dialogue?.summary?.scenarios??null,failed:dialogue?.summary?.failedScenarios??null},
+            recurringSignals:{status:memory?'RECORDED':'NOT_RUN',count:memory?.recurring?.length??null},
+            fastEngine:{status:fast?'RECORDED':'SEE_STEP_LOGS'},
+            blackBox:{status:blackbox?'RECORDED':'NOT_RUN',runId:blackbox?.runId||null}};
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(dir+'/rx-queen-unified-test-report.json',JSON.stringify(report,null,2)+'\n');
+          const lines=['### 👑 RX QUEEN — wspólny raport','',
+            '- Zalogowany czat: **'+report.authenticatedChat.status+'** ('+report.authenticatedChat.turns+' rozmów)',
+            '- Rozmowy lokalne: **'+report.localDialogue.status+'** ('+(report.localDialogue.scenarios??'?')+' scenariuszy)',
+            '- RX MEMORY: **'+report.recurringSignals.status+'** ('+(report.recurringSignals.count??'?')+' powracających sygnałów)',
+            '- RX FAST: **'+report.fastEngine.status+'**',
+            '- RX BLACK BOX: **'+report.blackBox.status+'**',
+            '- Testy mock i lokalne nie potwierdzają prawdziwego zalogowanego czatu.'];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
+          console.log('RX QUEEN unified verdict:',JSON.stringify(report));
+          NODE
       - name: Zachowaj raporty i zrzuty
         if: always()
         uses: actions/upload-artifact@v6
