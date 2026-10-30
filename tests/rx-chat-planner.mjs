@@ -226,6 +226,21 @@ const switched=planRXChat('A ile zapłacę za trzy sztuki z rabatem 10%?',[
 assert.ok(!switched.answer.includes('135'),switched.answer);
 console.log('RX quantity discount regression OK');
 
+// RX BIBI 4.5: bounded colloquial phrasing and common typos.
+for(const [question,expected] of [
+ ['A ile wyjdzie za trzy sztuki z rabatem 10%?','135'],
+ ['A ile zaplacee za trzy sztuki z rabatem 10%?','135'],
+ ['A ile zapłacę za trzy sztuki z rabtem 10%?','135'],
+ ['A ile zapłacę za trzy sztukii z rabatem 10%?','135']
+]){
+ const result=planRXChat(question,['Produkt kosztuje 50 euro','Rozumiem.']);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+}
+console.log('RX colloquial price regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
