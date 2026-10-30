@@ -17,6 +17,8 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const plan=planCommand(request,{energyBalance:100});
  const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
  let answer;
+ const asksPending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\\s]*$/i.test(message.trim());
+ const pending=tasks.filter(t=>t.status==='pending');
  const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\\s]*$/i.test(message.trim());
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
  if(relatedQuery){
@@ -30,6 +32,8 @@ function chatRX(message,{history=[],tasks=[]}={}){
    }else{
      answer='Nie znalazłam zadania o tej samej nazwie ani wystarczająco podobnego w przekazanym rejestrze. Nie jest to dowód, że praca nigdy nie była wykonywana.';
    }
+ }else if(asksPending){
+   answer=pending.length?'Zadania oczekujące w przekazanym rejestrze: '+pending.map(t=>t.title).join('; ')+'. To nie jest potwierdzenie bieżącego stanu GitHub.':'Brak zadań oczekujących w przekazanym rejestrze.';
  }else if(asksCompleted){
    answer=completed.length?'Zadania oznaczone jako ukończone w przekazanym rejestrze: '+completed.map(t=>t.title).join('; ')+'. Nie potwierdzam ich testów bez niezależnych danych.':'Brak zadań oznaczonych jako ukończone w przekazanym rejestrze.';
  }else if(asksEvidence){
