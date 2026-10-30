@@ -129,7 +129,12 @@ export function planRXChat(message,history=[],learning=null){
  const rateFollowup=plain.match(/^(?:a\s+)?(?:przy|po\s+(?:rabacie|podwyzce))\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%[?!. ]*$/);
  if(rateFollowup){
   // Search only recent USER turns, never assistant text; stop at a new unrelated price.
-  const previous=recentUserQuestions.slice().reverse().find(turn=>{
+  const recentPriceTurns=recentUserQuestions.slice().reverse();
+  const topicSwitch=/^(?:zmienmy temat|zmiana tematu|nowy temat|przejdzmy do innego tematu|teraz inny temat)\b/;
+  // An explicit topic switch ends the price context; ordinary thanks do not.
+  const boundary=recentPriceTurns.findIndex(turn=>topicSwitch.test(normalizeRX(turn).trim()));
+  const relevantTurns=boundary<0?recentPriceTurns:recentPriceTurns.slice(0,boundary);
+  const previous=relevantTurns.find(turn=>{
    const t=normalizeRX(turn);
    return /(?:produkt|towar|rzecz)\s+(?:kosztuje|za)\s+\d/.test(t)
     ||/(?:rabacie|podwyzce)\s+\d{1,3}(?:[.,]\d{1,2})?\s*%\s+(?:od|z|dla)\s+\d/.test(t);
