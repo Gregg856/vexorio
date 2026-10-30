@@ -37,6 +37,30 @@ function findSimilarTasks(tasks,title){
  const normalized=normalizeTaskTitle(title);
  return tasks.filter(t=>normalizeTaskTitle(t.title)===normalized);
 }
+// Conservative Polish phrase hints: suggestions only, never automatic task updates.
+function taskMeaningTokens(title){
+ const normalized=normalizeTaskTitle(title);
+ const words=normalized.replace(/[^\\p{L}\\p{N}]+/gu,' ').split(/\\s+/).filter(Boolean);
+ const aliases={
+  naprawa:'napraw',naprawić:'napraw',naprawienie:'napraw',poprawa:'napraw',poprawienie:'napraw',
+  czatu:'czat',czacie:'czat',chat:'czat',
+  androidzie:'android',androida:'android',telefonie:'telefon',telefonu:'telefon',
+  mobilnego:'telefon',mobilny:'telefon'
+ };
+ const stop=new Set(['na','w','i','oraz','do','dla','z','ze','the']);
+ return new Set(words.map(w=>aliases[w]||w).filter(w=>!stop.has(w)));
+}
+function suggestRelatedTasks(tasks,title){
+ validate(tasks);
+ const target=taskMeaningTokens(title);
+ if(target.size<2)return [];
+ return tasks.map((task,index)=>{
+  const candidate=taskMeaningTokens(task.title);
+  const common=[...target].filter(t=>candidate.has(t));
+  const similarity=common.length/Math.max(target.size,candidate.size);
+  return {index,title:task.title,status:task.status,similarity};
+ }).filter(item=>item.similarity>=0.65&&item.similarity<1).sort((a,b)=>b.similarity-a.similarity||a.index-b.index);
+}
 function proposeStatusChange(tasks,title,status){
  validate(tasks);
  if(typeof title!=='string'||!title.trim()||title.length>160||!['pending','completed'].includes(status))throw Error('Invalid change');
@@ -58,4 +82,4 @@ function applyApprovedChange(file,proposal,{approved=false}={}){
  saveTasks(file,next);
  return next;
 }
-module.exports={readTasks,saveTasks,proposeStatusChange,applyApprovedChange,normalizeTaskTitle,findSimilarTasks};
+module.exports={readTasks,saveTasks,proposeStatusChange,applyApprovedChange,normalizeTaskTitle,findSimilarTasks,suggestRelatedTasks};
