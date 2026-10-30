@@ -9,6 +9,7 @@ on:
       - rx-chat-planner.mjs
       - tests/rx-client-chat.cjs
       - tests/rx-client-functional.cjs
+      - tests/rx-chat-planner.mjs
       - .github/workflows/rx-client-security.yml
 permissions:
   contents: read
@@ -27,3 +28,4 @@ jobs:
           node --check tests/rx-client-chat.cjs
           node tests/rx-client-chat.cjs
           node --experimental-default-type=module tests/rx-client-functional.cjs
+          node tests/rx-chat-planner.mjs
