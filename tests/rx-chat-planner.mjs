@@ -767,3 +767,11 @@ const switchedGardenHistory=['Chcę porozmawiać o moim ogrodzie','👑 Ile masz
 const unrelatedDetail=planRXChat('Jest w cieniu',switchedGardenHistory);
 assert.doesNotMatch(unrelatedDetail.answer,/funkie|paprocie|ogród jest zacieniony/i);
 console.log('RX BIBI garden memory isolation: PASS');
+
+// Repeating 'Dalej' after the garden question must advance instead of repeating it.
+const gardenSecondTurn=['Chcę porozmawiać o moim ogrodzie','👑 Jasne, porozmawiajmy o moim ogrodzie.','Dalej','👑 Wracamy do rozmowy o Twoim ogrodzie. Ile masz miejsca, czy jest tam dużo słońca i co chcesz osiągnąć — warzywnik, kwiaty czy miejsce do odpoczynku?'];
+const gardenSecondNext=planRXChat('Dalej',gardenSecondTurn);
+assert.match(gardenSecondNext.answer,/prostego planu/i);
+assert.doesNotMatch(gardenSecondNext.answer,/Ile masz miejsca, czy jest tam dużo słońca/i);
+assert.equal(gardenSecondNext.executed,0);
+console.log('RX BIBI garden repeated continuation: PASS');
