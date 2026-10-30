@@ -72,6 +72,10 @@ export function planRXChat(message,history=[],learning=null){
  const asksNext=/(co dalej|nastepny krok|od czego zaczac)/.test(plain);
  const asksProgress=/(co (juz|wczoraj|ostatnio) (zrobil|zrobilismy|robil)|na czym skonczyl|co mamy gotowe|co jest gotowe|co zostalo zrobione|nie powtarzaj|krecimy sie w kolko|krecic sie w kolko)/.test(plain);
 
+ // Public conversational intents; never imply access to private RX tools.
+ const everydayGreeting=/^(co u ciebie|jak sie masz|jak mija dzien|jak leci)[?!. ]*$/.test(plain);
+ const everydayThanks=/^(dziekuje bardzo|wielkie dzieki|dzieki za pomoc)[?!. ]*$/.test(plain);
+ const everydayQuestion=/^(czy mozesz mi pomoc|potrzebuje porady|mam pytanie)[?!. ]*$/.test(plain);
  const asksCapabilities=/(co umiesz|co potrafisz|jakie funkcje)/.test(plain);
  const asksHelp=/(pomoc|pomoz|jak rozmawiac|co moge napisac)/.test(plain);
  const multiParts=[
@@ -298,5 +302,9 @@ export function planRXChat(message,history=[],learning=null){
   const lesson=verifiedLessons[0];
   answer+='\\n🧠 RX BIBI wykrył wcześniej: '+lesson.observation.slice(0,180)+'. Obszar: '+String(lesson.panelArea||'RX').slice(0,90)+'. To wskazówka do diagnostyki, nie potwierdzona naprawa. Wymagana weryfikacja testem.';
  }
+ if(everydayGreeting)answer='👑 Dziękuję, że pytasz! Jestem tutaj, żeby porozmawiać. Co u Ciebie słychać?';
+ if(everydayThanks)answer='👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
+ if(everydayQuestion)answer='👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
+ if(everydayGreeting||everydayThanks||everydayQuestion){tasks.length=0;plan.work=null;}
  return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
