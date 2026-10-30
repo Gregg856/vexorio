@@ -13,4 +13,8 @@ assert.match(chatRX('Co dalej?',{history:['Sprawdź model','Gotowe']}).answer,/S
 assert.match(chatRX('Dalej',{history:['Napraw klawiaturę w czacie','ok','zielone']}).answer,/Napraw klawiaturę w czacie/);
 assert.equal(chatRX('Dalej',{history:['ok','gotowe']}).contextUsed,false);
 assert.match(chatRX('Dalej',{history:['ok','gotowe']}).answer,/Nie mam wcześniejszego kontekstu/);
+assert.match(chatRX('Co dalej?',{history:['Testy modelu','Gotowe','Napraw czat','Zielone']}).answer,/Napraw czat/);
+assert.match(chatRX('Wróć do poprzedniego tematu',{history:['Testy modelu','Gotowe','Napraw czat','Zielone']}).answer,/Testy modelu/);
+assert.match(chatRX('Wróć do poprzedniego tematu',{history:['Testy modelu','ok']}).answer,/Nie widzę wcześniejszego/);
+assert.match(chatRX('Wróć do poprzedniego tematu',{history:['Testy modelu','Testy modelu','Napraw czat']}).answer,/Testy modelu/);
 console.log('PASS RX QUEEN CONVERSATIONAL RESPONSES');
