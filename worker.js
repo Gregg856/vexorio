@@ -237,7 +237,23 @@ export default {
       else if(publicGreeting)clientAnswer='Cześć! Jestem RX BIBI, asystentem do rozmowy i prostych wyjaśnień. W czym mogę Ci pomóc?';
       else if(publicIdentity)clientAnswer='Jestem RX BIBI — asystentem VEXORIO. Pomagam wyjaśniać zagadnienia i odpowiadać na pytania. Obecnie korzystam z lokalnego planera odpowiedzi, nie z generatywnego modelu AI.';
       else if(publicThanks)clientAnswer='Nie ma za co! Jeśli masz kolejne pytanie, chętnie pomogę.';
-      else clientAnswer=clientAnswer.replace(/^👑\\s*/u,'');
+      else {
+        clientAnswer=clientAnswer.replace(/^👑\s*/u,'');
+        // Public client fallback: discuss the user's subject, not internal RX diagnostics.
+        // This is a bounded conversational clarification, not generative AI.
+        const unknownAnswer=/^Nie rozumiem jeszcze tego pytania wystarczająco dobrze/.test(clientAnswer);
+        if(unknownAnswer){
+          const userText=message.trim().replace(/[?!.\s]+$/g,'');
+          const isQuestion=/^(?:co|czym|jak|dlaczego|czemu|kiedy|gdzie|czy|ile|ktory|ktora|ktore|kto)\b/i.test(normalizedMessage);
+          const wantsWriting=/\b(?:napisz|stworz|przygotuj|uloz|wymysl)\b/i.test(normalizedMessage);
+          const wantsExplanation=/\b(?:wyjasnij|wytlumacz|opowiedz|porozmawiajmy|pogadajmy)\b/i.test(normalizedMessage);
+          if(wantsWriting)clientAnswer='Chętnie pomogę przygotować tekst. Jaki ma mieć styl i dla kogo będzie przeznaczony?';
+          else if(wantsExplanation)clientAnswer='Możemy o tym porozmawiać. Która część tematu interesuje Cię najbardziej?';
+          else if(isQuestion)clientAnswer='Chcę odpowiedzieć rzetelnie, ale nie mam jeszcze wystarczającej wiedzy o tym pytaniu. Możesz podać więcej szczegółów?';
+          else if(userText.length>3)clientAnswer='Rozumiem, że chcesz porozmawiać o tym temacie. Co jest dla Ciebie najważniejsze?';
+          else clientAnswer='O czym chciałbyś porozmawiać?';
+        }
+      }
       return new Response(JSON.stringify({ok:true,answer:clientAnswer.slice(0,4000),engine:'rx-client-local-planner',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
     }
     if (url.pathname === '/api/rx/run-test' || url.pathname === '/api/rx/coordinator/run' || url.pathname === '/api/rx/chat') {
