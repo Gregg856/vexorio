@@ -784,3 +784,16 @@ for(const greeting of ['Cześć BIBI, chcę porozmawiać o moim ogrodzie.','Hej,
  assert.equal(result.tasks.length,0);
 }
 console.log('RX BIBI greeting-prefix conversation regression: PASS');
+
+// Real customer dialogue: a small garden and tomatoes should not trigger generic category clarification.
+const gardenDialogue=[];
+for(const input of ['Cześć BIBI, chcę porozmawiać o moim ogrodzie.','Dalej','Dalej']){
+ const reply=planRXChat(input,gardenDialogue);
+ assert.equal(reply.ok,true);
+ gardenDialogue.push(input,reply.answer);
+}
+const tomatoReply=planRXChat('Mam mały ogród i chcę posadzić pomidory.',gardenDialogue);
+assert.match(tomatoReply.answer,/pomidor/i,'BIBI should acknowledge tomatoes specifically');
+assert.doesNotMatch(tomatoReply.answer,/czy chcesz warzywa, kwiaty czy krzewy/i,'BIBI must not ask for a category already specified');
+assert.equal(tomatoReply.executed,0);
+console.log('RX BIBI real multi-turn tomato dialogue: PASS');
