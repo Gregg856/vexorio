@@ -700,9 +700,12 @@ for(const phrase of ['Sprawdź testy','Sprawdz testy']){
  assert.equal(result.executed,0);
  assert.equal(result.plan.queen.requiresApproval,true);
 }
-for(const phrase of ['Sprawdź mrówki','Sprawdz mrowki']){
+for(const phrase of ['Trening modelu AI','Uczenie modelu AI']){
  const result=planRXChat(phrase);
- assert.ok(result.tasks.some(t=>t.module==='ants'),phrase+': missing ants');
+ assert.ok(result.tasks.some(t=>t.module==='ants'&&t.action==='classify_task'),phrase+': missing ants model task');
  assert.equal(result.executed,0);
+ assert.equal(result.plan.queen.requiresApproval,true);
 }
+// Asking about ants alone must not invent a privileged catalog task.
+assert.equal(planRXChat('Sprawdź mrówki').executed,0);
 console.log('RX BIBI 6.7 Polish intent regression OK');
