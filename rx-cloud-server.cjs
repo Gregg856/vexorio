@@ -62,6 +62,35 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.end(JSON.stringify({ok:true,service:'rx-cloud-2',queenBridge:'connected',mode:'read-only',taskExecution:false,productionChanges:false}));
         return;
       }
+      // Explicit, authenticated GitHub Actions evidence sync; never trusts client-supplied status.
+      if(url.pathname==='/__rxcloud/neuron/sync-run'){
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('Content-Type','application/json');
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(req.method!=='POST'){res.writeHead(405,{'Allow':'POST'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        const runId=url.searchParams.get('runId')||'';
+        if(!/^[0-9]{1,20}$/.test(runId)){res.writeHead(400);res.end(JSON.stringify({ok:false,error:'Invalid runId'}));return;}
+        try{
+          const headers={'Accept':'application/vnd.github+json','User-Agent':'RX-NEURON-evidence-sync','X-GitHub-Api-Version':'2022-11-28'};
+          if(process.env.RX_GITHUB_TOKEN)headers.Authorization='Bearer '+process.env.RX_GITHUB_TOKEN;
+          const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+runId,{headers,signal:AbortSignal.timeout(7000)});
+          if(!response.ok){res.writeHead(502);res.end(JSON.stringify({ok:false,error:'GitHub verification unavailable'}));return;}
+          const data=await response.json();
+          if(String(data.id)!==runId||data.repository?.full_name!=='Gregg856/vexorio'||data.status!=='completed'||data.conclusion!=='success'){
+            res.writeHead(409);res.end(JSON.stringify({ok:false,error:'Run is not a successful completed VEXORIO run'}));return;
+          }
+          const evidenceDir=path.resolve(process.env.RX_NEURON_EVIDENCE_DIR||path.join(__dirname,'rx-cloud-private-evidence'));
+          await fs.mkdir(evidenceDir,{recursive:true,mode:0o700});
+          const record={kind:'rx-github-actions-evidence',runId,repository:'Gregg856/vexorio',status:'completed',conclusion:'success',source:'github-api',headSha:data.head_sha};
+          await fs.writeFile(path.join(evidenceDir,'rx-run-'+runId+'.json'),JSON.stringify(record),{flag:'w',mode:0o600});
+          res.writeHead(200);res.end(JSON.stringify({ok:true,runId,verified:true}));return;
+        }catch{
+          res.writeHead(502);res.end(JSON.stringify({ok:false,error:'GitHub verification unavailable'}));return;
+        }
+      }
       // Private read-only learning feed for the RX Queen coordinator.
       if(url.pathname==='/__rxcloud/bibi/learning'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
