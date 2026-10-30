@@ -144,6 +144,21 @@ for(const [question,expected] of [
 }
 console.log('RX alternate price regression OK');
 
+// RX BIBI 4.0: the next user turn must use the prior user's price, not the assistant's answer.
+for(const [previous,followup,expected] of [
+ ['Produkt kosztuje 200 euro, ile zapłacę po rabacie 15%?','A przy 25%?','150'],
+ ['Towar kosztuje 100 euro, ile zapłacę po podwyżce 10%?','A przy 20%?','120'],
+ ['Jaka będzie cena po rabacie 20% od 150 euro?','A przy 10%?','135']
+]){
+ const prior=planRXChat(previous);
+ const result=planRXChat(followup,[previous,prior.answer]);
+ assert.ok(result.answer.includes(expected),followup+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX contextual price regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
