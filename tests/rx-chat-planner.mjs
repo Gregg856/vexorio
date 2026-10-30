@@ -751,3 +751,13 @@ for(const [input,expected] of [['Mam mały ogród','małym ogrodzie'],['Jest sł
  assert.equal(result.plan.work,null);
 }
 console.log('RX BIBI garden detail follow-up regression: PASS');
+
+// An explicit topic reset must discard an older, unrelated user topic.
+const topicResetHistory=['Chcę porozmawiać o moim ogrodzie','👑 Jasne','Zmieńmy temat','👑 Jasne, zmieniamy temat'];
+const afterReset=planRXChat('Dalej',topicResetHistory);
+assert.doesNotMatch(afterReset.answer,/Kontynuujemy temat:.*ogrodzie/i);
+const freshTopicHistory=[...topicResetHistory,'Chcę porozmawiać o muzyce','👑 Co Cię interesuje?'];
+const afterFreshTopic=planRXChat('Dalej',freshTopicHistory);
+assert.match(afterFreshTopic.answer,/muzyce/i);
+assert.doesNotMatch(afterFreshTopic.answer,/ogrodzie/i);
+console.log('RX BIBI topic reset boundary: PASS');
