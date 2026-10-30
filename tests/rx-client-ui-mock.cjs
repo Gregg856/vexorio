@@ -17,10 +17,12 @@ window.supabase={createClient:()=>({
  from:()=>({select:()=>({order:()=>({limit:async()=>({data:[],error:null})})})})
 })};`}));
   await page.route(origin+'/api/rx/client/config',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({url:'https://mock.invalid',anonKey:'public-test'})}));
+  let failNext=false;
   await page.route(origin+'/api/rx/client/chat',async route=>{
    const request=route.request();
    const data=request.postDataJSON();
    report.requests.push({message:data.message,history:data.history,authorized:request.headers().authorization==='Bearer test-token'});
+   if(failNext){failNext=false;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({message:'Temporary test outage'})});return;}
    const answer=data.message==='Dalej'?'Kontynuujemy rozmowę o ogrodzie.':'Porozmawiajmy o ogrodzie.';
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({answer})});
   });
@@ -39,6 +41,20 @@ window.supabase={createClient:()=>({
   if(report.requests.length!==2||!report.requests.every(x=>x.authorized))throw Error('Missing authenticated mock API calls');
   if(!Array.isArray(report.requests[1].history)||report.requests[1].history.length!==2)throw Error('Missing multi-turn history');
   report.checks.push({name:'api_request_and_multiturn_history',passed:true});
+  failNext=true;
+  const beforeFailure=await page.locator('#messages .bubble').count();
+  await page.locator('#message').fill('Wiadomość po awarii');
+  await page.locator('#send').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('Wiadomość przywrócona'),{timeout:10000});
+  if(await page.locator('#message').inputValue()!=='Wiadomość po awarii')throw Error('Message lost after server failure');
+  if(await page.locator('#messages .bubble').count()!==beforeFailure+1)throw Error('Unexpected bubble count after failure');
+  report.checks.push({name:'failed_send_restores_composer',passed:true});
+  await page.locator('#send').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.',{timeout:10000});
+  const afterRetry=await page.locator('#messages .bubble').allTextContents();
+  if(afterRetry.filter(x=>x==='Wiadomość po awarii').length!==1)throw Error('Retry duplicated user bubble');
+  if(report.requests.length!==4||report.requests[3].history.length!==4)throw Error('Retry history inconsistent');
+  report.checks.push({name:'retry_no_duplicate_user_bubble',passed:true});
   report.passed=true;
   console.log('PASS RX BIBI CLIENT UI MOCK:',report.checks.map(x=>x.name).join(', '));
  }catch(e){report.passed=false;report.error=e.message;process.exitCode=1;console.error('FAIL RX BIBI CLIENT UI MOCK:',e.message);}
