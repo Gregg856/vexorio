@@ -325,6 +325,26 @@ jobs:
           RX_BIBI_TEST_EMAIL: ${{ secrets.RX_BIBI_TEST_EMAIL }}
           RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
         run: node tests/rx-client-auth-e2e.cjs
+      - name: RX BIBI — raport wiarygodności testów zalogowanego czatu
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const file='rx-bibi-reports/rx-client-auth-e2e.json';
+          const r=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):{status:'NOT_RUN',clientChatVerified:false};
+          const verdict=r.clientChatVerified?'VERIFIED':r.status||'NOT_VERIFIED';
+          const lines=['### RX BIBI — prawdziwy czat klienta','', '- Status: **'+verdict+'**','- Autentyczne rozmowy: '+(r.turns?.length||0)+'/5','- Testy lokalne i mock nie zastępują zalogowanego E2E.'];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
+          console.log('RX BIBI REAL CHAT VERDICT:',verdict);
+          NODE
+      - name: RX BIBI — zachowaj dowody zalogowanej rozmowy
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-bibi-real-chat-evidence
+          path: rx-bibi-reports/rx-client-auth-e2e.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: RX — testuj nawigację mobilną Centrum i powrót do VEXORIO
         if: always()
         run: node tests/rx-navigation-mobile.cjs
