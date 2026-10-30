@@ -124,6 +124,23 @@ export default {
       if(/(?:pamiec|rx cloud|potwierdzone naprawy|historia napraw)/.test(normalizedIntent)&&/(?:pokaz|odczytaj|sprawdz|wyswietl|jakie|co jest|dostep)/.test(normalizedIntent)){
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
+      // RX BIBI: authenticated read-only CI evidence for the ants. This is NOT live worker status.
+      if(/^(?:sprawdz|pokaz|jaki jest|podaj)\\s+(?:aktualny\\s+)?(?:status|wyniki?)\\s+(?:naszych\\s+)?(?:mrowek|mrowki|mrowek rx|rx mrowek|rx mrowki)[?!. ]*$/i.test(normalizedIntent)){
+        try{
+          const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-medusa-ant.yml/runs?branch=main&per_page=1',{
+            headers:{Accept:'application/vnd.github+json','User-Agent':'RX-BIBI-Ant-ReadOnly'},signal:AbortSignal.timeout(7000)
+          });
+          if(!response.ok)throw new Error('github_unavailable');
+          const data=await response.json();
+          const run=data?.workflow_runs?.[0];
+          const allowed=['success','failure','cancelled','skipped','timed_out','action_required','neutral'];
+          const result=run&&allowed.includes(run.conclusion)?run.conclusion:run?.status==='in_progress'?'in_progress':'brak potwierdzonego wyniku';
+          const answer=run?'🐜 Ostatni przebieg powiązanego workflow RX MRÓWKI na main: '+result+'. Numer: '+String(run.run_number||'nieznany')+'. To wynik CI, a nie dowód, że mrówki pracują teraz.': '🐜 Nie znaleziono przebiegu workflow RX MRÓWKI na main. Nie mogę potwierdzić ich bieżącej pracy.';
+          return new Response(JSON.stringify({ok:true,answer,engine:'rx-bibi-ants-ci-readonly',source:'github-actions',live:false,modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }catch{
+          return new Response(JSON.stringify({ok:true,answer:'🐜 Nie udało się pobrać wyników RX MRÓWKI z GitHub Actions. Nie potwierdzam ich bieżącej pracy.',engine:'rx-bibi-ants-ci-readonly',live:false,modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }
+      }
       // Public, read-only lookup of one GitHub Actions run; no tokens or dispatch.
       const runLookup=message.trim().match(/^(?:sprawdź|sprawdz|pokaż|pokaz)\s+(?:wynik\s+|status\s+)?(?:testu?\s+|github\s+actions\s+)?(?:run\s+|przebiegu\s+)?(\d{8,20})[?!.\s]*$/iu);
       if(runLookup){
