@@ -70,6 +70,21 @@ for(const prompt of ['Jak się masz?','Dziękuję bardzo','Mam pytanie']){
 }
 console.log('RX repeated reply regression OK');
 
+for(const [question,expected] of [
+ ['Ile to jest 12 plus 8?','Wynik: 20'],
+ ['Oblicz 9 razy 7','Wynik: 63'],
+ ['Policz 10 podzielić przez 4','Wynik: 2.5'],
+ ['Ile to jest 3 minus 9?','Wynik: -6'],
+ ['Ile to jest 5 podzielić przez 0','Nie można dzielić przez zero']
+]){
+ const result=planRXChat(question);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX natural arithmetic regression OK');
+
 for(const [question,history,expected] of [
  ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
  ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
