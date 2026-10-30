@@ -76,6 +76,33 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(learningData.kind,'rx-queen-verified-learning');
   assert(Array.isArray(learningData.lessons),'Queen learning feed must return lessons array');
   assert(learningData.lessons.every(item=>item.verifiedResolution===false),'Unverified reports must never be treated as learned fixes');
+  // RX NEURON regression: aggregate two local BIBI reports and deduplicate observations.
+  const neuronDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-neuron-test-'));
+  const priorInbox=process.env.RX_BIBI_INBOX_DIR;
+  process.env.RX_BIBI_INBOX_DIR=neuronDir;
+  try{
+    const makeReport=(runId,items)=>({kind:'rx-bibi-smart-error-memory',runId,developerHandoff:items});
+    await fs.writeFile(path.join(neuronDir,'rx-bibi-100.json'),JSON.stringify(makeReport('100',[
+      {id:'old-1',problem:'Błąd czatu',module:'RX CHAT'},
+      {id:'old-2',problem:'Błąd logowania',module:'RX AUTH'}
+    ])));
+    await fs.writeFile(path.join(neuronDir,'rx-bibi-101.json'),JSON.stringify(makeReport('101',[
+      {id:'new-1',problem:'Błąd czatu',module:'RX CHAT'},
+      {id:'new-2',problem:'Błąd powiadomień',module:'RX ALERT'}
+    ])));
+    const response=await fetch(base+'/__rxcloud/bibi/learning',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+    assert.equal(response.status,200);
+    const memory=await response.json();
+    assert.equal(memory.source,'RX_BIBI_INBOX');
+    assert.equal(memory.runId,'101');
+    assert.equal(memory.lessons.length,3,'Two reports must yield three unique incidents');
+    assert.deepEqual(memory.lessons.map(x=>x.observation),['Błąd czatu','Błąd powiadomień','Błąd logowania']);
+    assert(memory.lessons.every(x=>x.verifiedResolution===false),'Incidents are not verified solutions');
+  }finally{
+    if(priorInbox===undefined)delete process.env.RX_BIBI_INBOX_DIR;
+    else process.env.RX_BIBI_INBOX_DIR=priorInbox;
+    await fs.rm(neuronDir,{recursive:true,force:true});
+  }
   assert.equal((await fetch(base+'/__rxcloud/queen/status',{method:'POST'})).status,405);
   // RX BIBI client must be served by our self-hosted RX CLOUD, with its own API route.
   const clientPage=await fetch(base+'/rx-client.html');
