@@ -101,7 +101,7 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         const verified=[];
         const verifiedDir=path.resolve(process.env.RX_NEURON_VERIFIED_DIR||path.join(__dirname,'rx-cloud-private-verified'));
         try{
-          const files=(await fs.readdir(verifiedDir)).filter(n=>/^rx-fix-[a-zA-Z0-9_-]{1,64}\\.json$/.test(n)).sort().slice(0,30);
+          const files=(await fs.readdir(verifiedDir)).filter(n=>/^rx-fix-[a-zA-Z0-9_-]{1,64}\.json$/.test(n)).sort().slice(0,30);
           for(const file of files){
             try{
               const stat=await fs.lstat(path.join(verifiedDir,file));
