@@ -476,7 +476,7 @@ export default {
         if(localKnowledge)return new Response(JSON.stringify({...planned,answer:'📘 '+localKnowledge.title+'\n'+localKnowledge.summary+'\nŹródło: '+localKnowledge.source,knowledge:localKnowledge,engine:'rx-local-knowledge',modelInferenceUsed:false}),{status:200,headers});
 
         // External encyclopedia answers only factual questions outside RX's own operational domain.
-        const factual=/^(co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+/i.test(message.trim());
+        const factual=/^(co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|znajdź informacje(?: o)?|znajdz informacje(?: o)?|wyszukaj informacje(?: o)?|poszukaj informacji(?: o)?)\s+/i.test(message.trim());
         const internal=/\b(rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(message);
         if(factual&&!internal){
           try{
