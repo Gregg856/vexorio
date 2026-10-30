@@ -161,6 +161,8 @@ export function planRXChat(message,history=[],learning=null){
   answer=Number.isFinite(n)?'🧮 Wynik: '+n:'🧮 Nie mogę wykonać tego działania (np. dzielenie przez zero).';
  }
  else if(/^(?:przetlumacz|tlumacz)\s+(?:na\s+)?(?:angielski|niemiecki|polski)\s*:/iu.test(plain))answer='🌍 Nie mam jeszcze silnika tłumaczeń dowolnych zdań. Mogę pomóc z prostymi przykładami, ale nie będę wymyślać tłumaczenia.';
+ else if(/^(?:zapamietaj|przypomnij)\s*:/i.test(plain))answer='🔒 W czacie klienta BIBI nie zapisuję ani nie odczytuję trwałych notatek Królowej RX. Możesz kontynuować rozmowę w tej sesji; funkcje pamięci administratora są dostępne wyłącznie w osobnym, uprawnionym panelu.';
+ else if(/(?:czy mozesz|mozesz|zrob|wykonaj|uruchom|wyslij|pobierz).{0,85}(?:moje haslo|moj login|haslo|sekret|platnosc|przelew|wszystkich klientow|na produkcje|wdrozenie)/i.test(plain))answer='🔒 BIBI nie ma dostępu do haseł, płatności, wysyłki do klientów ani samodzielnych wdrożeń. Mogę jedynie wyjaśnić bezpieczne kolejne kroki. Nie wykonałam żadnej operacji.';
  else if(greet)answer='👑 Cześć! Jestem Królowa RX. Możemy rozmawiać o Mrówkach, Wirniku, chmurze i budowie VEXORIO. Napisz, co chcesz sprawdzić albo zaplanować.';
  else if(thanks)answer='👑 Jasne! Jestem gotowa na kolejne pytanie. Możemy omówić Mrówki, Wirnik lub testy RX.';
  else if(asksName)answer='👑 Jestem Królowa RX — rozmowna część VEXORIO. Mogę odpowiadać na pytania i pomagać planować testy, ale nie udaję niezależnego modelu AI.';
