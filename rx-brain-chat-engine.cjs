@@ -13,7 +13,10 @@ function chatRX(message,{history=[]}={}){
  const plan=planCommand(request,{energyBalance:100});
  const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
  let answer;
- if(continuation&&!topic){
+ const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\\s]*$/i.test(message.trim());
+ if(asksEvidence){
+   answer='Nie mam potwierdzonego wyniku GitHub Actions dla tej rozmowy. Samo słowo „zielone” nie jest dowodem. Podaj link do przebiegu lub sprawdź jego status.';
+ }else if(continuation&&!topic){
    answer='Nie mam wcześniejszego kontekstu tej rozmowy. Napisz, który błąd lub test mam omówić.';
  }else if(continuation&&topic){
    answer='Kontynuuję temat: '+topic.slice(0,180)+'. Mogę zaproponować kroki diagnostyczne, ale nie potwierdzam wyniku testu bez danych z GitHub Actions.';
