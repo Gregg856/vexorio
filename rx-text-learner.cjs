@@ -83,7 +83,7 @@ function createSentenceExperiment({sentences=SAFE_SENTENCES}={}){
  const transitions=new Map();
  const add=(from,to)=>{const next=transitions.get(from)||new Map();next.set(to,(next.get(to)||0)+1);transitions.set(from,next);};
  for(const sentence of sentences){
-  const words=sentence.normalize('NFC').split(/\\s+/u);
+  const words=sentence.normalize('NFC').split(/\s+/u);
   let previous='<START>';
   for(const word of words){add(previous,word);previous=word;}
   add(previous,'<END>');
