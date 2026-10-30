@@ -29,7 +29,7 @@ export function planRXChat(message,history=[],learning=null){
  const recentUserQuestions=history.map((turn,i)=>({turn,i})).filter(x=>x.i%2===0).slice(-5).map(x=>x.turn);
  // Never promote the assistant's own generic reply into a remembered user topic.
  const recentTopic=recentUserQuestions.slice().reverse().find(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())))||'';
- const correction=/^(nie o to (mi )?chodzilo|nie o to chodzi|zle mnie zrozumialas|źle mnie zrozumiałaś)[.!? ]*$/i.test(normalizeRX(message.trim()));
+ const correction=/^(nie o to (mi )?chodzilo|nie o to chodzi|zle mnie zrozumialas|chodzi(?:lo)? mi o (?:inny|cos innego) temat|mialem na mysli cos innego)[.!? ]*$/i.test(normalizeRX(message.trim()));
  const returnTopic=/^(wroc do poprzedniego tematu|wróć do poprzedniego tematu)[.!? ]*$/i.test(message.trim());
  const elaborate=/^(wyjasnij dokladniej|wyjaśnij dokładniej|rozwin temat|rozwiń temat)[.!? ]*$/i.test(message.trim());
  const userTurns=history.filter((_,i)=>i%2===0).filter(x=>x.trim());
@@ -472,7 +472,7 @@ export function planRXChat(message,history=[],learning=null){
  else if(thanks)answer='👑 Jasne! Jestem gotowa na kolejne pytanie. Możemy omówić Mrówki, Wirnik lub testy RX.';
  else if(asksName)answer='👑 Jestem Królowa RX — rozmowna część VEXORIO. Mogę odpowiadać na pytania i pomagać planować testy, ale nie udaję niezależnego modelu AI.';
  else if(asksMemory)answer='🧠 Pamiętam ograniczony kontekst ostatnich wiadomości. W czacie klienta RX BIBI historia może być zachowana w bieżącej sesji przeglądarki, ale nie jest to trwała pamięć ani trening modelu. Polecenia „Zapamiętaj” i „Przypomnij” dotyczą osobnego, uprawnionego panelu RX.';
- else if(correction)answer='👑 Rozumiem, poprzednia odpowiedź nie trafiła w Twoje pytanie. W temacie „'+currentUserTopic.slice(0,140)+'” napisz proszę, co konkretnie mam zmienić lub wyjaśnić. Nie będę zgadywać Twojej intencji.';
+ else if(correction)answer=/chodzi(?:lo)? mi o (?:inny|cos innego) temat|mialem na mysli cos innego/.test(normalizeRX(message.trim()))?'👑 Rozumiem, chodziło Ci o inny temat. Napisz jego nazwę lub pytanie, a zaczniemy od niego bez zgadywania.':'👑 Rozumiem, poprzednia odpowiedź nie trafiła w Twoje pytanie. '+(currentUserTopic?'W temacie „'+currentUserTopic.slice(0,140)+'” ':'')+'napisz proszę, co konkretnie mam zmienić lub wyjaśnić. Nie będę zgadywać Twojej intencji.';
  else if(returnTopic)answer=previousUserTopic?'👑 Wracamy do wcześniejszego tematu: „'+previousUserTopic.slice(0,140)+'”. Co chcesz w nim rozwinąć?':'👑 Nie widzę w ostatniej historii drugiego, wcześniejszego tematu. Napisz, do czego mam wrócić.';
  else if(elaborate)answer='👑 Rozwijamy temat: „'+currentUserTopic.slice(0,140)+'”. Mogę omówić działanie, ograniczenia albo zaproponować konkretny test. Który aspekt Cię interesuje?';
  else if(asksConversation)answer='👑 Jasne, porozmawiajmy! Co dziś najbardziej chcesz ulepszyć w VEXORIO albo co Cię ciekawi?';
