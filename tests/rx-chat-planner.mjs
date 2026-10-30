@@ -800,8 +800,10 @@ console.log('RX BIBI real multi-turn tomato dialogue: PASS');
 
 
 // Multi-turn automated dialogue checks: repetition, topic reset, and answer relevance.
+const dialogueReports=[];
 function runDialogueScenario(name,steps){
  const history=[];
+ const findings=[];
  for(const [index,step] of steps.entries()){
   const result=planRXChat(step.input,history);
   assert.equal(result.ok,true,name+' step '+index+' failed');
@@ -810,8 +812,10 @@ function runDialogueScenario(name,steps){
   if(step.match)assert.match(result.answer,step.match,name+' step '+index+' ignored topic');
   if(step.reject)assert.doesNotMatch(result.answer,step.reject,name+' step '+index+' repeated or ignored detail');
   if(step.newAnswer)assert.notEqual(result.answer,history.at(-1),name+' step '+index+' repeated the last answer');
+  findings.push({turn:index+1,input:step.input,answer:result.answer,passed:true});
   history.push(step.input,result.answer);
  }
+ dialogueReports.push({scenario:name,passed:true,turns:findings});
  console.log('RX BIBI dialogue scenario PASS:',name,'turns:',steps.length);
 }
 runDialogueScenario('garden continuation and tomatoes',[
@@ -827,3 +831,8 @@ runDialogueScenario('topic switch prevents garden leakage',[
  {input:'Chcę porozmawiać o muzyce',match:/muzyce/i,reject:/ogrodzie|warzywnik/i},
  {input:'Dalej',match:/muzyce/i,reject:/ogrodzie|warzywnik/i}
 ]);
+
+// Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
+import fs from 'node:fs';
+fs.mkdirSync('rx-bibi-reports',{recursive:true});
+fs.writeFileSync('rx-bibi-reports/rx-dialogue-tests.json',JSON.stringify({kind:'rx-bibi-dialogue-tests',mode:'LOCAL_PLANNER_NOT_AUTHENTICATED_CHAT',scenarios:dialogueReports},null,2)+'\n');
