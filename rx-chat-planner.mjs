@@ -646,9 +646,12 @@ export function planRXChat(message,history=[],learning=null){
  const nonTopicTurn=/^(?:dalej|kontynuuj|gotowe|ok|super|zielone|blad|błąd|dzieki|dzięki|tak|nie)[.!? ]*$/i;
  const topicTurns=latestSwitch>=0?userTurns.slice(latestSwitch+1):userTurns;
  const lastUserTopic=topicTurns.slice().reverse().find(turn=>turn.trim().length>=8&&!nonTopicTurn.test(turn.trim())&&!topicSwitch.test(normalizeRX(turn.trim())))||'';
- const genericTopicAllowed=latestSwitch<0||userTurns.lastIndexOf(lastUserTopic)>latestSwitch;
- if(genericContinuation&&!activeTopic&&lastUserTopic&&genericTopicAllowed){
-  answer='👑 Kontynuujemy temat: „'+lastUserTopic.slice(0,140)+'”. Napisz, który aspekt mam rozwinąć, żebym nie dopowiadała nieznanych faktów.';
+ // RX BIBI: a short continuation after an explicit topic switch must not revive an old subject.
+ const recentBoundary=latestSwitch>=0?userTurns.slice(latestSwitch+1):userTurns;
+ const continuationSubject=recentBoundary.slice().reverse().find(turn=>turn.trim().length>=8&&!nonTopicTurn.test(turn.trim())&&!topicSwitch.test(normalizeRX(turn.trim())))||'';
+ const genericTopicAllowed=Boolean(continuationSubject)&&(latestSwitch<0||userTurns.lastIndexOf(continuationSubject)>latestSwitch);
+ if(genericContinuation&&!activeTopic&&continuationSubject&&genericTopicAllowed){
+  answer='👑 Kontynuujemy temat: „'+continuationSubject.slice(0,140)+'”. Napisz, który aspekt mam rozwinąć, żebym nie dopowiadała nieznanych faktów.';
   tasks.length=0;plan.work=null;
  }
  // Respond to an ordinary invitation to discuss a topic, without pretending to know facts.
