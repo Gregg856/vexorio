@@ -1,5 +1,6 @@
 'use strict';
 const RULES=Object.freeze([
+ {id:'research_info',topic:'wyszukiwanie informacji',module:'queen',role:'research',kind:'plan_research',target:'rx-world-knowledge.mjs',words:['znajdź informacje','znajdz informacje','wyszukaj informacje','poszukaj informacji'],modules:['queen','brain'],cost:2},
  {id:'inspect_tests',topic:'diagnostyka',module:'queen',role:'tests',kind:'inspect_ci',target:'github-actions',words:['test','błąd','blad','awari','sprawdź','sprawdz'],modules:['queen','ants','ci'],cost:5},
  {id:'plan_cloud_checks',topic:'chmura',module:'cloud',role:'diagnostics',kind:'run_unit_tests',target:'tests/rx-cloud-computer.cjs',words:['chmur','komputer','cloud'],modules:['queen','cloud'],cost:8},
  {id:'classify_task',topic:'model AI',module:'ants',role:'memory',kind:'run_unit_tests',target:'tests/rx-ant-ai-trainer.cjs',words:['model','trening','uczen','uczeń','ai'],modules:['queen','brain','ants'],cost:10},
