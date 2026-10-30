@@ -331,6 +331,24 @@ for(const [question,history,expected] of [
 }
 console.log('RX BIBI 5.0 cross-feature smoke OK');
 
+// RX BIBI 5.1: reusable intent/topic resolution with no actions.
+for(const [question,expected] of [
+ ['Czym jest phishing?','Phishing to oszustwo'],
+ ['Co oznacza spam?','Spam to niechciane'],
+ ['Co to znaczy backup?','Kopia zapasowa to'],
+ ['Pokaż przykład phishingu','Przykład phishingu'],
+ ['Jak unikać phishingu?','Sprawdzaj nadawcę'],
+ ['Jak rozpoznać spam?','Blokuj nadawców spamu']
+]){
+ const result=planRXChat(question,[]);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX reusable intent-topic regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
