@@ -666,7 +666,8 @@ export function planRXChat(message,history=[],learning=null){
  const gardenPlanting=/(co|jakie|ktore|kiedy|gdzie).{0,45}(posadzic|sadzic|wysiac|uprawiac)|(?:chce|chcialbym).{0,30}(posadzic|sadzic)/i.test(plain);
  const gardenCare=/(jak|czym|kiedy).{0,40}(podlewac|nawozic|pielegnowac)|(?:podlewanie|nawozenie)/i.test(plain);
  if(gardenContext&&(latestSwitch<0||userTurns.slice(latestSwitch+1).some(turn=>/ogrod|roslin|kwiat|warzyw|grzadk|trawnik/i.test(normalizeRX(turn))))&&(gardenNext||gardenPlanting||gardenCare)){
-  if(gardenPlanting)answer='👑 Dobór roślin zależy od słońca, rodzaju ziemi i miejsca. Na początek ustalmy: czy chcesz warzywa, kwiaty czy krzewy? I czy miejsce jest słoneczne, czy zacienione? Wtedy podam konkretne propozycje.';
+  if(gardenPlanting&&/pomidor\w*/i.test(plain))answer='👑 Pomidory w małym ogrodzie to dobry kierunek. Zwykle potrzebują dużo słońca, żyznej ziemi i regularnego podlewania. Czy miejsce, w którym chcesz je posadzić, jest słoneczne przez większość dnia?';
+  else if(gardenPlanting)answer='👑 Dobór roślin zależy od słońca, rodzaju ziemi i miejsca. Na początek ustalmy: czy chcesz warzywa, kwiaty czy krzewy? I czy miejsce jest słoneczne, czy zacienione? Wtedy podam konkretne propozycje.';
   else if(gardenCare)answer='👑 Najpierw sprawdź wilgotność ziemi kilka centymetrów pod powierzchnią; nie podlewaj wyłącznie według kalendarza. Powiedz, jakie rośliny masz w ogrodzie i czy rosną w gruncie czy donicach, a dopasujemy pielęgnację.';
   else if(history.slice(-4).some(turn=>/Ile masz miejsca, czy jest tam dużo słońca/i.test(turn)))answer='👑 Możemy zacząć od prostego planu: wybierz miejsce na rośliny, sprawdź ile dociera tam słońca i oceń wilgotność ziemi. Co wolisz zaplanować najpierw — warzywnik czy kwiaty?';
   else answer='👑 Wracamy do rozmowy o moim ogrodzie. Ile masz miejsca, czy jest tam dużo słońca i co chcesz osiągnąć — warzywnik, kwiaty czy miejsce do odpoczynku? Od tego zależy sensowny plan.';
