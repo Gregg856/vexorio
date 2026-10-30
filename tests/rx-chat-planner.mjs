@@ -420,6 +420,24 @@ assert.ok(!afterSwitch55.answer.includes('Aby zrobić kopię zapasową'),afterSw
 assert.equal(afterSwitch55.executed,0);
 console.log('RX multi-topic contextual how-to regression OK');
 
+// RX BIBI 5.6: natural clarification with bounded recent user topic.
+for(const [question,history,expected] of [
+ ['Nie rozumiem tego, możesz wytłumaczyć prościej?',['Co to jest phishing?','Wyjaśnienie.'],'Phishing to oszustwo'],
+ ['Możesz mi to wyjaśnić prościej?',['Co oznacza spam?','Wyjaśnienie.'],'Spam to niechciane'],
+ ['Nie rozumiem tego',['Co oznacza 2FA?','Wyjaśnienie.'],'2FA to dodatkowe'],
+ ['Możesz powiedzieć prościej?',['Co to jest kopia zapasowa?','Wyjaśnienie.'],'Kopia zapasowa to dodatkowy zapis']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+const afterSwitch56=planRXChat('Nie rozumiem tego',['Co oznacza 2FA?','Wyjaśnienie.','Zmieńmy temat','Dobrze.']);
+assert.ok(!afterSwitch56.answer.includes('2FA to dodatkowe'),afterSwitch56.answer);
+console.log('RX natural clarification context regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
