@@ -59,3 +59,11 @@ assert.match(missingTopic.answer,/Nie mam wcześniejszego kontekstu/);
 const recentTopic=chatRX('Sprawdź to',{history:['Błąd faktury','Gotowe','Klawiatura Android zasłania czat','Zielone']});
 assert.match(recentTopic.answer,/Klawiatura Android zasłania czat/);
 console.log('RX BIBI level 4: multi-turn topic retrieval checked');
+
+for(const question of ['Czy testy są zielone?','Jaki wynik testów?','Czy to już naprawione?']){
+ const result=chatRX(question,{history:['Błąd czatu Android','Zielone']});
+ assert.match(result.answer,/Nie mam potwierdzonego wyniku GitHub Actions/,question);
+ assert.equal(result.executed,0,question);
+}
+assert.match(chatRX('Czy testy są zielone?').answer,/Nie mam potwierdzonego wyniku/);
+console.log('RX BIBI level 5: unverified status claims are not treated as evidence');
