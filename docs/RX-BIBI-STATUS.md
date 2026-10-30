@@ -71,3 +71,8 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - PR #315 scalony do main: `ddbe8285`, smoke SUCCESS. Nie powtarzać tego testu.
 - Następna zmiana (PR #316) rozszerza ten sam test o dokładność na każdej kategorii; nie tworzy nowego modelu.
 - Kryterium dla przyszłego generatora: oddzielne przykłady treningowe i niewidziane pytania, ocena czytelności i sensu, nie tylko spadek błędu; dopiero po pozytywnym wyniku rozważyć podłączenie do prywatnego czatu.
+
+## RX Queen — rozmowa, 2026-10-30
+- PR #316 scalony, commit `e318b2a5`, smoke SUCCESS. Nie tworzyć ponownie benchmarków; istnieją `rx-text-evaluation.cjs` i `rx-text-learner.cjs`.
+- Zidentyfikowano istniejący `rx-brain-chat-engine.cjs` jako właściwy silnik odpowiedzi. Nowy PR #317 poprawia tylko obsługę prostych wypowiedzi rozmownych i celów użytkownika w tym samym silniku; testuje zachowanie matematyki i kontekstu.
+- WAŻNE: odpowiedzi w #317 są deterministyczne, NIE pochodzą z treningu modelu generatywnego. Dalszy cel to sensowne generowanie tekstu z niezależną oceną jakości; nie deklarować gotowego LLM.
