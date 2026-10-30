@@ -28,12 +28,21 @@ function saveTasks(file,tasks){
  }
  return tasks.length;
 }
+function normalizeTaskTitle(title){
+ if(typeof title!=='string'||!title.trim()||title.length>160)throw Error('Invalid title');
+ return title.normalize('NFC').toLocaleLowerCase('pl-PL').replace(/\\s+/g,' ').trim();
+}
+function findSimilarTasks(tasks,title){
+ validate(tasks);
+ const normalized=normalizeTaskTitle(title);
+ return tasks.filter(t=>normalizeTaskTitle(t.title)===normalized);
+}
 function proposeStatusChange(tasks,title,status){
  validate(tasks);
  if(typeof title!=='string'||!title.trim()||title.length>160||!['pending','completed'].includes(status))throw Error('Invalid change');
- const matches=tasks.filter(t=>t.title===title);
+ const matches=findSimilarTasks(tasks,title);
  if(matches.length!==1)throw Error('Task must match exactly one entry');
- const index=tasks.findIndex(t=>t.title===title);
+ const index=tasks.findIndex(t=>t===matches[0]);
  if(tasks[index].status===status)throw Error('Task already has requested status');
  if(tasks[index].status==='completed'&&status==='pending')throw Error('Completed task cannot be reopened without separate review');
  return {title,status,previousStatus:tasks[index].status,index};
@@ -49,4 +58,4 @@ function applyApprovedChange(file,proposal,{approved=false}={}){
  saveTasks(file,next);
  return next;
 }
-module.exports={readTasks,saveTasks,proposeStatusChange,applyApprovedChange};
+module.exports={readTasks,saveTasks,proposeStatusChange,applyApprovedChange,normalizeTaskTitle,findSimilarTasks};
