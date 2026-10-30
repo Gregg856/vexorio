@@ -96,7 +96,24 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
             if(lessons.length>=30)break;
           }catch{}
         }
-        const feed={kind:'rx-queen-verified-learning',lessons,source:latestRunId===null?'NO_REPORT':'RX_BIBI_INBOX',...(latestRunId===null?{}:{runId:latestRunId})};
+        // Verified resolutions live in a separate private, manually curated directory.
+        // No incident report or model output may promote itself to a verified fix.
+        const verified=[];
+        const verifiedDir=path.resolve(process.env.RX_NEURON_VERIFIED_DIR||path.join(__dirname,'rx-cloud-private-verified'));
+        try{
+          const files=(await fs.readdir(verifiedDir)).filter(n=>/^rx-fix-[a-zA-Z0-9_-]{1,64}\\.json$/.test(n)).sort().slice(0,30);
+          for(const file of files){
+            try{
+              const stat=await fs.lstat(path.join(verifiedDir,file));
+              if(!stat.isFile()||stat.isSymbolicLink()||stat.size>8192)continue;
+              const item=JSON.parse(await fs.readFile(path.join(verifiedDir,file),'utf8'));
+              if(item.kind!=='rx-neuron-verified-fix'||item.ownerApproved!==true||item.testResult!=='passed'||typeof item.incidentId!=='string'||typeof item.resolution!=='string'||typeof item.testReference!=='string')continue;
+              if(!item.incidentId.trim()||!item.resolution.trim()||!/^https:\\/\\/github\\.com\\/Gregg856\\/vexorio\\/actions\\/runs\\/[0-9]+$/.test(item.testReference))continue;
+              verified.push({incidentId:item.incidentId.slice(0,120),resolution:item.resolution.slice(0,500),testReference:item.testReference,verifiedResolution:true});
+            }catch{}
+          }
+        }catch(e){if(e.code!=='ENOENT')throw e;}
+        const feed={kind:'rx-queen-verified-learning',lessons,verified,source:latestRunId===null?'NO_REPORT':'RX_BIBI_INBOX',...(latestRunId===null?{}:{runId:latestRunId})};
         res.writeHead(200);res.end(JSON.stringify(feed));return;
       }
       // Private local RX BIBI report inbox: explicit token, bounded JSON, no public access.
