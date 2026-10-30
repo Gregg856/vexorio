@@ -74,15 +74,29 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         const dir=path.resolve(process.env.RX_BIBI_INBOX_DIR||path.join(__dirname,'rx-cloud-private-inbox'));
         let names=[];
         try{names=(await fs.readdir(dir)).filter(n=>/^rx-bibi-[0-9]{1,30}\.json$/.test(n)).sort((a,b)=>BigInt(b.match(/[0-9]+/)[0])>BigInt(a.match(/[0-9]+/)[0])?1:-1);}catch(e){if(e.code!=='ENOENT')throw e;}
-        let feed={kind:'rx-queen-verified-learning',lessons:[],source:'NO_REPORT'};
+        // RX NEURON: bounded cross-report incident memory, never invent verified fixes.
+        const lessons=[];
+        const seen=new Set();
+        let latestRunId=null;
         for(const name of names.slice(0,10)){
           try{
             const data=JSON.parse(await fs.readFile(path.join(dir,name),'utf8'));
             if(data.kind!=='rx-bibi-smart-error-memory'||!Array.isArray(data.developerHandoff))continue;
-            feed={kind:'rx-queen-verified-learning',source:'RX_BIBI_INBOX',runId:data.runId,lessons:data.developerHandoff.slice(0,10).filter(x=>x&&typeof x.problem==='string'&&typeof x.id==='string').map(x=>({incidentId:x.id,observation:x.problem.slice(0,240),panelArea:String(x.module||'RX').slice(0,90),verifiedResolution:false}))};
-            break;
+            if(latestRunId===null)latestRunId=data.runId;
+            for(const item of data.developerHandoff.slice(0,10)){
+              if(!item||typeof item.problem!=='string'||typeof item.id!=='string')continue;
+              const observation=item.problem.trim().slice(0,240);
+              const panelArea=String(item.module||'RX').slice(0,90);
+              const key=panelArea.toLowerCase()+'|'+observation.toLowerCase();
+              if(!observation||seen.has(key))continue;
+              seen.add(key);
+              lessons.push({incidentId:item.id.slice(0,120),observation,panelArea,verifiedResolution:false});
+              if(lessons.length>=30)break;
+            }
+            if(lessons.length>=30)break;
           }catch{}
         }
+        const feed={kind:'rx-queen-verified-learning',lessons,source:latestRunId===null?'NO_REPORT':'RX_BIBI_INBOX',...(latestRunId===null?{}:{runId:latestRunId})};
         res.writeHead(200);res.end(JSON.stringify(feed));return;
       }
       // Private local RX BIBI report inbox: explicit token, bounded JSON, no public access.
