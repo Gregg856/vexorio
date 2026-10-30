@@ -887,6 +887,24 @@ runDialogueScenario('customer screenshot: ants then memory',[
 runDialogueScenario('customer screenshot: topic invitation on first turn',[
  {input:'Porozmawiajmy o mrówkach',match:/porozmawiajmy o mrówkach/i,reject:/Co dziś najbardziej chcesz ulepszyć/i}
 ]);
+// Additional inexpensive regression coverage: multiple fresh sessions, case variants and clean topic switches.
+for(const [name,first,subject] of [
+ ['ants lowercase','porozmawiajmy o mrówkach',/mrówkach/i],
+ ['ants uppercase','POROZMAWIAJMY O MRÓWKACH',/mrówkach/i],
+ ['memory lowercase','porozmawiajmy o pamięci',/pamięci/i],
+ ['memory uppercase','POROZMAWIAJMY O PAMIĘCI',/pamięci/i]
+]){
+ runDialogueScenario('topic variants: '+name,[
+  {input:first,match:subject,reject:/Co dziś najbardziej chcesz ulepszyć/i},
+  {input:'Dalej',match:/(?:mrów|pamięc|pamięci|temat)/i,reject:/Co dziś najbardziej chcesz ulepszyć/i}
+ ]);
+}
+runDialogueScenario('rapid topic switching never leaks previous context',[
+ {input:'Porozmawiajmy o mrówkach',match:/mrówkach/i},
+ {input:'Porozmawiajmy o pamięci',match:/pamięci/i,reject:/Kontynuujemy temat:.*mrówkach/i},
+ {input:'Dalej',match:/pamięci/i,reject:/Kontynuujemy temat:.*mrówkach/i},
+ {input:'Porozmawiajmy o mrówkach',match:/mrówkach/i,reject:/Kontynuujemy temat:.*pamięci/i}
+]);
 // Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
 const dialogueIssues=dialogueReports.flatMap(scenario=>scenario.turns.flatMap(turn=>turn.issues.map(issue=>({scenario:scenario.scenario,turn:turn.turn,code:issue.code,detail:issue.detail||null}))));
 
