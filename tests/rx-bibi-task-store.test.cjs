@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {readTasks,saveTasks}=require('../rx-bibi-task-store.cjs');
+const {readTasks,saveTasks,proposeStatusChange,applyApprovedChange}=require('../rx-bibi-task-store.cjs');
 const {chatRX}=require('../rx-brain-chat-engine.cjs');
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rx-bibi-store-'));
 try{
@@ -19,6 +19,15 @@ try{
  assert.equal(response.executed,0);
  assert.throws(()=>saveTasks(file,[{title:'Zadanie',status:'verified'}]),/Invalid tasks/);
  assert.deepEqual(readTasks(file),tasks);
+ const proposal=proposeStatusChange(tasks,'Test panelu','completed');
+ assert.equal(proposal.previousStatus,'pending');
+ assert.throws(()=>applyApprovedChange(file,proposal),/Explicit approval required/);
+ assert.deepEqual(readTasks(file),tasks);
+ const approved=applyApprovedChange(file,proposal,{approved:true});
+ assert.equal(approved[1].status,'completed');
+ assert.equal(readTasks(file)[1].status,'completed');
+ assert.throws(()=>applyApprovedChange(file,proposal,{approved:true}),/Stale proposal/);
+ assert.throws(()=>proposeStatusChange(tasks,'Nie istnieje','completed'),/exactly one/);
  fs.writeFileSync(file,'{broken json');
  assert.throws(()=>readTasks(file),SyntaxError);
  console.log('RX BIBI level 7: persistence, reload, validation and corrupt file tests passed');
