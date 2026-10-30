@@ -156,7 +156,23 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
             }catch{}
           }
         }catch(e){if(e.code!=='ENOENT')throw e;}
-        const feed={kind:'rx-queen-verified-learning',lessons,verified,source:latestRunId===null?'NO_REPORT':'RX_BIBI_INBOX',...(latestRunId===null?{}:{runId:latestRunId})};
+        // Deterministic, read-only matching: exact incident ID first, then shared keywords.
+        // Never present a suggested match as a newly verified repair.
+        const words=s=>new Set(String(s).toLocaleLowerCase('pl').match(/[\\p{L}\\p{N}]{4,}/gu)||[]);
+        const suggestions=[];
+        for(const incident of lessons){
+          const incidentWords=words(incident.observation+' '+incident.panelArea);
+          const candidates=verified.map(fix=>{
+            const exact=fix.incidentId===incident.incidentId;
+            const fixWords=words(fix.resolution);
+            let overlap=0;
+            for(const word of incidentWords)if(fixWords.has(word))overlap++;
+            return {fix,exact,overlap};
+          }).filter(x=>x.exact||x.overlap>=2).sort((a,b)=>Number(b.exact)-Number(a.exact)||b.overlap-a.overlap).slice(0,3);
+          if(candidates.length)suggestions.push({incidentId:incident.incidentId,matches:candidates.map(x=>({resolution:x.fix.resolution,testReference:x.fix.testReference,commitSha:x.fix.commitSha,matchType:x.exact?'same-incident':'keyword-similarity',verifiedResolution:true,automaticApplication:false}))});
+          if(suggestions.length>=20)break;
+        }
+        const feed={kind:'rx-queen-verified-learning',lessons,verified,suggestions,source:latestRunId===null?'NO_REPORT':'RX_BIBI_INBOX',...(latestRunId===null?{}:{runId:latestRunId})};
         res.writeHead(200);res.end(JSON.stringify(feed));return;
       }
       // Private local RX BIBI report inbox: explicit token, bounded JSON, no public access.
