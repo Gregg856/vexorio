@@ -120,7 +120,7 @@ export default {
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
       // RX client must not present a private RX CLOUD memory request as a task that was accepted.
       // Private verified learning is intentionally restricted to authenticated administrators.
-      const normalizedIntent=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\\p{M}/gu,'').replace(/ł/g,'l');
+      const normalizedIntent=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
       if(/(?:pamiec|rx cloud|potwierdzone naprawy|historia napraw)/.test(normalizedIntent)&&/(?:pokaz|odczytaj|sprawdz|wyswietl|jakie|co jest|dostep)/.test(normalizedIntent)){
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
