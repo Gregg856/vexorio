@@ -118,6 +118,21 @@ export default {
       if(typeof message!=='string'||!message.trim()||message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
       const history=payload?.history??[];
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
+      // Public, read-only CI status. Fixed repository and endpoint; no user-provided URLs or tokens.
+      if(/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:ostatnie )?(?:testy github|wyniki testów github|wyniki testow github|status github actions)[?!.\s]*$/i.test(message.trim())){
+        try{
+          const ciResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs?per_page=30',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-BIBI-readonly-status'},signal:AbortSignal.timeout(6000)});
+          if(!ciResponse.ok)throw Error('github_unavailable');
+          const ciData=await ciResponse.json();
+          const runs=Array.isArray(ciData.workflow_runs)?ciData.workflow_runs.filter(run=>['VEXORIO checks','RX client security','Deploy VEXORIO'].includes(run.name)):[];
+          const latest=[...new Set(runs.map(run=>run.name))].map(name=>runs.find(run=>run.name===name)).filter(Boolean);
+          if(!latest.length)throw Error('no_runs');
+          const summary=latest.map(run=>run.name+': '+(run.status==='completed'?(run.conclusion||'nieznany wynik'):'w toku')+' (commit '+String(run.head_sha||'').slice(0,8)+')').join('; ');
+          return new Response(JSON.stringify({ok:true,answer:'Ostatnie odczytane wyniki GitHub Actions: '+summary+'. To odczyt publicznego API, nie uruchomiłam żadnych testów.',engine:'rx-bibi-readonly-github-status',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }catch{
+          return new Response(JSON.stringify({ok:true,answer:'Nie mogę teraz potwierdzić wyników GitHub Actions. Sprawdź status ponownie później; nie będę zgadywać.',engine:'rx-bibi-readonly-github-status',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }
+      }
       // Client requests use only the shared deterministic planner; no GitHub dispatch,
       // administrator commands, persistent memory writes, or privileged RX tools.
       const planned=planRXChat(message,history,null);
