@@ -3,15 +3,15 @@ export function answerRXTaskQuery(message,tasks){
  if(typeof message!=='string'||message.length>2000||!Array.isArray(tasks)||tasks.length>50)return null;
  if(tasks.some(t=>!t||typeof t.title!=='string'||!t.title.trim()||t.title.length>160||!['pending','completed'].includes(t.status)))return null;
  const text=message.trim();
- const pending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\\s]*$/i.test(text);
- const completed=/^(?:co (?:już|juz) (?:zrobione|ukończone)|pokaż (?:ukończone|ukonczone|zakończone) zadania|co (?:jest )?gotowe)[?!.\\s]*$/i.test(text);
+ const pending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\s]*$/i.test(text);
+ const completed=/^(?:co (?:już|juz) (?:zrobione|ukończone)|pokaż (?:ukończone|ukonczone|zakończone) zadania|co (?:jest )?gotowe)[?!.\s]*$/i.test(text);
  const status=/^(?:jaki status zadania|sprawdź status zadania|sprawdz status zadania):?\s+(.+)$/i.exec(text);
  const normalize=s=>s.normalize('NFC').toLocaleLowerCase('pl-PL').replace(/\s+/g,' ').trim();
- const duplicateQuery=/^(?:czy (?:mam |są |sa )?(?:duplikaty|podobne zadania)|pokaż (?:duplikaty|podobne zadania)|sprawdź (?:duplikaty|podobne zadania)|sprawdz (?:duplikaty|podobne zadania))[?!.\\s]*$/i.test(text);
+ const duplicateQuery=/^(?:czy (?:mam |są |sa )?(?:duplikaty|podobne zadania)|pokaż (?:duplikaty|podobne zadania)|sprawdź (?:duplikaty|podobne zadania)|sprawdz (?:duplikaty|podobne zadania))[?!.\s]*$/i.test(text);
  if(duplicateQuery){
   const groups=new Map();
   for(const task of tasks){
-   const key=normalize(task.title).replace(/^(?:po|na)praw(?:ić|ic|a|a)?\\s+/,'naprawić ').replace(/\\bbibi\\b/g,'bibi');
+   const key=normalize(task.title).replace(/^(?:paprawić|poprawić|naprawić)\s+/,'naprawić ').replace(/\bbibi\b/g,'bibi');
    if(!groups.has(key))groups.set(key,[]);
    groups.get(key).push(task);
   }
