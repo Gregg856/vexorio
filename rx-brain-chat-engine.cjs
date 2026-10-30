@@ -7,6 +7,23 @@ function chatRX(message,{history=[]}={}){
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const request=contextual&&previous?previous+' '+message:message;
  const plan=planCommand(request,{energyBalance:100});
- return {answer:plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.',plan,contextUsed:contextual&&!!previous,executed:0};
+ const phrase=request.toLocaleLowerCase('pl-PL');
+ let answer;
+ if(/\\b(usuń|usun|skasuj|wyczyść|wyczysc|zresetuj)\\b/.test(phrase)&&/produkcyj|produkcj|wszystkie dane|bazę danych|baze danych/.test(phrase)){
+   answer='Nie wykonam usunięcia danych produkcyjnych bez wyraźnego potwierdzenia, autoryzacji i bezpiecznej kopii zapasowej.';
+ }else if(/(24 godziny|24\\/7|całą dobę|cala dobe|bez przerwy)/.test(phrase)&&/(rx|działa|dziala|pracuje|status)/.test(phrase)){
+   answer='Nie mogę potwierdzić działania RX 24/7 bez bieżących danych uptime i monitoringu. Sprawdź rzeczywisty status usługi.';
+ }else if(/(faktur|płatno|platno|rachunk)/.test(phrase)){
+   answer='Zgłoszenie dotyczące faktury lub płatności. Podaj szczegóły błędu i kroki odtworzenia; nie zakładam, że naprawa czatu rozwiąże ten problem.';
+ }else if(/(klawiatur|android|zasłania|zaslania)/.test(phrase)&&/(czat|ekran|wiadomoś|wiadomos)/.test(phrase)){
+   answer='Zgłoszenie błędu czatu na Androidzie: klawiatura może zasłaniać ekran. Podaj kroki odtworzenia i wersję urządzenia; naprawę trzeba potwierdzić testami.';
+ }else if(/(sprawdzone napraw|potwierdzone napraw|naprawy czatu|pamięć napraw|pamiec napraw)/.test(phrase)){
+   answer='Pokażę tylko zatwierdzone naprawy z potwierdzonym testem GitHub i commitem. Bez dostępu do zweryfikowanego rejestru nie potwierdzę konkretnej naprawy.';
+ }else if(/^(cześć|czesc|hej|witaj|dzień dobry|dzien dobry)([ !?.]|$)/.test(phrase)){
+   answer='Cześć! Jestem RX BIBI. Mogę pomóc opisać błąd, zaplanować testy i sprawdzić zadania.';
+ }else{
+   answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
+ }
+ return {answer,plan,contextUsed:contextual&&!!previous,executed:0};
 }
 module.exports={chatRX};
