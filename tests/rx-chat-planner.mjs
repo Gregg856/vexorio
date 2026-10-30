@@ -839,6 +839,25 @@ runDialogueScenario('topic switch prevents garden leakage',[
  {input:'Dalej',match:/muzyce/i,reject:/ogrodzie|warzywnik/i}
 ]);
 
+runDialogueScenario('music dialogue and clean topic reset',[
+ {input:'Chcę porozmawiać o muzyce',match:/muzyce/i},
+ {input:'Dalej',match:/muzyce/i},
+ {input:'Zmieńmy temat',reject:/Kontynuujemy temat:.*muzyce/i},
+ {input:'Chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i,reject:/muzyce/i},
+ {input:'Dalej',match:/ogrodzie|słońca/i,reject:/muzyce/i}
+]);
+runDialogueScenario('garden watering and context',[
+ {input:'Chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
+ {input:'Jak podlewać?',match:/wilgotność ziemi/i},
+ {input:'Mam mały ogród',match:/małym ogrodzie|ogrodzie/i,reject:/muzyce/i}
+]);
+runDialogueScenario('technical discussion stays read-only',[
+ {input:'Opowiedz o RX Neural Core',match:/RX Neural Core/i},
+ {input:'A jak działa?',match:/RX Neural Core/i},
+ {input:'Zmieńmy temat',reject:/Kontynuujemy temat:.*Neural Core/i},
+ {input:'Co robi RX Math Core?',match:/RX Math Core/i}
+]);
+
 // Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
 const dialogueIssues=dialogueReports.flatMap(scenario=>scenario.turns.flatMap(turn=>turn.issues.map(issue=>({scenario:scenario.scenario,turn:turn.turn,code:issue.code,detail:issue.detail||null}))));
 
