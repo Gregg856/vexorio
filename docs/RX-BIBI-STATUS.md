@@ -92,3 +92,12 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - Sprawdzono istniejące `rx-million-hearts.js`, `rx-ant-hibernation.cjs`, `rx-dna-core.js` i generator `rx-text-learner.cjs`; PR #320 zamknięty bez merge po wykryciu duplikacji DNA.
 - Dodano `pulse()` jako jawny impuls do istniejącej ograniczonej kolejki. 1 impuls uruchamia 1 handler; bez pollingu, bez miliona procesów, bez produkcji. Test obejmuje bezczynność przed/po sygnale i 1 mln wirtualnych ID, NIE 1 mln operacji/minutę.
 - Pisanie na poziomie ChatGPT NIE jest osiągnięte; dotychczasowy eksperyment tekstowy ma tylko 8 zdań i niską różnorodność. Potrzebny osobny etap realnego treningu i oceny na niewidzianych tekstach.
+
+
+## PRIORYTET I PUNKT KONTYNUACJI — 2026-10-30 (NIE POWTARZAĆ)
+- Właściciel potwierdza: Królowa RX i BIBI są JUŻ połączone; istnieją Tester RX BIBI LIVE/Browser, Manager, moduły CLOUD, NEURON i Developer. Nie projektować ich ponownie na podstawie braku informacji w pojedynczym pliku.
+- GŁÓWNY CZAT KLIENTA: `rx-client.html` -> `POST /api/rx/client/chat` w `worker.js`; istnieją `tests/rx-client-chat.cjs` i `tests/rx-chat-worker-e2e.cjs`. `rx-bibi-manager.html` to osobny panel administracyjny, NIE zamiennik czatu klienta.
+- PR #336 (82 przykłady) ZAMKNIĘTY BEZ MERGE: testy CI zielone, ale skuteczność spadła z 34/56 do 30/56. Zachować wariant 64 przykładów; nie dodawać kolejnych fal danych bez planu pomiaru.
+- CEL UŻYTKOWNIKA: już teraz pisać swobodnie z Królową, mieć pamięć i ciągłość rozmowy. Najpierw sprawdzić rzeczywiste odpowiedzi i trasę istniejącego `rx-client.html` / Worker oraz istniejące narzędzia testujące, następnie naprawić konkretną lukę. Nie budować nowego czatu, panelu, adaptera, testera, kont ani stron.
+- Nie mylić zielonych testów statycznych z potwierdzonym testem przeglądarkowym LIVE. Gdy nie ma narzędzia do uruchomienia testu LIVE, jasno powiedzieć i nie udawać wykonania.
+- OSZCZĘDZAĆ LIMITY: przed pracą przeczytać ten punkt i istniejący kod; jeden rzeczywisty problem -> jedna poprawka -> test -> wynik. Bez wielokrotnego raportowania i powtarzania gotowych prac. Produkcja VEXORIO bez zmian bez zatwierdzenia.
