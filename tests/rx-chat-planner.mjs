@@ -799,24 +799,31 @@ assert.equal(tomatoReply.executed,0);
 console.log('RX BIBI real multi-turn tomato dialogue: PASS');
 
 
-// Multi-turn automated dialogue checks: repetition, topic reset, and answer relevance.
+// Multi-turn automated dialogue checks with classified, machine-readable failures.
 const dialogueReports=[];
 function runDialogueScenario(name,steps){
  const history=[];
  const findings=[];
+ let passed=true;
  for(const [index,step] of steps.entries()){
-  const result=planRXChat(step.input,history);
-  assert.equal(result.ok,true,name+' step '+index+' failed');
-  assert.equal(result.executed,0,name+' step '+index+' unexpectedly executed a task');
-  assert.ok(result.answer?.trim(),name+' step '+index+' has empty answer');
-  if(step.match)assert.match(result.answer,step.match,name+' step '+index+' ignored topic');
-  if(step.reject)assert.doesNotMatch(result.answer,step.reject,name+' step '+index+' repeated or ignored detail');
-  if(step.newAnswer)assert.notEqual(result.answer,history.at(-1),name+' step '+index+' repeated the last answer');
-  findings.push({turn:index+1,input:step.input,answer:result.answer,passed:true});
-  history.push(step.input,result.answer);
+  let result;
+  const issues=[];
+  try{result=planRXChat(step.input,history);}
+  catch(error){issues.push({code:'PLANNER_EXCEPTION',detail:String(error?.message||error)});}
+  if(result){
+   if(result.ok!==true)issues.push({code:'PLANNER_NOT_OK'});
+   if(result.executed!==0)issues.push({code:'UNEXPECTED_EXECUTION'});
+   if(!result.answer?.trim())issues.push({code:'EMPTY_ANSWER'});
+   if(step.match&&!step.match.test(result.answer||''))issues.push({code:'TOPIC_MISMATCH'});
+   if(step.reject&&step.reject.test(result.answer||''))issues.push({code:'FORBIDDEN_RESPONSE'});
+   if(step.newAnswer&&result.answer===history.at(-1))issues.push({code:'REPEATED_ANSWER'});
+  }
+  if(issues.length)passed=false;
+  findings.push({turn:index+1,input:step.input,answer:result?.answer||null,passed:issues.length===0,issues});
+  history.push(step.input,result?.answer||'');
  }
- dialogueReports.push({scenario:name,passed:true,turns:findings});
- console.log('RX BIBI dialogue scenario PASS:',name,'turns:',steps.length);
+ dialogueReports.push({scenario:name,passed,turns:findings});
+ console.log('RX BIBI dialogue scenario',passed?'PASS':'FAIL',name,'turns:',steps.length);
 }
 runDialogueScenario('garden continuation and tomatoes',[
  {input:'Cześć BIBI, chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
@@ -833,6 +840,13 @@ runDialogueScenario('topic switch prevents garden leakage',[
 ]);
 
 // Save machine-readable dialogue evidence for the existing CI artifacts and failure triage.
+const dialogueIssues=dialogueReports.flatMap(scenario=>scenario.turns.flatMap(turn=>turn.issues.map(issue=>({scenario:scenario.scenario,turn:turn.turn,code:issue.code,detail:issue.detail||null}))));
+
 import fs from 'node:fs';
 fs.mkdirSync('rx-bibi-reports',{recursive:true});
-fs.writeFileSync('rx-bibi-reports/rx-dialogue-tests.json',JSON.stringify({kind:'rx-bibi-dialogue-tests',mode:'LOCAL_PLANNER_NOT_AUTHENTICATED_CHAT',scenarios:dialogueReports},null,2)+'\n');
+fs.writeFileSync('rx-bibi-reports/rx-dialogue-tests.json',JSON.stringify({kind:'rx-bibi-dialogue-tests',mode:'LOCAL_PLANNER_NOT_AUTHENTICATED_CHAT',scenarios:dialogueReports,summary:{scenarios:dialogueReports.length,failedScenarios:dialogueReports.filter(s=>!s.passed).length,issues:dialogueIssues}},null,2)+'\n');
+
+if(dialogueIssues.length){
+ console.error('RX BIBI classified dialogue failures:',JSON.stringify(dialogueIssues));
+ process.exitCode=1;
+}
