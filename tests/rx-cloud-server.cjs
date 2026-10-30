@@ -79,9 +79,12 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   // Verified fixes are isolated from raw incidents and require explicit approval + test evidence.
   const verifiedDir=await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-verified-test-'));
   const previousVerifiedDir=process.env.RX_NEURON_VERIFIED_DIR;
+  const previousEvidenceDir=process.env.RX_NEURON_EVIDENCE_DIR;
+  process.env.RX_NEURON_EVIDENCE_DIR=verifiedDir;
   process.env.RX_NEURON_VERIFIED_DIR=verifiedDir;
   try{
     const testReference='https://github.com/Gregg856/vexorio/actions/runs/41040503573';
+    await fs.writeFile(path.join(verifiedDir,'rx-run-41040503573.json'),JSON.stringify({kind:'rx-github-actions-evidence',runId:'41040503573',repository:'Gregg856/vexorio',status:'completed',conclusion:'success',source:'github-api'}));
     const approved={kind:'rx-neuron-verified-fix',ownerApproved:true,testResult:'passed',incidentId:'incident-1',resolution:'Naprawa sprawdzona testem',testReference};
     await fs.writeFile(path.join(verifiedDir,'rx-fix-approved.json'),JSON.stringify(approved));
     await fs.writeFile(path.join(verifiedDir,'rx-fix-unapproved.json'),JSON.stringify({...approved,incidentId:'incident-2',ownerApproved:false}));
@@ -96,6 +99,8 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
     assert.equal(memory.verified[0].incidentId,'incident-1');
     assert.equal(memory.verified[0].verifiedResolution,true);
   }finally{
+    if(previousEvidenceDir===undefined)delete process.env.RX_NEURON_EVIDENCE_DIR;
+    else process.env.RX_NEURON_EVIDENCE_DIR=previousEvidenceDir;
     if(previousVerifiedDir===undefined)delete process.env.RX_NEURON_VERIFIED_DIR;
     else process.env.RX_NEURON_VERIFIED_DIR=previousVerifiedDir;
     await fs.rm(verifiedDir,{recursive:true,force:true});
