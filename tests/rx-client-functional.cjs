@@ -155,5 +155,38 @@ const {pathToFileURL}=require('node:url');
    console.log('RX BIBI authenticated read-only individual run lookup passed');
 
 
+   // Admin learning bridge: never query private cloud before verified admin authorization.
+   const learningPath='/api/rx/admin/learning';
+   const getLearning=(headers={})=>worker.fetch(new Request(origin+learningPath,{headers:{Origin:origin,Authorization:'Bearer valid-user',...headers}}),env);
+   assert.equal((await getLearning({Authorization:'Bearer invalid'})).status,401);
+   assert.equal((await getLearning({Origin:'https://evil.example'})).status,403);
+   assert.equal((await worker.fetch(new Request(origin+learningPath,{method:'POST',headers:{Origin:origin}}),env)).status,405);
+   const beforeAdmin=requests.length;
+   global.fetch=async(url,options={})=>{
+     requests.push({url:String(url)});
+     if(String(url)==='https://example.supabase.co/auth/v1/user')return Response.json({id:'admin-user',is_anonymous:false});
+     if(String(url)==='https://example.supabase.co/rest/v1/rpc/is_vexorio_admin')return Response.json(false);
+     throw Error('Private cloud must not be contacted before admin authorization');
+   };
+   assert.equal((await getLearning()).status,403);
+   assert.equal(requests.length,beforeAdmin+2);
+   global.fetch=async(url,options={})=>{
+     if(String(url)==='https://example.supabase.co/auth/v1/user')return Response.json({id:'admin-user',is_anonymous:false});
+     if(String(url)==='https://example.supabase.co/rest/v1/rpc/is_vexorio_admin')return Response.json(true);
+     if(String(url)==='https://cloud.example.org/__rxcloud/bibi/learning'){
+       assert.equal(options.headers.Authorization,'Bearer '+env.RX_QUEEN_LOCAL_TOKEN);
+       return Response.json({kind:'rx-queen-verified-learning',lessons:[{observation:'example',verifiedResolution:false}],verified:[],suggestions:[]});
+     }
+     throw Error('Unexpected request: '+url);
+   };
+   env.RX_QUEEN_LOCAL_TOKEN='a'.repeat(40);
+   env.RX_CLOUD_LEARNING_URL='https://cloud.example.org/__rxcloud/bibi/learning';
+   const bridge=await getLearning();
+   assert.equal(bridge.status,200);
+   const bridgeData=await bridge.json();
+   assert.equal(bridgeData.ok,true);
+   assert.equal(bridgeData.lessons[0].verifiedResolution,false);
+   assert(!JSON.stringify(bridgeData).includes(env.RX_QUEEN_LOCAL_TOKEN));
+   console.log('RX BIBI admin-only learning bridge passed');
  }finally{global.fetch=oldFetch;}
 })().catch(error=>{console.error(error);process.exitCode=1;});
