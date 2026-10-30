@@ -367,6 +367,14 @@ jobs:
         run: node tests/rx-visual-audit.cjs
       - name: RX BIBI — automatyczne rozmowy bez logowania (silnik lokalny)
         run: node tests/rx-chat-planner.mjs
+      - name: RX BIBI — zachowaj raport rozmów
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-bibi-dialogue-report
+          path: rx-bibi-reports/rx-dialogue-tests.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: RX BIBI — prawdziwe logowanie konta testowego administratora (opcjonalne)
         if: ${{ !cancelled() }}
         env:
