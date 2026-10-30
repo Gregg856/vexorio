@@ -21,8 +21,13 @@ function ask(port,message){
  let server;
  try{
   saveTasks(taskFile,[{title:'Naprawa panelu RX',status:'completed'},{title:'Test czatu',status:'pending'}]);
-  server=await start({taskFile});
+  server=await start({taskFile,knowledgeLookup:async()=>({summary:'Ryż to zboże.',url:'https://pl.wikipedia.org/wiki/Ry%C5%BC'})});
   const port=server.address().port;
+  const knowledge=await ask(port,'Co to jest ryż?');
+  assert.equal(knowledge.status,200);
+  assert.match(knowledge.reply,/Ryż to zboże/);
+  assert.match(knowledge.reply,/Źródło:/);
+  assert.equal(knowledge.executed,0);
   const first=await ask(port,'Co już zrobione?');
   assert.equal(first.status,200);
   assert.match(first.reply,/Naprawa panelu RX/);
