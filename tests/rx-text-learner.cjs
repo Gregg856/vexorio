@@ -72,3 +72,10 @@ assert.ok(knownTopic.text.length>0);
 assert.equal(knownTopic.productionConnected,false);
 assert.throws(()=>experiment.generateRelevant({prompt:''}),/Invalid topic prompt/);
 console.log('RX TOPIC GATE:',JSON.stringify({unknown:unknownTopic.reason,known:knownTopic.matched}));
+
+const variants=[0,1,2,3].map(variant=>experiment.generate({variant}).text);
+assert.ok(new Set(variants).size>=3,'Different variants should produce distinct starts');
+assert.deepEqual(experiment.generate({variant:2}),experiment.generate({variant:2}),'Variant must be deterministic');
+assert.throws(()=>experiment.generate({variant:-1}),/Invalid generation/);
+assert.equal(experiment.generate({seed:'Witaj',variant:3}).text.startsWith('Witaj,'),true);
+console.log('RX GENERATION VARIANTS:',new Set(variants).size);

@@ -88,17 +88,19 @@ function createSentenceExperiment({sentences=SAFE_SENTENCES}={}){
   for(const word of words){add(previous,word);previous=word;}
   add(previous,'<END>');
  }
- function generate({seed='',maxWords=18}={}){
-  if(typeof seed!=='string'||seed.length>80||!Number.isSafeInteger(maxWords)||maxWords<1||maxWords>40)throw Error('Invalid generation request');
+ function generate({seed='',maxWords=18,variant=0}={}){
+  if(typeof seed!=='string'||seed.length>80||!Number.isSafeInteger(maxWords)||maxWords<1||maxWords>40||!Number.isSafeInteger(variant)||variant<0||variant>1000)throw Error('Invalid generation request');
   const starts=transitions.get('<START>');
   const matching=[...starts.keys()].filter(w=>w.toLocaleLowerCase('pl').startsWith(seed.toLocaleLowerCase('pl')));
-  const first=matching[0]||[...starts.keys()][0];
+  const candidates=matching.length?matching:[...starts.keys()];
+  const first=candidates[variant%candidates.length];
   let word=first;const output=[];
   for(let i=0;i<maxWords&&word!=='<END>';i++){
    output.push(word);
    const options=transitions.get(word);
    if(!options)break;
-   word=[...options].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pl'))[0][0];
+   const ranked=[...options].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pl'));
+   word=ranked[variant%ranked.length][0];
   }
   return {text:output.join(' '),kind:'rx-experimental-word-continuation',trainedSentences:sentences.length,productionConnected:false};
  }
@@ -125,14 +127,14 @@ function createSentenceExperiment({sentences=SAFE_SENTENCES}={}){
 function evaluateSentenceExperiment(model,{sentences=SAFE_SENTENCES}={}){
  if(!model||typeof model.generate!=='function'||!Array.isArray(sentences)||!sentences.length||
     sentences.some(s=>typeof s!=='string'||!s.trim()))throw Error('Invalid sentence evaluation');
- const normalize=s=>s.normalize('NFC').trim().replace(/\\s+/gu,' ');
+ const normalize=s=>s.normalize('NFC').trim().replace(/\s+/gu,' ');
  const corpus=new Set(sentences.map(normalize));
- const prompts=[...new Set(sentences.map(s=>s.trim().split(/\\s+/u)[0]))];
+ const prompts=[...new Set(sentences.map(s=>s.trim().split(/\s+/u)[0]))];
  const cases=prompts.map(seed=>{
   const output=model.generate({seed,maxWords:40});
   if(!output||typeof output.text!=='string')throw Error('Invalid generated text');
   const text=normalize(output.text);
-  return {seed,text,wordCount:text?text.split(/\\s+/u).length:0,exactTrainingCopy:corpus.has(text),
+  return {seed,text,wordCount:text?text.split(/\s+/u).length:0,exactTrainingCopy:corpus.has(text),
    endsWithPunctuation:/[.!?]$/u.test(text)};
  });
  const count=cases.length;
