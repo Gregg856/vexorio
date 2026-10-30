@@ -95,6 +95,17 @@ const {pathToFileURL}=require('node:url');
      assert.equal(reply.executed,0);
      assert.equal(reply.adminToolsAvailable,false);
    }
+   // Read-only task snapshots from the signed-in user's browser.
+   for(const [question,expected] of [['Co zostało do zrobienia?','Naprawa czatu'],['Co już zrobione?','Test logowania']]){
+     const response=await call('/api/rx/client/chat',{body:JSON.stringify({message:question,history:[],tasks:[{title:'Naprawa czatu',status:'pending'},{title:'Test logowania',status:'completed'}]})});
+     assert.equal(response.status,200);
+     const reply=await response.json();
+     assert.ok(reply.answer.includes(expected),reply.answer);
+     assert.equal(reply.executed,0);
+   }
+   const invalidTasks=await call('/api/rx/client/chat',{body:JSON.stringify({message:'Co zostało do zrobienia?',tasks:[{title:'Zadanie',status:'admin'}]})});
+   assert.equal(invalidTasks.status,400);
+   console.log('RX BIBI local task snapshot regression passed');
    console.log('RX BIBI Android screenshots regression passed');
    console.log('RX BIBI 6.5 public identity regression passed');
 
