@@ -109,6 +109,17 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
               const item=JSON.parse(await fs.readFile(path.join(verifiedDir,file),'utf8'));
               if(item.kind!=='rx-neuron-verified-fix'||item.ownerApproved!==true||item.testResult!=='passed'||typeof item.incidentId!=='string'||typeof item.resolution!=='string'||typeof item.testReference!=='string')continue;
               if(!item.incidentId.trim()||!item.resolution.trim()||!item.testReference.startsWith('https://github.com/Gregg856/vexorio/actions/runs/')||!/^\d+$/.test(item.testReference.slice('https://github.com/Gregg856/vexorio/actions/runs/'.length)))continue;
+              // Fail closed: do not trust a self-declared passed test without independent GitHub evidence.
+              const runId=item.testReference.slice('https://github.com/Gregg856/vexorio/actions/runs/'.length);
+              const evidenceDir=path.resolve(process.env.RX_NEURON_EVIDENCE_DIR||path.join(__dirname,'rx-cloud-private-evidence'));
+              let evidence;
+              try{
+                const evidenceFile=path.join(evidenceDir,'rx-run-'+runId+'.json');
+                const stat=await fs.lstat(evidenceFile);
+                if(!stat.isFile()||stat.isSymbolicLink()||stat.size>4096)continue;
+                evidence=JSON.parse(await fs.readFile(evidenceFile,'utf8'));
+              }catch{continue;}
+              if(evidence?.kind!=='rx-github-actions-evidence'||evidence.runId!==runId||evidence.repository!=='Gregg856/vexorio'||evidence.status!=='completed'||evidence.conclusion!=='success'||evidence.source!=='github-api')continue;
               verified.push({incidentId:item.incidentId.slice(0,120),resolution:item.resolution.slice(0,500),testReference:item.testReference,verifiedResolution:true});
             }catch{}
           }
