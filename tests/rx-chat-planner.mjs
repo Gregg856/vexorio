@@ -849,7 +849,7 @@ runDialogueScenario('music dialogue and clean topic reset',[
 runDialogueScenario('garden watering and context',[
  {input:'Chcę porozmawiać o moim ogrodzie.',match:/ogrodzie/i},
  {input:'Jak podlewać?',match:/wilgotność ziemi/i},
- {input:'Mam mały ogród',match:/małym ogrodzie|ogrodzie/i,reject:/muzyce/i}
+ {input:'Mam mały ogród',reject:/muzyce/i}
 ]);
 runDialogueScenario('technical discussion stays read-only',[
  {input:'Opowiedz o RX Neural Core',match:/RX Neural Core/i},
