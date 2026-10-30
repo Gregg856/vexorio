@@ -438,6 +438,24 @@ const afterSwitch56=planRXChat('Nie rozumiem tego',['Co oznacza 2FA?','Wyjaśnie
 assert.ok(!afterSwitch56.answer.includes('2FA to dodatkowe'),afterSwitch56.answer);
 console.log('RX natural clarification context regression OK');
 
+// RX BIBI 5.7: additional contextual examples and reasons.
+for(const [question,history,expected] of [
+ ['Podaj przykład',['Czym jest 2FA?','Wyjaśnienie.'],'Przykład 2FA'],
+ ['A dlaczego?',['Czym jest menedżer haseł?','Wyjaśnienie.'],'Menedżer haseł pomaga'],
+ ['Daj przykład',['Co oznacza update?','Wyjaśnienie.'],'aktualizacja telefonu'],
+ ['Podaj przykład',['Czym jest 2FA?','Wyjaśnienie.','Czym jest password manager?','Wyjaśnienie.'],'menedżer tworzy osobne hasło']
+]){
+ const result=planRXChat(question,history);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+const afterSwitch57=planRXChat('Podaj przykład',['Czym jest 2FA?','Wyjaśnienie.','Zmieńmy temat','Dobrze.']);
+assert.ok(!afterSwitch57.answer.includes('Przykład 2FA'),afterSwitch57.answer);
+console.log('RX expanded context examples regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
