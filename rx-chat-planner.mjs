@@ -659,7 +659,7 @@ export function planRXChat(message,history=[],learning=null){
  const ordinaryConversation=/^(?:(?:cześć|czesc|hej|witaj|dzień dobry|dzien dobry)(?:\s+bibi)?[,! ]+)?(?:chc[eę]|chcialbym|chciałbym|mozemy|możemy|porozmawiajmy|pogadajmy)\s+(?:(?:porozmawia[cć]|pogada[cć])\s+)?o\s+(.{3,140})[.!? ]*$/i.exec(message.trim());
  if(ordinaryConversation){
   const subject=ordinaryConversation[1].replace(/[.!? ]+$/g,'');
-  if(/mrowk|mrówk/i.test(normalizeRX(subject))&&/moc|wydajn|przyspiesz|zwieksz|zwiększ|ulepsz/i.test(normalizeRX(subject))){
+  if(/mrow(?:e)?k|mrów(?:e)?k/i.test(normalizeRX(subject))&&/moc|wydajn|przyspiesz|zwieksz|zwiększ|ulepsz/i.test(normalizeRX(subject))){
    answer='👑 Aby zwiększyć moc mrówek RX, proponuję trzy kroki: 1) mierzyć czas każdego zadania i znaleźć najwolniejsze etapy; 2) uruchamiać niezależne zadania równolegle z limitem obciążenia; 3) zapisywać wyniki i automatycznie powtarzać tylko nieudane testy. Najpierw porównajmy czas i skuteczność obecnych testów. To plan, nie wykonana zmiana.';
   }else answer='👑 Jasne, porozmawiajmy o '+subject+'. Co najbardziej Cię w tym temacie interesuje?';
   tasks.length=0;plan.work=null;
@@ -696,7 +696,7 @@ export function planRXChat(message,history=[],learning=null){
  const directTopicInvitation=/^(?:porozmawiajmy|pogadajmy)\s+o\s+(.{3,140})[.!? ]*$/i.exec(message.trim());
  if(directTopicInvitation){
   const subject=directTopicInvitation[1].replace(/[.!? ]+$/g,'');
-  if(/mrowk|mrówk/i.test(normalizeRX(subject))&&/moc|wydajn|przyspiesz|zwieksz|zwiększ|ulepsz/i.test(normalizeRX(subject))){
+  if(/mrow(?:e)?k|mrów(?:e)?k/i.test(normalizeRX(subject))&&/moc|wydajn|przyspiesz|zwieksz|zwiększ|ulepsz/i.test(normalizeRX(subject))){
    answer='👑 Aby zwiększyć moc mrówek RX, proponuję trzy kroki: 1) mierzyć czas każdego zadania i znaleźć najwolniejsze etapy; 2) uruchamiać niezależne zadania równolegle z limitem obciążenia; 3) zapisywać wyniki i automatycznie powtarzać tylko nieudane testy. Najpierw porównajmy czas i skuteczność obecnych testów. To plan, nie wykonana zmiana.';
   }else answer='👑 Jasne, porozmawiajmy o '+subject+'. Co najbardziej Cię w tym temacie interesuje?';
   tasks.length=0;plan.work=null;
