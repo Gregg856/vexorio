@@ -5,6 +5,15 @@ function chatRX(message,{history=[],tasks=[]}={}){
  if(typeof message!=='string'||!message.trim()||message.length>1000)throw Error('Invalid message');
  if(!Array.isArray(history)||history.length>6||history.some(x=>typeof x!=='string'||x.length>1000))throw Error('Invalid history');
  if(!Array.isArray(tasks)||tasks.length>50||tasks.some(t=>!t||typeof t!=='object'||typeof t.title!=='string'||!t.title.trim()||t.title.length>160||!['pending','completed'].includes(t.status)||Object.keys(t).some(k=>!['title','status'].includes(k))))throw Error('Invalid tasks');
+ // Reuse the existing RX brain for bounded arithmetic; never evaluate arbitrary code.
+ const mathMatch=/^(?:(?:ile to|oblicz|policz)\s+)?(-?\d{1,9}(?:[.,]\d{1,6})?)\s*([+*\/\-])\s*(-?\d{1,9}(?:[.,]\d{1,6})?)\s*\??$/i.exec(message.trim());
+ if(mathMatch){
+  const a=Number(mathMatch[1].replace(',','.')),b=Number(mathMatch[3].replace(',','.'));
+  const op=mathMatch[2];
+  if(op==='/'&&b===0)return {answer:'Nie można dzielić przez zero.',plan:{steps:[]},completedCount:0,contextUsed:false,executed:0};
+  const result=op==='+'?a+b:op==='-'?a-b:op==='*'?a*b:a/b;
+  if(Number.isFinite(result))return {answer:'Wynik: '+Number(result.toPrecision(12)).toString(),plan:{steps:[]},completedCount:0,contextUsed:false,executed:0};
+ }
  const completed=tasks.filter(t=>t.status==='completed');
  const asksCompleted=/^(co (już|juz) (zrobione|ukończone)|pokaż (ukończone|zakończone) zadania|co (jest )?gotowe)[?!\\s]*$/i.test(message.trim());
  const isFollowup=text=>/^(dalej|sprawdź to|sprawdz to|a co z tym\\??|co dalej\\??)[.!?\\s]*$/i.test(text.trim());
