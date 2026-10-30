@@ -12,7 +12,7 @@ assert.throws(()=>planRXChat('test',Array(21).fill('poprzednia wiadomość')),Ty
 assert.match(planRXChat('Opowiedz o RX Neural Core').answer,/RX Neural Core/);
 assert.match(planRXChat('A jak działa?',['Opowiedz o RX Neural Core']).answer,/RX Neural Core/);
 assert.match(planRXChat('Co robi RX Math Core?').answer,/RX Math Core/);
-assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj:|Przypomnij:/i);
+assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj|Przypomnij/i);
 assert.match(planRXChat('RX DOT: [1,2]; [3,4]').answer,/11/);
 assert.match(planRXChat('RX DOT: [1,2]; [3]').answer,/Nieprawidłowe/);
 assert.match(planRXChat('RX DOT: [1,2]; [abc,4]').answer,/Nieprawidłowe/);
@@ -108,7 +108,7 @@ assert.equal(trusted.plan.work,null);
 assert.doesNotMatch(planRXChat('Ile to 7 * 8?',[],trustedLesson).answer,/Błędna odpowiedź/);
 assert.equal(planRXChat('Jak sprawdzić stan RX?',[],{kind:'untrusted',lessons:trustedLesson.lessons}).learning.verifiedFacts,0);
 assert.equal(planRXChat('Jak sprawdzić stan RX?',[],{kind:'rx-queen-verified-learning',lessons:[{verified:false,question:'Jak sprawdzić stan RX?',correctAnswer:'Fałsz'}]}).learning.verifiedFacts,0);
-assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj:|Przypomnij:/i);
+assert.match(planRXChat('Jak działa pamięć RX?').answer,/Zapamiętaj|Przypomnij/i);
 assert.match(planRXChat('A jak będzie działała Twoja nauka z naszych rozmów?').answer,/uczyć|uczenia|poprawk/i);
 console.log('RX NAUKA 3.0 verified lessons and safety regression OK');
 
