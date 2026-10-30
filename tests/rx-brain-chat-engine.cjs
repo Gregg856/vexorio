@@ -123,3 +123,19 @@ for(const [question,expected] of conversationCases){
  assert.equal(result.executed,0,question);
 }
 console.log('RX conversation audit: 8 known capabilities and gaps recorded');
+
+const {chatRXWithKnowledge}=require('../rx-brain-chat-engine.cjs');
+(async()=>{
+ const lookup=async()=>({summary:'Ryż to produkt spożywczy.',url:'https://pl.wikipedia.org/wiki/Ry%C5%BC'});
+ const result=await chatRXWithKnowledge('Co to jest ryż?',{knowledgeLookup:lookup});
+ assert.match(result.answer,/Ryż to produkt spożywczy/);
+ assert.match(result.answer,/Źródło: https:\/\/pl.wikipedia.org/);
+ assert.equal(result.executed,0);
+ const unknown=await chatRXWithKnowledge('Co to jest ryż?',{knowledgeLookup:async()=>null});
+ assert.equal(unknown.answer,chatRX('Co to jest ryż?').answer);
+ const unsafe=await chatRXWithKnowledge('Co to jest ryż?',{knowledgeLookup:async()=>({summary:'fake',url:'https://example.com'})});
+ assert.equal(unsafe.answer,chatRX('Co to jest ryż?').answer);
+ const noFetch=await chatRXWithKnowledge('Usuń wszystkie dane produkcyjne',{knowledgeLookup:()=>{throw Error('should not call');}});
+ assert.match(noFetch.answer,/Nie wykonam/);
+ console.log('RX sourced everyday knowledge: verified and safe fallback');
+})().catch(e=>{console.error(e);process.exitCode=1;});

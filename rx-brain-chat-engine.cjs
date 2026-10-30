@@ -87,4 +87,15 @@ function chatRX(message,{history=[],tasks=[]}={}){
  }
  return {answer,plan,completedCount:completed.length,contextUsed:(contextual||continuation)&&(continuation?!!topic:!!previous),executed:0};
 }
-module.exports={chatRX};
+// Optional sourced knowledge response. Existing deterministic chat remains unchanged.
+async function chatRXWithKnowledge(message,options={}){
+ const local=chatRX(message,options);
+ if(!/^(?:co to jest|czym jest|kim jest|kto to|gdzie leży|gdzie jest|opowiedz o|powiedz mi o|znajdź informacje o|znajdz informacje o)\s+.{3,160}/i.test(message.trim()))return local;
+ const lookup=options.knowledgeLookup||(await import('./rx-world-knowledge.mjs')).searchWorldKnowledge;
+ try{
+  const result=await lookup(message);
+  if(!result||typeof result.summary!=='string'||!result.summary.trim()||typeof result.url!=='string'||!result.url.startsWith('https://pl.wikipedia.org/'))return local;
+  return {...local,answer:result.summary.slice(0,700)+'\nŹródło: '+result.url,knowledgeSource:result.url};
+ }catch{return local;}
+}
+module.exports={chatRX,chatRXWithKnowledge};
