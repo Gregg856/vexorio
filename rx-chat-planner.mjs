@@ -99,7 +99,7 @@ export function planRXChat(message,history=[],learning=null){
   arithmeticAnswer=Number.isFinite(value)?'🧮 Wynik: '+String(Number(value.toPrecision(12))):'🧮 Nie mogę obliczyć tego procentu.';
  }
  // RX BIBI 3.7: simple discount and price-increase calculations (bounded inputs).
- const priceChange=plain.match(/^(?:oblicz|policz|ile (?:wynosi|to jest))\\s+(?:cene?\\s+po\\s+)?(rabat(?:cie)?|obnizce|podwyzce)\\s+(\\d{1,3}(?:[.,]\\d{1,2})?)\\s*%\\s+(?:z|od|dla|na)\\s+(\\d{1,8}(?:[.,]\\d{1,2})?)(?:\\s*(?:zl|eur|euro))?[?!. ]*$/);
+ const priceChange=plain.match(/^(?:oblicz|policz|ile (?:wynosi|to jest))\s+(?:cene?\s+po\s+)?(rabat(?:cie)?|obnizce|podwyzce)\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%\s+(?:z|od|dla|na)\s+(\d{1,8}(?:[.,]\d{1,2})?)(?:\s*(?:zl|eur|euro))?[?!. ]*$/);
  if(priceChange){
   const rate=Number(priceChange[2].replace(',','.'));
   const amount=Number(priceChange[3].replace(',','.'));
