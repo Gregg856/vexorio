@@ -59,6 +59,15 @@ const {pathToFileURL}=require('node:url');
     if(expected)assert.ok(reply.answer.includes(expected),'Wrong context: '+message+' => '+reply.answer);
     dialogue.push(message,reply.answer);
    }
+   // RX BIBI 6.2: expired session and temporary authentication upstream outage.
+   let denied=await call('/api/rx/client/chat',{headers:{Authorization:'Bearer expired-user'}});
+   assert.equal(denied.status,401,'Expired token must be rejected');
+   denied=await call('/api/rx/client/chat',{headers:{Authorization:'Bearer anonymous'}});
+   assert.equal(denied.status,403,'Anonymous login must not access customer chat');
+   const recover=await call('/api/rx/client/chat',{body:JSON.stringify({message:'Czym jest 2FA?',history:[]})});
+   assert.equal(recover.status,200,'Valid session can chat after expired token attempt');
+   assert.equal((await recover.json()).executed,0,'Recovery must not execute admin work');
+   console.log('RX BIBI 6.2 expired-session and recovery API checks passed');
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls during dialogue');
    console.log('RX BIBI 6.1 authenticated Worker dialogue passed:',dialogueTurns.length);
    assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls');
