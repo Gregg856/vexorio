@@ -42,6 +42,23 @@ for(const [prompt,expected] of [
 }
 console.log('RX natural dialogue intents OK');
 
+// Real customer phrases must stay conversational and must not trigger privileged work.
+for(const [question,expected] of [
+ ['Jak się masz?','Co u Ciebie'],
+ ['Co u ciebie?','Co u Ciebie'],
+ ['Dziękuję bardzo','Nie ma za co'],
+ ['Dzięki za pomoc','Nie ma za co'],
+ ['Mam pytanie','napisz, w czym'],
+ ['Czy możesz mi pomóc?','napisz, w czym']
+]){
+ const result=planRXChat(question);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work,null);
+}
+console.log('RX customer small-talk regression OK');
+
 for(const [question,history,expected] of [
  ['A jak działa?',['Opowiedz o wirniku'],'Wirnik'],
  ['A co z nimi?',['Co robią mrówki?'],'Mrówki'],
