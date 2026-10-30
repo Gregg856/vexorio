@@ -1,0 +1,27 @@
+name: RX client security
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - worker.js
+      - rx-client.html
+      - rx-chat-planner.mjs
+      - tests/rx-client-chat.cjs
+      - .github/workflows/rx-client-security.yml
+permissions:
+  contents: read
+jobs:
+  client-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate worker and client source
+        run: |
+          node --check worker.js
+          node --check tests/rx-client-chat.cjs
+          node tests/rx-client-chat.cjs
