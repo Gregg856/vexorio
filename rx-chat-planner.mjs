@@ -125,6 +125,22 @@ export function planRXChat(message,history=[],learning=null){
   arithmeticAnswer=discount&&rate>100?'🧮 Rabat nie może przekraczać 100%.':
    '🧮 Cena po '+(discount?'rabacie':'podwyżce')+': '+String(Number((amount*(1+(discount?-1:1)*rate/100)).toPrecision(12)));
  }
+ // RX BIBI 4.0: one-turn contextual price recalculation; only from a user price question.
+ const rateFollowup=plain.match(/^(?:a\s+)?(?:przy|po\s+(?:rabacie|podwyzce))\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*%[?!. ]*$/);
+ if(rateFollowup){
+  const previous=recentUserQuestions.at(-1)||'';
+  const normalizedPrevious=normalizeRX(previous);
+  const previousPrice=normalizedPrevious.match(/(?:produkt|towar|rzecz)\s+(?:kosztuje|za)\s+(\d{1,8}(?:[.,]\d{1,2})?)/)
+    ||normalizedPrevious.match(/(?:rabacie|podwyzce)\s+\d{1,3}(?:[.,]\d{1,2})?\s*%\s+(?:od|z|dla)\s+(\d{1,8}(?:[.,]\d{1,2})?)/);
+  const previousType=normalizedPrevious.match(/(?:po\s+|cena\s+po\s+)(rabacie|podwyzce)\s+\d{1,3}(?:[.,]\d{1,2})?\s*%/);
+  if(previousPrice&&previousType){
+   const amount=Number(previousPrice[1].replace(',','.'));
+   const rate=Number(rateFollowup[1].replace(',','.'));
+   const discount=previousType[1]==='rabacie';
+   arithmeticAnswer=discount&&rate>100?'🧮 Rabat nie może przekraczać 100%.':
+    '🧮 Cena po '+(discount?'rabacie':'podwyżce')+' '+rate+'% od '+amount+': '+String(Number((amount*(1+(discount?-1:1)*rate/100)).toPrecision(12)));
+  }
+ }
  const everydayIdentity=/^(kim jestes|jak masz na imie|jak sie nazywasz)[?!. ]*$/.test(plain);
  const everydayWeather=/^(jaka (jest )?pogoda|czy bedzie padac|ile jest stopni)[?!. ]*$/.test(plain);
  const everydayTime=/^(ktora (jest )?godzina|jaki (jest )?dzis dzien|jaka (jest )?data)[?!. ]*$/.test(plain);
