@@ -73,8 +73,8 @@ async function simulateSubmit({networkFailure=false,authFailure=false}={}){
  assert.equal(context.sendInFlight,false,'Guard released after request');
  assert.equal(nodes.send.disabled,false,'Send button restored');
  assert.equal(requests.length,1,'No duplicate API call');
- assert.ok(statusMessages.includes(networkFailure?'Błąd sieci lub serwera. Możesz ponowić pytanie.':'Gotowe.'),'Appropriate result status');
- if(networkFailure)assert.equal(context.history.length,0,'Failed request must not pollute conversation context');
+ assert.ok(statusMessages.includes(networkFailure?'Błąd sieci lub serwera. Wiadomość przywrócona — możesz wysłać ją ponownie.':'Gotowe.'),'Appropriate result status');
+ if(networkFailure){assert.equal(context.history.length,0,'Failed request must not pollute conversation context');assert.equal(nodes.message.value,'Czym jest 2FA?','Failed message must be restored for retry');}
  else assert.equal(context.history.length,2,'Successful request recorded once');
 }
 (async()=>{
