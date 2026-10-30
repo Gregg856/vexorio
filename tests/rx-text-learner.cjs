@@ -44,7 +44,7 @@ assert.ok(generated.text.length>10);
 assert.equal(generated.productionConnected,false);
 assert.equal(generated.trainedSentences,SAFE_SENTENCES.length);
 assert.deepEqual(experiment.generate({seed:'Cześć'}),generated,'Generation must be reproducible');
-assert.ok(experiment.generate({maxWords:2}).text.split(' ').length<=2);
+assert.ok(experiment.generate({maxWords:2}).text.trim().split(/\s+/u).length<=2);
 assert.throws(()=>createSentenceExperiment({sentences:[]}),/Invalid training/);
 assert.throws(()=>experiment.generate({maxWords:1000}),/Invalid generation/);
 console.log('RX EXPERIMENTAL SENTENCE MODEL:',generated.text);
