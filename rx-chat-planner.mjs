@@ -338,6 +338,11 @@ export function planRXChat(message,history=[],learning=null){
   answer='👑 Rozumiem, chodzi o '+chosenTopic+'. Napisz, co konkretnie chcesz wiedzieć o tym temacie.';
   tasks.length=0;plan.work=null;
  }
+ // A clarification or explicit choice takes precedence over generic module replies.
+ if((vagueReference&&distinctRecentTopics.length>1)||chosenTopic){
+  const safeAnswer=answer;
+  return {ok:true,answer:safeAnswer,topics:[],tasks:[],plan:{...plan,work:null},learning:rxLearning,contextUsed:true,multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
+ }
  const recentAssistantAnswer=history.length>=2?String(history.at(-1)||''):'';
  const repeatedGreeting=recentAssistantAnswer.includes('Co u Ciebie słychać?');
  const repeatedThanks=recentAssistantAnswer.includes('Jeśli masz kolejne pytanie');
