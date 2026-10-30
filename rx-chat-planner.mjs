@@ -35,6 +35,10 @@ export function planRXChat(message,history=[],learning=null){
  const userTurns=history.filter((_,i)=>i%2===0).filter(x=>x.trim());
  const currentUserTopic=userTurns.slice().reverse().find(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())))||recentTopic;
  const previousUserTopic=(()=>{const meaningful=userTurns.filter(x=>hasTopic(x)&&!(/^(dalej|a co|i co)[.!? ]*$/i.test(x.trim())));const current=meaningful.at(-1);return meaningful.slice(0,-1).reverse().find(x=>normalizeRX(x)!==normalizeRX(current))||null;})();
+ // Resolve references only against explicit earlier user topics, never assistant guesses.
+ const explicitTopicNames=[['mrówki',/(mrowk|ants)/],['wirnik',/(wirnik|turbina)/],['chmura',/(chmur|cloudflare)/],['testy',/(test|wynik)/],['pamięć',/(pamiec)/],['model',/(model|neural)/]];
+ const topicLabel=turn=>{const normalized=normalizeRX(turn);return explicitTopicNames.find(([,pattern])=>pattern.test(normalized))?.[0]||null;};
+ const previousLabel=topicLabel(previousUserTopic||'');
  const selectedTopic=returnTopic?(previousUserTopic||''):currentUserTopic;
  const contextual=(followup||correction||returnTopic||elaborate)&&last?selectedTopic+' '+message:message;
  const q=contextual.toLocaleLowerCase('pl-PL');
@@ -325,10 +329,11 @@ export function planRXChat(message,history=[],learning=null){
  if(everydayThanks)answer=repeatedThanks?'👑 Cała przyjemność po mojej stronie. Co jeszcze mogę wyjaśnić?':'👑 Nie ma za co! Jeśli masz kolejne pytanie, śmiało napisz.';
  if(everydayQuestion)answer=repeatedQuestion?'👑 Słucham. Opisz konkretną sytuację albo zadaj pytanie, a postaram się pomóc.':'👑 Jasne, napisz, w czym potrzebujesz pomocy. Jeśli nie będę znała odpowiedzi, powiem o tym wprost.';
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
+ if(returnTopic&&previousLabel)answer='👑 Wracamy do tematu: '+previousLabel+'. Napisz, co konkretnie chcesz o nim wiedzieć, a nie będę zgadywać.';
  if(everydayIdentity)answer='👑 Jestem BIBI, asystentką rozmowy RX. Mogę wyjaśniać wybrane tematy i pomagać w planowaniu, ale nie jestem niezależnym modelem AI.';
  if(everydayWeather)answer='👑 Nie mam tutaj dostępu do aktualnej prognozy pogody. Podaj miejscowość, a podpowiem, gdzie sprawdzić wiarygodną prognozę.';
  if(everydayTime)answer='👑 Nie mam w tym czacie wiarygodnego zegara ani bieżącej daty. Sprawdź godzinę i datę w telefonie.';
  if(everydayJoke)answer='👑 Dlaczego programista zabrał parasol? Bo zapowiadali chmurę! ☁️';
- if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null){tasks.length=0;plan.work=null;}
+ if(everydayGreeting||everydayThanks||everydayQuestion||everydayIdentity||everydayWeather||everydayTime||everydayJoke||arithmeticAnswer!==null||(returnTopic&&previousLabel)){tasks.length=0;plan.work=null;}
  return {ok:true,answer,topics,tasks,plan,learning:rxLearning,contextUsed:followupContext,multiIntent,intents:selectedParts.map(x=>x.id),executed:0,modelInferenceUsed:false};
 }
