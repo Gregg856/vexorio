@@ -34,3 +34,16 @@ for(const [prompt,expected] of variants){
  assert.equal(response.executed,0,prompt);
 }
 console.log('RX BIBI level 2: '+variants.length+' variant cases checked');
+
+const topic='Czat zasłania klawiatura Android';
+for(const followup of ['Dalej','Sprawdź to','A co z tym?','Co dalej?']){
+ const result=chatRX(followup,{history:[topic]});
+ assert.equal(result.contextUsed,true,followup);
+ assert.match(result.answer,/klawiatura Android/i,followup);
+ assert.match(result.answer,/nie potwierdzam wyniku testu/i,followup);
+ assert.equal(result.executed,0,followup);
+}
+assert.match(chatRX('Dalej').answer,/Nie mam wcześniejszego kontekstu/);
+assert.equal(chatRX('Dalej').contextUsed,false);
+assert.equal(chatRX('Dalej').executed,0);
+console.log('RX BIBI level 3: context follow-ups and missing context checked');
