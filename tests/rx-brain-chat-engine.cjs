@@ -89,3 +89,12 @@ for(const [prompt,expected] of [['2 + 3','Wynik: 5'],['Oblicz 7 * 8','Wynik: 56'
  assert.equal(result.executed,0,prompt);
 }
 console.log('RX existing brain: bounded arithmetic verified');
+
+for(const followup of ['Kontynuuj','Wróć do tego','Wroc do tego']){
+ const result=chatRX(followup,{history:['Błąd czatu Android','Dzięki','Super']});
+ assert.equal(result.contextUsed,true,followup);
+ assert.match(result.answer,/Błąd czatu Android/,followup);
+ assert.equal(result.executed,0,followup);
+}
+assert.match(chatRX('Kontynuuj').answer,/Nie mam wcześniejszego kontekstu/);
+console.log('RX Polish follow-up and acknowledgement memory tests OK');
