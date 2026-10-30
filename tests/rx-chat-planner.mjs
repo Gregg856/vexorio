@@ -349,6 +349,23 @@ for(const [question,expected] of [
 }
 console.log('RX reusable intent-topic regression OK');
 
+// RX BIBI 5.2: one reusable resolver, expanded topic synonyms.
+for(const [question,expected] of [
+ ['Co oznacza 2FA?','Weryfikacja dwuetapowa'],
+ ['Czym jest uwierzytelnianie dwuskładnikowe?','Weryfikacja dwuetapowa'],
+ ['Co to znaczy update?','Aktualizacja oprogramowania'],
+ ['Czym jest password manager?','Menedżer haseł'],
+ ['Co oznacza menedżer haseł?','Menedżer haseł']
+]){
+ const result=planRXChat(question,[]);
+ assert.ok(result.answer.includes(expected),question+': '+result.answer);
+ assert.equal(result.executed,0);
+ assert.equal(result.tasks.length,0);
+ assert.equal(result.plan.work??null,null);
+ assert.equal(result.modelInferenceUsed,false);
+}
+console.log('RX expanded topic synonym regression OK');
+
 // RX BIBI 3.2: multi-topic conversation with actual alternating client and assistant turns.
 {
  const history=[];
