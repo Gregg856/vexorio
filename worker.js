@@ -125,7 +125,7 @@ export default {
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
       // RX BIBI: authenticated read-only CI evidence for the ants. This is NOT live worker status.
-      if(/^(?:sprawdz|pokaz|jaki jest|podaj)\\s+(?:aktualny\\s+)?(?:status|wyniki?)\\s+(?:naszych\\s+)?(?:mrowek|mrowki|mrowek rx|rx mrowek|rx mrowki)[?!. ]*$/i.test(normalizedIntent)){
+      if(/^(?:sprawdz|pokaz|jaki jest|podaj)\s+(?:aktualny\s+)?(?:status|wyniki?)\s+(?:naszych\s+)?(?:mrowek|mrowki|mrowek rx|rx mrowek|rx mrowki)[?!. ]*$/i.test(normalizedIntent)){
         try{
           const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-medusa-ant.yml/runs?branch=main&per_page=1',{
             headers:{Accept:'application/vnd.github+json','User-Agent':'RX-BIBI-Ant-ReadOnly'},signal:AbortSignal.timeout(7000)
