@@ -87,3 +87,8 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - PR #318 scalony: `8abdc655`, smoke SUCCESS. Nie budować drugiego generatora.
 - Bieżąca zmiana: pomiar kopiowania zdań treningowych, interpunkcji i różnorodności wyników w `rx-text-learner.cjs`; to NIE jest miara płynności ani generalizacji do nowych tematów.
 - Kolejny warunek przed podłączeniem do czatu: oddzielny zbiór niewidzianych tematów i ludzka ocena sensowności; bez produkcji.
+
+## RX IMPULS — 2026-10-30
+- Sprawdzono istniejące `rx-million-hearts.js`, `rx-ant-hibernation.cjs`, `rx-dna-core.js` i generator `rx-text-learner.cjs`; PR #320 zamknięty bez merge po wykryciu duplikacji DNA.
+- Dodano `pulse()` jako jawny impuls do istniejącej ograniczonej kolejki. 1 impuls uruchamia 1 handler; bez pollingu, bez miliona procesów, bez produkcji. Test obejmuje bezczynność przed/po sygnale i 1 mln wirtualnych ID, NIE 1 mln operacji/minutę.
+- Pisanie na poziomie ChatGPT NIE jest osiągnięte; dotychczasowy eksperyment tekstowy ma tylko 8 zdań i niską różnorodność. Potrzebny osobny etap realnego treningu i oceny na niewidzianych tekstach.
