@@ -21,7 +21,7 @@ export function planRXChat(message,history=[],learning=null){
  const previous=history.slice(-5).filter(x=>x.trim());
  const followup=/^(a |i |oraz |a co |co z |dalej|sprawdź też|sprawdz tez|a ten |a tamten |co z tym|co z nim|co z nimi|zrob drugi punkt|zrób drugi punkt)/i.test(message.trim());
  // Use the most recent meaningful topic for short follow-ups; avoid mixing unrelated old intents.
- const normalizeRX=text=>text.toLocaleLowerCase('pl-PL').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/ł/g,'l');
+ const normalizeRX=text=>text.toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
  // Prefer the user's latest topic-bearing question over the Queen's own reply.
  // Assistant answers often mention several modules and can contaminate "Dalej".
  const topicPattern=/(mrowk|wirnik|turbina|chmur|cloudflare|test|bled|blad|kolejk|pamiec|wiedz|neural|math|matematyk|neuron|model)/;
