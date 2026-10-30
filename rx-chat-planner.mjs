@@ -277,7 +277,12 @@ export function planRXChat(message,history=[],learning=null){
   everydayGuide=guides[subject]??null;
  }
  // RX BIBI 5.1: reusable intent + topic resolver, not one regex per question.
- const conversationalTokens=plain.replace(/[?!.]+$/g,'').trim().split(/\s+/).filter(Boolean);
+ // RX BIBI 5.3: remove only known polite question prefixes.
+ // Keep the rest intact so intent and topic matching stay deterministic.
+ const normalizedQuestion=plain.replace(/^(?:(?:czy\s+)?mozesz\s+(?:mi\s+)?|prosze\s+)(?=(?:wyjasnic|wyjasnij|powiedziec|powiedz)\b)/,'')
+  .replace(/^(?:wyjasnic|wyjasnij|powiedziec|powiedz)\s+(?:mi\s+)?(?=(?:czym|co)\b)/,'')
+  .replace(/^(?:czy\s+)?moglabys\s+(?:mi\s+)?wyjasnic\s+(?=(?:czym|co)\b)/,'');
+ const conversationalTokens=normalizedQuestion.replace(/[?!.]+$/g,'').trim().split(/\s+/).filter(Boolean);
  const intentPatterns=[
   {intent:'definition',prefixes:[['co','oznacza'],['co','to','znaczy'],['czym','jest']]},
   {intent:'example',prefixes:[['pokaz','przyklad'],['przyklad','dla']]},
