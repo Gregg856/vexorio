@@ -2,7 +2,7 @@
 // Real customer chat smoke test. Uses only dedicated test-account secrets; no mock API.
 const {chromium,devices}=require('playwright');
 const fs=require('node:fs');
-const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev').replace(/\\/$/,'');
+const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev').replace(/\/$/,'');
 const email=process.env.RX_BIBI_TEST_EMAIL;
 const password=process.env.RX_BIBI_TEST_PASSWORD;
 (async()=>{
