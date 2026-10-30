@@ -718,3 +718,12 @@ assert.equal(continued.plan.work,null);
 const reset=planRXChat('Dalej',['Chcę porozmawiać o moim ogrodzie','👑 Jasne','Zmieńmy temat','👑 OK']);
 assert.doesNotMatch(reset.answer,/moim ogrodzie/);
 console.log('RX client generic topic continuation: PASS');
+
+const ordinary=planRXChat('Chcę porozmawiać o moim ogrodzie');
+assert.match(ordinary.answer,/moim ogrodzie/);
+assert.equal(ordinary.executed,0);
+assert.equal(ordinary.plan.work,null);
+const ordinaryFollowup=planRXChat('Dalej',['Chcę porozmawiać o moim ogrodzie',ordinary.answer]);
+assert.match(ordinaryFollowup.answer,/moim ogrodzie/);
+assert.equal(ordinaryFollowup.executed,0);
+console.log('RX client real screenshot reproduction: PASS');
