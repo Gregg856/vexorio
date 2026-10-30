@@ -3,8 +3,8 @@
 export const RX_KNOWLEDGE=[
  {id:'rx',terms:['rx','krolowa rx','mozg rx'],title:'Mózg RX',summary:'RX to rozwijany w VEXORIO system rozmowy i planowania zadań. Regułowy planer nie jest samodzielnym modelem językowym.',source:'VEXORIO — rx-chat-planner.mjs'},
  {id:'ants',terms:['mrowki rx','mrowki','mrówki rx','mrówki','mrowkach rx','mrowkach','mrówkach rx','mrówkach'],title:'Mrówki RX',summary:'Mrówki RX reprezentują moduły i zadania testowe. Plan zadania nie oznacza jego wykonania; wykonanie wymaga zatwierdzenia.',source:'VEXORIO — rx-chat-planner.mjs'},
- {id:'turbine',terms:['wirnik rx','wirnik','rx turbine'],title:'Wirnik RX',summary:'Wirnik koordynuje ograniczone równoległe wykonywanie zatwierdzonych testów. Nie tworzy dodatkowej fizycznej mocy obliczeniowej.',source:'VEXORIO — rx-turbine-engine.cjs'},
- {id:'knowledge',terms:['wiedza swiata','rx wiedza swiata','encyklopedia rx'],title:'RX Wiedza Świata',summary:'Moduł udostępnia lokalne wpisy i wyszukiwanie zewnętrznej encyklopedii z podaniem źródła. Nie jest pełną kopią Wikipedii.',source:'VEXORIO — rx-world-knowledge.mjs'}
+ {id:'turbine',terms:['wirnik rx','wirnik','wirniku rx','wirniku','rx turbine'],title:'Wirnik RX',summary:'Wirnik koordynuje ograniczone równoległe wykonywanie zatwierdzonych testów. Nie tworzy dodatkowej fizycznej mocy obliczeniowej.',source:'VEXORIO — rx-turbine-engine.cjs'},
+ {id:'knowledge',terms:['wiedza swiata','wiedzy swiata','rx wiedza swiata','encyklopedia rx'],title:'RX Wiedza Świata',summary:'Moduł udostępnia lokalne wpisy i wyszukiwanie zewnętrznej encyklopedii z podaniem źródła. Nie jest pełną kopią Wikipedii.',source:'VEXORIO — rx-world-knowledge.mjs'}
 ];
 export function findRXKnowledge(question){
  if(typeof question!=='string'||question.length>300)return null;
@@ -14,5 +14,14 @@ export function findRXKnowledge(question){
  // The most specific term wins: 'mrówki RX' must not be swallowed by generic 'RX'.
  matches.sort((a,b)=>b.term.length-a.term.length);
  const entry=matches[0]?.entry;
+ // Multiple distinct modules in one question are ambiguous; do not pretend one answers all.
+ const distinct=new Set(matches.map(match=>match.entry.id));
+ if(distinct.size>1){
+  const mostSpecific=matches[0]?.term||'';
+  const topEntries=new Set(matches.filter(match=>match.term===mostSpecific).map(match=>match.entry.id));
+  // Generic 'RX' inside a specific module name is not a second topic.
+  const specific=matches.filter(match=>match.entry.id!=='rx');
+  if(new Set(specific.map(match=>match.entry.id)).size>1||topEntries.size>1)return null;
+ }
  return entry?{title:entry.title,summary:entry.summary,source:entry.source,local:true}:null;
 }
