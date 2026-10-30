@@ -83,7 +83,7 @@ assert.throws(()=>chatRX('Hej',{tasks:[{title:'Zadanie',status:'verified'}]}),/I
 assert.throws(()=>chatRX('Hej',{tasks:[{title:'',status:'completed'}]}),/Invalid tasks/);
 console.log('RX BIBI level 6: explicit task register and safe completion reporting checked');
 
-for(const [prompt,expected] of [['2 + 3','Wynik: 5'],['Oblicz 7 * 8','Wynik: 56'],['Policz 10 / 4','Wynik: 2.5'],['Ile to 9 - 12?','Wynik: -3'],['2,5 + 1,5','Wynik: 4'],['5 / 0','Nie można dzielić przez zero']]){
+for(const [prompt,expected] of [['2 + 3','Wynik: 5'],['Oblicz 7 * 8','Wynik: 56'],['Policz 10 / 4','Wynik: 2.5'],['Ile to 9 - 12?','Wynik: -3'],['2,5 + 1,5','Wynik: 4'],['5 / 0','Nie można dzielić przez zero.']]){
  const result=chatRX(prompt);
  assert.equal(result.answer,expected,prompt);
  assert.equal(result.executed,0,prompt);
