@@ -30,7 +30,7 @@ window.supabase={createClient:()=>({
   for(const message of ['Chcę porozmawiać o ogrodzie','Dalej']){
    await page.locator('#message').fill(message);
    await page.locator('#send').click();
-   await page.locator('#status').getByText('Gotowe.').waitFor({timeout:10000});
+   await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.',{timeout:10000});
   }
   const bubbles=await page.locator('#messages .bubble').allTextContents();
   const expected=['Chcę porozmawiać o ogrodzie','Porozmawiajmy o ogrodzie.','Dalej','Kontynuujemy rozmowę o ogrodzie.'];
