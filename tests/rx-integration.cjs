@@ -11,3 +11,12 @@ assert.equal(report.ai.candidates[0].source,'ci_unverified');
 assert.equal(report.productionModified,false);
 assert.equal(report.lab.testedVariants,3);
 console.log('PASS RX integration: cloud queue, AI ranking and synthetic ant lab joined safely');
+
+const {executeRXCloudChecks}=require('../rx-coordinator.cjs');
+const rx66=executeRXCloudChecks({approved:true,execute:true,maxChecks:1});
+assert.equal(rx66.executed,1);
+assert.equal(rx66.passed,1);
+assert.equal(rx66.failed,0);
+assert.equal(rx66.checks[0].file,'tests/rx-cloud-computer.cjs');
+assert.equal(rx66.cloudServerProvisioned,false);
+console.log('PASS RX BIBI 6.6 approved cloud bridge executes existing check');
