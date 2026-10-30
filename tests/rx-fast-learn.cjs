@@ -10,3 +10,12 @@ assert.ok(correct>=12,'At least 75% training examples should be classified');
 assert.ok(LABELS.includes(classify(result.net,'co to jest planeta').intent));
 assert.throws(()=>classify(result.net,''),/Invalid text/);
 console.log('RX FAST LEARN training:',correct,'/',EXAMPLES.length,'loss',result.metrics.initialLoss,'->',result.metrics.finalLoss);
+
+const {trainText,generateText}=require('../rx-fast-learn.cjs');
+const textModel=trainText({sentences:['ala ma kota','ala ma dom'],epochs:12});
+assert.ok(textModel.metrics.finalLoss<textModel.metrics.initialLoss,'Text training must reduce loss');
+const generated=generateText(textModel.net,{seed:'a',maxBytes:12});
+assert.ok(generated.startsWith('a'));
+assert.ok(generated.length>1);
+assert.throws(()=>trainText({sentences:['x']}),/Invalid training corpus/);
+console.log('RX FAST LEARN next-byte experiment:',textModel.metrics.initialLoss,'->',textModel.metrics.finalLoss,'sample:',generated);
