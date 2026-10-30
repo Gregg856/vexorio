@@ -20,6 +20,11 @@ assert.match(route,/engine:'rx-bibi-client-public-knowledge'/,'Client identifies
 assert.match(route,/publicKnowledge\.source/,'Client includes the source in knowledge answers');
 assert.match(route,/if\(publicKnowledge\)[\s\S]*?adminToolsAvailable:false/,'Knowledge response has no admin tools');
 assert.match(route,/private RX CLOUD learning/,'Private learning remains excluded');
+assert.match(route,/clientResearch&&!rxInternalTopic/,'Public research excludes private RX topics');
+assert.match(route,/searchWorldKnowledge\(message\)/,'Client invokes existing shared sourced lookup');
+assert.match(route,/engine:'rx-bibi-client-world-knowledge'/,'Client research engine is identified');
+assert.match(route,/knowledge\.url/,'Client research includes verifiable source URL');
+assert.match(route,/if\(knowledge\)[\s\S]*?adminToolsAvailable:false/,'Client research has no privileged tools');
 assert.match(client,/\/api\/rx\/client\/chat/,'Client uses isolated route');
 assert.doesNotMatch(client,/\/api\/rx\/chat['"`]/,'Client must not use admin route');
 assert.match(client,/textContent=text/,'Chat messages rendered as text');
