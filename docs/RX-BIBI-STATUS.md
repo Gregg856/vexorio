@@ -87,3 +87,8 @@ Aktualizacja: 2026-10-25. Repozytorium: Gregg856/vexorio, gałąź main.
 - PR #318 scalony: `8abdc655`, smoke SUCCESS. Nie budować drugiego generatora.
 - Bieżąca zmiana: pomiar kopiowania zdań treningowych, interpunkcji i różnorodności wyników w `rx-text-learner.cjs`; to NIE jest miara płynności ani generalizacji do nowych tematów.
 - Kolejny warunek przed podłączeniem do czatu: oddzielny zbiór niewidzianych tematów i ludzka ocena sensowności; bez produkcji.
+
+## RX DNA Myśli — 2026-10-30
+- Kontynuacja istniejącego `rx-text-learner.cjs` po PR #319 (merged `f5abadfc`), bez nowego modelu ani czatu.
+- Eksperymentalny recenzent kilku kandydatów: jawne wyniki spójności par słów z korpusem, zgodności z tematem, interpunkcji i kary za dosłowne kopiowanie; potrafi odmówić wyboru. Nie weryfikuje faktów ani znaczenia. Brak automatycznego generowania wielu kandydatów i brak integracji z produkcją.
+- Testy w istniejącym `tests/rx-text-learner.cjs`; przed scaleniem wymagana zielona CI.
