@@ -673,7 +673,7 @@ export function planRXChat(message,history=[],learning=null){
  // RX BIBI: interpret the user's answer to a previous garden question, not just "Dalej".
  const recentGardenTopic=userTurns.slice(-6).some(turn=>/\b(ogrod|ogrodzie|ogrodu|ogrodem|rosliny|warzywa|kwiaty)\b/i.test(normalizeRX(turn)));
  const recentGardenAnswer=history.slice(-4).some(turn=>/warzywnik|kwiaty czy|słoneczne|zacienione|ile masz miejsca|dużo słońca/i.test(turn));
- const gardenDetail=/\b(slonce|sloneczn\w*|cien|zacienion\w*|maly|niewielki|duzy|warzywa|kwiaty|krzewy|pomidor\w*|ziemia|gleba)\b/i.test(plain);
+ const gardenDetail=/\b(slonce|sloneczn\w*|cien\w*|zacienion\w*|maly|niewielki|duzy|warzywa|kwiaty|krzewy|pomidor\w*|ziemia|gleba)\b/i.test(plain);
  if(recentGardenTopic&&recentGardenAnswer&&gardenDetail&&!gardenPlanting&&!gardenCare&&!gardenNext&&!ordinaryConversation){
   if(/cien|zacienion/.test(plain))answer='👑 Jeśli ogród jest zacieniony, rozważ rośliny tolerujące cień, np. funkie lub paprocie. Ważne też, czy ziemia jest wilgotna czy sucha. Jak jest u Ciebie?';
   else if(/slonce|sloneczn/.test(plain))answer='👑 W słonecznym miejscu możesz rozważyć zioła, lawendę lub pomidory, zależnie od gleby i ilości miejsca. Wolisz rośliny jadalne czy ozdobne?';
