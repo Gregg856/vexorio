@@ -952,10 +952,10 @@ document.addEventListener('DOMContentLoaded',()=>{
  const developerNav=document.createElement('button');developerNav.type='button';developerNav.textContent='💻 RX Developer';developerNav.addEventListener('click',()=>activate('developer'));side.append(developerNav);buttons.set('developer',developerNav);
  const rxTasksKey='rx-bibi-tasks-v1';
  const rxTasks=[];
- try{const saved=JSON.parse(localStorage.getItem(rxTasksKey)||'[]');if(Array.isArray(saved))for(const t of saved.slice(0,50)){if(t&&typeof t.title==='string'&&typeof t.module==='string'&&['oczekuje','zakończone'].includes(t.status))rxTasks.push({id:String(t.id).slice(0,50),title:t.title.slice(0,180),module:t.module.slice(0,40),status:t.status,lastResult:typeof t.lastResult==='string'?t.lastResult.slice(0,300):'',lastCheckedAt:typeof t.lastCheckedAt==='string'?t.lastCheckedAt:''});}}catch(_){}
+ try{const saved=JSON.parse(localStorage.getItem(rxTasksKey)||'[]');if(Array.isArray(saved))for(const t of saved.slice(0,50)){if(t&&typeof t.title==='string'&&typeof t.module==='string'&&['oczekuje','zakończone','wykonywane'].includes(t.status))rxTasks.push({id:String(t.id).slice(0,50),title:t.title.slice(0,180),module:t.module.slice(0,40),status:t.status==='wykonywane'?'oczekuje':t.status,lastResult:typeof t.lastResult==='string'?t.lastResult.slice(0,300):'',lastCheckedAt:typeof t.lastCheckedAt==='string'?t.lastCheckedAt:''});}}catch(_){}
  const taskView=document.createElement('section');taskView.className='rx-task-board';
  const taskTitle=document.createElement('h2');taskTitle.textContent='📋 RX Zadania — nasza kolejka';
- const taskInfo=document.createElement('p');taskInfo.className='meta';taskInfo.textContent='Zadania zapisują się lokalnie w tej przeglądarce. Dodanie zadania nie uruchamia automatycznie narzędzi ani nie zmienia kodu.';
+ const taskInfo=document.createElement('p');taskInfo.className='meta';taskInfo.textContent='Zadania zapisują się lokalnie w tej przeglądarce. Zadania Strażaka i Testera wykonują bezpieczny odczyt automatycznie po dodaniu. Pozostałe zadania oczekują na dostępny wykonawca; nic nie zmienia kodu.';
  const taskForm=document.createElement('form');taskForm.style.display='flex';taskForm.style.flexWrap='wrap';taskForm.style.gap='8px';
  const taskInput=document.createElement('input');taskInput.placeholder='Co RX ma zrobić?';taskInput.required=true;taskInput.maxLength=180;taskInput.style.flex='1 1 200px';taskInput.setAttribute('aria-label','Opis zadania RX');
  const taskSelect=document.createElement('select');taskSelect.setAttribute('aria-label','Moduł RX');
@@ -988,7 +988,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{await navigator.clipboard.writeText(report);copy.textContent='✓ Skopiowano';}catch(_){const field=document.createElement('textarea');field.value=report;field.readOnly=true;field.style.width='100%';card.append(field);field.select();copy.textContent='Zaznaczony tekst — skopiuj';}
    });card.append(copy);}
   taskList.append(card);}};
- taskForm.addEventListener('submit',event=>{event.preventDefault();const title=taskInput.value.trim();if(!title)return;const outcome=addRxTask(title,taskSelect.value);taskInput.value='';if(!outcome.added)alert('To zadanie już oczekuje w kolejce RX.');});
+ taskForm.addEventListener('submit',event=>{event.preventDefault();const title=taskInput.value.trim();if(!title)return;const outcome=addRxTask(title,taskSelect.value);taskInput.value='';if(!outcome.added)alert('To zadanie już oczekuje w kolejce RX.');else if(rxTaskExecutors[outcome.task.module]){const task=outcome.task;task.status='wykonywane';persistTasks();renderTasks();rxTaskExecutors[task.module]().then(result=>{task.lastResult=result;task.status='zakończone';task.lastCheckedAt=new Date().toISOString();persistTasks();renderTasks();}).catch(error=>{task.lastResult='Błąd: '+String(error.message).slice(0,180);task.status='oczekuje';task.lastCheckedAt=new Date().toISOString();persistTasks();renderTasks();});}});
  taskView.append(taskTitle,taskInfo,taskForm,taskList);renderTasks();views.set('zadania',taskView);pane.append(taskView);
  const taskNav=document.createElement('button');taskNav.type='button';taskNav.textContent='📋 RX Zadania';taskNav.addEventListener('click',()=>activate('zadania'));side.append(taskNav);buttons.set('zadania',taskNav);
  // Keep history controls with their report, not in Settings.
