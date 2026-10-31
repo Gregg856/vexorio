@@ -14,7 +14,7 @@ async function saveBrain(file,brain){
  const raw=JSON.stringify(brain.snapshot());
  if(Buffer.byteLength(raw)>MAX_BYTES)throw Error('Snapshot too large');
  await fs.mkdir(path.dirname(file),{recursive:true});
- const tmp=file+'.tmp-'+process.pid;
+ const tmp=file+'.tmp-'+process.pid+'-'+require('node:crypto').randomBytes(8).toString('hex');
  try{await fs.writeFile(tmp,raw,{flag:'wx',mode:0o600});await fs.rename(tmp,file)}
  catch(e){await fs.rm(tmp,{force:true}).catch(()=>{});throw e}
 }
