@@ -2,7 +2,6 @@
 // Offline RX BIBI learning queue and bounded history. No user chat data.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {runCycle}=require('./rx-agent-manager.cjs');
-const {createLearner,evaluateHeldOut,HELD_OUT}=require('../rx-text-learner.cjs');
 const ROOT=path.resolve(__dirname,'..'),DIR=path.join(ROOT,'rx-bibi-reports');
 const HISTORY=path.join(DIR,'rx-learning-history.json');
 const TASKS=Object.freeze([
@@ -44,6 +43,8 @@ function runLearning(){
   previousBest:previousBest<0?null:previousBest,
   improvedOverHistory:previousBest>=0&&record.correct>previousBest,
   plateau:previous.length>=3&&previous.slice(-3).every(r=>r.correct>=record.correct),
+  regressionDetected:previousBest>=0&&record.correct<previousBest,
+  safeToPromote:false,
   historyCount:runs.length,productionConnected:false};
  fs.writeFileSync(path.join(DIR,'rx-learning-progress.json'),JSON.stringify(summary,null,2)+'\n');
  console.log('RX BIBI LEARNING MEMORY',JSON.stringify({status:record.status,correct:record.correct,total:record.total,nextExercise:record.nextExercise,historyCount:runs.length}));
