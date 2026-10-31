@@ -110,6 +110,17 @@ assert.match(chatRX('A to zadanie?',{tasks:taskRegister}).answer,/Podaj dokładn
 assert.match(chatRX('Czy to już gotowe?',{history:['Nieznane zadanie'],tasks:taskRegister}).answer,/Podaj dokładną nazwę/);
 console.log('RX Brain: short task follow-up and missing context checked');
 
+const {createBrainMemory}=require('../rx-brain-memory.cjs');
+const adviceMemory=createBrainMemory();
+adviceMemory.learn({key:'android_chat',action:'Sprawdź układ klawiatury',success:true,evidence:'GitHub Actions 12345678 passed'});
+const advice=chatRX('Co pamiętasz o zadaniu: android_chat?',{brainMemory:adviceMemory});
+assert.match(advice.answer,/Sprawdź układ klawiatury/);
+assert.match(advice.answer,/wymaga zatwierdzenia/);
+assert.equal(advice.executed,0);
+assert.match(chatRX('Co pamiętasz o zadaniu: android_chat?').answer,/Nie mam zweryfikowanych doświadczeń/);
+assert.match(chatRX('Co pamiętasz o zadaniu: brak?',{brainMemory:adviceMemory}).answer,/Nie mam zweryfikowanych doświadczeń/);
+console.log('RX Brain: existing advisory memory read-only integration OK');
+
 for(const [prompt,expected] of [['2 + 3','Wynik: 5'],['Oblicz 7 * 8','Wynik: 56'],['Policz 10 / 4','Wynik: 2.5'],['Ile to 9 - 12?','Wynik: -3'],['2,5 + 1,5','Wynik: 4'],['5 / 0','Nie można dzielić przez zero.']]){
  const result=chatRX(prompt);
  assert.equal(result.answer,expected,prompt);
