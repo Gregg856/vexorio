@@ -11,6 +11,8 @@ on:
       - 'tests/rx-client-knowledge-regex.cjs'
       - 'tests/rx-client-knowledge-format.cjs'
       - 'tests/rx-client-knowledge-followup.cjs'
+      - 'tests/rx-client-knowledge-followup-behavior.cjs'
+      - 'rx-world-knowledge.mjs'
       - 'worker.js'
       - '.github/workflows/rx-client-dialogue-baseline.yml'
 jobs:
@@ -32,6 +34,8 @@ jobs:
         run: node tests/rx-client-knowledge-format.cjs
       - name: Sprawdź bezpieczne pytania uzupełniające
         run: node tests/rx-client-knowledge-followup.cjs
+      - name: Sprawdź zachowanie kontekstu na prawdziwych przykładach
+        run: node tests/rx-client-knowledge-followup-behavior.cjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
