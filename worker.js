@@ -125,11 +125,12 @@ export default {
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
       // Read-only RX module results from verified workflow names. Never infer live activity from CI.
-      const moduleStatusMatch=/^(?:sprawdz|pokaz|podaj)\s+(?:aktualny\s+)?(?:status|wynik|wyniki)\s+(?:modulu\s+)?(rx\s+fast|rx\s+developer|rx\s+bibi|rx\s+queen)[?!. ]*$/i.exec(normalizedIntent);
+      const moduleStatusMatch=/^(?:sprawdz|pokaz|podaj)\s+(?:aktualny\s+)?(?:status|wynik|wyniki)\s+(?:modulu\s+)?(rx\s+fast|rx\s+developer|rx\s+tester|rx\s+bibi|rx\s+queen)[?!. ]*$/i.exec(normalizedIntent);
       if(moduleStatusMatch){
         const modules={
           'rx fast':{name:'RX FAST',workflow:'rx-performance-benchmark.yml'},
           'rx developer':{name:'RX Developer',workflow:'rx-developer-bridge.yml'},
+          'rx tester':{name:'RX Tester',workflow:'rx-client-dialogue-baseline.yml'},
           'rx bibi':{name:'RX BIBI',workflow:'rx-bibi-browser.yml'},
           'rx queen':{name:'RX Queen',workflow:'rx-queen-dashboard.yml'}
         };
