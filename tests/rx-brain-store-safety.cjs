@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const os=require('node:os');
 const path=require('node:path');
-const {loadBrain,saveBrain}=require('../rx-brain-store.cjs');
+const {loadBrain,saveBrain,learnAndSaveBrain}=require('../rx-brain-store.cjs');
 const {createBrainMemory}=require('../rx-brain-memory.cjs');
 
 test('RX NAUKA 3.7 roundtrip and reject unsafe snapshot paths',async()=>{
@@ -51,5 +51,27 @@ test('RX NAUKA 3.9 concurrent saves avoid temporary file collisions',async()=>{
   const final=(await loadBrain(file)).snapshot();
   assert.ok([JSON.stringify(a.snapshot()),JSON.stringify(b.snapshot())].includes(JSON.stringify(final)));
   assert.deepEqual((await fs.readdir(dir)),['memory.json']);
+ }finally{await fs.rm(dir,{recursive:true,force:true})}
+});
+
+test('RX NAUKA 4.0 preserves all concurrent verified updates in one process',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'rx-brain-learning-'));
+ try{
+  const file=path.join(dir,'memory.json');
+  const updates=Array.from({length:20},(_,i)=>({
+   key:'android_chat',action:'inspect_logs',success:i%4!==0,
+   evidence:'Verified Android CI evidence run '+String(i).padStart(3,'0')
+  }));
+  const results=await Promise.all(updates.map(item=>learnAndSaveBrain(file,item)));
+  assert.equal(results.length,20);
+  const record=(await loadBrain(file)).recommend('android_chat');
+  assert.equal(record.samples,20);
+  assert.equal(record.successRate,0.75);
+  assert.equal(record.requiresApproval,true);
+  await assert.rejects(learnAndSaveBrain(file,updates[0]),/Duplicate learning evidence|Conflicting action/);
+  const after=(await loadBrain(file)).recommend('android_chat');
+  assert.equal(after.samples,20);
+  await learnAndSaveBrain(file,{key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android CI recovery run 021'});
+  assert.equal((await loadBrain(file)).recommend('android_chat').samples,21);
  }finally{await fs.rm(dir,{recursive:true,force:true})}
 });
