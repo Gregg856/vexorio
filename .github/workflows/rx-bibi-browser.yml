@@ -455,6 +455,9 @@ jobs:
       - name: RX BIBI — trening kandydatów i ocena na niewidzianych przykładach
         if: ${{ !cancelled() }}
         run: node tests/rx-learning-gate.cjs
+      - name: RX BIBI — test agent managera
+        if: ${{ !cancelled() }}
+        run: node --test tests/rx-agent-manager.test.cjs
       - name: Zachowaj raporty i zrzuty
         if: always()
         uses: actions/upload-artifact@v6
