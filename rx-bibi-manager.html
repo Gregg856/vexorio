@@ -1041,7 +1041,14 @@ document.addEventListener('DOMContentLoaded',()=>{
      if(!response.ok||!payload.ok||payload.kind!=='rx-brain-memory')throw Error(payload.message||'Pamięć RX Brain niedostępna.');
      const key=brainMatch[1].toLowerCase();
      const entry=Array.isArray(payload.records)?payload.records.find(x=>x.key===key):null;
-     explain(entry?'RX Brain — '+key+': '+String(entry.action).slice(0,120)+'. Próby: '+entry.samples+', skuteczność: '+Math.round(entry.successRate*100)+'%. To wskazówka, wymaga zatwierdzenia.':'RX Brain nie ma zapisanego doświadczenia dla „'+key+'”.');
+     if(!entry){explain('RX Brain nie ma zapisanego doświadczenia dla „'+key+'”.');}
+     else if(typeof entry.action!=='string'||!Number.isSafeInteger(entry.samples)||entry.samples<1||entry.samples>1000000||typeof entry.successRate!=='number'||!Number.isFinite(entry.successRate)||entry.successRate<0||entry.successRate>1){
+      explain('RX Brain: nieprawidłowe dane doświadczenia — nie mogę przedstawić rekomendacji.');
+     }else{
+      const quality=entry.samples<3?'Za mało prób, aby ocenić skuteczność.':entry.samples<10?'Ograniczona liczba prób.':'Wynik oparty na większej liczbie prób (nie jest gwarancją skuteczności).';
+      const failures=entry.successRate<0.5?' Uwaga: więcej niepowodzeń niż sukcesów.':'';
+      explain('RX Brain — '+key+': '+entry.action.slice(0,120)+'. Próby: '+entry.samples+', skuteczność: '+Math.round(entry.successRate*100)+'%. '+quality+failures+' To wskazówka, wymaga zatwierdzenia. Niczego nie wykonałam.');
+     }
     }catch(error){explain('Nie mogę odczytać pamięci RX Brain: '+String(error.message||error).slice(0,180));}
     finally{send.disabled=false;}
    })();
