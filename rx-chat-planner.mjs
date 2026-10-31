@@ -21,7 +21,7 @@ export function planRXChat(message,history=[],learning=null){
   const recentUserMessages=history.filter((_,i)=>i%2===0).slice(-10);
   const cityMessages=recentUserMessages.map(turn=>/mieszkam w ([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż-]{2,40})/i.exec(turn)?.[1]).filter(Boolean);
   if(cityMessages.length)facts.push('Powiedziałeś, że mieszkasz w '+cityMessages.at(-1)+'.');
-  const interests=recentUserMessages.map(turn=>/interesuję się ([^.!?,]{2,50})/i.exec(turn)?.[1]?.trim()).filter(Boolean);
+  const interests=recentUserMessages.map(turn=>/interesuję się ([^.!?,]{2,50}?)(?=\s+i\s+lubię\b|[.!?,]|$)/i.exec(turn)?.[1]?.trim()).filter(Boolean);
   if(interests.length)facts.push('Interesujesz się '+interests.at(-1)+'.');
   const likes=recentUserMessages.map(turn=>/lubię ([^.!?,]{2,50})/i.exec(turn)?.[1]?.trim()).filter(Boolean);
   if(likes.length)facts.push('Powiedziałeś, że lubisz '+likes.at(-1)+'.');
