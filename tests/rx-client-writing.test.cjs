@@ -40,3 +40,11 @@ test('additional Polish verbs compose safe client writing replies',async()=>{
   assert.equal(result?.answer,'Spotkanie jutro.',verb);
  }
 });
+
+test('polite Polish writing requests are understood',async()=>{
+ const {pathToFileURL}=require('node:url');
+ const {composeClientWriting}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ for(const prompt of ['Proszę napisz krótko: spotkanie jutro','Prosze sformuluj krotko: spotkanie jutro']){
+  assert.equal(composeClientWriting(prompt)?.answer,'Spotkanie jutro.',prompt);
+ }
+});
