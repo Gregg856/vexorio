@@ -1,7 +1,7 @@
 // Deterministic client-safe writing helper; no AI inference or privileged actions.
 export function composeClientWriting(message){
  if(typeof message!=='string'||message.length>2000)return null;
- const m=/^(?:(?:proszę|prosze)\s+)?(?:napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?([^:]{0,180}):\s*(.{1,1500})$/isu.exec(message.trim());
+ const m=/^(?:(?:proszę|prosze)\s+)?(napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?([^:]{0,180}):\s*(.{1,1500})$/isu.exec(message.trim());
  if(!m)return null;
  const instruction=m[3].toLocaleLowerCase('pl');
  // Reject unsupported instructions instead of claiming they were understood.
