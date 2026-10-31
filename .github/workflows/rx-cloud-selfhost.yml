@@ -8,6 +8,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'rx-bibi-own-inference.cjs'
+      - 'rx-bibi-quality-gate.cjs'
+      - 'tests/rx-bibi-quality-gate.test.cjs'
       - 'rx-bibi-training-store.cjs'
       - 'tests/rx-bibi-training-store.test.cjs'
       - 'tests/rx-bibi-training-restart.test.cjs'
@@ -52,6 +54,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'rx-bibi-own-inference.cjs'
+      - 'rx-bibi-quality-gate.cjs'
+      - 'tests/rx-bibi-quality-gate.test.cjs'
       - 'tests/rx-bibi-own-inference.test.cjs'
       - 'tests/rx-bibi-evaluator.cjs'
       - 'tests/rx-bibi-evaluator.test.cjs'
@@ -145,6 +149,8 @@ jobs:
         run: node --test tests/rx-bibi-training-store.test.cjs
       - name: Test RX BIBI trained memory across restarts
         run: node --test tests/rx-bibi-training-restart.test.cjs
+      - name: Test RX BIBI safe training quality gate
+        run: node --test tests/rx-bibi-quality-gate.test.cjs
       - name: Test isolated RX CLOUD installation layout
         run: node tests/rx-cloud-staged.cjs
       - name: Validate monitor failure reporting (no live server)
