@@ -40,3 +40,13 @@ test('Queen rejects validation phrases seen in its original training set',async(
  const validation=[['cześć królowo','greeting'],['skontroluj działanie','tests'],['odtwórz plan projektu','memory'],['dodaj wartości liczbowe','math']];
  assert.throws(()=>trainQueen({validation}),/Validation overlap/);
 });
+
+test('Queen keeps baseline when candidate cannot improve independent validation',()=>{
+ const {trainQueen}=require('../rx-queen-training-selection.cjs');
+ const validation=[['witam cię ponownie','greeting'],['skontroluj działanie','tests'],['odtwórz plan projektu','memory'],['dodaj wartości liczbowe','math']];
+ const result=trainQueen({validation});
+ assert.ok(result.selected.correct>=result.baseline.correct);
+ assert.equal(result.improvement,Math.max(0,result.candidateImprovement));
+ assert.equal(result.accepted,result.candidateImprovement>0);
+ if(!result.accepted)assert.equal(result.selected.source,'baseline');
+});
