@@ -108,7 +108,7 @@ export function planRXChat(message,history=[],learning=null){
   .replace(/\b(sztukii|sztukiie)\b/g,'sztuki')
   .replace(/\b(podwyzkee|podwyzceee)\b/g,'podwyzce')
   .replace(/\b(ile wyjdzie za)\b/g,'ile zaplace za');
- const greet=/^(czesc|hej|halo|witaj|dzien dobry|siema|bibi|krolowa|rx)[!.? ]*$/.test(plain);
+ const greet=/^(?:(?:czesc|hej|halo|witaj|dzien dobry|siema)(?:\s+(?:moja\s+)?(?:krolowo|krolowa|bibi|rx))?|(?:bibi|krolowa|krolowo|rx))[!.? ]*$/.test(plain);
  const thanks=/^(dzieki|dziekuje|super|dobrze|ok|gotowe)[!.? ]*$/.test(plain);
  const contextPlain=contextual.toLocaleLowerCase('pl-PL').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'').replace(/ł/g,'l');
  const followupContext=Boolean(followup&&last);
