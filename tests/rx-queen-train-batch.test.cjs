@@ -53,3 +53,15 @@ test('Queen keeps baseline when candidate cannot improve independent validation'
  assert.equal(result.accepted,result.candidateImprovement>0);
  if(!result.accepted)assert.equal(result.selected.source,'baseline');
 });
+
+test('40 approved synthetic samples: report which intents degrade on unseen validation',()=>{
+ const training={"greeting":["hej moja droga bibi","miłego popołudnia królowo","przesyłam ci serdeczne uściski","wspaniale znowu cię słyszeć","dzień dobry moja asystentko","cieszę się że jesteś online","pozdrawiam cię z uśmiechem","witam po długiej przerwie bibi","życzymy ci spokojnego dnia","dobrze że możemy porozmawiać"],"tests":["sprawdź stan wszystkich kontroli","pokaż czy weryfikacja zakończyła się pomyślnie","czy test integracyjny przeszedł","odczytaj ostatnie błędy testowe","podsumuj rezultaty automatycznych kontroli","przeanalizuj wynik sprawdzenia kodu","czy wszystkie kontrole są zakończone","pokaż liczbę nieudanych prób testowych","sprawdź poprawność ostatniej aktualizacji","zweryfikuj czy moduł przeszedł kontrolę"],"memory":["przywołaj plan zapisany wcześniej","co zapamiętałaś z naszego projektu","odszukaj poprzednie ustalenia zespołu","przypomnij mi ostatnią decyzję","wróć do historii zapisanych zadań","pokaż co zostało w twojej pamięci","czy zachowałaś informacje z poprzedniej sesji","odtwórz listę naszych wcześniejszych celów","przypomnij gdzie przerwaliśmy pracę","znajdź zapamiętane wskazówki projektu"],"math":["oblicz sumę czterech kwot","podziel koszt na trzy równe części","ile wynosi dwadzieścia procent ceny","wyznacz iloczyn siedmiu i dziewięciu","policz różnicę dwóch wydatków","jaka jest średnia pięciu liczb","oblicz wartość po rabacie","ile zostanie po odjęciu kosztów","pomnóż liczbę zamówień przez cenę","wylicz łączną wartość faktur"]};
+ const validation=[["jak miło z tobą dzisiaj rozmawiać","greeting"],["przesyłam uśmiech na powitanie","greeting"],["dobrego dnia asystentko","greeting"],["pokaż stan testu bezpieczeństwa","tests"],["zweryfikuj raport uruchomienia","tests"],["czy ostatnia kontrola była udana","tests"],["odtwórz decyzję z wcześniejszej sesji","memory"],["przypomnij zapisane cele","memory"],["pokaż historię naszych planów","memory"],["oblicz różnicę między kwotami","math"],["wylicz cenę po obniżce","math"],["policz łączny koszt zakupów","math"]];
+ const approvedTraining=Object.entries(training).flatMap(([label,phrases])=>phrases.map(text=>[{text,approvedForTraining:true},label]));
+ const {trainQueen}=require('../rx-queen-training-selection.cjs');
+ const result=trainQueen({approvedTraining,validation});
+ assert.equal(approvedTraining.length,40);
+ assert.equal(result.baseline.total,12);
+ assert.ok(result.selected.correct>=result.baseline.correct);
+ console.log('BIBI 40 INTENT DIAGNOSTICS',JSON.stringify({baseline:result.baseline,bestCandidate:[...result.candidates].sort((a,b)=>b.correct-a.correct||a.finalLoss-b.finalLoss)[0],accepted:result.accepted,candidateImprovement:result.candidateImprovement}));
+});
