@@ -23,3 +23,18 @@ test('bridge still uses existing authenticated API and does not create a new cha
  assert.match(block,/fetch\('\/api\/rx\/client\/chat'/);
  assert.match(block,/Authorization:'Bearer '/);
 });
+
+test('panel writing prompts are supported by the actual server composer',async()=>{
+ const {pathToFileURL}=require('node:url');
+ const {composeClientWriting}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ for(const prompt of [
+  'Napisz wiadomość: spotkanie jutro.',
+  'Napisz krótko, bez powitania i bez pożegnania: spotkanie jutro.',
+  'Odpowiedz bez pożegnania, dodaj pożegnanie: plik dotarł.',
+  'Napisz wiadomość bez powitania: potwierdzam termin.'
+ ]){
+  assert.equal(route.test(prompt),true,prompt);
+  const response=composeClientWriting(prompt);
+  assert.ok(response&&typeof response.answer==='string',prompt);
+ }
+});
