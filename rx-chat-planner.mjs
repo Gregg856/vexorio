@@ -510,13 +510,14 @@ export function planRXChat(message,history=[],learning=null){
  else if(asksStatus)answer='👑 Czat RX odpowiada przez serwerowy planer. Aby poznać rzeczywisty stan pracy, wybierz „Odśwież raport RX Coordinator” albo „RX Wirnik — ostatni przebieg”. Nie mam tutaj transmisji pracy Mrówek na żywo.';
  else if(asksHelp)answer='👑 Napisz np. „Co robią Mrówki?”, „Jak działa Wirnik?”, „Jakie testy wykonać?” lub „Co budujemy dalej?”. Mogę prowadzić rozmowę i przygotowywać bezpieczne plany.';
  else if(topics.length)answer='👑 Rozumiem temat: '+[...new Set(topics)].join(', ')+'. Mogę pomóc przygotować plan testów i wyjaśnić kolejne kroki. Niczego nie uruchomiłam bez zatwierdzenia.';
- else if(/^(dlaczego|czemu|jak|co|kiedy|gdzie|kto|czy)\\b/.test(plain))answer='👑 To pytanie wykracza poza moje obecne reguły rozmowy. Nie chcę zgadywać odpowiedzi. Mogę pomóc je rozłożyć na części lub sprawdzić w module wiedzy, jeśli jest podłączony. Samo pytanie nie uruchamia wyszukiwania.';
- else if(/^(wymysl|opowiedz|napisz historie|stworz historie)\\b/.test(plain))answer='👑 Mogę pomóc zaplanować historię, ale mój lokalny planer nie tworzy jeszcze swobodnych opowieści. Podaj bohatera i miejsce, a przygotuję zarys; nie będę udawać pełnego modelu językowego.';
  else if(/^(?:a )?(?:dlaczego|czemu|jak to|co to znaczy)[?!. ]*$/i.test(plain)&&latestUserTurn&&latestUserTurn.trim()&&!/^(?:a )?(?:dlaczego|czemu|dalej)[?!. ]*$/i.test(normalizeRX(latestUserTurn.trim()))){
   // Preserve the user's own latest question for a short follow-up; never invent facts.
   const original=latestUserTurn.trim().slice(0,240);
   answer='👑 Nawiązujesz do pytania: „'+original+'”. Nie mam jeszcze pewnej odpowiedzi, ale pamiętam, o co pytasz. Możemy doprecyzować ten temat.';
  }
+ else if(/^(dlaczego|czemu|jak|co|kiedy|gdzie|kto|czy)\\b/.test(plain))answer='👑 To pytanie wykracza poza moje obecne reguły rozmowy. Nie chcę zgadywać odpowiedzi. Mogę pomóc je rozłożyć na części lub sprawdzić w module wiedzy, jeśli jest podłączony. Samo pytanie nie uruchamia wyszukiwania.';
+ else if(/^(wymysl|opowiedz|napisz historie|stworz historie)\\b/.test(plain))answer='👑 Mogę pomóc zaplanować historię, ale mój lokalny planer nie tworzy jeszcze swobodnych opowieści. Podaj bohatera i miejsce, a przygotuję zarys; nie będę udawać pełnego modelu językowego.';
+
  else answer='👑 Nie rozumiem jeszcze tego pytania wystarczająco dobrze, żeby odpowiedzieć rzetelnie. Napisz proszę inaczej, czego potrzebujesz, albo podaj przykład. Nie będę zgadywać ani udawać, że wykonałam działanie.';
 
  // RX Queen work planner: natural-language work requests, with BIBI as verifier.
