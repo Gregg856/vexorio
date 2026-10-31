@@ -25,4 +25,6 @@ assert.doesNotMatch(changedCity,/miasto: Krakowie/);
 const sameTurn=planRXChat('Przeprowadziłem się z Krakowa do Warszawy. BIBI, co teraz o mnie wiesz?').answer;
 assert.match(sameTurn,/miasto: Warszawy/);
 assert.doesNotMatch(sameTurn,/RX Coordinator|Mrówek/);
-console.log('RX BIBI name memory: 16/16 passed');
+assert.match(planRXChat('Mam na imię Ola. Co o mnie wiesz?').answer,/Masz na imię Ola/);
+assert.match(planRXChat('Nazywam się Ewa. Co teraz o mnie wiesz?').answer,/Masz na imię Ewa/);
+console.log('RX BIBI name memory: 18/18 passed');
