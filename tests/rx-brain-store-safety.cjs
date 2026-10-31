@@ -38,3 +38,18 @@ test('RX NAUKA 3.8 rejects snapshots that claim training or auto execution',asyn
   assert.deepEqual((await loadBrain(file)).snapshot(),valid);
  }finally{await fs.rm(dir,{recursive:true,force:true})}
 });
+
+test('RX NAUKA 3.9 concurrent saves avoid temporary file collisions',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'rx-brain-parallel-'));
+ try{
+  const a=createBrainMemory();
+  const b=createBrainMemory();
+  a.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android save test A'});
+  b.learn({key:'android_chat',action:'inspect_logs',success:false,evidence:'Verified Android save test B'});
+  const file=path.join(dir,'memory.json');
+  await Promise.all(Array.from({length:12},(_,i)=>saveBrain(file,i%2?a:b)));
+  const final=(await loadBrain(file)).snapshot();
+  assert.ok([JSON.stringify(a.snapshot()),JSON.stringify(b.snapshot())].includes(JSON.stringify(final)));
+  assert.deepEqual((await fs.readdir(dir)),['memory.json']);
+ }finally{await fs.rm(dir,{recursive:true,force:true})}
+});
