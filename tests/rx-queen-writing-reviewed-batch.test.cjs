@@ -72,7 +72,8 @@ test('six saved exercises advance to nine, then rotate safely on the next run',(
  assert.equal(next.autoApplied,0);
  const restarted=validateHistory({schema:1,keys:next.candidates.map(c=>c.key)});
  assert.equal(restarted.keys.length,3);
- assert.deepEqual(restarted.keys,first.candidates.map(c=>c.key));
+ assert.deepEqual(restarted.keys,next.candidates.map(c=>c.key));
+ assert.ok(restarted.keys.every(k=>!nine.keys.includes(k)));
 });
 
 test('expanded curriculum preserves all nine old keys and reaches eighteen without duplicates',()=>{
