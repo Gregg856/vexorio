@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {planRXChat} from '../rx-chat-planner.mjs';
+const first='Cześć BIBI! Mam na imię Marek. Jak się dzisiaj czujesz?';
+const answer1=planRXChat(first).answer;
+assert.match(answer1,/Marek/);
+assert.doesNotMatch(answer1,/Rozumiem, że chcesz porozmawiać o tym temacie/);
+const second='BIBI, pamiętasz, jak mam na imię? Powiedz też, o czym przed chwilą rozmawialiśmy.';
+const answer2=planRXChat(second,[first,answer1]).answer;
+assert.match(answer2,/Marek/);
+assert.match(answer2,/Wcześniej napisałeś/);
+assert.match(planRXChat('Jak mam na imię?').answer,/Nie podałeś/);
+console.log('RX BIBI name memory: 4/4 passed');
