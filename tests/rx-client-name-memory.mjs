@@ -38,4 +38,16 @@ assert.match(planRXChat('Mam na imię Jaś. Co o mnie wiesz?').answer,/Masz na i
 assert.match(planRXChat('Nazywam się Staś.').answer,/Miło Cię poznać, Staś/);
 assert.match(planRXChat('Jak mam na imię?', ['Mam na imię Jaś.','Miło mi!']).answer,/Jaś/);
 assert.match(planRXChat('Mam na imię Łuś. Co o mnie wiesz?').answer,/Łuś/);
-console.log('RX BIBI name memory: 28/28 passed');
+// RX BIBI 7.0: short commands never fabricate execution or tests.
+for(const command of ['Rób','Gotowe','Zielone','Sprawdź','Popraw']){
+ const empty=planRXChat(command);
+ assert.match(empty.answer,/Podaj konkretne zadanie|Do czego nawiązujesz/);
+ assert.equal(empty.executed,0);
+ const contextual=planRXChat(command,['Popraw pamięć czatu BIBI.','Przygotuję propozycję.']);
+ assert.match(contextual.answer,/Popraw pamięć czatu BIBI/);
+ assert.match(contextual.answer,/nie wykonałam żadnej zmiany ani testu/);
+ assert.equal(contextual.executed,0);
+}
+assert.match(planRXChat('Rób',['Popraw pamięć czatu BIBI.','OK','Gotowe','Nie mam potwierdzenia.']).answer,/Popraw pamięć czatu BIBI/);
+assert.doesNotMatch(planRXChat('Zielone').answer,/testy przeszły|wdrożono/i);
+console.log('RX BIBI name memory: RX BIBI 7.0 passed');
