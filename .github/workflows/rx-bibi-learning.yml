@@ -27,7 +27,8 @@ jobs:
           node --check tests/rx-autobots-batch.cjs
           node --check tests/rx-autobots-memory-watchdog.cjs
           node --check tests/rx-queen-response-practice.cjs
-          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs
+          node --check tests/rx-queen-writing-composer.cjs
+          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs tests/rx-queen-writing-composer.test.cjs
       - name: Restore cloud history
         id: cloud
         continue-on-error: true
