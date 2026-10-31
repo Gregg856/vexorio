@@ -12,7 +12,7 @@ export function planRXChat(message,history=[],learning=null){
  const preferences=recentUserTurns.filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/i.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
- const sessionName=history.filter((_,i)=>i%2===0).slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
+ const sessionName=[...history.filter((_,i)=>i%2===0),message].slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
  const asksAboutSelf=/\b(?:co|czego)\s+(?:teraz\s+)?(?:o mnie|o mojej osobie)\s+(?:wiesz|pamiętasz|pamietasz)\b|\bco\s+(?:wiesz|pamiętasz|pamietasz)\s+o\s+mnie\b/i.test(message);
  if(asksAboutSelf){
   const facts=[];
