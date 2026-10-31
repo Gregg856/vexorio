@@ -43,6 +43,8 @@ jobs:
       - name: Sprawdź pamięć imienia w rozmowie klienta
         run: node tests/rx-client-name-memory.mjs
       - name: RX Tester — automatyczne rozmowy wieloetapowe
+        id: dialogue_tester
+        continue-on-error: true
         run: node tests/rx-bibi-auto-dialogue.mjs
       - name: RX Developer — podsumuj wykryte problemy w GitHub Actions
         run: |
@@ -60,7 +62,13 @@ jobs:
       - name: Pokaż podsumowanie
         run: |
           node -e 'const r=require("./rx-client-dialogue-baseline.json");console.log("Rozmowy:",r.cases,"Ograniczenia:",r.unsupportedOrLimited,"Model językowy:",r.languageModel)'
+      - name: RX Tester — zachowaj status nieudanych rozmów
+        if: steps.dialogue_tester.outcome == 'failure'
+        run: |
+          echo 'RX Tester detected failed dialogue assertions; reports were generated and processed above.'
+          exit 1
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: rx-client-dialogue-baseline
           path: |
