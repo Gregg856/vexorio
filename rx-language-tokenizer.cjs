@@ -37,4 +37,11 @@ function toFrequencyVector(text){
  if(byteLength)for(const id of ids)vector[id]+=1/byteLength;
  return vector;
 }
-module.exports={BOS,EOS,PAD,UNK,MAX_BYTES,tokenize,detokenize,toFrequencyVector};
+function toBigramVector(text){
+ const ids=tokenize(text,{boundary:false}).ids;
+ const result=new Float32Array(256);
+ if(ids.length<2)return toFrequencyVector(text);
+ for(let i=1;i<ids.length;i++)result[(ids[i-1]*131+ids[i])%256]+=1/(ids.length-1);
+ return result;
+}
+module.exports={BOS,EOS,PAD,UNK,MAX_BYTES,tokenize,detokenize,toFrequencyVector,toBigramVector};
