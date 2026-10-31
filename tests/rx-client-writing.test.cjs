@@ -31,3 +31,12 @@ test('client writing preserves the meaning of question and exclamation punctuati
  ];
  for(const [prompt,expected] of examples)assert.equal(composeClientWriting(prompt)?.answer,expected,prompt);
 });
+
+test('additional Polish verbs compose safe client writing replies',async()=>{
+ const {pathToFileURL}=require('node:url');
+ const {composeClientWriting}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ for(const verb of ['Sformułuj','Sformuluj','Stwórz','Stworz']){
+  const result=composeClientWriting(verb+' krótko: spotkanie jutro');
+  assert.equal(result?.answer,'Spotkanie jutro.',verb);
+ }
+});
