@@ -18,7 +18,7 @@ export function planRXChat(message,history=[],learning=null){
   const facts=[];
   if(sessionName)facts.push('Masz na imię '+sessionName+'.');
   // Session facts remain local to the current chat; never infer unknown details.
-  const recentUserMessages=history.filter((_,i)=>i%2===0).slice(-10);
+  const recentUserMessages=[...history.filter((_,i)=>i%2===0),message].slice(-10);
   const cityMessages=recentUserMessages.map(turn=>/(?:mieszkam w|przeprowadziłem się (?:z [^.!?,]{2,40} )?do|przeprowadziłam się (?:z [^.!?,]{2,40} )?do) ([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż-]{2,40})/i.exec(turn)?.[1]).filter(Boolean);
   if(cityMessages.length)facts.push('Ostatnio podane miasto: '+cityMessages.at(-1)+'.');
   const interests=recentUserMessages.map(turn=>/interesuję się ([^.!?,]{2,50}?)(?=\s+i\s+lubię\b|[.!?,]|$)/i.exec(turn)?.[1]?.trim()).filter(Boolean);
