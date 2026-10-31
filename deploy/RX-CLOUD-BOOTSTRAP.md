@@ -41,3 +41,13 @@ Na własnym serwerze, po ustawieniu zmiennych `RX_QUEEN_LOCAL_TOKEN`, `RX_CLOUD_
 node scripts/rx-brain-bridge-readiness.cjs
 ```
 Kontrola nie łączy się z siecią i nie modyfikuje pliku. `OK` oznacza jedynie poprawną lokalną konfigurację i format migawki; **nie potwierdza** wdrożenia, certyfikatu HTTPS, uprawnień administratora ani działania czatu BIBI. Nie kopiuj tokenu do GitHub ani do rozmowy.
+
+## Podłączenie pamięci Królowej — stan i bramka (31.10.2026)
+- Panel produkcyjny VEXORIO i administrator działają; odczyt `/api/rx/admin/learning` zwraca diagnostykę braku konfiguracji.
+- Audyt metadanych Workera w deploy #594 potwierdził brak obu bindingów: `RX_CLOUD_LEARNING_URL` oraz `RX_QUEEN_LOCAL_TOKEN`.
+- Serwer Node zawiera chroniony endpoint `/__rxcloud/bibi/learning`, ale zielone testy self-host NIE potwierdzają działającego publicznego hosta.
+- Nie podawaj adresu `127.0.0.1:8787` jako adresu Cloudflare; nie jest osiągalny z Workera.
+- Dopiero po potwierdzeniu własnego hosta, certyfikatu HTTPS, zabezpieczeń i dostępu do endpointu ustaw `RX_CLOUD_LEARNING_URL=https://ZWERYFIKOWANY-HOST/__rxcloud/bibi/learning` w konfiguracji Workera.
+- Ustaw ten sam silny, losowy token (min. 32 znaki) w prywatnym środowisku hosta oraz w sekretach Workera jako `RX_QUEEN_LOCAL_TOKEN`. Nie zapisuj tokenu w GitHub, logach, czacie ani publicznym panelu.
+- Po konfiguracji przetestuj przyciskiem `🧠 Sprawdź pamięć RX CLOUD` w zakładce Królowej. Błąd 502 oznacza, że konfiguracja istnieje, lecz połączenie/odpowiedź endpointu wymaga dalszej diagnostyki.
+- Żadne kroki nie upoważniają do automatycznej zmiany DNS, migracji danych lub publikacji własnego serwera bez osobnego potwierdzenia.
