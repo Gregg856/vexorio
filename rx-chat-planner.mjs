@@ -13,7 +13,7 @@ export function planRXChat(message,history=[],learning=null){
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
  const sessionName=history.filter((_,i)=>i%2===0).slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
- const asksUserNameRecall=/\b(?:pamiętasz|pamietasz|przypomnij|jak)\b[\s\S]{0,90}\b(?:mam na imię|mam na imie|moje imię|moje imie)\b/i.test(message);
+ const asksUserNameRecall=/\b(?:pamiętasz|pamietasz|przypomnij|jak)\b[\s\S]{0,90}\b(?:mam na imię|mam na imie|moje imię|moje imie)(?=\W|$)/i.test(message);
  const asksPrevious=/\b(?:o czym|co)\b[\s\S]{0,90}\b(?:przed chwilą|przed chwila|wcześniej|wczesniej)\b/i.test(message);
  const introductoryName=/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(message)?.[1]||null;
  if(asksUserNameRecall||asksPrevious||introductoryName){
