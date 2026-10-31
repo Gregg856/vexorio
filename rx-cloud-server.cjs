@@ -258,6 +258,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
             const body=JSON.stringify({...original,intentDiagnostics:diagnostics});
             const outHeaders=new Headers(response.headers);
             outHeaders.delete('Content-Length');
+            outHeaders.delete('Content-Encoding');
+            outHeaders.delete('ETag');
             outHeaders.set('Content-Type','application/json');
             outHeaders.set('Cache-Control','no-store');
             response=new Response(body,{status:200,headers:outHeaders});
