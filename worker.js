@@ -665,9 +665,21 @@ export default {
         if(!permission.ok)return reply(502,'Permission check failed');
         if((await permission.json())!==true)return reply(403,'Forbidden');
       }catch{return reply(502,'Auth check unavailable');}
-      const raw=env.RX_BRAIN_MEMORY_SNAPSHOT;
-      if(typeof raw!=='string'||raw.length>100000||!raw.length)return reply(503,'RX Brain memory unavailable');
-      let data;try{data=JSON.parse(raw);}catch{return reply(503,'Invalid memory');}
+      // Read the existing self-hosted RX CLOUD store, not a manually copied snapshot.
+      const privateToken=env.RX_QUEEN_LOCAL_TOKEN||'';
+      let endpoint;
+      try{endpoint=new URL(env.RX_CLOUD_BRAIN_MEMORY_URL||'');}catch{return reply(503,'RX Brain memory unavailable');}
+      if(privateToken.length<32||endpoint.protocol!=='https:'||endpoint.username||endpoint.password||endpoint.port||endpoint.search||endpoint.hash||endpoint.pathname!=='/__rxcloud/bibi/brain-memory'||!endpoint.hostname||endpoint.hostname==='localhost'||endpoint.hostname.endsWith('.localhost'))return reply(503,'RX Brain memory unavailable');
+      let data;
+      try{
+        const response=await fetch(endpoint.toString(),{headers:{Authorization:'Bearer '+privateToken,Accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(7000)});
+        if(!response.ok)return reply(502,'RX CLOUD Brain memory unavailable');
+        const raw=await response.text();
+        if(raw.length>100000)return reply(502,'RX Brain snapshot too large');
+        const payload=JSON.parse(raw);
+        if(payload?.ok!==true||payload.kind!=='rx-brain-memory')return reply(502,'Invalid RX Brain response');
+        data=payload.snapshot;
+      }catch{return reply(502,'RX CLOUD Brain memory unavailable');}
       if(data?.schema!==1||data.kind!=='rx-brain-memory'||!Array.isArray(data.records)||data.records.length>200)return reply(503,'Invalid memory');
       const records=[];
       for(const item of data.records){
