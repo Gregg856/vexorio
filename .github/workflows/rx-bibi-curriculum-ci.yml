@@ -21,6 +21,7 @@ on:
       - 'rx-client-writing.mjs'
       - 'worker.js'
       - 'tests/rx-client-writing.test.cjs'
+      - 'tests/rx-client-writing-http-e2e.test.cjs'
       - '.github/workflows/rx-bibi-learning.yml'
       - '.github/workflows/rx-bibi-curriculum-ci.yml'
   workflow_dispatch:
