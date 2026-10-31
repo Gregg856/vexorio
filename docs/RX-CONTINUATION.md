@@ -67,3 +67,11 @@
 - W odpowiedzi: liczba prób, skuteczność, jakość dowodów i ostrzeżenie przy przewadze niepowodzeń; odrzucenie nieprawidłowych wartości z API. Nadal tylko odczyt i wymóg zatwierdzenia.
 - Panel już miał uwierzytelnione żądanie do `/api/rx/admin/brain-memory`; nie dodano drugiej ścieżki ani nowego panelu. Dostępność zależy od konfiguracji prywatnego RX CLOUD, której wdrożenia nie potwierdzono.
 - Sprawdzić CI i scalić po zielonych testach; nie wdrażać produkcji.
+
+## Aktualizacja ustaleń — RX NAUKA 5.0 (2026-10-31)
+- **Właściciel potwierdził: ma już własny serwer i własną chmurę.** Nie proponuj kupna serwera, tworzenia nowego serwera ani odkładania integracji tylko z powodu rzekomego braku infrastruktury.
+- Wcześniejszy zapis „RX CLOUD 24/7, serwer i realne podłączenie HTTPS odłożone na później” dotyczył poprzedniego etapu i **nie jest już aktualnym założeniem o posiadaniu serwera**. Nadal nie zakładaj bez pomiaru, że konkretna usługa RX CLOUD działa 24/7 lub że HTTPS i sekretne zmienne są skonfigurowane.
+- Używaj istniejącego `rx-cloud-server.cjs`, `worker.js`, `rx-bibi-manager.html`, prywatnej trasy `/__rxcloud/bibi/brain-memory` oraz publicznej bramy administratora `/api/rx/admin/brain-memory`. Nie buduj duplikatów.
+- PR #473–#476 scalone: adapter formatu, testy kontraktu, włączenie testów RX NAUKA do CI i test faktycznego `worker.fetch` z symulowanym RX CLOUD. To nie jest jeszcze dowód produkcyjnej dostępności.
+- **Najbliższy krok:** zweryfikować na istniejącym własnym serwerze obecność poprawnego pliku `RX_BRAIN_MEMORY_FILE` (lub domyślnego `rx-cloud-private-inbox/rx-brain-memory.json`), zgodność `RX_QUEEN_LOCAL_TOKEN`, `RX_CLOUD_BRAIN_MEMORY_URL`, działanie HTTPS i wynik autoryzowanego odczytu. Nie wypisuj wartości sekretów ani prywatnej pamięci w logach.
+- Weryfikacja powinna być tylko do odczytu; przed zmianą produkcji uzyskaj osobną zgodę.
