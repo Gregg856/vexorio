@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
   actions: read
+  issues: write
+concurrency:
+  group: rx-bibi-learning-history
+  cancel-in-progress: false
 jobs:
   learn:
     runs-on: ubuntu-latest
@@ -36,9 +40,57 @@ jobs:
         run: node tests/rx-agent-manager.cjs
       - name: RX BIBI — test learning queue and memory
         run: node --test tests/rx-learning-memory.test.cjs
+      - name: RX BIBI — restore approved training metrics from GitHub issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('fs');
+            const owner=context.repo.owner,repo=context.repo.repo;
+            const title='[RX BIBI MEMORY] Training metrics (no chat data)';
+            const q='repo:'+owner+'/'+repo+' is:issue in:title "[RX BIBI MEMORY]"';
+            const found=await github.rest.search.issuesAndPullRequests({q,per_page:30});
+            const issue=found.data.items.find(i=>i.title===title);
+            if(!issue){core.info('First learning run: no previous metrics');return;}
+            const start='<!-- RX_BIBI_HISTORY_START -->',end='<!-- RX_BIBI_HISTORY_END -->';
+            const body=issue.body||'';
+            const a=body.indexOf(start),b=body.indexOf(end);
+            if(a<0||b<=a){core.warning('History issue has no valid payload');return;}
+            const payload=JSON.parse(body.slice(a+start.length,b).trim());
+            if(payload.schema!==1||!Array.isArray(payload.runs))throw Error('Invalid history schema');
+            const runs=payload.runs.slice(-19).map(r=>({
+              id:String(r.id).slice(0,80),at:String(r.at).slice(0,80),
+              status:String(r.status).slice(0,20),correct:Number(r.correct),
+              total:Number(r.total),winner:String(r.winner).slice(0,80)
+            })).filter(r=>Number.isSafeInteger(r.correct)&&Number.isSafeInteger(r.total)&&r.total>0&&r.correct>=0&&r.correct<=r.total);
+            fs.mkdirSync('rx-bibi-reports',{recursive:true});
+            fs.writeFileSync('rx-bibi-reports/rx-learning-history.json',JSON.stringify({schema:1,kind:'rx-learning-history',runs}));
+            core.info('Restored '+runs.length+' prior training metrics');
       - name: RX BIBI — run learning queue and progress memory
         if: ${{ !cancelled() }}
         run: node tests/rx-learning-memory.cjs
+      - name: RX BIBI — persist training metrics for next run
+        if: ${{ always() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('fs');
+            const file='rx-bibi-reports/rx-learning-history.json';
+            if(!fs.existsSync(file)){core.warning('No learning history to persist');return;}
+            const data=JSON.parse(fs.readFileSync(file,'utf8'));
+            if(data.schema!==1||!Array.isArray(data.runs))throw Error('Invalid learning history');
+            const runs=data.runs.slice(-20).map(r=>({
+              id:r.id,at:r.at,status:r.status,correct:r.correct,total:r.total,winner:r.winner
+            }));
+            const title='[RX BIBI MEMORY] Training metrics (no chat data)';
+            const start='<!-- RX_BIBI_HISTORY_START -->',end='<!-- RX_BIBI_HISTORY_END -->';
+            const body='Internal offline learning metrics only. No user messages or secrets.\\n\\n'+start+'\\n'+JSON.stringify({schema:1,runs})+'\\n'+end;
+            const owner=context.repo.owner,repo=context.repo.repo;
+            const q='repo:'+owner+'/'+repo+' is:issue in:title "[RX BIBI MEMORY]"';
+            const found=await github.rest.search.issuesAndPullRequests({q,per_page:30});
+            const issue=found.data.items.find(i=>i.title===title);
+            if(issue)await github.rest.issues.update({owner,repo,issue_number:issue.number,body});
+            else await github.rest.issues.create({owner,repo,title,body});
+            core.info('Persisted '+runs.length+' training runs');
       - name: Save reproducible training comparison
         if: always()
         uses: actions/upload-artifact@v4
