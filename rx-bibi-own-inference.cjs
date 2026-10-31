@@ -69,4 +69,3 @@ if(require.main===module){
   }).catch(error=>{console.error(error.message);process.exitCode=1;});
  }catch(error){console.error(error.message);process.exitCode=1;}
 }
-module.exports={tokens,train,infer,start};
