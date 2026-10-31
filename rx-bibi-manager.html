@@ -1028,7 +1028,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   };
   // Keep the RX Brain advisory-memory syntax distinct from RX CLOUD admin memory.
   const brainMatch=/^co (?:pamiętasz|pamietasz) o zadaniu\s*:\s*([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
-  if(brainMatch){
+  const brainList=/^(?:pokaż|pokaz|wyświetl|wyswietl|lista)\s+(?:zadania\s+)?(?:pamięci|pamieci)\s*(?:rx\s*brain)?\??$/i.test(message.trim());
+  if(brainMatch||brainList){
    (async()=>{
     send.disabled=true;
     try{
@@ -1039,6 +1040,12 @@ document.addEventListener('DOMContentLoaded',()=>{
      const response=await fetch('/api/rx/admin/brain-memory',{headers:{Authorization:'Bearer '+data.session.access_token,Accept:'application/json'},cache:'no-store'});
      const payload=await response.json();
      if(!response.ok||!payload.ok||payload.kind!=='rx-brain-memory')throw Error(payload.message||'Pamięć RX Brain niedostępna.');
+     if(brainList){
+      if(!Array.isArray(payload.records))throw Error('Nieprawidłowa lista pamięci RX Brain.');
+      const entries=payload.records.filter(x=>x&&typeof x.key==='string'&&/^[a-z0-9_-]{1,80}$/.test(x.key)).slice(0,20);
+      explain('RX Brain — zapisane zadania ('+payload.records.length+'):\\n'+(entries.map(x=>'• '+x.key).join('\\n')||'Brak zapisanych zadań.')+(payload.records.length>20?'\\nPokazano pierwsze 20 zadań.':'')+'\\nAby sprawdzić szczegóły, napisz: Co pamiętasz o zadaniu: nazwa');
+      return;
+     }
      const key=brainMatch[1].toLowerCase();
      const entry=Array.isArray(payload.records)?payload.records.find(x=>x.key===key):null;
      if(!entry){explain('RX Brain nie ma zapisanego doświadczenia dla „'+key+'”.');}
