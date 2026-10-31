@@ -46,7 +46,7 @@ jobs:
             const found=await github.rest.issues.listForRepo({owner,repo,state:'open',per_page:100});
             const issue=found.data.find(i=>i.title===title);
             if(!issue)return;
-            const match=(issue.body||'').match(/<!-- RX_BIBI_HISTORY_START -->([\\s\\S]*?)<!-- RX_BIBI_HISTORY_END -->/);
+            const match=(issue.body||'').match(/<!-- RX_BIBI_HISTORY_START -->([\s\S]*?)<!-- RX_BIBI_HISTORY_END -->/);
             if(!match)return;
             const data=JSON.parse(match[1]);
             const {validate}=require('./rx-learning-cloud-store.cjs');
