@@ -68,6 +68,13 @@ jobs:
           node -e "const r=require('./rx-mega-cloud-computer.cjs').runCloudComputer({execute:true,selectedChecks:['tests/rx-queen-memory-chat-bridge.test.cjs','tests/rx-queen-live-memory-gate.test.cjs']});console.log(JSON.stringify({executed:r.executed,passed:r.passed,failed:r.failed}));if(r.failed||r.passed!==2)process.exitCode=1"
       - name: Run five coordinated RX agent cycles
         run: node tests/rx-autobots-batch.cjs
+      - name: Verify Queen writing through existing authenticated chat bridge (offline)
+        run: |
+          node --test tests/rx-queen-memory-chat-bridge.test.cjs tests/rx-queen-writing-composer.test.cjs tests/rx-queen-writing-agent-review.test.cjs
+      - name: Confirm reviewed Queen writing before storing training evidence
+        run: |
+          node tests/rx-queen-writing-agent-review.cjs
+          node -e "const r=require('./tests/rx-queen-writing-agent-review.cjs').review();if(r.status!=='PASS'||r.passed!==r.total||r.productionConnected!==false)process.exit(1);console.log('Reviewed writing cases:',r.passed,'/',r.total)"
       - name: Practice Queen writing and answers
         run: node tests/rx-queen-response-practice.cjs
       - name: Queen writing agent review
