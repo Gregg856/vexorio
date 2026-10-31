@@ -260,7 +260,7 @@ export default {
       const normalizedMessage=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
       // Answer common self-introduction requests before the task-planner fallback.
       // This is a truthful deterministic reply, not simulated model inference.
-      const asksIntroduction=/(?:^|[.!? ]+)(?:napisz|powiedz|opowiedz|przedstaw)(?:\\s+(?:mi|nam))?\\s+(?:dwa\\s+zdania|2\\s+zdania|kilka\\s+zdan|cos|więcej|wiecej)?\\s*o\\s+sobie[?!. ]*$/u.test(normalizedMessage);
+      const asksIntroduction=/(?:^|[.!? ]+)(?:napisz|powiedz|opowiedz|przedstaw)(?:\s+(?:mi|nam))?\s+(?:dwa\s+zdania|2\s+zdania|kilka\s+zdan|cos|więcej|wiecej)?\s*o\s+sobie[?!. ]*$/u.test(normalizedMessage);
       const publicGreeting=/^(czesc|hej|witaj|witam|dzien dobry)[!?. ]*$/.test(normalizedMessage);
       const publicIdentity=/^(kim jestes|jak sie nazywasz|przedstaw sie)[!?. ]*$/.test(normalizedMessage);
       const publicThanks=/^(dzieki|dziekuje|dziekuje bardzo|wielkie dzieki)[!?. ]*$/.test(normalizedMessage);
