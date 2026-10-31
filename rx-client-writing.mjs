@@ -5,7 +5,7 @@ export function composeClientWriting(message){
  if(!m)return null;
  const instruction=m[3].toLocaleLowerCase('pl');
  // Reject unsupported instructions instead of claiming they were understood.
- const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|formalnie|oficjalnie|nieformalnie|i|[,;\s])/gu,'').trim();
+ const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|nieformalnie|formalnie|oficjalnie|i|[,;\s])/gu,'').trim();
  if(tokens)return null;
  const has=re=>re.test(instruction);
  const noGreeting=has(/bez\s+(?:powitania|przywitania)(?=[\s,;]|$)/u);
@@ -14,7 +14,7 @@ export function composeClientWriting(message){
  const yesSignoff=has(/(?:z\s+(?:pożegnaniem|podpisem)|dodaj\s+(?:pożegnanie|podpis))(?=[\s,;]|$)/u);
  const short=has(/(?:krótko|krotko|zwięźle|zwiezle)(?=[\s,;]|$)/u);
  const long=has(/(?:szczegółowo|obszernie)(?=[\s,;]|$)/u);
- const formal=has(/(?:formalnie|oficjalnie)(?=[\s,;]|$)/u);\n const informal=has(/nieformalnie(?=[\s,;]|$)/u);\n const conflicts=[formal&&informal?'styl':null,noGreeting&&yesGreeting?'powitanie':null,noSignoff&&yesSignoff?'pożegnanie':null,short&&long?'długość':null].filter(Boolean);
+ const formal=has(/(?:^|[\s,;])(?:formalnie|oficjalnie)(?=[\s,;]|$)/u);\n const informal=has(/nieformalnie(?=[\s,;]|$)/u);\n const conflicts=[formal&&informal?'styl':null,noGreeting&&yesGreeting?'powitanie':null,noSignoff&&yesSignoff?'pożegnanie':null,short&&long?'długość':null].filter(Boolean);
  if(conflicts.length)return {answer:'Polecenie zawiera sprzeczne wymagania. Doprecyzuj: '+conflicts.join(', ')+'.',requiresClarification:true};
  const content=m[4].trim();
  if(!content)return null;
