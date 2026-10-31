@@ -30,7 +30,7 @@ assert.doesNotMatch(client,/\/api\/rx\/chat['"`]/,'Client must not use admin rou
 assert.match(client,/textContent=text/,'Chat messages rendered as text');
 assert.doesNotMatch(client,/innerHTML\s*=/,'No HTML injection in chat');
 // RX BIBI 6.4: guard double submit even while async session lookup is pending.
-assert.match(client,/if\(!message\|\|!client\|\|sendInFlight\)return;sendInFlight=true;/,'Submit guard must engage before first await');
+assert.match(client,/if\(!message\|\|!client\|\|sendInFlight\)return;[\s\S]*?sendInFlight=true;[\s\S]*?await client\.auth\.getSession\(\)/,'Submit guard must engage before first await');
 assert.match(client,/catch\{sendInFlight=false;status\('Nie można sprawdzić sesji/,'Session lookup failure must release guard');
 assert.match(client,/if\(!data\?\.session\)\{sendInFlight=false;/,'Missing session must release guard');
 assert.match(client,/finally\{sendInFlight=false;\$\('send'\)\.disabled=false;/,'Network failure must release guard');
