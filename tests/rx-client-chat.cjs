@@ -53,6 +53,7 @@ async function simulateSubmit({networkFailure=false,authFailure=false}={}){
  };
  const messages=[],statusMessages=[],requests=[];
  const context={
+  navigator:{onLine:true},activeUserId:'test-user',pendingRetryMessage:null,MAX_REPLY_LENGTH:4000,
   $:id=>nodes[id]||(nodes[id]={}),
   client:{auth:{getSession:()=>auth.promise,signOut:async()=>{}}},
   history:[],tasks:[],sendInFlight:false,
