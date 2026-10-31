@@ -178,4 +178,17 @@ function chatRXWithWriting(message,options={}){
  const result=compose({prompt:match[2],mode});
  return {answer:result.text,plan:{steps:[]},completedCount:0,contextUsed:false,executed:0,writingMode:mode,writingSource:result.source,productionConnected:false};
 }
-module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory,chatRXWithIntentDiagnostics,chatRXWithWriting};
+
+// Explicit opt-in reviewed-answer memory for the existing RX Brain.
+// Only exact, previously approved prompts can override the local answer.
+async function chatRXWithApprovedResponses(message,{approvedFile,...options}={}){
+ if(typeof message!=='string'||!message.trim()||message.length>1000)throw Error('Invalid message');
+ if(typeof approvedFile!=='string'||!approvedFile.trim())throw Error('Invalid approved memory path');
+ const {load,lookup}=require('./rx-queen-approved-memory.cjs');
+ const approved=await load(approvedFile);
+ const match=lookup(approved,message);
+ if(!match)return chatRX(message,options);
+ const local=chatRX(message,options);
+ return {...local,answer:match.answer,approvedResponse:true,reviewId:match.reviewId,executed:0};
+}
+module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory,chatRXWithIntentDiagnostics,chatRXWithWriting,chatRXWithApprovedResponses};
