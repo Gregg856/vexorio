@@ -22,7 +22,12 @@ const password=process.env.RX_BIBI_TEST_PASSWORD;
    await page.locator('#email').fill(email);
    await page.locator('#password').fill(password);
    await page.locator('#signin').click();
-   await chat.waitFor({state:'visible',timeout:20000});
+   // Fail quickly and informatively if the real Supabase login rejects the test account.
+   await Promise.race([
+    chat.waitFor({state:'visible',timeout:20000}),
+    page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Logowanie nie powiodło się.'),null,{timeout:20000}).then(()=>{throw Error('Test-account sign-in rejected by Supabase. Verify RX_BIBI_TEST_EMAIL and RX_BIBI_TEST_PASSWORD in GitHub secrets; no password is logged.');})
+   ]);
+   if(!(await chat.isVisible()))throw Error('Authenticated chat did not become visible after sign-in.');
   }
   report.checks.push('authenticated_customer_chat_visible');
   // Real multi-turn regression: check the actual authenticated API, not just HTTP 200.
