@@ -1,6 +1,6 @@
 import {handleRXMemory} from './rx-persistent-memory.mjs';
 import {findRXKnowledge} from './rx-knowledge-base.mjs';
-import {searchWorldKnowledge,getRXKnowledgeFollowupPrior} from './rx-world-knowledge.mjs';
+import {searchWorldKnowledge,getRXKnowledgeFollowupPrior,formatRXKnowledgeFollowup} from './rx-world-knowledge.mjs';
 import {planRXChat} from './rx-chat-planner.mjs';
 import {answerRXTaskQuery} from './rx-bibi-task-reasoner.mjs';
 export default {
@@ -212,8 +212,8 @@ export default {
         try{
           const knowledge=await searchWorldKnowledge(knowledgeFollowupPrior);
           if(knowledge){
-            const sentences=knowledge.summary.match(/[^.!?]+[.!?](?=\s|$)/g)||[];
-            const explanation=sentences.slice(0,3).join(' ').trim()||knowledge.summary.slice(0,300).trim();
+            const explanation=formatRXKnowledgeFollowup(knowledge,history.at(-1));
+            if(!explanation)return new Response(JSON.stringify({ok:true,answer:'👑 To źródło nie zawiera dodatkowego wyjaśnienia, którego jeszcze nie podałam. Możesz zadać bardziej szczegółowe pytanie.',engine:'rx-bibi-client-world-knowledge-followup',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
             return new Response(JSON.stringify({ok:true,answer:'📚 Wracając do tematu „'+knowledge.title+'”:\n'+explanation+'\nŹródło: '+knowledge.url+'\nTo informacje ze źródła; jeśli pytasz o konkretną przyczynę, doprecyzuj ją.',knowledge,engine:'rx-bibi-client-world-knowledge-followup',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
           }
         }catch{/* External lookup failure falls back to planner. */}
