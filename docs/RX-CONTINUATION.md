@@ -39,7 +39,13 @@
 - Testy odczytu/zapisu, brakującego pliku i niebezpiecznych ścieżek.
 - PR #463 scalony po zielonym VEXORIO checks; bez wdrożenia produkcyjnego.
 
-## Bieżący pakiet: RX NAUKA 3.8
+## Zakończony pakiet: RX NAUKA 3.8
 - Weryfikacja pól `trainedModel:false` i `autoExecuted:0` podczas odczytu zapisanej pamięci, aby nie przyjmować fałszywych deklaracji autonomii.
 - Testy odrzucenia nieprawidłowych metadanych i zgodności poprawnej migawki.
-- Sprawdzić CI przed scaleniem. Bez serwera i bez zmian w produkcji.
+- PR #464 scalony po zielonym VEXORIO checks. Bez serwera i bez zmian w produkcji.
+
+## Bieżący pakiet: RX NAUKA 3.9
+- Unikalne nazwy plików tymczasowych przy zapisie migawki, aby jednoczesne zapisy nie kolidowały na tym samym PID.
+- Test równoległych zapisów: końcowy plik jest poprawną migawką jednego z zapisów, bez osieroconych plików tymczasowych.
+- Uwaga: to ochrona atomowego pliku, nie łączenie konkurencyjnych doświadczeń; to osobny przyszły etap.
+- Sprawdzić CI i scalić tylko po sukcesie.
