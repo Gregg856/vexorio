@@ -20,8 +20,12 @@ function vector(text){
  return toFrequencyVector(text.toLocaleLowerCase('pl'));
 }
 function createLearner({epochs=180,hidden=24,rate=0.06,additionalExamples=[]}={}){
- if(!Array.isArray(additionalExamples)||additionalExamples.length>128||additionalExamples.some(row=>!Array.isArray(row)||row.length!==2||typeof row[0]!=='string'||!row[0].trim()||row[0].length>256||!LABELS.includes(row[1])))throw Error('Invalid additional examples');
- const samples=EXAMPLES.concat(additionalExamples);
+ if(!Array.isArray(additionalExamples)||additionalExamples.length>128||additionalExamples.some(row=>!Array.isArray(row)||row.length!==2||!LABELS.includes(row[1])))throw Error('Invalid additional examples');
+ const approvedExamples=additionalExamples.map(row=>{
+  if(!Array.isArray(row)||row.length!==2||!row[0]||typeof row[0]!=='object'||row[0].approvedForTraining!==true||typeof row[0].text!=='string'||!row[0].text.trim()||row[0].text.length>256||!LABELS.includes(row[1]))throw Error('Additional example requires explicit training approval');
+  return [row[0].text,row[1]];
+ });
+ const samples=EXAMPLES.concat(approvedExamples);
  if(!Number.isSafeInteger(epochs)||epochs<1||epochs>1000||!Number.isSafeInteger(hidden)||hidden<1||hidden>128||!Number.isFinite(rate)||rate<=0||rate>0.2)throw Error('Invalid training settings');
  const net=createNetwork(256,hidden,LABELS.length);
  const x=new Float32Array(samples.length*256),y=new Float32Array(samples.length*LABELS.length);
