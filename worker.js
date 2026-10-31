@@ -212,7 +212,9 @@ export default {
         const prior=history.at(-2)?.trim()||'';
         const priorIsPublic=/^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+.{3,160}[?!.]?$/i.test(prior);
         const privateTopic=/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(prior);
-        if(priorIsPublic&&!privateTopic){
+        const priorAnswer=history.at(-1)?.trim()||'';
+        const hasSourceContext=/^📚[\s\S]{0,1800}Źródło:\s*https:\/\/pl\.wikipedia\.org\//i.test(priorAnswer);
+        if(priorIsPublic&&!privateTopic&&hasSourceContext){
           try{
             const knowledge=await searchWorldKnowledge(prior);
             if(knowledge){
