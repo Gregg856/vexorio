@@ -20,6 +20,6 @@ assert.doesNotMatch(profileAnswer,/Interesujesz się astronomią i lubię ksią�
 assert.match(profileAnswer,/książki/);
 assert.doesNotMatch(planRXChat('Co o mnie wiesz?').answer,/Krakowie|astronomią|książki/);
 const changedCity=planRXChat('Co o mnie wiesz?', [first,answer1,'Mieszkam w Krakowie.','Rozumiem.','Przeprowadziłem się z Krakowa do Warszawy.','Powodzenia!']).answer;
-assert.match(changedCity,/mieszkasz w Warszawy/);
-assert.doesNotMatch(changedCity,/mieszkasz w Krakowie/);
+assert.match(changedCity,/miasto: Warszawy/);
+assert.doesNotMatch(changedCity,/miasto: Krakowie/);
 console.log('RX BIBI name memory: 14/14 passed');
