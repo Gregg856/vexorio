@@ -47,8 +47,12 @@ function buildDialogueDeveloperReviews(queue){
   if(existing){existing.occurrences++;existing.priority=existing.priority==='high'||item.priority==='high'?'high':'normal';}
   else grouped.set(key,{...item,occurrences:1});
  }
- const reviews=[...grouped.values()].map((item,index)=>{
-  return {id:index+1,occurrences:item.occurrences,source:'rx-bibi-auto-dialogue',category:item.type,priority:item.priority==='high'?'high':'normal',question:item.message,observedAnswer:item.answer,diagnosis:diagnoses[item.type],regressionProposal:regressionFor(item),status:'awaiting_review',approved:false,executed:false,requiresApproval:true};
+ const ranked=[...grouped.values()].sort((a,b)=>{
+  const score=item=>(item.priority==='high'?100:0)+Math.min(item.occurrences,100);
+  return score(b)-score(a)||a.type.localeCompare(b.type)||a.message.localeCompare(b.message);
+ });
+ const reviews=ranked.map((item,index)=>{
+  return {id:index+1,occurrences:item.occurrences,priorityScore:(item.priority==='high'?100:0)+Math.min(item.occurrences,100),source:'rx-bibi-auto-dialogue',category:item.type,priority:item.priority==='high'?'high':'normal',question:item.message,observedAnswer:item.answer,diagnosis:diagnoses[item.type],regressionProposal:regressionFor(item),status:'awaiting_review',approved:false,executed:false,requiresApproval:true};
  });
  return {schema:1,kind:'rx-dialogue-developer-review-queue',received:queue.items.length,uniqueIssues:reviews.length,reviews,requiresApproval:true,productionModified:false,autoFixesApplied:0,automaticDeployment:false};
 }
