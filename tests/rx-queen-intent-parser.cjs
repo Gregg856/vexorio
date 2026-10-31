@@ -8,12 +8,12 @@ function parseIntent({prompt,mode}={}){
  const head=normalize(prompt.slice(0,colon)).toLocaleLowerCase('pl');
  const content=normalize(prompt.slice(colon+1));
  if(!content)return {content:normalize(prompt),constraints:[],recognized:false};
- const writing=/\b(?:napisz|wiadomość|wiadomosc|odpowiedz|odpowiedź|streszcz|podsumuj|streszczenie|sparafrazuj|przepisz)\b/u.test(head);
+ const writing=/(?:^|\s)(?:napisz|wiadomość|wiadomosc|odpowiedz|odpowiedź|streszcz|podsumuj|streszczenie|sparafrazuj|przepisz)(?=\s|$)/u.test(head);
  const constraints=[];
- if(mode==='message'&&writing&&/\bbez\s+(?:powitania|przywitania)\b/u.test(head))constraints.push('noGreeting');
- if(mode==='reply'&&writing&&/\bbez\s+(?:pożegnania|zakonczenia|zakończenia)\b/u.test(head))constraints.push('noSignoff');
- if(mode==='summary'&&writing&&/\b(?:jednym|jedno)\s+zdani(?:u|e)\b/u.test(head))constraints.push('oneSentence');
- if(mode==='message'&&writing&&/(?:\bbez\s+cytowania\b|\bwłasnymi\s+słowami\b)/u.test(head))constraints.push('paraphrase');
+ if(mode==='message'&&writing&&/(?:^|\s)bez\s+(?:powitania|przywitania)(?=\s|$)/u.test(head))constraints.push('noGreeting');
+ if(mode==='reply'&&writing&&/(?:^|\s)bez\s+(?:pożegnania|zakonczenia|zakończenia)(?=\s|$)/u.test(head))constraints.push('noSignoff');
+ if(mode==='summary'&&writing&&/(?:^|\s)(?:jednym|jedno)\s+zdani(?:u|e|em)(?=\s|$)/u.test(head))constraints.push('oneSentence');
+ if(mode==='message'&&writing&&/(?:\bbez\s+cytowania\b|(?:^|\s)własnymi\s+słowami(?=\s|$))/u.test(head))constraints.push('paraphrase');
  return constraints.length?{content,constraints,recognized:true}:{content:normalize(prompt),constraints:[],recognized:false};
 }
 module.exports={parseIntent};
