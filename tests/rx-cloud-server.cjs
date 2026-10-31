@@ -106,6 +106,25 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
     const denied=await fetch(base+endpoint,{headers:{Authorization:'Bearer invalid-token'}});
     assert.equal(denied.status,401,'Invalid token must be rejected: '+endpoint);
   }
+  // RX CLOUD #598: negative authentication and recovery scenarios (localhost only).
+  const learningPath=base+'/__rxcloud/bibi/learning';
+  const validLearningToken=process.env.RX_QUEEN_LOCAL_TOKEN;
+  const badHeaders=[
+    undefined,
+    {Authorization:'Bearer incorrect-token'},
+    {Authorization:validLearningToken},
+    {Authorization:'Basic '+validLearningToken},
+    {Authorization:'bearer '+validLearningToken},
+    {Authorization:'Bearer  '+validLearningToken},
+    {Authorization:'Bearer '+validLearningToken+' extra'},
+  ];
+  for(const headers of badHeaders){
+    const response=await fetch(learningPath,headers?{headers}:{});
+    assert.equal(response.status,401,'Private learning feed must reject missing or malformed authorization');
+    assert.equal(response.headers.get('cache-control'),'no-store');
+  }
+  const recoveredLearning=await fetch(learningPath,{headers:{Authorization:'Bearer '+validLearningToken}});
+  assert.equal(recoveredLearning.status,200,'Valid token must still work after rejected requests');
   const queen=await fetch(base+'/__rxcloud/queen/status',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
   assert.equal(queen.status,200);
   assert.equal((await queen.json()).taskExecution,false);
