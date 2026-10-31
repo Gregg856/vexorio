@@ -75,3 +75,14 @@
 - PR #473–#476 scalone: adapter formatu, testy kontraktu, włączenie testów RX NAUKA do CI i test faktycznego `worker.fetch` z symulowanym RX CLOUD. To nie jest jeszcze dowód produkcyjnej dostępności.
 - **Najbliższy krok:** zweryfikować na istniejącym własnym serwerze obecność poprawnego pliku `RX_BRAIN_MEMORY_FILE` (lub domyślnego `rx-cloud-private-inbox/rx-brain-memory.json`), zgodność `RX_QUEEN_LOCAL_TOKEN`, `RX_CLOUD_BRAIN_MEMORY_URL`, działanie HTTPS i wynik autoryzowanego odczytu. Nie wypisuj wartości sekretów ani prywatnej pamięci w logach.
 - Weryfikacja powinna być tylko do odczytu; przed zmianą produkcji uzyskaj osobną zgodę.
+
+## Uporządkowanie RX — jeden przepływ (2026-10-31)
+- **BIBI / Królowa — interfejs:** istniejący `rx-bibi-manager.html`; nie tworzyć kolejnych paneli.
+- **RX Brain — pamięć i rozmowa:** `rx-brain-chat-engine.cjs`, `rx-brain-memory.cjs`, `rx-brain-store.cjs`; pamięć doświadczeń to nie sieć neuronowa.
+- **RX Neural — istniejący model językowych intencji:** `rx-text-learner.cjs`, `rx-neural-core.cjs`; to klasyfikator czterech intencji, nie generatywny LLM.
+- **Jedno wejście do treningu modelu intencji:** `rx-queen-train-batch.cjs`; przyjmuje zatwierdzony pakiet albo recenzje RX Mrówek z indywidualnym `humanApproved:true` i `testReference`. W obu przypadkach używa `rx-queen-training-selection.cjs`, nie drugiego trenera.
+- **RX Mrówki — starszy tor:** `rx-ant-ai-trainer.cjs` i `rx-ant-ai-evaluator.cjs` uczą/oceniają osobny syntetyczny model regresji logistycznej; NIE jest to model rozmowy BIBI. Nie łączyć jego wag z siecią językową.
+- **Brama / chmura:** istniejące `worker.js` i `rx-cloud-server.cjs`; brak potwierdzenia wdrożenia produkcyjnego i automatycznego treningu 24/7.
+- **Nie dublować:** PR #482 zawiera alternatywny moduł `rx-ant-queen-training.cjs`; integracja wejścia z Mrówek odbywa się teraz bezpośrednio w istniejącym `rx-queen-train-batch.cjs`. Nie scalać obu wariantów.
+- **Ochrona:** niezależne dane walidacyjne, zakaz wycieku HOLDOUT/CHALLENGE, brak automatycznej promocji modelu do produkcji. Testy CI wymagane.
+- **Kolejny krok:** po zielonym CI sprawdzić, czy istniejący harmonogram Mrówek dostarcza rzeczywiste zatwierdzone recenzje; dopiero wtedy podłączać go do tego samego wejścia. Nie deklarować działania na żywo bez dowodu.
