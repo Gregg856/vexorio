@@ -10,6 +10,7 @@ on:
       - 'tests/rx-client-dialogue-baseline.cjs'
       - 'tests/rx-client-knowledge-regex.cjs'
       - 'tests/rx-client-knowledge-format.cjs'
+      - 'tests/rx-client-knowledge-followup.cjs'
       - 'worker.js'
       - '.github/workflows/rx-client-dialogue-baseline.yml'
 jobs:
@@ -29,6 +30,8 @@ jobs:
         run: node tests/rx-client-knowledge-regex.cjs
       - name: Sprawdź format odpowiedzi RX WIEDZA ŚWIATA
         run: node tests/rx-client-knowledge-format.cjs
+      - name: Sprawdź bezpieczne pytania uzupełniające
+        run: node tests/rx-client-knowledge-followup.cjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
