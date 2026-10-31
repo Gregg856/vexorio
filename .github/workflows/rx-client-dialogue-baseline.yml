@@ -53,4 +53,5 @@ jobs:
           path: |
             rx-client-dialogue-baseline.json
             rx-bibi-auto-dialogue.json
+            rx-bibi-developer-queue.json
           retention-days: 7
