@@ -19,7 +19,8 @@ export function composeClientWriting(message){
  const content=m[4].trim();
  if(!content)return null;
  if(m[2]==='streszczenie')return {answer:'Nie potrafię jeszcze wiarygodnie streścić dowolnego tekstu. Podaj krótszy fragment lub sprecyzuj cel.',requiresClarification:true};
- const normalized=content.replace(/[.!?]+$/u,'').trim();
- const answer=[noGreeting||short?'':'Cześć!',normalized.charAt(0).toLocaleUpperCase('pl')+normalized.slice(1)+'.',noSignoff||short?'':'Pozdrawiam!'].filter(Boolean).join(' ');
+ const normalized=content.trim();
+ const ending=/[.!?…]$/u.test(normalized)?'':'.';
+ const answer=[noGreeting||short?'':'Cześć!',normalized.charAt(0).toLocaleUpperCase('pl')+normalized.slice(1)+ending,noSignoff||short?'':'Pozdrawiam!'].filter(Boolean).join(' ');
  return {answer,requiresClarification:false};
 }

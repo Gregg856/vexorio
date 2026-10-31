@@ -19,3 +19,15 @@ test('server route invokes writing only after authenticated user validation',()=
  assert.ok(start>=0&&auth>start&&invoke>auth);
  assert.ok(worker.includes("await import('./rx-client-writing.mjs')"));
 });
+
+test('client writing preserves the meaning of question and exclamation punctuation',async()=>{
+ const {pathToFileURL}=require('node:url');
+ const {composeClientWriting}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ const examples=[
+  ['Napisz krótko: czy spotkanie jest jutro?','Czy spotkanie jest jutro?'],
+  ['Napisz krótko: dziękuję!','Dziękuję!'],
+  ['Napisz krótko: czy to działa?!','Czy to działa?!'],
+  ['Napisz krótko: wszystko gotowe','Wszystko gotowe.']
+ ];
+ for(const [prompt,expected] of examples)assert.equal(composeClientWriting(prompt)?.answer,expected,prompt);
+});
