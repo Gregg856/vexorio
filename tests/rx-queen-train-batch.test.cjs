@@ -153,3 +153,45 @@ test('self-hosted BIBI bridge is opt-in and preserves worker authentication boun
  assert.match(source,/new Response\(body,\{status:200,headers:outHeaders\}\)/);
  assert.match(source,/Advisory model failures never affect the authenticated original reply/);
 });
+
+test('RX CLOUD real HTTP shadow bridge preserves answers and denies wrong origin',async()=>{
+ const {start}=require('../rx-cloud-server.cjs');
+ const networkFetch=global.fetch;
+ const original={SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY,RX_BIBI_INTENT_SHADOW:process.env.RX_BIBI_INTENT_SHADOW};
+ try{
+  process.env.SUPABASE_URL='https://testproject.supabase.co';
+  process.env.SUPABASE_ANON_KEY='test-anon-key';
+  global.fetch=async(input,options)=>{
+   const url=String(input);
+   if(url.startsWith('http://127.0.0.1:'))return networkFetch(input,options);
+   if(url==='https://testproject.supabase.co/auth/v1/user')
+    return new Response(JSON.stringify({id:'00000000-0000-4000-8000-000000000001',is_anonymous:false}),{status:200,headers:{'Content-Type':'application/json'}});
+   throw Error('Unexpected external fetch: '+url);
+  };
+  async function send(enabled,origin='http://localhost'){
+   process.env.RX_BIBI_INTENT_SHADOW=enabled?'true':'false';
+   const server=await start({port:0,host:'127.0.0.1'});
+   try{
+    const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/rx/client/chat',{
+     method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Authorization:'Bearer test-token'},
+     body:JSON.stringify({message:'serdecznie cię witam',history:[],tasks:[]})
+    });
+    return {status:response.status,body:await response.json()};
+   }finally{await new Promise((resolve,reject)=>server.close(err=>err?reject(err):resolve()));}
+  }
+  const off=await send(false),on=await send(true),denied=await send(true,'https://wrong.example');
+  assert.equal(off.status,200);
+  assert.equal(on.status,200);
+  assert.equal(off.body.answer,on.body.answer);
+  assert.equal(off.body.intentDiagnostics,undefined);
+  assert.equal(on.body.intentDiagnostics?.model,'rx-neural-bigram-shadow');
+  assert.equal(on.body.intentDiagnostics?.advisoryOnly,true);
+  assert.equal(on.body.intentDiagnostics?.changedAnswer,false);
+  assert.equal(on.body.executed,0);
+  assert.equal(denied.status,403);
+  assert.equal(denied.body.intentDiagnostics,undefined);
+ }finally{
+  global.fetch=networkFetch;
+  for(const [key,value] of Object.entries(original)){if(value===undefined)delete process.env[key];else process.env[key]=value;}
+ }
+});
