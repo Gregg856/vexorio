@@ -49,6 +49,14 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       const origin='http://localhost';
       const url=new URL(req.url||'/',origin);
       if(url.pathname==='/__rxcloud/health') {if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'Allow':'GET, HEAD','Cache-Control':'no-store'});res.end();return;}res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,service:'rx-cloud-2',runtime:'node',uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),memory:{rssBytes:process.memoryUsage().rss,heapUsedBytes:process.memoryUsage().heapUsed,heapTotalBytes:process.memoryUsage().heapTotal},connectionsLimit:server.maxConnections,load:{activeRequests,peakActiveRequests,completedRequests}}));return;}
+      // Read-only local capability snapshot. Does not assert an LLM is running.
+      if(url.pathname==='/__rxcloud/model/capabilities'){
+        if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'Allow':'GET, HEAD','Cache-Control':'no-store'});res.end();return;}
+        const available=env.RX_BIBI_MODEL_ENABLED==='true'&&typeof env.RX_BIBI_MODEL_SERVICE?.fetch==='function';
+        res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
+        res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,modelConfigured:available,modelVerified:false,mode:'configuration-only',service:'rx-cloud-2'}));
+        return;
+      }
       if(url.pathname==='/__rxcloud/queen/status') {
         res.setHeader('Cache-Control','no-store');
         res.setHeader('X-Content-Type-Options','nosniff');

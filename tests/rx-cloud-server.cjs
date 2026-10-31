@@ -38,6 +38,15 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.maxConnections,128,'Concurrent connection count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
+  const capability=await fetch(base+'/__rxcloud/model/capabilities');
+  assert.equal(capability.status,200);
+  assert.equal(capability.headers.get('cache-control'),'no-store');
+  assert.deepEqual(await capability.json(),{ok:true,modelConfigured:false,modelVerified:false,mode:'configuration-only',service:'rx-cloud-2'});
+  const capabilityHead=await fetch(base+'/__rxcloud/model/capabilities',{method:'HEAD'});
+  assert.equal(capabilityHead.status,200);
+  assert.equal(await capabilityHead.text(),'');
+  const capabilityPost=await fetch(base+'/__rxcloud/model/capabilities',{method:'POST'});
+  assert.equal(capabilityPost.status,405);
   const health=await fetch(base+'/__rxcloud/health');
   assert.equal(health.status,200);
   const healthData=await health.json();
@@ -45,7 +54,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(healthData.connectionsLimit,128);
   assert.equal(healthData.load.activeRequests,1,'Health request should count itself');
   assert.equal(healthData.load.peakActiveRequests,1,'First request should establish peak');
-  assert.equal(healthData.load.completedRequests,0,'First request should not yet be completed when snapshot is taken');
+  assert.equal(healthData.load.completedRequests,3,'Three capability checks should have completed before health snapshot');
   for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
     assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
   }
