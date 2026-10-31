@@ -6,6 +6,7 @@ on:
       - 'rx-money-engine.cjs'
       - 'tests/rx-money-engine.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'tests/rx-bibi-evaluator.cjs'
       - 'tests/rx-bibi-evaluator.test.cjs'
       - 'tests/rx-bibi-live-evaluation.cjs'
@@ -44,6 +45,7 @@ on:
     paths:
       - 'rx-cloud-server.cjs'
       - 'tests/rx-cloud-server.cjs'
+      - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'tests/rx-bibi-evaluator.cjs'
       - 'tests/rx-bibi-evaluator.test.cjs'
       - 'tests/rx-bibi-live-evaluation.cjs'
@@ -128,6 +130,8 @@ jobs:
         run: node tests/rx-cloud-migration-readiness.cjs
       - name: Run RX CLOUD smoke tests
         run: node tests/rx-cloud-server.cjs
+      - name: Test local model inference transport
+        run: node --test tests/rx-bibi-loopback-e2e.test.cjs
       - name: Test isolated RX CLOUD installation layout
         run: node tests/rx-cloud-staged.cjs
       - name: Validate monitor failure reporting (no live server)
