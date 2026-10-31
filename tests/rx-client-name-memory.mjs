@@ -9,4 +9,7 @@ const answer2=planRXChat(second,[first,answer1]).answer;
 assert.match(answer2,/Marek/);
 assert.match(answer2,/Wcześniej napisałeś/);
 assert.match(planRXChat('Jak mam na imię?').answer,/Nie podałeś/);
-console.log('RX BIBI name memory: 4/4 passed');
+assert.match(planRXChat('Co o mnie wiesz?', [first,answer1]).answer,/Marek/);
+assert.match(planRXChat('Co wiesz o mnie?').answer,/Nie mam jeszcze/);
+assert.doesNotMatch(planRXChat('Co o mnie wiesz?', [first,answer1]).answer,/mieszkasz|pracujesz|lat/);
+console.log('RX BIBI name memory: 7/7 passed');
