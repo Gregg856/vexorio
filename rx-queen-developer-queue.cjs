@@ -61,12 +61,16 @@ function buildDialogueDeveloperReviews(queue){
 function buildTesterFailureReviews({run,jobs}={}){
  if(!run||!Number.isSafeInteger(run.id)||run.id<1||run.conclusion!=='failure'||!Array.isArray(jobs)||jobs.length>100)throw Error('Invalid failed RX Tester run');
  const reviews=[];
+ const seenFailures=new Set();
  for(const job of jobs){
   if(!job||typeof job.name!=='string'||job.name.length>200||!Array.isArray(job.steps)||job.steps.length>100)throw Error('Invalid RX Tester job');
   if(job.conclusion!=='failure')continue;
   for(const step of job.steps){
    if(!step||typeof step.name!=='string'||step.name.length>200)throw Error('Invalid RX Tester step');
    if(step.conclusion!=='failure')continue;
+   const failureKey=JSON.stringify([job.name,step.name]);
+   if(seenFailures.has(failureKey))continue;
+   seenFailures.add(failureKey);
    reviews.push({source:'github-actions-rx-tester',runId:run.id,runUrl:typeof run.html_url==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/[0-9]+$/.test(run.html_url)?run.html_url:null,jobName:job.name,stepName:step.name,diagnosis:'Failed CI step; root cause not yet verified',proposedAction:'Inspect failed step logs and reproduce with a focused regression before proposing code changes',status:'awaiting_review',approved:false,executed:false,requiresApproval:true});
    if(reviews.length>=100)break;
   }
