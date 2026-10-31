@@ -64,3 +64,13 @@ Ten plik jest dokumentacją stanu i planem w GitHub. **Sam zapis tego pliku NIE 
 
 ### Zasada końca każdej sesji
 Dopisz: ostatni scalony PR/SHA, testy, status wdrożenia, następny jeden konkretny krok. W nowym czacie rozpocznij od odczytu tego pliku.
+
+
+## Aktualizacja końcowa 2026-10-31 — przekazanie do nowego czatu
+- Najnowszy zweryfikowany commit main: `22056ee6b3173a2652f54e162148ee55c638e363` (PR #538).
+- Scalono po zielonym `VEXORIO checks`: #533 (zadania panelu wywołują bezpieczne odczyty Strażaka/Testera), #534 (istniejący czat managera przekazuje polecenia pisania do uwierzytelnionego `/api/rx/client/chat`), #535 (bramka testów pisania w cyklu nauki), #536 (zatwierdzone ćwiczenia mogą trafić do istniejącej pamięci odpowiedzi), #537 (automatyczne przygotowywanie kandydatów ćwiczeń), #538 (9 zadań, rotacja i wykrywanie powtórek).
+- Ważne: #536 nie oznacza automatycznego zatwierdzania. `approveWritingExercise` wymaga `approved:true` i `reviewId`; live gate `rx-queen-live-memory-gate.cjs` jest opt-in. Bezpieczne ćwiczenia offline nie trenują wag modelu LLM.
+- `tests/rx-queen-writing-reviewed-batch.cjs`: dziewięć ćwiczeń, 3 na serię; `tests/rx-queen-writing-reviewed-batch.test.cjs` testuje rotację i bezpieczeństwo. Historia `rx-bibi-reports/rx-queen-writing-curriculum-history.json` jest lokalna dla runnera i **nie ma potwierdzonej trwałości pomiędzy uruchomieniami GitHub Actions**. Następny konkretny krok: sprawdzić istniejący mechanizm zapisu/odczytu w workflow i dodać trwałość historii ćwiczeń, bez nowego serwera/panelu.
+- Własny RX CLOUD: `rx-cloud-server.cjs` (Node); `rx-mega-cloud-computer.cjs` (wykonawca allowlistowanych skryptów); `rx-bibi-manager.html` (istniejący panel); `worker.js` (API); `rx-brain-chat-engine.cjs`, `rx-queen-approved-memory.cjs`, `rx-queen-live-memory-gate.cjs`, `tests/rx-queen-writing-composer.cjs` (silnik ćwiczeń). Supabase: produkcja `lfytoxcnutduahshbsko`, staging `owkjdlpawczrnwyszduj` — nie zmieniać produkcji bez zgody.
+- GitHub Actions `.github/workflows/rx-bibi-learning.yml` ma harmonogram co 6 godzin. Testy CI green nie dowodzą działania self-hosted serwera. Adres/dostawca stale działającego RX CLOUD nie zostały potwierdzone; **nie twierdzić, że serwer 24/7 już działa**. Istniejący adres Worker `https://vexorio.grzegorzbub1985.workers.dev/rx-client` to nie dowód hostingu Node RX CLOUD.
+- Użytkownik chce, by boty uczyły Królową faktycznie lepiej pisać i odpowiadać, a nie produkowały kolejne raporty; preferuje duże pakiety, automatyzację, minimalne ręczne czynności na Androidzie, żadnego dublowania modułów. Dalsze kroki: trwała historia, rozszerzenie zatwierdzonych przykładów, wpięcie do istniejącego czatu, weryfikacja efektów; bez obiecywania generatywnego uczenia, gdy go nie ma.
