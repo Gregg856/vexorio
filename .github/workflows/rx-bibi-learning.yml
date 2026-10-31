@@ -76,9 +76,12 @@ jobs:
             const found=await github.rest.issues.listForRepo({owner,repo,state:'open',per_page:100});
             const issue=found.data.find(i=>!i.pull_request&&i.title===title);
             if(!issue)return;
-            const match=(issue.body||'').match(/<!-- RX_CURRICULUM_START -->([\\s\\S]*?)<!-- RX_CURRICULUM_END -->/);
-            if(!match)throw Error('Missing curriculum markers');
-            const safe=validateHistory(JSON.parse(match[1].trim().replace(/^\\n|\\n$/g,'')));
+            const start='<!-- RX_CURRICULUM_START -->'; const end='<!-- RX_CURRICULUM_END -->'; const body=issue.body||''; const a=body.indexOf(start), b=body.indexOf(end,a+start.length);
+            if(a<0||b<0)throw Error('Missing curriculum markers');
+            let payload=body.slice(a+start.length,b).trim();
+            while(payload.startsWith(String.fromCharCode(92)+'n'))payload=payload.slice(2);
+            while(payload.endsWith(String.fromCharCode(92)+'n'))payload=payload.slice(0,-2);
+            const safe=validateHistory(JSON.parse(payload.trim()));
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
             fs.writeFileSync('rx-bibi-reports/rx-queen-writing-curriculum-history.json',JSON.stringify(safe));
       - name: RX MEGA execute existing Queen chat and memory tests
