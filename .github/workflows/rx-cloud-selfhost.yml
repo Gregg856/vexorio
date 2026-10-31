@@ -8,6 +8,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'rx-bibi-own-inference.cjs'
+      - 'deploy/rx-bibi-host-readiness.cjs'
+      - 'tests/rx-bibi-host-readiness.test.cjs'
       - 'deploy/rx-bibi-model.service'
       - 'tests/rx-bibi-model-service.test.cjs'
       - 'tests/rx-bibi-real-model-probe.test.cjs'
@@ -64,6 +66,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'rx-bibi-own-inference.cjs'
+      - 'deploy/rx-bibi-host-readiness.cjs'
+      - 'tests/rx-bibi-host-readiness.test.cjs'
       - 'deploy/rx-bibi-model.service'
       - 'tests/rx-bibi-model-service.test.cjs'
       - 'tests/rx-bibi-real-model-probe.test.cjs'
@@ -183,6 +187,8 @@ jobs:
         run: node --test tests/rx-bibi-real-model-probe.test.cjs
       - name: Test RX BIBI model service template
         run: node --test tests/rx-bibi-model-service.test.cjs
+      - name: Test BIBI cross-platform host readiness
+        run: node --test tests/rx-bibi-host-readiness.test.cjs
       - name: Test isolated RX CLOUD installation layout
         run: node tests/rx-cloud-staged.cjs
       - name: Validate monitor failure reporting (no live server)
