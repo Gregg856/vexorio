@@ -12,7 +12,7 @@ export function planRXChat(message,history=[],learning=null){
  const preferences=recentUserTurns.filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/i.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
- const sessionName=history.filter((_,i)=>i%2===0).slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
+ const sessionName=[...history.filter((_,i)=>i%2===0),message].slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
  const asksAboutSelf=/\b(?:co|czego)\s+(?:teraz\s+)?(?:o mnie|o mojej osobie)\s+(?:wiesz|pamiętasz|pamietasz)\b|\bco\s+(?:wiesz|pamiętasz|pamietasz)\s+o\s+mnie\b/i.test(message);
  if(asksAboutSelf){
   const facts=[];
@@ -20,7 +20,7 @@ export function planRXChat(message,history=[],learning=null){
   // Session facts remain local to the current chat; never infer unknown details.
   const recentUserMessages=[...history.filter((_,i)=>i%2===0),message].slice(-10);
   const cityMessages=recentUserMessages.map(turn=>/(?:mieszkam w|przeprowadziłem się (?:z [^.!?,]{2,40} )?do|przeprowadziłam się (?:z [^.!?,]{2,40} )?do) ([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż-]{2,40})/i.exec(turn)?.[1]).filter(Boolean);
-  if(cityMessages.length)facts.push('Ostatnio podane miasto: '+cityMessages.at(-1)+'.');
+  if(cityMessages.length)facts.push('Ostatnio wskazana miejscowość: '+cityMessages.at(-1)+'.');
   const interests=recentUserMessages.map(turn=>/interesuję się ([^.!?,]{2,50}?)(?=\s+i\s+lubię\b|[.!?,]|$)/i.exec(turn)?.[1]?.trim()).filter(Boolean);
   if(interests.length)facts.push('Interesujesz się '+interests.at(-1)+'.');
   const likes=recentUserMessages.map(turn=>/lubię ([^.!?,]{2,50})/i.exec(turn)?.[1]?.trim()).filter(Boolean);
