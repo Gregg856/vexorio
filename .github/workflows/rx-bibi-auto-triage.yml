@@ -1,0 +1,46 @@
+name: RX BIBI Bot — automatic failure triage
+on:
+  workflow_run:
+    workflows: ["RX BIBI Tester — mobile browser"]
+    types: [completed]
+permissions:
+  actions: read
+  issues: write
+concurrency:
+  group: rx-bibi-failure-triage
+  cancel-in-progress: false
+jobs:
+  triage:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Diagnose failed jobs and maintain one tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner=context.repo.owner, repo=context.repo.repo;
+            const run=context.payload.workflow_run;
+            const jobs=await github.paginate(github.rest.actions.listJobsForWorkflowRun,{owner,repo,run_id:run.id,per_page:100});
+            const failed=jobs.filter(j=>j.conclusion==='failure');
+            const failures=[];
+            for(const job of failed){
+              const steps=(job.steps||[]).filter(s=>s.conclusion==='failure');
+              failures.push({job:job.name,steps:steps.map(s=>s.name),url:job.html_url});
+            }
+            const title='[RX BIBI BOT] Browser tester — recurring failure';
+            const body=[
+              'Automatyczna diagnoza po nieudanym teście. Bot nie zmienia produkcji ani sekretów.',
+              '',
+              'Ostatni przebieg: '+run.html_url,
+              'Numer: '+run.run_number,
+              'Nieudane zadania:',
+              ...failures.map(f=>'- '+f.job+' / '+(f.steps.join(', ')||'unknown step')+' — '+f.url),
+              '',
+              'Jeśli zawiodło logowanie E2E: zweryfikuj konto testowe i zgodność GitHub Secrets bez ujawniania haseł.',
+              'Lokalne i mock testy nie potwierdzają prawdziwego zalogowanego czatu.'
+            ].join('\n');
+            const issues=await github.paginate(github.rest.issues.listForRepo,{owner,repo,state:'open',per_page:100});
+            const existing=issues.find(i=>!i.pull_request&&i.title===title);
+            if(existing)await github.rest.issues.update({owner,repo,issue_number:existing.number,body});
+            else await github.rest.issues.create({owner,repo,title,body});
