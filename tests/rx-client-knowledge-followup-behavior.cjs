@@ -21,5 +21,7 @@ const path=require('node:path');
  assert.equal(detail({summary:'Pierwsze zdanie.'},'📚 Tytuł\\nPierwsze zdanie.\\nŹródło: https://pl.wikipedia.org/wiki/Test'),null);
  assert.equal(detail({summary:'Pierwsze zdanie. Drugie zdanie. Trzecie zdanie.'},['📚 Pierwsze zdanie.','📚 Drugie zdanie.']),'Trzecie zdanie.');
  assert.equal(detail({summary:'Pierwsze zdanie. Drugie zdanie.'},['Pierwsze zdanie.','Drugie zdanie.']),null);
- console.log('RX BIBI sourced followup behavior: 14/14 passed');
+ assert.equal(prior('A dlaczego?',['Wyjaśnij mi fotosyntezę',sourced]),'Wyjaśnij mi fotosyntezę');
+ assert.equal(prior('Opowiedz więcej',['Chciałbym się dowiedzieć o fotosyntezie',sourced]),'Chciałbym się dowiedzieć o fotosyntezie');
+ console.log('RX BIBI sourced followup behavior: 16/16 passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});
