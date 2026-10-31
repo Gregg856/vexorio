@@ -29,10 +29,12 @@ const issues=results.flatMap((r,index)=>{
  const problems=[];
  if(!r.pass)problems.push('assertion-failed');
  if(/Nie rozumiem jeszcze|Nie mam jeszcze silnika|Czat RX odpowiada przez serwerowy planer/i.test(r.answer))problems.push('generic-fallback');
- if(r.message.includes('Ile to jest 12 plus 8?')&&!/\\b20\\b/.test(r.answer))problems.push('math-answer-missing');
+ if(r.message.includes('Ile to jest 12 plus 8?')&&!/\b20\b/.test(r.answer))problems.push('math-answer-missing');
  if(r.message.includes('Co o mnie wiesz?')&&r.scenario==='profile-and-relocation'&&!/Krakowie/.test(r.answer))problems.push('profile-memory-missing');
  return problems.map(type=>({case:index+1,scenario:r.scenario,type,message:r.message,answer:r.answer.slice(0,240)}));
 });
+const developerQueue=issues.map(issue=>({source:'rx-bibi-auto-dialogue',priority:issue.type==='assertion-failed'?'high':'normal',status:'needs-review',...issue}));
+writeFileSync('rx-bibi-developer-queue.json',JSON.stringify({schema:1,kind:'rx-developer-review-queue',generatedAt:new Date().toISOString(),count:developerQueue.length,items:developerQueue},null,2)+'\n');
 const generic=results.filter(r=>/Czat RX odpowiada przez serwerowy planer|Nie rozumiem jeszcze|Nie mam jeszcze silnika/i.test(r.answer));
 const report={qualityIssues:issues.length,issues,genericFallbacks:generic.length,kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,trainingPerformed:false,results};
 writeFileSync('rx-bibi-auto-dialogue.json',JSON.stringify(report,null,2)+'\n');
