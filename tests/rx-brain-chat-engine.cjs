@@ -60,6 +60,21 @@ const recentTopic=chatRX('Sprawdź to',{history:['Błąd faktury','Gotowe','Klaw
 assert.match(recentTopic.answer,/Klawiatura Android zasłania czat/);
 console.log('RX BIBI level 4: multi-turn topic retrieval checked');
 
+// Regression: assistant replies must never replace the last user topic.
+const mixedTopics=[
+ 'Napraw czat Android','Mogę zaproponować diagnostykę.',
+ 'Sprawdź RX MRÓWKI','Ostatni przebieg CI nie potwierdza pracy na żywo.',
+ 'Dalej','Kontynuuję temat: Sprawdź RX MRÓWKI.'
+];
+const mixedFollowup=chatRX('Kontynuuj',{history:mixedTopics});
+assert.equal(mixedFollowup.contextUsed,true);
+assert.match(mixedFollowup.answer,/Sprawdź RX MRÓWKI/);
+assert.doesNotMatch(mixedFollowup.answer,/Ostatni przebieg CI/);
+const mixedReturn=chatRX('Wróć do poprzedniego tematu',{history:mixedTopics});
+assert.match(mixedReturn.answer,/Napraw czat Android/);
+console.log('RX Brain: multi-topic user-turn regression OK');
+
+
 for(const question of ['Czy testy są zielone?','Jaki wynik testów?','Czy to już naprawione?']){
  const result=chatRX(question,{history:['Błąd czatu Android','Zielone']});
  assert.match(result.answer,/Nie mam potwierdzonego wyniku GitHub Actions/,question);
