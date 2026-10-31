@@ -54,7 +54,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(healthData.connectionsLimit,128);
   assert.equal(healthData.load.activeRequests,1,'Health request should count itself');
   assert.equal(healthData.load.peakActiveRequests,1,'First request should establish peak');
-  assert.equal(healthData.load.completedRequests,0,'First request should not yet be completed when snapshot is taken');
+  assert.equal(healthData.load.completedRequests,3,'Three capability checks should have completed before health snapshot');
   for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
     assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
   }
