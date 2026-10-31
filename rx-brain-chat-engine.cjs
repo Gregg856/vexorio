@@ -31,7 +31,7 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const wantsPreviousTopic=/^(?:wróć|wroc) do poprzedniego tematu[.!?\s]*$/i.test(message.trim());
  const olderTopic=meaningful.find(item=>item!==topic)||'';
  // Acknowledgements do not replace the actual topic when the user adds a short follow-up.
- const contextAnchor=isAcknowledgement(previous)?topic:previous;
+ const contextAnchor=topic;
 
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const continuation=isFollowup(message);
