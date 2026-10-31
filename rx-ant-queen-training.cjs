@@ -1,7 +1,6 @@
 'use strict';
 // RX Ants prepare, but never approve, data for Queen neural training.
 const fs=require('node:fs/promises');
-const {trainQueenFromBatch}=require('./rx-queen-train-batch.cjs');
 const LABELS=new Set(['greeting','tests','memory','math']);
 function prepareAntBatch({reviews,validation}={}){
  if(!Array.isArray(reviews)||reviews.length<4||reviews.length>128||!Array.isArray(validation))throw Error('Invalid ant review batch');
