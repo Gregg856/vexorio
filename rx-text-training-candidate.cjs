@@ -19,6 +19,18 @@ const EXTRAS=Object.freeze([
 // Repo-maintained synthetic examples are explicitly approved only for offline evaluation.
 const approvedOffline=rows=>rows.map(([text,label])=>[{text,approvedForTraining:true},label]);
 function score(model,set){return set.reduce((n,[phrase,label])=>n+(model.classify(phrase).label===label),0)}
+// Conservative offline promotion gate: both independent sets must not regress.
+function assessPromotion(previous,candidate){
+ for(const scores of [previous,candidate]){
+  if(!scores||!Number.isInteger(scores.holdout)||!Number.isInteger(scores.challenge)||
+   scores.holdout<0||scores.holdout>HOLDOUT.length||scores.challenge<0||scores.challenge>CHALLENGE.length)
+   throw Error('Invalid evaluation scores');
+ }
+ const holdoutDelta=candidate.holdout-previous.holdout;
+ const challengeDelta=candidate.challenge-previous.challenge;
+ const approved=holdoutDelta>=0&&challengeDelta>=0&&(holdoutDelta>0||challengeDelta>0);
+ return Object.freeze({approved,holdoutDelta,challengeDelta,reason:approved?'improved_without_regression':'no_verified_improvement',productionConnected:false});
+}
 function compare(){
  const settings={epochs:180,hidden:24,rate:0.06};
  const baseline=createLearner(settings);
@@ -26,7 +38,7 @@ function compare(){
  const old={holdout:score(baseline,HOLDOUT),challenge:score(baseline,CHALLENGE)};
  const next={holdout:score(candidate,HOLDOUT),challenge:score(candidate,CHALLENGE)};
  return {kind:'rx-offline-candidate',trainingSamples:candidate.examples,baseline:old,candidate:next,
-  improvesBoth:next.holdout>=old.holdout&&next.challenge>=old.challenge&&(next.holdout>old.holdout||next.challenge>old.challenge),
+  improvesBoth:assessPromotion(old,next).approved,qualityGate:assessPromotion(old,next),
   productionConnected:false};
 }
 
@@ -47,7 +59,7 @@ function compareWave2(){
  const old={holdout:score(previous,HOLDOUT),challenge:score(previous,CHALLENGE)};
  const candidate={holdout:score(next,HOLDOUT),challenge:score(next,CHALLENGE)};
  return {kind:'rx-offline-wave2',trainingSamples:next.examples,previous:old,candidate,
-  improvesBoth:candidate.holdout>=old.holdout&&candidate.challenge>=old.challenge&&(candidate.holdout>old.holdout||candidate.challenge>old.challenge),
+  improvesBoth:assessPromotion(old,candidate).approved,qualityGate:assessPromotion(old,candidate),
   productionConnected:false};
 }
 
@@ -71,4 +83,4 @@ function diagnoseWave2(){
 }
 
 if(require.main===module){console.log('RX TRAINING CANDIDATE',JSON.stringify(compare()));console.log('RX TRAINING WAVE2',JSON.stringify(compareWave2()));console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnoseWave2()));}
-module.exports={EXTRAS,WAVE2,compare,compareWave2,diagnoseWave2};
+module.exports={EXTRAS,WAVE2,assessPromotion,compare,compareWave2,diagnoseWave2};
