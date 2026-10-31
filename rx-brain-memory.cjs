@@ -13,6 +13,7 @@ function createBrainMemory({initialRecords=[]}={}){
   if(!records.has(key)&&records.size>=MAX)throw Error('Memory full');
   const old=records.get(key)||{key,action,successes:0,failures:0,lastEvidence:''};
   if(old.action!==action)throw Error('Conflicting action');
+  if(old.lastEvidence===evidence)throw Error('Duplicate learning evidence');
   const next={...old,successes:old.successes+Number(success),failures:old.failures+Number(!success),lastEvidence:evidence};
   records.set(key,next);return structuredClone(next);
  }
