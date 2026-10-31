@@ -84,6 +84,9 @@ jobs:
             const safe=validateHistory(JSON.parse(payload.trim()));
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
             fs.writeFileSync('rx-bibi-reports/rx-queen-writing-curriculum-history.json',JSON.stringify(safe));
+      - name: Verify restored writing curriculum before new practice
+        run: |
+          node -e "const fs=require('node:fs');const {validateHistory}=require('./tests/rx-queen-writing-reviewed-batch.cjs');const p='rx-bibi-reports/rx-queen-writing-curriculum-history.json';if(fs.existsSync(p)){const h=validateHistory(JSON.parse(fs.readFileSync(p,'utf8')));console.log('Restored curriculum keys:',h.keys.length)}else console.log('First curriculum run: no saved keys yet')"
       - name: RX MEGA execute existing Queen chat and memory tests
         run: |
           node -e "const r=require('./rx-mega-cloud-computer.cjs').runCloudComputer({execute:true,selectedChecks:['tests/rx-queen-memory-chat-bridge.test.cjs','tests/rx-queen-live-memory-gate.test.cjs']});console.log(JSON.stringify({executed:r.executed,passed:r.passed,failed:r.failed}));if(r.failed||r.passed!==2)process.exitCode=1"
