@@ -24,3 +24,17 @@ test('RX NAUKA 3.7 roundtrip and reject unsafe snapshot paths',async()=>{
   assert.equal(missing.snapshot().records.length,0);
  }finally{await fs.rm(dir,{recursive:true,force:true})}
 });
+
+test('RX NAUKA 3.8 rejects snapshots that claim training or auto execution',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'rx-brain-meta-'));
+ try{
+  const file=path.join(dir,'memory.json');
+  const valid=createBrainMemory().snapshot();
+  for(const changes of [{trainedModel:true},{autoExecuted:1},{trainedModel:null},{autoExecuted:null}]){
+   await fs.writeFile(file,JSON.stringify({...valid,...changes}));
+   await assert.rejects(loadBrain(file),/Invalid snapshot/);
+  }
+  await fs.writeFile(file,JSON.stringify(valid));
+  assert.deepEqual((await loadBrain(file)).snapshot(),valid);
+ }finally{await fs.rm(dir,{recursive:true,force:true})}
+});
