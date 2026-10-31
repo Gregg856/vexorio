@@ -28,7 +28,8 @@ jobs:
           node --check tests/rx-autobots-memory-watchdog.cjs
           node --check tests/rx-queen-response-practice.cjs
           node --check tests/rx-queen-writing-composer.cjs
-          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs tests/rx-queen-writing-composer.test.cjs
+          node --check tests/rx-queen-writing-agent-review.cjs
+          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs tests/rx-queen-writing-composer.test.cjs tests/rx-queen-writing-agent-review.test.cjs
       - name: Restore cloud history
         id: cloud
         continue-on-error: true
@@ -61,6 +62,8 @@ jobs:
         run: node tests/rx-autobots-batch.cjs
       - name: Practice Queen writing and answers
         run: node tests/rx-queen-response-practice.cjs
+      - name: Queen writing agent review
+        run: node tests/rx-queen-writing-agent-review.cjs
       - name: Verify AutoBots memory continuity
         run: node tests/rx-autobots-memory-watchdog.cjs
       - name: Persist GitHub history fallback
