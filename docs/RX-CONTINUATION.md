@@ -44,8 +44,14 @@
 - Testy odrzucenia nieprawidłowych metadanych i zgodności poprawnej migawki.
 - PR #464 scalony po zielonym VEXORIO checks. Bez serwera i bez zmian w produkcji.
 
-## Bieżący pakiet: RX NAUKA 3.9
+## Zakończony pakiet: RX NAUKA 3.9
 - Unikalne nazwy plików tymczasowych przy zapisie migawki, aby jednoczesne zapisy nie kolidowały na tym samym PID.
 - Test równoległych zapisów: końcowy plik jest poprawną migawką jednego z zapisów, bez osieroconych plików tymczasowych.
 - Uwaga: to ochrona atomowego pliku, nie łączenie konkurencyjnych doświadczeń; to osobny przyszły etap.
-- Sprawdzić CI i scalić tylko po sukcesie.
+- PR #465 scalony po zielonym VEXORIO checks.
+
+## Bieżący pakiet: RX NAUKA 4.0
+- Dodano `learnAndSaveBrain(file, observation)` w istniejącym magazynie pamięci: kolejkuje odczyt → weryfikację → zapis dla jednego pliku w jednym procesie Node.js.
+- Test 20 jednoczesnych doświadczeń, odmowy duplikatu i odzyskania kolejki po błędzie.
+- **Ograniczenie:** nie zapewnia synchronizacji między różnymi procesami, serwerami ani hostami; nie jest podłączony do autonomicznej nauki i nie potwierdza wdrożenia.
+- Następnie sprawdzić CI, naprawić ewentualne błędy i scalić po sukcesie.
