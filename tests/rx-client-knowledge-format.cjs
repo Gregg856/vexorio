@@ -7,7 +7,7 @@ assert.ok(line,'Knowledge response exists');
 assert.ok(line.includes('knowledge.summary.slice(0,360)'),'Answer is shortened');
 assert.ok(line.includes('matchAll('),'Prefer full sentence boundaries');
 assert.ok(line.includes("lastIndexOf(' ')"),'Never truncate in the middle of a word');
-assert.ok(line.includes("+'\\n'+knowledge.summary"),'Newline before summary');
+assert.ok(line.includes("+'\\n'+("),'Newline before summary');
 assert.ok(line.includes("+'\\nŹródło: '"),'Newline before source');
 assert.ok(!line.includes("+'\\\\n'"),'No literal escaped newlines');
 console.log('RX knowledge answer formatting OK');
