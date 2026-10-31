@@ -38,7 +38,7 @@ export function planRXChat(message,history=[],learning=null){
    const namePart=asksUserNameRecall?(sessionName?'Masz na imię '+sessionName+'.':'Nie podałeś mi jeszcze imienia w tej rozmowie.') : '';
    const topicPart=asksPrevious?(priorUser?'Wcześniej napisałeś: „'+priorUser.slice(0,180)+'”.':'Nie widzę wcześniejszej wiadomości w historii tego czatu.') : '';
    answer='👑 '+[namePart,topicPart].filter(Boolean).join(' ');
-  }else answer='👑 Miło Cię poznać, '+introductoryName+'! Dzięki, że pytasz. Jestem tutaj i chętnie porozmawiam. Co u Ciebie?';
+  }else answer='👑 Miło Cię poznać, '+introductoryName+'! '+(/(?:jak się (?:dzisiaj )?czujesz|co u ciebie|jak leci)/i.test(message)?'Dzięki, że pytasz. U mnie wszystko w porządku — jestem gotowa do rozmowy. A co u Ciebie?':'O czym masz ochotę porozmawiać?');
   return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(history.length),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
  }
  // Client follow-ups use the latest user turn, never the assistant's broad answer.

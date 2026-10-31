@@ -27,4 +27,7 @@ assert.match(sameTurn,/miasto: Warszawy/);
 assert.doesNotMatch(sameTurn,/RX Coordinator|Mrówek/);
 assert.match(planRXChat('Mam na imię Ola. Co o mnie wiesz?').answer,/Masz na imię Ola/);
 assert.match(planRXChat('Nazywam się Ewa. Co teraz o mnie wiesz?').answer,/Masz na imię Ewa/);
-console.log('RX BIBI name memory: 18/18 passed');
+assert.match(planRXChat('Mam na imię Kasia.').answer,/O czym masz ochotę porozmawiać/);
+assert.doesNotMatch(planRXChat('Mam na imię Kasia.').answer,/Dzięki, że pytasz/);
+assert.match(planRXChat('Mam na imię Kasia. Jak się czujesz?').answer,/Dzięki, że pytasz/);
+console.log('RX BIBI name memory: 21/21 passed');
