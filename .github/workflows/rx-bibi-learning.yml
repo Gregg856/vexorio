@@ -34,6 +34,8 @@ jobs:
           node --check rx-queen-approved-memory.cjs
           node --check rx-queen-live-memory-gate.cjs
           node --check tests/rx-queen-runtime-readiness.cjs
+          node --check tests/rx-queen-writing-reviewed-batch.cjs
+          node --test tests/rx-queen-writing-reviewed-batch.test.cjs
           node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs tests/rx-queen-writing-composer.test.cjs tests/rx-queen-writing-agent-review.test.cjs tests/rx-queen-response-improvement.test.cjs tests/rx-queen-candidate-selection.test.cjs tests/rx-queen-approved-memory.test.cjs tests/rx-queen-memory-chat-bridge.test.cjs tests/rx-queen-live-memory-gate.test.cjs tests/rx-queen-runtime-readiness.test.cjs
       - name: Restore cloud history
         id: cloud
@@ -63,6 +65,22 @@ jobs:
             const safe=validate(data);
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
             fs.writeFileSync('rx-bibi-reports/rx-learning-history.json',JSON.stringify(safe));
+      - name: Restore writing curriculum from GitHub Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {validateHistory}=require('./tests/rx-queen-writing-reviewed-batch.cjs');
+            const title='[RX BIBI MEMORY] Writing curriculum keys (no chat data)';
+            const {owner,repo}=context.repo;
+            const found=await github.rest.issues.listForRepo({owner,repo,state:'open',per_page:100});
+            const issue=found.data.find(i=>!i.pull_request&&i.title===title);
+            if(!issue)return;
+            const match=(issue.body||'').match(/<!-- RX_CURRICULUM_START -->([\\s\\S]*?)<!-- RX_CURRICULUM_END -->/);
+            if(!match)throw Error('Missing curriculum markers');
+            const safe=validateHistory(JSON.parse(match[1].trim()));
+            fs.mkdirSync('rx-bibi-reports',{recursive:true});
+            fs.writeFileSync('rx-bibi-reports/rx-queen-writing-curriculum-history.json',JSON.stringify(safe));
       - name: RX MEGA execute existing Queen chat and memory tests
         run: |
           node -e "const r=require('./rx-mega-cloud-computer.cjs').runCloudComputer({execute:true,selectedChecks:['tests/rx-queen-memory-chat-bridge.test.cjs','tests/rx-queen-live-memory-gate.test.cjs']});console.log(JSON.stringify({executed:r.executed,passed:r.passed,failed:r.failed}));if(r.failed||r.passed!==2)process.exitCode=1"
@@ -103,6 +121,21 @@ jobs:
             const owner=context.repo.owner,repo=context.repo.repo;
             const found=await github.rest.issues.listForRepo({owner,repo,state:'open',per_page:100});
             const issue=found.data.find(i=>i.title===title);
+            if(issue)await github.rest.issues.update({owner,repo,issue_number:issue.number,body});
+            else await github.rest.issues.create({owner,repo,title,body});
+      - name: Persist writing curriculum to GitHub Issues
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {validateHistory}=require('./tests/rx-queen-writing-reviewed-batch.cjs');
+            const data=validateHistory(JSON.parse(fs.readFileSync('rx-bibi-reports/rx-queen-writing-curriculum-history.json','utf8')));
+            const title='[RX BIBI MEMORY] Writing curriculum keys (no chat data)';
+            const body='Offline exercise identifiers only; no prompts, answers or private chat data.\\n<!-- RX_CURRICULUM_START -->\\n'+JSON.stringify(data)+'\\n<!-- RX_CURRICULUM_END -->';
+            const {owner,repo}=context.repo;
+            const found=await github.rest.issues.listForRepo({owner,repo,state:'open',per_page:100});
+            const issue=found.data.find(i=>!i.pull_request&&i.title===title);
             if(issue)await github.rest.issues.update({owner,repo,issue_number:issue.number,body});
             else await github.rest.issues.create({owner,repo,title,body});
       - name: Persist cloud history only after verified cloud restore

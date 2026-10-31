@@ -16,6 +16,12 @@ const CURRICULUM=Object.freeze([
  {prompt:'Przygotuj dokumenty. Sprawdź termin. Wyślij potwierdzenie.',mode:'summary',mustInclude:'Przygotuj dokumenty.'}
 ]);
 const key=x=>x.mode+'|'+x.prompt.trim().toLocaleLowerCase('pl');
+function validateHistory(data){
+ if(!data||data.schema!==1||!Array.isArray(data.keys)||data.keys.length>CURRICULUM.length)throw Error('Invalid curriculum history');
+ const allowed=new Set(CURRICULUM.map(key));
+ if(data.keys.some(k=>typeof k!=='string'||!allowed.has(k))||new Set(data.keys).size!==data.keys.length)throw Error('Invalid curriculum keys');
+ return {schema:1,keys:[...data.keys]};
+}
 function buildBatch({previousKeys=[],limit=3}={}){
  if(!Array.isArray(previousKeys)||!Number.isInteger(limit)||limit<1||limit>20)throw Error('Invalid batch options');
  const seen=new Set(previousKeys.filter(x=>typeof x==='string'));
@@ -34,7 +40,7 @@ if(require.main===module){
  const dir=path.join(__dirname,'..','rx-bibi-reports'),history=path.join(dir,'rx-queen-writing-curriculum-history.json');
  fs.mkdirSync(dir,{recursive:true});
  let previousKeys=[];
- try{const saved=JSON.parse(fs.readFileSync(history,'utf8'));if(Array.isArray(saved.keys))previousKeys=saved.keys;}catch(e){if(e.code!=='ENOENT')throw e;}
+ try{const saved=JSON.parse(fs.readFileSync(history,'utf8'));previousKeys=validateHistory(saved).keys;}catch(e){if(e.code!=='ENOENT')throw e;}
  const batch=buildBatch({previousKeys});
  fs.writeFileSync(path.join(dir,'rx-queen-writing-reviewed-batch.json'),JSON.stringify(batch,null,2)+'\n');
  if(batch.status==='READY_FOR_REVIEW'){
@@ -44,4 +50,4 @@ if(require.main===module){
  console.log('RX QUEEN WRITING BATCH',JSON.stringify({status:batch.status,candidates:batch.candidates.length,rotated:batch.rotated}));
  if(batch.status!=='READY_FOR_REVIEW')process.exitCode=1;
 }
-module.exports={buildBatch,CURRICULUM};
+module.exports={buildBatch,CURRICULUM,validateHistory};
