@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url');
 const path=require('node:path');
 (async()=>{
- const {getRXKnowledgeFollowupPrior:prior}=await import(pathToFileURL(path.resolve(__dirname,'../rx-world-knowledge.mjs')).href);
+ const {getRXKnowledgeFollowupPrior:prior,formatRXKnowledgeFollowup:detail}=await import(pathToFileURL(path.resolve(__dirname,'../rx-world-knowledge.mjs')).href);
  const sourced='📚 Fotosynteza\nRośliny wykorzystują światło.\nŹródło: https://pl.wikipedia.org/wiki/Fotosynteza';
  const h=['Co to jest fotosynteza?',sourced];
  assert.equal(prior('A dlaczego?',h),h[0]);
@@ -17,5 +17,7 @@ const path=require('node:path');
  assert.equal(prior('A dlaczego?',['Co to jest fotosynteza?',sourced,'Ile to 2+2?','4']),null);
  assert.equal(prior('A dlaczego?',['Co to jest fotosynteza?',sourced,'Co to jest grawitacja?', '📚 Grawitacja\\nPrzyciąganie.\\nŹródło: https://pl.wikipedia.org/wiki/Grawitacja']),'Co to jest grawitacja?');
 
- console.log('RX BIBI sourced followup behavior: 10/10 passed');
+ assert.equal(detail({summary:'Pierwsze zdanie. Drugie zdanie.'},'📚 Tytuł\\nPierwsze zdanie.\\nŹródło: https://pl.wikipedia.org/wiki/Test'),'Drugie zdanie.');
+ assert.equal(detail({summary:'Pierwsze zdanie.'},'📚 Tytuł\\nPierwsze zdanie.\\nŹródło: https://pl.wikipedia.org/wiki/Test'),null);
+ console.log('RX BIBI sourced followup behavior: 12/12 passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});
