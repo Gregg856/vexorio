@@ -29,12 +29,15 @@ export async function searchWorldKnowledge(question,{fetcher=fetch}={}){
 
 export function getRXKnowledgeFollowupPrior(message,history){
  if(typeof message!=='string'||!Array.isArray(history)||history.length<2)return null;
- const short=/^(?:a )?(?:dlaczego|czemu|jak to działa|jak to dziala|opowiedz więcej|opowiedz wiecej|więcej|wiecej)[?!. ]*$/i.test(message.trim());
- if(!short)return null;
- const prior=typeof history.at(-2)==='string'?history.at(-2).trim():'';
- const answer=typeof history.at(-1)==='string'?history.at(-1).trim():'';
- if(!/^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+.{3,160}[?!.]?$/i.test(prior))return null;
- if(/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(prior))return null;
- if(!/^📚[\s\S]{0,1800}Źródło:\s*https:\/\/pl\.wikipedia\.org\//i.test(answer))return null;
- return prior;
+ if(!/^(?:a )?(?:dlaczego|czemu|jak to działa|jak to dziala|opowiedz więcej|opowiedz wiecej|więcej|wiecej)[?!. ]*$/i.test(message.trim()))return null;
+ // Read only the latest contiguous sourced conversation, never jump over a new topic.
+ for(let i=history.length-2;i>=0&&i>=history.length-8;i-=2){
+  const prior=typeof history[i]==='string'?history[i].trim():'';
+  const answer=typeof history[i+1]==='string'?history[i+1].trim():'';
+  if(!/^📚[\s\S]{0,1800}Źródło:\s*https:\/\/pl\.wikipedia\.org\//i.test(answer))return null;
+  if(/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(prior))return null;
+  if(/^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+.{3,160}[?!.]?$/i.test(prior))return prior;
+  if(!/^(?:a )?(?:dlaczego|czemu|jak to działa|jak to dziala|opowiedz więcej|opowiedz wiecej|więcej|wiecej)[?!. ]*$/i.test(prior))return null;
+ }
+ return null;
 }
