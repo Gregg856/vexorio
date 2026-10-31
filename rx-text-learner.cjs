@@ -1,7 +1,7 @@
 'use strict';
 // RX TEXT LEARNER — small, reproducible intent classifier using RX's own tokenizer and neural core.
 // Offline demonstration only: not a generative language model and not connected to production chat.
-const {toFrequencyVector}=require('./rx-language-tokenizer.cjs');
+const {toFrequencyVector,toBigramVector}=require('./rx-language-tokenizer.cjs');
 const {createNetwork,train,forward}=require('./rx-neural-core.cjs');
 const EXAMPLES=[
  ['cześć królowo','greeting'],['dzień dobry RX','greeting'],['hej witaj','greeting'],
@@ -15,11 +15,12 @@ const EXAMPLES=[
  ['dodaj dwie liczby','math'],['wykonaj mnożenie','math'],['policz procent','math']
 ];
 const LABELS=Object.freeze(['greeting','tests','memory','math']);
-function vector(text){
+function vector(text,features='frequency'){
  if(typeof text!=='string'||!text.trim())throw Error('Invalid text');
- return toFrequencyVector(text.toLocaleLowerCase('pl'));
+ return features==='bigram'?toBigramVector(text.toLocaleLowerCase('pl')):toFrequencyVector(text.toLocaleLowerCase('pl'));
 }
-function createLearner({epochs=180,hidden=24,rate=0.06,additionalExamples=[]}={}){
+function createLearner({epochs=180,hidden=24,rate=0.06,additionalExamples=[],features='frequency'}={}){
+ if(!['frequency','bigram'].includes(features))throw Error('Invalid feature mode');
  if(!Array.isArray(additionalExamples)||additionalExamples.length>128||additionalExamples.some(row=>!Array.isArray(row)||row.length!==2||!LABELS.includes(row[1])))throw Error('Invalid additional examples');
  const approvedExamples=additionalExamples.map(row=>{
   if(!Array.isArray(row)||row.length!==2||!row[0]||typeof row[0]!=='object'||row[0].approvedForTraining!==true||typeof row[0].text!=='string'||!row[0].text.trim()||row[0].text.length>256||!LABELS.includes(row[1]))throw Error('Additional example requires explicit training approval');
@@ -29,10 +30,10 @@ function createLearner({epochs=180,hidden=24,rate=0.06,additionalExamples=[]}={}
  if(!Number.isSafeInteger(epochs)||epochs<1||epochs>1000||!Number.isSafeInteger(hidden)||hidden<1||hidden>128||!Number.isFinite(rate)||rate<=0||rate>0.2)throw Error('Invalid training settings');
  const net=createNetwork(256,hidden,LABELS.length);
  const x=new Float32Array(samples.length*256),y=new Float32Array(samples.length*LABELS.length);
- samples.forEach(([phrase,label],i)=>{x.set(vector(phrase),i*256);y[i*LABELS.length+LABELS.indexOf(label)]=1;});
+ samples.forEach(([phrase,label],i)=>{x.set(vector(phrase,features),i*256);y[i*LABELS.length+LABELS.indexOf(label)]=1;});
  const metrics=train(net,x,y,{epochs,rate});
  function classify(text){
-  const scores=Array.from(forward(net,vector(text)).pred);
+  const scores=Array.from(forward(net,vector(text,features)).pred);
   const best=scores.indexOf(Math.max(...scores));
   return {label:LABELS[best],scores,kind:'rx-text-intent',model:'local-neural-classifier'};
  }
