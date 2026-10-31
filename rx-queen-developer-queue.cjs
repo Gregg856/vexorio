@@ -56,4 +56,22 @@ function buildDialogueDeveloperReviews(queue){
  });
  return {schema:1,kind:'rx-dialogue-developer-review-queue',received:queue.items.length,uniqueIssues:reviews.length,reviews,requiresApproval:true,productionModified:false,autoFixesApplied:0,automaticDeployment:false};
 }
-module.exports={buildDeveloperReviewQueue,buildDialogueDeveloperReviews};
+
+// RX BIBI 7.5: verified GitHub Actions failure evidence becomes review-only tickets.
+function buildTesterFailureReviews({run,jobs}={}){
+ if(!run||!Number.isSafeInteger(run.id)||run.id<1||run.conclusion!=='failure'||!Array.isArray(jobs)||jobs.length>100)throw Error('Invalid failed RX Tester run');
+ const reviews=[];
+ for(const job of jobs){
+  if(!job||typeof job.name!=='string'||job.name.length>200||!Array.isArray(job.steps)||job.steps.length>100)throw Error('Invalid RX Tester job');
+  if(job.conclusion!=='failure')continue;
+  for(const step of job.steps){
+   if(!step||typeof step.name!=='string'||step.name.length>200)throw Error('Invalid RX Tester step');
+   if(step.conclusion!=='failure')continue;
+   reviews.push({source:'github-actions-rx-tester',runId:run.id,runUrl:typeof run.html_url==='string'&&/^https:\/\/github\.com\/Gregg856\/vexorio\/actions\/runs\/[0-9]+$/.test(run.html_url)?run.html_url:null,jobName:job.name,stepName:step.name,diagnosis:'Failed CI step; root cause not yet verified',proposedAction:'Inspect failed step logs and reproduce with a focused regression before proposing code changes',status:'awaiting_review',approved:false,executed:false,requiresApproval:true});
+   if(reviews.length>=100)break;
+  }
+  if(reviews.length>=100)break;
+ }
+ return {schema:1,kind:'rx-tester-failure-developer-reviews',runId:run.id,reviews,requiresApproval:true,productionModified:false,autoFixesApplied:0,automaticDeployment:false};
+}
+module.exports={buildDeveloperReviewQueue,buildDialogueDeveloperReviews,buildTesterFailureReviews};
