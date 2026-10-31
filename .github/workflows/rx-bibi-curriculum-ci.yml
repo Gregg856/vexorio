@@ -16,6 +16,8 @@ on:
       - 'tests/rx-queen-intent-parser.test.cjs'
       - 'tests/rx-queen-combined-constraints.test.cjs'
       - 'tests/rx-queen-conflict-guard.test.cjs'
+      - 'tests/rx-bibi-manager-writing-route.test.cjs'
+      - 'rx-bibi-manager.html'
       - '.github/workflows/rx-bibi-learning.yml'
       - '.github/workflows/rx-bibi-curriculum-ci.yml'
   workflow_dispatch:
@@ -36,5 +38,6 @@ jobs:
       - run: node --test tests/rx-queen-writing-reviewed-batch.test.cjs tests/rx-queen-writing-examiner.test.cjs tests/rx-queen-writing-heldout.test.cjs
       - run: node --check tests/rx-queen-intent-parser.cjs
       - run: node --test tests/rx-queen-semantic-gap.test.cjs tests/rx-queen-writing-variants.test.cjs tests/rx-queen-intent-parser.test.cjs tests/rx-queen-combined-constraints.test.cjs tests/rx-queen-conflict-guard.test.cjs
+      - run: node --test tests/rx-bibi-manager-writing-route.test.cjs
       - run: node tests/rx-queen-writing-heldout.cjs
       - run: node tests/rx-queen-semantic-gap.cjs
