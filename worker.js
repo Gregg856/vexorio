@@ -327,6 +327,20 @@ export default {
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-developer-status',readOnly:true}),{status:200,headers});
           }catch{return reply(502,'Nie można odczytać wyniku RX Developer.');}
         }
+        // RX BIBI 7.2: turn a verified failing RX Tester run into a review proposal.
+        // Read-only until the owner explicitly requests a bounded Developer review.
+        if(/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:przygotuj|pokaz|pokaż)\\s+(?:zadanie|zgloszenie|zgłoszenie)\\s+(?:dla\\s+)?rx\\s+developer\\s+(?:z|na podstawie)\\s+(?:wyniku\\s+)?rx\\s+tester[?!. ]*$/i.test(message.trim())){
+          if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Propozycje RX Developer są dostępne tylko dla właściciela RX.');
+          try{
+            const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-client-dialogue-baseline.yml/runs?branch=main&per_page=1',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Tester-Review'},signal:AbortSignal.timeout(8000)});
+            if(!response.ok)throw Error('github_unavailable');
+            const run=(await response.json()).workflow_runs?.[0];
+            const state=run?.status==='completed'?run.conclusion:run?.status||'brak danych';
+            const failed=state==='failure';
+            const answer=failed?'👑 RX Tester: ostatni przebieg zakończył się błędem. Propozycja: zleć RX Developer przegląd kodu RX Developer poleceniem „Sprawdź RX Developer”. To analiza, nie automatyczna naprawa.':'👑 RX Tester: ostatni przebieg ma status '+state+'. Nie mam potwierdzonego błędu do przekazania RX Developer. Nie uruchomiłam analizy ani naprawy.';
+            return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-tester-developer-proposal',source:'github-actions',runId:run?.id||null,runStatus:state,proposed:failed,queued:false,executed:0,modelInferenceUsed:false,requiresApproval:true,productionModified:false}),{status:200,headers});
+          }catch{return reply(502,'Nie udało się pobrać wyniku RX Tester. Nie utworzyłam zadania.');}
+        }
         // Owner-only Queen chat command -> existing RX BIBI live tester.
         // Dispatch only: no synthetic success claims, no production writes.
         if(/^(?:królowa|krolowa)[,! ]+bibi[,! ]+(?:testuj|sprawdź|sprawdz|uruchom testy)(?:[.!? ]*)$/i.test(message.trim())){
