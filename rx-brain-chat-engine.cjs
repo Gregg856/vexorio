@@ -55,7 +55,7 @@ function chatRX(message,{history=[],tasks=[],brainMemory=null}={}){
    const key=memoryQuery[1].toLowerCase();
    const record=brainMemory&&typeof brainMemory.recommend==='function'?brainMemory.recommend(key):null;
    answer=record&&record.known&&typeof record.action==='string'&&Number.isSafeInteger(record.samples)&&record.samples>0&&Number.isFinite(record.successRate)
-    ?'RX Brain pamięta wskazówkę dla „'+key+'”: '+record.action.slice(0,120)+'. Próby: '+record.samples+', skuteczność w zapisanych próbach: '+Math.round(record.successRate*100)+'%. To tylko rekomendacja, wymaga zatwierdzenia i nie jest dowodem aktualnego wyniku.'
+    ?'RX Brain pamięta wskazówkę dla „'+key+'”: '+record.action.slice(0,120)+'. Próby: '+record.samples+', skuteczność w zapisanych próbach: '+Math.round(record.successRate*100)+'%. '+(record.confidence==='insufficient'?'Za mało prób na ocenę doświadczenia. ':record.confidence==='limited'?'Ograniczona liczba prób. ':record.confidence==='observed'?'Wynik oparty na większej liczbie zapisanych prób. ':'')+(record.warning==='more_failures_than_successes'?'Uwaga: więcej niepowodzeń niż sukcesów. ':'')+'To tylko rekomendacja, wymaga zatwierdzenia i nie jest dowodem aktualnego wyniku.'
     :'Nie mam zweryfikowanych doświadczeń RX Brain dla „'+key+'” w przekazanej pamięci. Nie zgaduję wyniku.';
  }else if(taskFollowup){
    const matches=topic?findSimilarTasks(tasks,topic):[];

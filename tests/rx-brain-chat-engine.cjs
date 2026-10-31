@@ -184,3 +184,17 @@ const {chatRXWithKnowledge}=require('../rx-brain-chat-engine.cjs');
  assert.match(noFetch.answer,/Nie wykonam/);
  console.log('RX sourced everyday knowledge: verified and safe fallback');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
+
+const learned=createBrainMemory();
+learned.learn({key:'android_chat',action:'inspect_logs',success:false,evidence:'Verified Android failure evidence A'});
+let learnedReply=chatRX('Co pamiętasz o zadaniu: android_chat?',{brainMemory:learned});
+assert.match(learnedReply.answer,/Za mało prób/);
+assert.match(learnedReply.answer,/więcej niepowodzeń/);
+assert.equal(learnedReply.executed,0);
+learned.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android success evidence B'});
+learned.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android success evidence C'});
+learnedReply=chatRX('Co pamiętasz o zadaniu: android_chat?',{brainMemory:learned});
+assert.match(learnedReply.answer,/Ograniczona liczba prób/);
+assert.doesNotMatch(learnedReply.answer,/więcej niepowodzeń/);
+assert.match(learnedReply.answer,/wymaga zatwierdzenia/);
