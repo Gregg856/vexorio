@@ -680,10 +680,13 @@ export default {
         if(payload?.ok!==true||payload.kind!=='rx-brain-memory')return reply(502,'Invalid RX Brain response');
         data=payload.snapshot;
       }catch{return reply(502,'RX CLOUD Brain memory unavailable');}
-      if(data?.schema!==1||data.kind!=='rx-brain-memory'||!Array.isArray(data.records)||data.records.length>200)return reply(503,'Invalid memory');
+      if(data?.schema!==1||data.kind!=='rx-brain-memory'||data.trainedModel!==false||data.autoExecuted!==0||!Array.isArray(data.records)||data.records.length>200)return reply(503,'Invalid memory');
       const records=[];
+       const seenKeys=new Set();
       for(const item of data.records){
         if(!item||typeof item.key!=='string'||!/^[a-z0-9_-]{1,80}$/.test(item.key)||typeof item.action!=='string'||item.action.length<1||item.action.length>120||!Number.isSafeInteger(item.successes)||!Number.isSafeInteger(item.failures)||item.successes<0||item.failures<0||item.successes+item.failures<1||item.successes+item.failures>1000000)return reply(503,'Invalid memory');
+         if(seenKeys.has(item.key))return reply(503,'Invalid memory');
+         seenKeys.add(item.key);
         records.push({key:item.key,action:item.action,samples:item.successes+item.failures,successRate:item.successes/(item.successes+item.failures),requiresApproval:true});
       }
       return new Response(JSON.stringify({ok:true,kind:'rx-brain-memory',records}),{status:200,headers});
