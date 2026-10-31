@@ -62,8 +62,13 @@
 - To funkcja silnika do użycia przez istniejące moduły, **nie jest jeszcze podłączeniem do produkcyjnego panelu ani serwera**.
 - PR #467 scalony po zielonych VEXORIO checks i RX CLOUD smoke tests.
 
-## Bieżący pakiet: RX NAUKA 4.2
+## Zakończony pakiet: RX NAUKA 4.2
 - W istniejącym panelu `rx-bibi-manager.html` ulepszono już istniejącą komendę odczytu `Co pamiętasz o zadaniu: klucz?`.
 - W odpowiedzi: liczba prób, skuteczność, jakość dowodów i ostrzeżenie przy przewadze niepowodzeń; odrzucenie nieprawidłowych wartości z API. Nadal tylko odczyt i wymóg zatwierdzenia.
 - Panel już miał uwierzytelnione żądanie do `/api/rx/admin/brain-memory`; nie dodano drugiej ścieżki ani nowego panelu. Dostępność zależy od konfiguracji prywatnego RX CLOUD, której wdrożenia nie potwierdzono.
-- Sprawdzić CI i scalić po zielonych testach; nie wdrażać produkcji.
+- PR #468 scalony po zielonym VEXORIO checks; bez wdrożenia produkcji.
+
+## Bieżący pakiet: RX NAUKA 4.3
+- W istniejącym `worker.js` prywatny endpoint `/api/rx/admin/brain-memory` odrzuca teraz fałszywe metadane migawki (`trainedModel`, `autoExecuted`) oraz zduplikowane klucze, zgodnie z zasadami RX Brain store.
+- Nie zmieniono schematu odpowiedzi panelu, nie utworzono nowego endpointu ani panelu.
+- CI do sprawdzenia przed scaleniem; pełny test zalogowanego czatu wymaga działającej infrastruktury i nie jest potwierdzony lokalnym CI.
