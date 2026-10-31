@@ -103,6 +103,12 @@ for(const [question,expected] of [['Co z zadaniem Naprawa klawiatury Android?',/
  assert.equal(result.executed,0,question);
 }
 console.log('RX Brain: natural task lookup uses supplied registry');
+const shortStatus=chatRX('A jaki status?',{history:['Naprawa klawiatury Android','Weryfikuję wpis.'],tasks:taskRegister});
+assert.match(shortStatus.answer,/Naprawa klawiatury Android.*ukończone/);
+assert.equal(shortStatus.executed,0);
+assert.match(chatRX('A to zadanie?',{tasks:taskRegister}).answer,/Podaj dokładną nazwę/);
+assert.match(chatRX('Czy to już gotowe?',{history:['Nieznane zadanie'],tasks:taskRegister}).answer,/Podaj dokładną nazwę/);
+console.log('RX Brain: short task follow-up and missing context checked');
 
 for(const [prompt,expected] of [['2 + 3','Wynik: 5'],['Oblicz 7 * 8','Wynik: 56'],['Policz 10 / 4','Wynik: 2.5'],['Ile to 9 - 12?','Wynik: -3'],['2,5 + 1,5','Wynik: 4'],['5 / 0','Nie można dzielić przez zero.']]){
  const result=chatRX(prompt);
