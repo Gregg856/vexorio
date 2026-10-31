@@ -12,6 +12,16 @@ test('public BIBI panel and protected client route respond safely',async t=>{
   const body=await r.text();
   assert.match(body,/RX BIBI Manager/);
  });
+ await t.test('client chat refuses unauthenticated POST before any message processing',async()=>{
+  const r=await fetch(new URL('/api/rx/client/chat',origin),{
+   method:'POST',redirect:'manual',signal:AbortSignal.timeout(12000),
+   headers:{Origin:origin.origin,'Content-Type':'application/json'},
+   body:JSON.stringify({message:'Napisz wiadomość: test bezpieczeństwa.'})
+  });
+  assert.equal(r.status,401,'missing authorization must be rejected');
+  const body=await r.text();
+  assert.doesNotMatch(body,/Cześć!|Pozdrawiam!/);
+ });
  await t.test('client chat refuses unauthenticated GET',async()=>{
   const r=await get('/api/rx/client/chat');
   assert.equal(r.status,405,'GET must not invoke authenticated chat');
