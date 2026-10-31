@@ -38,6 +38,33 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.maxConnections,128,'Concurrent connection count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
+  // RX Brain private feed: live file, authorization, method and malformed snapshot.
+  const brainFile=path.join(await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-brain-test-')),'brain.json');
+  const previousBrainFile=process.env.RX_BRAIN_MEMORY_FILE;
+  process.env.RX_BRAIN_MEMORY_FILE=brainFile;
+  try{
+   const route=base+'/__rxcloud/bibi/brain-memory';
+   assert.equal((await fetch(route)).status,401);
+   assert.equal((await fetch(route,{headers:{Authorization:'Bearer wrong'}})).status,401);
+   const headers={Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN};
+   assert.equal((await fetch(route,{method:'POST',headers})).status,405);
+   assert.equal((await fetch(route,{headers})).status,503,'Missing memory file must not become empty successful memory');
+   const snapshot={schema:1,kind:'rx-brain-memory',trainedModel:false,autoExecuted:0,records:[{key:'android_chat',action:'inspect_logs',successes:2,failures:1,lastEvidence:'Verified test evidence 123'}]};
+   await fs.writeFile(brainFile,JSON.stringify(snapshot),{mode:0o600});
+   const response=await fetch(route,{headers});
+   assert.equal(response.status,200);
+   assert.equal(response.headers.get('cache-control'),'no-store');
+   const result=await response.json();
+   assert.equal(result.kind,'rx-brain-memory');
+   assert.equal(result.snapshot.records[0].key,'android_chat');
+   assert.equal(result.snapshot.records[0].successes,2);
+   await fs.writeFile(brainFile,'not-json');
+   assert.equal((await fetch(route,{headers})).status,503,'Corrupted snapshot must fail closed');
+  }finally{
+   if(previousBrainFile===undefined)delete process.env.RX_BRAIN_MEMORY_FILE;
+   else process.env.RX_BRAIN_MEMORY_FILE=previousBrainFile;
+   await fs.rm(path.dirname(brainFile),{recursive:true,force:true});
+  }
   const health=await fetch(base+'/__rxcloud/health');
   assert.equal(health.status,200);
   const healthData=await health.json();
