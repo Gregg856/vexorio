@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const source=fs.readFileSync(require('node:path').join(__dirname,'../worker.js'),'utf8');
+const line=source.split('\n').find(x=>x.includes("engine:'rx-bibi-client-world-knowledge'"));
+assert.ok(line,'Knowledge response exists');
+assert.ok(line.includes('knowledge.summary.slice(0,360)'),'Answer is shortened');
+assert.ok(line.includes("+'\\n'+knowledge.summary"),'Newline before summary');
+assert.ok(line.includes("+'\\nŹródło: '"),'Newline before source');
+assert.ok(!line.includes("+'\\\\n'"),'No literal escaped newlines');
+console.log('RX knowledge answer formatting OK');

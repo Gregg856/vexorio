@@ -210,7 +210,7 @@ export default {
       if(clientResearch&&!rxInternalTopic){
         try{
           const knowledge=await searchWorldKnowledge(message);
-          if(knowledge)return new Response(JSON.stringify({ok:true,answer:'📚 '+knowledge.title+'\\n'+knowledge.summary+'\\nŹródło: '+knowledge.url+' (Wikipedia; sprawdź aktualność informacji)',knowledge,engine:'rx-bibi-client-world-knowledge',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+          if(knowledge)return new Response(JSON.stringify({ok:true,answer:'📚 '+knowledge.title+'\n'+knowledge.summary.slice(0,360).trim()+(knowledge.summary.length>360?'…':'')+'\nŹródło: '+knowledge.url+' (Wikipedia; sprawdź aktualność informacji)',knowledge,engine:'rx-bibi-client-world-knowledge',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
         }catch{/* External source failures must not break the authenticated chat. */}
       }
       // Client requests use only the shared deterministic planner; no GitHub dispatch,
