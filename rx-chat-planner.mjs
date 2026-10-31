@@ -17,6 +17,7 @@ export function planRXChat(message,history=[],learning=null){
  if(asksAboutSelf){
   const facts=[];
   if(sessionName)facts.push('Masz na imię '+sessionName+'.');
+  // Session facts remain local to the current chat; never infer unknown details.
   const answer=facts.length?'👑 Z tej rozmowy wiem tylko tyle: '+facts.join(' ')+' Nie dopowiadam niczego, czego mi nie powiedziałeś.':'👑 Nie mam jeszcze potwierdzonych informacji o Tobie z tej rozmowy. Możesz mi coś o sobie opowiedzieć.';
   return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(history.length),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
  }
