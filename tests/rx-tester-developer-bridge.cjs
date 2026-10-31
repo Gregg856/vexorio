@@ -4,6 +4,10 @@ const {buildDialogueDeveloperReviews}=require('../rx-queen-developer-queue.cjs')
 const input={kind:'rx-developer-review-queue',items:[{type:'math-answer-missing',priority:'high',message:'Ile to jest 12 plus 8?',answer:'Nie wiem.'}]};
 const result=buildDialogueDeveloperReviews(input);
 assert.equal(result.reviews.length,1);
+const repeated=buildDialogueDeveloperReviews({...input,items:[...input.items,...input.items]});
+assert.equal(repeated.received,2);
+assert.equal(repeated.uniqueIssues,1);
+assert.equal(repeated.reviews[0].occurrences,2);
 assert.equal(result.reviews[0].category,'math-answer-missing');
 assert.equal(result.reviews[0].requiresApproval,true);
 assert.equal(result.reviews[0].diagnosis.target,'rx-chat-planner.mjs');
