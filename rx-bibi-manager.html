@@ -1082,7 +1082,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    return;
   }
   // Existing authenticated RX BIBI client bridge for writing tasks; no new chat or model.
-  if(/^(?:(?:proszę|prosze)\s+)?(?:napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(?:wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?(?:(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|formalnie|oficjalnie|nieformalnie|i)[\s,]*){0,8}:/iu.test(message)){{
+  // Explicit AI requests reuse the authenticated client bridge, never admin commands.
+  if(/^(?:zapytaj (?:model|ai):|(?:(?:proszę|prosze)\s+)?(?:napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(?:wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?(?:(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|formalnie|oficjalnie|nieformalnie|i)[\s,]*){0,8}:)/iu.test(message)){{
    (async()=>{
     send.disabled=true;
     try{
