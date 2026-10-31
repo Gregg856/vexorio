@@ -18,6 +18,8 @@ export function composeClientWriting(message){
  const informal=has(/nieformalnie(?=[\s,;]|$)/u);
  const conflicts=[formal&&informal?'styl':null,noGreeting&&yesGreeting?'powitanie':null,noSignoff&&yesSignoff?'pożegnanie':null,short&&long?'długość':null].filter(Boolean);
  if(conflicts.length)return {answer:'Polecenie zawiera sprzeczne wymagania. Doprecyzuj: '+conflicts.join(', ')+'.',requiresClarification:true};
+ // A deterministic formatter cannot genuinely expand the supplied text.
+ if(long)return {answer:'Nie potrafię jeszcze wiarygodnie rozwinąć tekstu w szczegółową wiadomość. Podaj dodatkowe informacje, które mam uwzględnić.',requiresClarification:true};
  const content=m[4].trim();
  if(!content)return null;
  if(m[2]==='streszczenie')return {answer:'Nie potrafię jeszcze wiarygodnie streścić dowolnego tekstu. Podaj krótszy fragment lub sprecyzuj cel.',requiresClarification:true};
