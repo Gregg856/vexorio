@@ -22,7 +22,10 @@ function createBrainMemory({initialRecords=[]}={}){
   const r=records.get(key);
   if(!r)return {key,known:false,requiresApproval:true,action:null};
   const samples=r.successes+r.failures;
-  return {key,known:true,action:r.action,samples,successRate:r.successes/samples,requiresApproval:true,advisoryOnly:true};
+  const successRate=r.successes/samples;
+  const confidence=samples<3?'insufficient':samples<10?'limited':'observed';
+  const warning=r.failures>r.successes?'more_failures_than_successes':null;
+  return {key,known:true,action:r.action,samples,successRate,confidence,warning,requiresApproval:true,advisoryOnly:true};
  }
  function snapshot(){return {schema:1,kind:'rx-brain-memory',trainedModel:false,autoExecuted:0,records:[...records.values()].map(x=>structuredClone(x))};}
  return Object.freeze({learn,recommend,snapshot});
