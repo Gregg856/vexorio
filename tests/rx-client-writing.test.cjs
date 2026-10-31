@@ -68,3 +68,17 @@ test('formal and informal tone with conflict checks',async()=>{
  assert.equal(conflict?.requiresClarification,true);
  assert.match(conflict.answer,/styl/);
 });
+
+test('detailed writing asks for missing facts rather than pretending to expand',async()=>{
+ const {composeClientWriting:compose}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ for(const prompt of ['Napisz szczegółowo: spotkanie jutro','Przygotuj obszernie: spotkanie jutro']){
+  const result=compose(prompt);
+  assert.equal(result?.requiresClarification,true,prompt);
+  assert.match(result.answer,/dodatkowe informacje/);
+  assert.doesNotMatch(result.answer,/Cześć!/);
+ }
+ assert.equal(compose('Napisz krótko: spotkanie jutro')?.answer,'Spotkanie jutro.');
+ const conflict=compose('Napisz krótko i obszernie: spotkanie jutro');
+ assert.equal(conflict?.requiresClarification,true);
+ assert.match(conflict.answer,/sprzeczne/);
+});
