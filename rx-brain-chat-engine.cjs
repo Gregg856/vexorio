@@ -2,7 +2,7 @@
 const {planCommand}=require('./rx-command-bridge.cjs');
 const {LANGUAGES,lookup}=require('./rx-language-seed.cjs');
 const {findSimilarTasks,suggestRelatedTasks}=require('./rx-bibi-task-store.cjs');
-function chatRX(message,{history=[],tasks=[]}={}){
+function chatRX(message,{history=[],tasks=[],brainMemory=null}={}){
  if(typeof message!=='string'||!message.trim()||message.length>1000)throw Error('Invalid message');
  if(!Array.isArray(history)||history.length>6||history.some(x=>typeof x!=='string'||x.length>1000))throw Error('Invalid history');
  if(!Array.isArray(tasks)||tasks.length>50||tasks.some(t=>!t||typeof t!=='object'||typeof t.title!=='string'||!t.title.trim()||t.title.length>160||!['pending','completed'].includes(t.status)||Object.keys(t).some(k=>!['title','status'].includes(k))))throw Error('Invalid tasks');
@@ -50,7 +50,14 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
  const naturalTaskQuery=/^(?:co z zadaniem|jaki status zadania|czy zakończono zadanie)\s+[„"]?(.{3,160}?)[”"]?\??$/i.exec(message.trim());
  const taskFollowup=/^(?:a (?:to|tamto) zadanie|a jaki (?:ma )?status|czy (?:to|ono) (?:już )?(?:gotowe|zrobione))[?!.\s]*$/i.test(message.trim());
- if(taskFollowup){
+ const memoryQuery=/^(?:co pamiętasz o zadaniu|co pamietasz o zadaniu|jakie doświadczenie masz z zadaniem):?\s+([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
+ if(memoryQuery){
+   const key=memoryQuery[1].toLowerCase();
+   const record=brainMemory&&typeof brainMemory.recommend==='function'?brainMemory.recommend(key):null;
+   answer=record&&record.known&&typeof record.action==='string'&&Number.isSafeInteger(record.samples)&&record.samples>0&&Number.isFinite(record.successRate)
+    ?'RX Brain pamięta wskazówkę dla „'+key+'”: '+record.action.slice(0,120)+'. Próby: '+record.samples+', skuteczność w zapisanych próbach: '+Math.round(record.successRate*100)+'%. To tylko rekomendacja, wymaga zatwierdzenia i nie jest dowodem aktualnego wyniku.'
+    :'Nie mam zweryfikowanych doświadczeń RX Brain dla „'+key+'” w przekazanej pamięci. Nie zgaduję wyniku.';
+ }else if(taskFollowup){
    const matches=topic?findSimilarTasks(tasks,topic):[];
    answer=matches.length===1?'W przekazanym rejestrze zadanie „'+matches[0].title+'” ma status: '+(matches[0].status==='completed'?'ukończone':'oczekujące')+'. Nie potwierdzam testów ani wdrożenia.': 'Nie mogę ustalić, którego zadania dotyczy pytanie. Podaj dokładną nazwę zadania z rejestru.';
  }else if(naturalTaskQuery){
