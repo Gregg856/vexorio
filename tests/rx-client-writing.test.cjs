@@ -58,3 +58,13 @@ test('signature options and contradictory signature instructions',async()=>{
  assert.equal(conflict?.requiresClarification,true);
  assert.match(conflict.answer,/sprzeczne/);
 });
+
+test('formal and informal tone with conflict checks',async()=>{
+ const {composeClientWriting:compose}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ assert.equal(compose('Napisz formalnie: potwierdzam termin').answer,'Dzień dobry! Potwierdzam termin. Z poważaniem!');
+ assert.equal(compose('Napisz oficjalnie, bez powitania: potwierdzam termin').answer,'Potwierdzam termin. Z poważaniem!');
+ assert.equal(compose('Napisz nieformalnie: potwierdzam termin').answer,'Cześć! Potwierdzam termin. Pozdrawiam!');
+ const conflict=compose('Napisz formalnie i nieformalnie: potwierdzam termin');
+ assert.equal(conflict?.requiresClarification,true);
+ assert.match(conflict.answer,/styl/);
+});
