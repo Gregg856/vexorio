@@ -23,8 +23,13 @@
 - Utrzymuj zgodność starego formatu migawki `schema:1`, bez wymyślania zapisanych doświadczeń.
 - Po każdym ukończonym etapie aktualizuj punkt kontynuacji.
 
-## Bieżący pakiet: RX NAUKA 3.5
+## Zakończony pakiet: RX NAUKA 3.5
 - PR #460 (punkt kontynuacji) scalony do `main` po zielonym VEXORIO checks.
 - Rozwijany istniejący `rx-brain-chat-engine.cjs`: odpowiedzi o pamięci wskazują liczbę prób, jakość dowodów i przewagę niepowodzeń, bez wykonania działań.
 - Testy regresji w `tests/rx-brain-chat-engine.cjs`.
-- Następny krok: sprawdzić CI pakietu, poprawić ewentualne błędy, scalić dopiero po zielonych testach. Nie tworzyć duplikatów.
+- PR #461 scalony po zielonych VEXORIO checks i RX CLOUD self-host smoke tests; naprawiono zdublowany import w testach.
+
+## Bieżący pakiet: RX NAUKA 3.6
+- Zabezpieczenie przed przekroczeniem 1 000 000 zapisanych prób dla pojedynczego klucza pamięci; odmowa zapisu bez zmiany istniejących danych.
+- Test regresji pamięci i integralności migawki. Bez nowego panelu, automatycznego wykonywania i wdrożenia.
+- Sprawdź oba CI przed scaleniem.
