@@ -86,3 +86,12 @@
 - **Nie dublować:** PR #482 zawiera alternatywny moduł `rx-ant-queen-training.cjs`; integracja wejścia z Mrówek odbywa się teraz bezpośrednio w istniejącym `rx-queen-train-batch.cjs`. Nie scalać obu wariantów.
 - **Ochrona:** niezależne dane walidacyjne, zakaz wycieku HOLDOUT/CHALLENGE, brak automatycznej promocji modelu do produkcji. Testy CI wymagane.
 - **Kolejny krok:** po zielonym CI sprawdzić, czy istniejący harmonogram Mrówek dostarcza rzeczywiste zatwierdzone recenzje; dopiero wtedy podłączać go do tego samego wejścia. Nie deklarować działania na żywo bez dowodu.
+
+## Zatwierdzony punkt kontynuacji: porządek zakończony, teraz szkolimy BIBI (2026-10-31)
+- Właściciel potwierdził: **zapisz ustalenia i przejdź do szkolenia BIBI**, nie rozbudowuj struktury RX.
+- PR #483 scalony po zielonym CI #4122; PR #482 zamknięty bez scalenia jako duplikat. Jedynym wejściem zatwierdzonych pakietów i recenzji Mrówek jest `rx-queen-train-batch.cjs`.
+- **Nie tworzyć nowych paneli, serwerów, trenerów ani kolejnych nazw RX.** Zachować istniejący panel BIBI, Brain, Neural, Mrówki, chmurę i dane.
+- **Najbliższe działanie: faktyczny trening istniejącego `rx-text-learner.cjs`.** Najpierw zebrać 4+ nowych, indywidualnie zatwierdzonych przykładów (każdy z etykietą intencji) i osobne przykłady walidacyjne, nieobecne w treningu, HOLDOUT i CHALLENGE.
+- Przekazać je do `rx-queen-train-batch.cjs` (lub przez format recenzji Mrówek). Zmierzyć liczbę trafnych odpowiedzi dla konfiguracji i porównać z dotychczasowym modelem na identycznej walidacji. Nie twierdzić, że nastąpiła poprawa bez wyników.
+- Przed automatyzacją sprawdzić, czy istniejące Mrówki już dostarczają zatwierdzone recenzje. Żadnego samoczynnego uczenia z prywatnych rozmów ani wdrażania produkcyjnego bez osobnej zgody.
+- **Ograniczenie:** obecny `rx-text-learner.cjs` jest neuronowym klasyfikatorem 4 intencji, a nie generatywnym LLM; testy offline nie oznaczają poprawy rozmowy na żywo.
