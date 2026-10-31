@@ -18,4 +18,21 @@ async function saveBrain(file,brain){
  try{await fs.writeFile(tmp,raw,{flag:'wx',mode:0o600});await fs.rename(tmp,file)}
  catch(e){await fs.rm(tmp,{force:true}).catch(()=>{});throw e}
 }
-module.exports={loadBrain,saveBrain};
+// Serialize verified learning updates within one Node.js process per file.
+const learningQueues=new Map();
+function learnAndSaveBrain(file,observation){
+ if(typeof file!=='string'||!file.trim())return Promise.reject(Error('Invalid memory path'));
+ const key=path.resolve(file);
+ const previous=learningQueues.get(key)||Promise.resolve();
+ const current=previous.catch(()=>{}).then(async()=>{
+  const brain=await loadBrain(key);
+  const record=brain.learn(observation);
+  await saveBrain(key,brain);
+  return record;
+ });
+ const settled=current.then(()=>{},()=>{});
+ learningQueues.set(key,settled);
+ void settled.then(()=>{if(learningQueues.get(key)===settled)learningQueues.delete(key)});
+ return current;
+}
+module.exports={loadBrain,saveBrain,learnAndSaveBrain};
