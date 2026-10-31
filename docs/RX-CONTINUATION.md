@@ -34,7 +34,12 @@
 - Test regresji pamięci i integralności migawki. Bez nowego panelu, automatycznego wykonywania i wdrożenia.
 - PR #462 scalony po zielonym VEXORIO checks.
 
-## Bieżący pakiet: RX NAUKA 3.7
+## Zakończony pakiet: RX NAUKA 3.7
 - Wzmocnienie odczytu pliku pamięci: odrzucenie dowiązań symbolicznych, katalogów i nieprawidłowych rozmiarów.
 - Testy odczytu/zapisu, brakującego pliku i niebezpiecznych ścieżek.
-- Następnie sprawdzić CI i scalić dopiero po sukcesie. Bez wdrożenia produkcyjnego.
+- PR #463 scalony po zielonym VEXORIO checks; bez wdrożenia produkcyjnego.
+
+## Bieżący pakiet: RX NAUKA 3.8
+- Weryfikacja pól `trainedModel:false` i `autoExecuted:0` podczas odczytu zapisanej pamięci, aby nie przyjmować fałszywych deklaracji autonomii.
+- Testy odrzucenia nieprawidłowych metadanych i zgodności poprawnej migawki.
+- Sprawdzić CI przed scaleniem. Bez serwera i bez zmian w produkcji.
