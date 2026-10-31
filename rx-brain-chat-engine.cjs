@@ -25,7 +25,8 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const isFollowup=text=>/^(?:dalej|sprawdź to|sprawdz to|a co z tym\??|co dalej\??|kontynuuj|wróć do tego|wroc do tego)[.!?\s]*$/i.test(text.trim());
  const isAcknowledgement=text=>/^(?:ok|gotowe|zielone|błąd|blad|dzięki|dzieki|super)[.!?\s]*$/i.test(text.trim());
  const previous=history.length?history[history.length-1]:'';
- const meaningful=[...history].reverse().filter(item=>!isFollowup(item)&&!isAcknowledgement(item));
+ // History is alternating user/assistant turns; only user turns may anchor a new request.
+ const meaningful=history.filter((item,index)=>index%2===0&&!isFollowup(item)&&!isAcknowledgement(item)).reverse();
  const topic=meaningful[0]||'';
  const wantsPreviousTopic=/^(?:wróć|wroc) do poprzedniego tematu[.!?\s]*$/i.test(message.trim());
  const olderTopic=meaningful.find(item=>item!==topic)||'';
