@@ -66,3 +66,4 @@ jobs:
           node tests/rx-text-training-benchmark.cjs
           node tests/rx-text-training-candidate.cjs
           node rx-text-evaluation.cjs
+          node --test tests/rx-nauka-4-3.test.cjs tests/rx-nauka-4-3-response.test.cjs tests/rx-nauka-4-3-engine.test.cjs tests/rx-nauka-4-4.test.cjs tests/rx-nauka-4-5-api-contract.test.cjs tests/rx-nauka-4-6-api-adapter.test.cjs tests/rx-nauka-4-7-worker-route.test.cjs
