@@ -338,6 +338,7 @@ export default {
             const state=run?.status==='completed'?run.conclusion:run?.status||'brak danych';
             const failed=state==='failure';
             let failureDetail='';
+            const developerTickets=[];
             if(failed&&Number.isSafeInteger(run?.id)){
               try{
                 const jobsResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/jobs?per_page=100',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Tester-Review'},signal:AbortSignal.timeout(8000)});
@@ -349,12 +350,18 @@ export default {
                       return String(job.name||'Nieznany test').slice(0,80)+(step?' / '+String(step.name||'Nieznany krok').slice(0,80):'');
                     });
                     if(failures.length)failureDetail=' Nieudane kroki: '+failures.join('; ')+'.';
+                    for(const job of jobs.filter(job=>job.conclusion==='failure').slice(0,10)){
+                      if(!Array.isArray(job.steps))continue;
+                      for(const step of job.steps.filter(step=>step.conclusion==='failure').slice(0,10)){
+                        developerTickets.push({source:'github-actions-rx-tester',runId:run.id,jobName:String(job.name||'Nieznany test').slice(0,200),stepName:String(step.name||'Nieznany krok').slice(0,200),diagnosis:'Failed CI step; root cause not yet verified',proposedAction:'Inspect failed step logs and reproduce with a focused regression before proposing code changes',status:'awaiting_review',approved:false,executed:false,requiresApproval:true});
+                      }
+                    }
                   }
                 }
               }catch{/* A workflow failure remains verified even if job details are unavailable. */}
             }
             const answer=failed?'👑 RX Tester: ostatni przebieg zakończył się błędem.'+failureDetail+' Propozycja: zleć RX Developer przegląd kodu RX Developer poleceniem „Sprawdź RX Developer”. To analiza, nie automatyczna naprawa.':'👑 RX Tester: ostatni przebieg ma status '+state+'. Nie mam potwierdzonego błędu do przekazania RX Developer. Nie uruchomiłam analizy ani naprawy.';
-            return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-tester-developer-proposal',source:'github-actions',runId:run?.id||null,runStatus:state,proposed:failed,queued:false,executed:0,modelInferenceUsed:false,requiresApproval:true,productionModified:false}),{status:200,headers});
+            return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-tester-developer-proposal',source:'github-actions',runId:run?.id||null,runStatus:state,developerTickets,proposed:failed,queued:false,executed:0,modelInferenceUsed:false,requiresApproval:true,productionModified:false}),{status:200,headers});
           }catch{return reply(502,'Nie udało się pobrać wyniku RX Tester. Nie utworzyłam zadania.');}
         }
         // Owner-only Queen chat command -> existing RX BIBI live tester.
