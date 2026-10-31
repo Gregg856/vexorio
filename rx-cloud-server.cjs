@@ -79,7 +79,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.setHeader('Cache-Control','no-store');
         res.setHeader('X-Content-Type-Options','nosniff');
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
         if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
@@ -104,7 +105,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.setHeader('X-Content-Type-Options','nosniff');
         if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end();return;}
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32 && supplied.length===secret.length &&
           timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         if(!valid){res.writeHead(401,{'Content-Type':'application/json'});res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
@@ -118,7 +120,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.setHeader('Content-Type','application/json');
         res.setHeader('X-Content-Type-Options','nosniff');
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
         if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
@@ -139,7 +142,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       // Private RX learning history: same bearer authentication as Queen bridge.
       if(url.pathname==='/__rxcloud/bibi/learning-history'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         res.setHeader('Cache-Control','no-store');
         res.setHeader('Content-Type','application/json');
@@ -161,7 +165,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       // Explicit, authenticated GitHub Actions evidence sync; never trusts client-supplied status.
       if(url.pathname==='/__rxcloud/neuron/sync-run'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         res.setHeader('Cache-Control','no-store');
         res.setHeader('Content-Type','application/json');
@@ -190,7 +195,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       // Private read-only RX Brain snapshot from the existing self-hosted server.
       if(url.pathname==='/__rxcloud/bibi/brain-memory'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         res.setHeader('Cache-Control','no-store');
         res.setHeader('Content-Type','application/json');
@@ -215,7 +221,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       // Private read-only learning feed for the RX Queen coordinator.
       if(url.pathname==='/__rxcloud/bibi/learning'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         res.setHeader('Cache-Control','no-store');
         res.setHeader('Content-Type','application/json');
@@ -308,7 +315,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       // Private local RX BIBI report inbox: explicit token, bounded JSON, no public access.
       if(url.pathname==='/__rxcloud/bibi/inbox'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
-        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const authorization=req.headers.authorization||'';
+        const supplied=/^Bearer [^\s]+$/.test(authorization)?authorization.slice(7):'';
         const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
         res.setHeader('Cache-Control','no-store');
         res.setHeader('X-Content-Type-Options','nosniff');
