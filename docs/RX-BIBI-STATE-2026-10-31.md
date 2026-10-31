@@ -35,3 +35,32 @@
 
 ## Uwaga
 Ten plik jest dokumentacją stanu i planem w GitHub. **Sam zapis tego pliku NIE jest wdrożeniem na serwer ani dowodem zapisania danych w chmurze.**
+
+
+## AKTUALIZACJA — punkt kontrolny po PR #530 (2026-10-31)
+
+### Obowiązkowy protokół kontynuacji (STOP DUPLIKATOM)
+1. Przed proponowaniem zmian przeczytaj **ten plik**, historię ostatnich PR i sprawdź istniejące pliki. Nie polegaj wyłącznie na pamięci czatu.
+2. Ustal konkretny brak w działaniu istniejącego kodu. Nie dodawaj nowego testera, serwera, panelu, czatu, pamięci ani modułu, jeżeli istniejący może wykonać zadanie.
+3. Wprowadzaj spójne pakiety, testuj, sprawdzaj CI, scalaj po sukcesie. Po każdym pakiecie aktualizuj ten punkt kontrolny i zapisuj dowód (PR/commit, status).
+4. Rozróżniaj: kod zapisany, testy CI zielone, wdrożone na serwerze, zweryfikowane na żywo. **Żadne z nich nie wynika automatycznie z poprzedniego.**
+5. Nie publikuj wersji oficjalnej bez osobnej zgody. Nie proś o powtórne wpisywanie sekretów.
+
+### Potwierdzone zakończone pakiety
+- #525: porównywanie odpowiedzi kandydujących — MERGED, deterministyczne offline.
+- #526: zatwierdzona pamięć odpowiedzi — MERGED, wymagane jawne zatwierdzenie.
+- #527: most pamięci do istniejącego silnika Brain — MERGED, opt-in.
+- #528: most pamięci do istniejącego RX CLOUD czatu — MERGED, opt-in.
+- #529: wydzielona bramka pamięci z testami odmów i błędów — MERGED, CI zielone.
+- #530: skrypt sprawdzania gotowości testowego RX CLOUD — MERGED, VEXORIO checks zielone. Skrypt **nie** dowodzi działającego czatu na żywo.
+- Istnieją: testerzy, Nauczyciel, Strażak, Weryfikator, silnik Brain, RX CLOUD, panel BIBI i workflow nauki. **Nie tworzyć duplikatów.**
+
+### Stan na przekazanie
+- Repo: Gregg856/vexorio, main. Ostatni potwierdzony merge #530: `475bd77997393965ef7df49bb9334f357b72a818`.
+- Wersja **testowa**, bez zgody na oficjalny deployment.
+- Niepotwierdzone: rzeczywisty adres maszyny RX CLOUD, uruchomiona konfiguracja pamięci, test zalogowanego czatu i trwałość zapisu po restarcie.
+- Domyślny adres `127.0.0.1:8787` jest **lokalny**, nie jest domeną publiczną. Publiczny Worker VEXORIO nie jest dowodem działania self-hosted RX CLOUD.
+- Następny rzeczywisty cel: **audyt już istniejącego mechanizmu automatycznej pracy botów i jego połączenia z istniejącym czatem**, z dowodami działania. Nie zaczynać od nowego testera ani kolejnego raportu o samych planach.
+
+### Zasada końca każdej sesji
+Dopisz: ostatni scalony PR/SHA, testy, status wdrożenia, następny jeden konkretny krok. W nowym czacie rozpocznij od odczytu tego pliku.
