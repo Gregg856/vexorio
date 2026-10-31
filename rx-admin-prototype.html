@@ -391,7 +391,19 @@ document.getElementById('rxQueenMemoryRead').addEventListener('click',async()=>{
   const verified=Array.isArray(result.verified)?result.verified:[];
   const examples=verified.slice(0,3).map(x=>'• '+String(x.resolution||'Brak opisu').slice(0,150));
   rxQueenBubble('bot','🧠 RX CLOUD — odczyt administracyjny, bez wykonywania zadań.\\nObserwacje: '+lessons.length+'; potwierdzone naprawy: '+verified.length+'.'+(examples.length?'\\nPrzykłady napraw:\\n'+examples.join('\\n'):'\\nBrak potwierdzonych napraw w odpowiedzi.'));
- }catch(error){rxQueenBubble('bot','⚠️ Nie potwierdzono dostępu do pamięci RX CLOUD: '+String(error.message||error).slice(0,180));}
+ }catch(error){
+  const reason=String(error?.message||error);
+  const message=error?.name==='TimeoutError'||error?.name==='AbortError'
+   ?'⏳ Pamięć RX CLOUD nie odpowiedziała na czas. Spróbuj ponownie później.'
+   :/Brak adresu HTTPS pamięci RX CLOUD|Pamięć RX CLOUD nie jest skonfigurowana/.test(reason)
+   ?'🔌 Pamięć RX CLOUD nie jest jeszcze podłączona. Administrator musi skonfigurować bezpieczny adres serwera.'
+   :/Brak prywatnego tokenu RX CLOUD/.test(reason)
+   ?'🔒 Brakuje prywatnego połączenia z pamięcią RX CLOUD. Administrator musi dokończyć konfigurację.'
+   :/Pamięć RX CLOUD jest niedostępna|Pamięć RX CLOUD niedostępna|Failed to fetch|NetworkError/.test(reason)
+   ?'☁️ Serwer pamięci RX CLOUD jest teraz niedostępny. Czat Królowej pozostaje dostępny; spróbuj ponownie później.'
+   :'⚠️ Nie udało się sprawdzić pamięci RX CLOUD: '+reason.slice(0,150);
+  rxQueenBubble('bot',message);
+ }
  finally{button.disabled=false;}
 });
 document.getElementById('rxQueenForm').addEventListener('submit',async event=>{
