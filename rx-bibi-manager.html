@@ -1027,8 +1027,24 @@ document.addEventListener('DOMContentLoaded',()=>{
    log.scrollTop=log.scrollHeight;
   };
   // Keep the RX Brain advisory-memory syntax distinct from RX CLOUD admin memory.
-  if(/^co (?:pamiętasz|pamietasz) o zadaniu\s*:/i.test(message)){
-   explain('To pytanie dotyczy pamięci RX Brain. Panel BIBI nie ma jeszcze bezpiecznego połączenia z tą pamięcią; nie podaję danych RX CLOUD jako odpowiedzi RX Brain.');
+  const brainMatch=/^co (?:pamiętasz|pamietasz) o zadaniu\s*:\s*([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
+  if(brainMatch){
+   (async()=>{
+    send.disabled=true;
+    try{
+     if(!window.supabase?.createClient)throw Error('Logowanie administratora niedostępne.');
+     const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+     const {data,error}=await client.auth.getSession();
+     if(error||!data?.session?.access_token)throw Error('Zaloguj się jako administrator.');
+     const response=await fetch('/api/rx/admin/brain-memory',{headers:{Authorization:'Bearer '+data.session.access_token,Accept:'application/json'},cache:'no-store'});
+     const payload=await response.json();
+     if(!response.ok||!payload.ok||payload.kind!=='rx-brain-memory')throw Error(payload.message||'Pamięć RX Brain niedostępna.');
+     const key=brainMatch[1].toLowerCase();
+     const entry=Array.isArray(payload.records)?payload.records.find(x=>x.key===key):null;
+     explain(entry?'RX Brain — '+key+': '+String(entry.action).slice(0,120)+'. Próby: '+entry.samples+', skuteczność: '+Math.round(entry.successRate*100)+'%. To wskazówka, wymaga zatwierdzenia.':'RX Brain nie ma zapisanego doświadczenia dla „'+key+'”.');
+    }catch(error){explain('Nie mogę odczytać pamięci RX Brain: '+String(error.message||error).slice(0,180));}
+    finally{send.disabled=false;}
+   })();
    return;
   }
   // Read-only admin memory lookup; existing deterministic chat stays unchanged for other commands.
