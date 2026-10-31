@@ -92,3 +92,20 @@ test('offline frequency versus bigram features on untouched holdout and challeng
  assert.equal(results.bigram.challenge.total,32);
  console.log('BIBI FEATURE COMPARISON',JSON.stringify({results,productionConnected:false,trainedOnEvaluation:false}));
 });
+
+test('approved 40: compare frequency and bigram training on unseen validation',()=>{
+ const {createLearner}=require('../rx-text-learner.cjs');
+ const training={"greeting":["hej moja droga bibi","miłego popołudnia królowo","przesyłam ci serdeczne uściski","wspaniale znowu cię słyszeć","dzień dobry moja asystentko","cieszę się że jesteś online","pozdrawiam cię z uśmiechem","witam po długiej przerwie bibi","życzymy ci spokojnego dnia","dobrze że możemy porozmawiać"],"tests":["sprawdź stan wszystkich kontroli","pokaż czy weryfikacja zakończyła się pomyślnie","czy test integracyjny przeszedł","odczytaj ostatnie błędy testowe","podsumuj rezultaty automatycznych kontroli","przeanalizuj wynik sprawdzenia kodu","czy wszystkie kontrole są zakończone","pokaż liczbę nieudanych prób testowych","sprawdź poprawność ostatniej aktualizacji","zweryfikuj czy moduł przeszedł kontrolę"],"memory":["przywołaj plan zapisany wcześniej","co zapamiętałaś z naszego projektu","odszukaj poprzednie ustalenia zespołu","przypomnij mi ostatnią decyzję","wróć do historii zapisanych zadań","pokaż co zostało w twojej pamięci","czy zachowałaś informacje z poprzedniej sesji","odtwórz listę naszych wcześniejszych celów","przypomnij gdzie przerwaliśmy pracę","znajdź zapamiętane wskazówki projektu"],"math":["oblicz sumę czterech kwot","podziel koszt na trzy równe części","ile wynosi dwadzieścia procent ceny","wyznacz iloczyn siedmiu i dziewięciu","policz różnicę dwóch wydatków","jaka jest średnia pięciu liczb","oblicz wartość po rabacie","ile zostanie po odjęciu kosztów","pomnóż liczbę zamówień przez cenę","wylicz łączną wartość faktur"]};
+ const validation=[["jak miło z tobą dzisiaj rozmawiać","greeting"],["przesyłam uśmiech na powitanie","greeting"],["dobrego dnia asystentko","greeting"],["pokaż stan testu bezpieczeństwa","tests"],["zweryfikuj raport uruchomienia","tests"],["czy ostatnia kontrola była udana","tests"],["odtwórz decyzję z wcześniejszej sesji","memory"],["przypomnij zapisane cele","memory"],["pokaż historię naszych planów","memory"],["oblicz różnicę między kwotami","math"],["wylicz cenę po obniżce","math"],["policz łączny koszt zakupów","math"]];
+ const {HOLDOUT,CHALLENGE}=require('../rx-text-evaluation.cjs');
+ const approved=Object.entries(training).flatMap(([label,phrases])=>phrases.map(text=>[{text,approvedForTraining:true},label]));
+ const score=(model,cases)=>cases.filter(([text,label])=>model.classify(text).label===label).length;
+ const results={};
+ for(const features of ['frequency','bigram']){
+  const before=createLearner({features});
+  const after=createLearner({features,additionalExamples:approved});
+  results[features]={validation:{before:score(before,validation),after:score(after,validation),total:validation.length},holdout:{before:score(before,HOLDOUT),after:score(after,HOLDOUT),total:HOLDOUT.length},challenge:{before:score(before,CHALLENGE),after:score(after,CHALLENGE),total:CHALLENGE.length}};
+ }
+ assert.equal(approved.length,40);
+ console.log('BIBI 40 FEATURE TRAINING COMPARISON',JSON.stringify({results,productionConnected:false}));
+});
