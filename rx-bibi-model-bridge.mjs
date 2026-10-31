@@ -1,6 +1,6 @@
 // Optional, explicitly invoked model adapter. No external URL, admin tools, or private memory.
-export async function askClientModel(message,env){
- const match=/^(?:zapytaj model|zapytaj ai):\s*(.{1,1000})$/isu.exec(message.trim());
+export async function askClientModel(message,env,{direct=false}={}){
+ const match=direct?(/^[\s\S]{1,1000}$/u.test(message.trim())?[null,message.trim()]:null):/^(?:zapytaj model|zapytaj ai):\s*(.{1,1000})$/isu.exec(message.trim());
  if(!match)return null;
  if(env.RX_BIBI_MODEL_ENABLED!=='true'||typeof env.RX_BIBI_MODEL_SERVICE?.fetch!=='function')
   return {answer:'Silnik AI nie jest jeszcze podłączony do tego czatu.',modelInferenceUsed:false,engine:'rx-bibi-model-unavailable'};

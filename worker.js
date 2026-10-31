@@ -136,6 +136,13 @@ export default {
       if(/(?:pamiec|rx cloud|potwierdzone naprawy|historia napraw)/.test(normalizedIntent)&&/(?:pokaz|odczytaj|sprawdz|wyswietl|jakie|co jest|dostep)/.test(normalizedIntent)){
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
+      // Model-first mode is explicitly configured; preserve admin/private-data boundary.
+      // A failed or unknown model answer falls through to the existing safe planner.
+      if(env.RX_BIBI_CLIENT_MODEL_FIRST==='true'&&!/^(?:zapytaj model|zapytaj ai):/iu.test(message.trim())){
+        const {askClientModel}=await import('./rx-bibi-model-bridge.mjs');
+        const model=await askClientModel(message,env,{direct:true});
+        if(model?.modelInferenceUsed)return new Response(JSON.stringify({ok:true,...model,executed:0,adminToolsAvailable:false}),{status:200,headers});
+      }
       // Read-only RX module results from verified workflow names. Never infer live activity from CI.
       const moduleStatusMatch=/^(?:sprawdz|pokaz|podaj)\s+(?:aktualny\s+)?(?:status|wynik|wyniki)\s+(?:modulu\s+)?(rx\s+fast|rx\s+developer|rx\s+tester|rx\s+bibi|rx\s+queen)[?!. ]*$/i.exec(normalizedIntent);
       if(moduleStatusMatch){
