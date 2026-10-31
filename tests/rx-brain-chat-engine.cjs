@@ -138,6 +138,13 @@ for(const [question,expected] of conversationCases){
  assert.equal(result.executed,0,question);
 }
 console.log('RX conversation audit: 8 known capabilities and gaps recorded');
+for(const question of ['Jak mogę ulepszyć RX Brain?','W jaki sposób poprawić pamięć Królowej?']){
+ const result=chatRX(question);
+ assert.match(result.answer,/Pytasz o sposób działania/);
+ assert.match(result.answer,/Nie uruchomiłam żadnej operacji/);
+ assert.equal(result.executed,0);
+}
+console.log('RX Brain: open-ended how-to intent checked');
 
 const {chatRXWithKnowledge}=require('../rx-brain-chat-engine.cjs');
 (async()=>{
