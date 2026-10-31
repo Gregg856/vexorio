@@ -733,9 +733,11 @@ export default {
         if((await check.json())!==true)return reply(403,'Brak uprawnień administratora.');
       }catch{return reply(502,'Weryfikacja administratora niedostępna.');}
       const privateToken=env.RX_QUEEN_LOCAL_TOKEN||'';
+      if(!env.RX_CLOUD_LEARNING_URL)return reply(503,'Brak adresu HTTPS pamięci RX CLOUD (RX_CLOUD_LEARNING_URL).');
+      if(privateToken.length<32)return reply(503,'Brak prywatnego tokenu RX CLOUD (RX_QUEEN_LOCAL_TOKEN).');
       let endpoint;
-      try{endpoint=new URL(env.RX_CLOUD_LEARNING_URL||'');}catch{return reply(503,'Pamięć RX CLOUD nie jest skonfigurowana.');}
-      if(privateToken.length<32||endpoint.protocol!=='https:'||endpoint.username||endpoint.password||endpoint.port||endpoint.search||endpoint.hash||endpoint.pathname!=='/__rxcloud/bibi/learning'||!endpoint.hostname||endpoint.hostname==='localhost'||endpoint.hostname.endsWith('.localhost'))return reply(503,'Pamięć RX CLOUD nie jest skonfigurowana.');
+      try{endpoint=new URL(env.RX_CLOUD_LEARNING_URL);}catch{return reply(503,'Nieprawidłowy adres pamięci RX CLOUD.');}
+      if(endpoint.protocol!=='https:'||endpoint.username||endpoint.password||endpoint.port||endpoint.search||endpoint.hash||endpoint.pathname!=='/__rxcloud/bibi/learning'||!endpoint.hostname||endpoint.hostname==='localhost'||endpoint.hostname.endsWith('.localhost'))return reply(503,'Nieprawidłowy adres HTTPS pamięci RX CLOUD.');
       try{
         const response=await fetch(endpoint.toString(),{headers:{Authorization:'Bearer '+privateToken,Accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(7000)});
         if(!response.ok)return reply(502,'Pamięć RX CLOUD jest niedostępna.');
