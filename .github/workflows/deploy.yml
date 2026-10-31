@@ -296,6 +296,31 @@ jobs:
           console.log('Workers list API read access OK');
           NODE
 
+      - name: Diagnostyka konfiguracji pamięci RX CLOUD (bez sekretów)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          # Inspect only metadata. Never print variable values or secret contents.
+          code="$(curl -sS --retry 2 --max-time 20 -o /tmp/rx-cloud-vars-meta.json -w '%{http_code}' -H "Authorization: Bearer $CF_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/workers/scripts/vexorio/settings")"
+          node - "$code" <<'NODE'
+          const fs=require('node:fs');
+          const code=process.argv[2];
+          if(code!=='200'){
+            console.log('RX CLOUD config: cannot inspect Worker settings (HTTP '+code+'); manual dashboard check required.');
+            process.exit(0);
+          }
+          let body;
+          try{body=JSON.parse(fs.readFileSync('/tmp/rx-cloud-vars-meta.json','utf8'));}catch{console.log('RX CLOUD config: settings response unreadable.');process.exit(0);}
+          if(body.success!==true){console.log('RX CLOUD config: settings API unavailable.');process.exit(0);}
+          const bindings=body.result?.bindings||[];
+          for(const name of ['RX_CLOUD_LEARNING_URL','RX_QUEEN_LOCAL_TOKEN']){
+            const item=bindings.find(b=>b.name===name);
+            console.log('RX CLOUD config '+name+': '+(item?'binding present ('+String(item.type||'unknown')+')':'binding missing'));
+          }
+          NODE
+
       - name: Publikuj w Cloudflare
         id: publish
         uses: cloudflare/wrangler-action@v3
