@@ -32,9 +32,16 @@ function buildDialogueDeveloperReviews(queue){
   'profile-memory-missing':{target:'rx-chat-planner.mjs',reason:'Previously supplied profile fact was not recalled',suggestedCheck:'Inspect bounded session history and profile extraction'},
   'assertion-failed':{target:'tests/rx-bibi-auto-dialogue.mjs',reason:'A scenario expectation was not met',suggestedCheck:'Reproduce scenario, verify expectation, then inspect planner behavior'}
  };
+ const regressionFor=(item)=>({
+  target:'tests/rx-bibi-auto-dialogue.mjs',
+  scenario:{message:item.message,expected:item.type==='math-answer-missing'?'Expected numeric result':item.type==='profile-memory-missing'?'Previously supplied profile fact':'Relevant non-generic answer'},
+  proposedAction:'Add a focused regression reproducing this issue before modifying the planner',
+  readyToApply:false,
+  requiresApproval:true
+ });
  const reviews=queue.items.map((item,index)=>{
   if(!item||!allowed.has(item.type)||typeof item.message!=='string'||item.message.length>8000||typeof item.answer!=='string'||item.answer.length>1000)throw Error('Invalid RX dialogue issue');
-  return {id:index+1,source:'rx-bibi-auto-dialogue',category:item.type,priority:item.priority==='high'?'high':'normal',question:item.message,observedAnswer:item.answer,diagnosis:diagnoses[item.type],status:'awaiting_review',approved:false,executed:false,requiresApproval:true};
+  return {id:index+1,source:'rx-bibi-auto-dialogue',category:item.type,priority:item.priority==='high'?'high':'normal',question:item.message,observedAnswer:item.answer,diagnosis:diagnoses[item.type],regressionProposal:regressionFor(item),status:'awaiting_review',approved:false,executed:false,requiresApproval:true};
  });
  return {schema:1,kind:'rx-dialogue-developer-review-queue',reviews,requiresApproval:true,productionModified:false,autoFixesApplied:0,automaticDeployment:false};
 }
