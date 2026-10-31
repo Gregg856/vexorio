@@ -78,7 +78,9 @@ jobs:
       - name: Practice Queen writing and answers
         run: node tests/rx-queen-response-practice.cjs
       - name: Prepare reviewed Queen writing candidates automatically
-        run: node tests/rx-queen-writing-reviewed-batch.cjs
+        run: |
+          node --test tests/rx-queen-writing-reviewed-batch.test.cjs
+          node tests/rx-queen-writing-reviewed-batch.cjs
       - name: Queen writing agent review
         run: node tests/rx-queen-writing-agent-review.cjs
       - name: Queen response improvement proposals
