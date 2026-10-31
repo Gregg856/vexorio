@@ -73,6 +73,32 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,modelConfigured:available,modelVerified:false,mode:'configuration-only',service:'rx-cloud-2'}));
         return;
       }
+      // Active loopback probe: distinguish configured binding from a responding real process.
+      if(url.pathname==='/__rxcloud/model/probe'){
+        res.setHeader('Content-Type','application/json');
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('X-Content-Type-Options','nosniff');
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        if(!modelEnabled){res.writeHead(503);res.end(JSON.stringify({ok:false,modelVerified:false,error:'Model disabled'}));return;}
+        try{
+          const response=await env.RX_BIBI_MODEL_SERVICE.fetch('https://rx-bibi-model.internal/infer',{
+            method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'rx_probe_'+require('node:crypto').randomBytes(12).toString('hex')}),
+            signal:AbortSignal.timeout(2500)
+          });
+          // 422 is the expected abstention from the real local token classifier.
+          // It proves an inference-compatible HTTP responder, not model intelligence.
+          const verified=response.status===422;
+          res.writeHead(verified?200:503);
+          res.end(JSON.stringify({ok:verified,modelVerified:verified,mode:'live-loopback-probe',status:response.status}));
+        }catch{
+          res.writeHead(503);res.end(JSON.stringify({ok:false,modelVerified:false,error:'Model not reachable'}));
+        }
+        return;
+      }
       if(url.pathname==='/__rxcloud/queen/status') {
         res.setHeader('Cache-Control','no-store');
         res.setHeader('X-Content-Type-Options','nosniff');
