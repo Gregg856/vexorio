@@ -14,7 +14,9 @@ export function composeClientWriting(message){
  const yesSignoff=has(/(?:z\s+(?:pożegnaniem|podpisem)|dodaj\s+(?:pożegnanie|podpis))(?=[\s,;]|$)/u);
  const short=has(/(?:krótko|krotko|zwięźle|zwiezle)(?=[\s,;]|$)/u);
  const long=has(/(?:szczegółowo|obszernie)(?=[\s,;]|$)/u);
- const formal=has(/(?:^|[\s,;])(?:formalnie|oficjalnie)(?=[\s,;]|$)/u);\n const informal=has(/nieformalnie(?=[\s,;]|$)/u);\n const conflicts=[formal&&informal?'styl':null,noGreeting&&yesGreeting?'powitanie':null,noSignoff&&yesSignoff?'pożegnanie':null,short&&long?'długość':null].filter(Boolean);
+ const formal=has(/(?:^|[\s,;])(?:formalnie|oficjalnie)(?=[\s,;]|$)/u);
+ const informal=has(/nieformalnie(?=[\s,;]|$)/u);
+ const conflicts=[formal&&informal?'styl':null,noGreeting&&yesGreeting?'powitanie':null,noSignoff&&yesSignoff?'pożegnanie':null,short&&long?'długość':null].filter(Boolean);
  if(conflicts.length)return {answer:'Polecenie zawiera sprzeczne wymagania. Doprecyzuj: '+conflicts.join(', ')+'.',requiresClarification:true};
  const content=m[4].trim();
  if(!content)return null;
