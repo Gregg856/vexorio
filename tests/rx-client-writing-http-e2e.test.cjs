@@ -42,3 +42,30 @@ test('authenticated client writing API: actual Worker HTTP request/response, no 
   assert.equal(authCalls,3);
  }finally{global.fetch=original;}
 });
+
+test('authenticated client chat rejects invalid sessions and anonymous users',async()=>{
+ const worker=await loadWorker();
+ const env={SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public-test-key'};
+ const original=global.fetch;
+ let calls=0,mode='expired';
+ global.fetch=async input=>{
+  assert.ok(String(input).endsWith('/auth/v1/user'));
+  calls++;
+  if(mode==='expired')return Response.json({message:'expired'},{status:401});
+  if(mode==='anonymous')return Response.json({id:'guest',is_anonymous:true});
+  return Response.json({id:'verified-user',is_anonymous:false});
+ };
+ const send=()=>worker.fetch(new Request('https://example.test/api/rx/client/chat',{
+  method:'POST',headers:{Origin:'https://example.test',Authorization:'Bearer test.session','Content-Type':'application/json'},
+  body:JSON.stringify({message:'Napisz wiadomość: potwierdzam termin.'})
+ }),env);
+ try{
+  let response=await send();assert.equal(response.status,401);
+  mode='anonymous';response=await send();assert.equal(response.status,403);
+  mode='verified';response=await send();assert.equal(response.status,200);
+  const result=await response.json();assert.equal(result.answer,'Cześć! Potwierdzam termin. Pozdrawiam!');
+  assert.equal(result.modelInferenceUsed,false);
+  assert.equal(result.adminToolsAvailable,false);
+  assert.equal(calls,3);
+ }finally{global.fetch=original;}
+});
