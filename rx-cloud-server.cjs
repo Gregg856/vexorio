@@ -290,6 +290,28 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
           // Advisory model failures never affect the authenticated original reply.
         }
       }
+      // Opt-in writing mode for the EXISTING authenticated RX client chat.
+      // Preserve upstream auth: only consider a successful authenticated response.
+      // No code execution, message retention or background training.
+      if(process.env.RX_BIBI_WRITING_ENABLED==='true'&&url.pathname==='/api/rx/client/chat'&&method==='POST'&&response.status===200){
+        try{
+          const original=await response.clone().json();
+          const payload=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          if(original?.ok===true&&typeof original.answer==='string'&&typeof payload?.message==='string'&&payload.message.length<=1000&&/^(?:napisz|ułóż|uloz|przygotuj)\\s+(?:wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\\s*:/iu.test(payload.message.trim())){
+            const {chatRXWithWriting}=require('./rx-brain-chat-engine.cjs');
+            const written=chatRXWithWriting(payload.message);
+            if(typeof written.answer==='string'&&written.writingMode){
+              const body=JSON.stringify({...original,answer:written.answer,writingMode:written.writingMode,writingSource:written.writingSource});
+              const outHeaders=new Headers(response.headers);
+              outHeaders.delete('Content-Length');outHeaders.delete('Content-Encoding');outHeaders.delete('ETag');
+              outHeaders.set('Content-Type','application/json');outHeaders.set('Cache-Control','no-store');
+              response=new Response(body,{status:200,headers:outHeaders});
+            }
+          }
+        }catch{
+          // Fail open to the original authenticated chat response.
+        }
+      }
       res.writeHead(response.status,Object.fromEntries(response.headers));
       if(method==='HEAD'||!response.body){res.end();return;}
       for await(const chunk of response.body) res.write(chunk);
