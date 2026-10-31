@@ -13,7 +13,16 @@ const CURRICULUM=Object.freeze([
  {prompt:'Jutro spotkanie. Pojutrze wyjazd. W piątek powrót.',mode:'summary',mustInclude:'Jutro spotkanie.'},
  {prompt:'spokojnego wieczoru',mode:'message',mustInclude:'Spokojnego wieczoru'},
  {prompt:'dziękuję za pomoc',mode:'reply',mustInclude:'Dziękuję za pomoc'},
- {prompt:'Przygotuj dokumenty. Sprawdź termin. Wyślij potwierdzenie.',mode:'summary',mustInclude:'Przygotuj dokumenty.'}
+ {prompt:'Przygotuj dokumenty. Sprawdź termin. Wyślij potwierdzenie.',mode:'summary',mustInclude:'Przygotuj dokumenty.'},
+ {prompt:'udanego poniedziałku',mode:'message',mustInclude:'Udanego poniedziałku'},
+ {prompt:'serdeczne pozdrowienia',mode:'message',mustInclude:'Serdeczne pozdrowienia'},
+ {prompt:'powodzenia w pracy',mode:'message',mustInclude:'Powodzenia w pracy'},
+ {prompt:'dziękuję za odpowiedź',mode:'reply',mustInclude:'Dziękuję za odpowiedź'},
+ {prompt:'cieszę się z pomocy',mode:'reply',mustInclude:'Cieszę się z pomocy'},
+ {prompt:'potwierdzam otrzymanie wiadomości',mode:'reply',mustInclude:'Potwierdzam otrzymanie wiadomości'},
+ {prompt:'Najpierw przeczytaj instrukcję. Następnie wykonaj test. Na końcu zapisz wynik.',mode:'summary',mustInclude:'Najpierw przeczytaj instrukcję.'},
+ {prompt:'Rano przygotuj plan. Po południu sprawdź zadania. Wieczorem odpocznij.',mode:'summary',mustInclude:'Rano przygotuj plan.'},
+ {prompt:'Sprawdź datę. Zapisz godzinę. Potwierdź termin.',mode:'summary',mustInclude:'Sprawdź datę.'}
 ]);
 const key=x=>x.mode+'|'+x.prompt.trim().toLocaleLowerCase('pl');
 function validateHistory(data){

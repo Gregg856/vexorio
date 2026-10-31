@@ -19,9 +19,8 @@ test('curriculum history survives serialization and next scheduled batch',()=>{
   assert.equal(b.autoApplied,0);
   saved=validateHistory({schema:1,keys:b.rotated?b.candidates.map(c=>c.key):[...new Set([...saved.keys,...b.candidates.map(c=>c.key)])]});
  }
- assert.equal(new Set(batches.slice(0,3).flatMap(b=>b.candidates.map(c=>c.key))).size,9);
- assert.equal(batches[3].rotated,true);
- assert.deepEqual(batches[3].candidates.map(c=>c.key),batches[0].candidates.map(c=>c.key));
+ assert.equal(new Set(batches.flatMap(b=>b.candidates.map(c=>c.key))).size,12);
+ assert.equal(batches[3].rotated,false);
 });
 test('history rejects private text, unknown keys and duplicate keys',()=>{
  const k=CURRICULUM[0].mode+'|'+CURRICULUM[0].prompt.trim().toLocaleLowerCase('pl');
@@ -65,13 +64,31 @@ test('six saved exercises advance to nine, then rotate safely on the next run',(
  assert.equal(third.candidates.length,3);
  assert.ok(third.candidates.every(c=>!six.keys.includes(c.key)&&!c.approved&&!c.applied));
  const nine=validateHistory({schema:1,keys:[...six.keys,...third.candidates.map(c=>c.key)]});
- assert.equal(nine.keys.length,CURRICULUM.length);
+ assert.equal(nine.keys.length,9);
  const next=buildBatch({previousKeys:nine.keys});
- assert.equal(next.rotated,true);
+ assert.equal(next.rotated,false);
  assert.equal(next.status,'READY_FOR_REVIEW');
  assert.equal(next.autoApproved,0);
  assert.equal(next.autoApplied,0);
  const restarted=validateHistory({schema:1,keys:next.candidates.map(c=>c.key)});
  assert.equal(restarted.keys.length,3);
- assert.deepEqual(restarted.keys,first.candidates.map(c=>c.key));
+ assert.deepEqual(restarted.keys,next.candidates.map(c=>c.key));
+ assert.ok(restarted.keys.every(k=>!nine.keys.includes(k)));
+});
+
+test('expanded curriculum preserves all nine old keys and reaches eighteen without duplicates',()=>{
+ assert.equal(CURRICULUM.length,18);
+ let keys=[];
+ for(let i=0;i<6;i++){
+  const batch=buildBatch({previousKeys:keys});
+  assert.equal(batch.status,'READY_FOR_REVIEW');
+  assert.equal(batch.rotated,false);
+  assert.equal(batch.candidates.length,3);
+  assert.ok(batch.candidates.every(c=>c.reviewPassed&&!keys.includes(c.key)&&!c.approved&&!c.applied));
+  keys=validateHistory({schema:1,keys:[...keys,...batch.candidates.map(c=>c.key)]}).keys;
+ }
+ assert.equal(keys.length,18);
+ const rotated=buildBatch({previousKeys:keys});
+ assert.equal(rotated.rotated,true);
+ assert.equal(rotated.candidates.length,3);
 });
