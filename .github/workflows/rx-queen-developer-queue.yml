@@ -4,6 +4,7 @@ on:
     paths:
       - 'rx-queen-developer-queue.cjs'
       - 'tests/rx-queen-developer-queue.cjs'
+      - 'tests/rx-bibi-7-5-failure-reviews.cjs'
       - '.github/workflows/rx-queen-developer-queue.yml'
   workflow_dispatch:
 permissions:
@@ -21,5 +22,8 @@ jobs:
         run: |
           node --check rx-queen-developer-queue.cjs
           node --check tests/rx-queen-developer-queue.cjs
+          node --check tests/rx-bibi-7-5-failure-reviews.cjs
       - name: Queen to Developer integration
-        run: node tests/rx-queen-developer-queue.cjs
+        run: |
+          node tests/rx-queen-developer-queue.cjs
+          node tests/rx-bibi-7-5-failure-reviews.cjs
