@@ -9,6 +9,7 @@ on:
       - 'rx-math-core.cjs'
       - 'tests/rx-client-dialogue-baseline.cjs'
       - 'tests/rx-client-name-memory.mjs'
+      - 'tests/rx-bibi-auto-dialogue.mjs'
       - 'tests/rx-client-knowledge-regex.cjs'
       - 'tests/rx-client-knowledge-format.cjs'
       - 'tests/rx-client-knowledge-followup.cjs'
@@ -39,6 +40,8 @@ jobs:
         run: node tests/rx-client-knowledge-followup-behavior.cjs
       - name: Sprawdź pamięć imienia w rozmowie klienta
         run: node tests/rx-client-name-memory.mjs
+      - name: RX Tester — automatyczne rozmowy wieloetapowe
+        run: node tests/rx-bibi-auto-dialogue.mjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
@@ -47,5 +50,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: rx-client-dialogue-baseline
-          path: rx-client-dialogue-baseline.json
+          path: |
+            rx-client-dialogue-baseline.json
+            rx-bibi-auto-dialogue.json
           retention-days: 7
