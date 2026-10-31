@@ -53,19 +53,19 @@ function start({samples,port=0,host='127.0.0.1'}={}){
  server.headersTimeout=10000;
  return new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,()=>resolve(server));});
 }
+module.exports={tokens,train,infer,start};
 if(require.main===module){
- const fs=require('node:fs');
+ const {read}=require('./rx-bibi-training-store.cjs');
  try{
   const filename=process.env.RX_BIBI_TRAINING_FILE;
   if(!filename)throw Error('RX_BIBI_TRAINING_FILE is required');
-  const samples=JSON.parse(fs.readFileSync(filename,'utf8'));
+  // The on-disk format is versioned and validated by the shared training store.
   const port=Number(process.env.RX_BIBI_MODEL_PORT||0);
   if(!Number.isInteger(port)||port<1||port>65535)throw Error('Invalid RX_BIBI_MODEL_PORT');
-  start({samples,port}).then(server=>{
+  read(filename).then(({samples})=>start({samples,port})).then(server=>{
    console.log('RX BIBI own CPU inference listening on 127.0.0.1:'+server.address().port);
    const stop=()=>server.close(()=>process.exit(0));
    process.once('SIGINT',stop);process.once('SIGTERM',stop);
   }).catch(error=>{console.error(error.message);process.exitCode=1;});
  }catch(error){console.error(error.message);process.exitCode=1;}
 }
-module.exports={tokens,train,infer,start};
