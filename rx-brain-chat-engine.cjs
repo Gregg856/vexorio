@@ -141,4 +141,12 @@ async function chatRXWithKnowledge(message,options={}){
   return {...local,answer:result.summary.slice(0,700)+'\nŹródło: '+result.url,knowledgeSource:result.url};
  }catch{return local;}
 }
-module.exports={chatRX,chatRXWithKnowledge};
+// Explicit opt-in: read the existing persisted RX memory for advisory chat answers.
+// Fail closed on corrupt or inaccessible snapshots; do not invent learning records.
+async function chatRXWithStoredMemory(message,{memoryFile,...options}={}){
+ if(typeof memoryFile!=='string'||!memoryFile.trim())throw Error('Invalid memory path');
+ const {loadBrain}=require('./rx-brain-store.cjs');
+ const brainMemory=await loadBrain(memoryFile);
+ return chatRX(message,{...options,brainMemory});
+}
+module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory};
