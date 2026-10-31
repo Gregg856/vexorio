@@ -65,3 +65,16 @@ test('40 approved synthetic samples: report which intents degrade on unseen vali
  assert.ok(result.selected.correct>=result.baseline.correct);
  console.log('BIBI 40 INTENT DIAGNOSTICS',JSON.stringify({baseline:result.baseline,bestCandidate:[...result.candidates].sort((a,b)=>b.correct-a.correct||a.finalLoss-b.finalLoss)[0],accepted:result.accepted,candidateImprovement:result.candidateImprovement}));
 });
+
+test('experimental Polish byte-bigram learner is deterministic and keeps default unchanged',()=>{
+ const {createLearner}=require('../rx-text-learner.cjs');
+ const {toBigramVector,toFrequencyVector}=require('../rx-language-tokenizer.cjs');
+ const a=toBigramVector('kot pies'),b=toBigramVector('pies kot');
+ assert.notDeepEqual(Array.from(a),Array.from(b));
+ assert.deepEqual(Array.from(toBigramVector('abc')),Array.from(toBigramVector('abc')));
+ const baseline=createLearner({epochs:10});
+ const explicit=createLearner({epochs:10,features:'frequency'});
+ assert.deepEqual(baseline.classify('dzień dobry'),explicit.classify('dzień dobry'));
+ const model=createLearner({epochs:10,features:'bigram'});
+ assert.ok(['greeting','tests','memory','math'].includes(model.classify('dzień dobry').label));
+});
