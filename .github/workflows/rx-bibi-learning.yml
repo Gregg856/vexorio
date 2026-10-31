@@ -26,11 +26,14 @@ jobs:
         run: |
           node --test tests/rx-ai-router.cjs
           node --test tests/rx-coordinator.cjs
+      - name: RX BIBI — coordinated teacher tester guardian cycle
+        if: ${{ !cancelled() }}
+        run: node tests/rx-agent-cycle.cjs
       - name: Save reproducible training comparison
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rx-bibi-learning-gate
-          path: rx-bibi-reports/rx-learning-gate.json
+          path: rx-bibi-reports/*.json
           if-no-files-found: warn
           retention-days: 14
