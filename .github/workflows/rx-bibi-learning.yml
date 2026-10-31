@@ -63,6 +63,9 @@ jobs:
             const safe=validate(data);
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
             fs.writeFileSync('rx-bibi-reports/rx-learning-history.json',JSON.stringify(safe));
+      - name: RX MEGA execute existing Queen chat and memory tests
+        run: |
+          node -e "const r=require('./rx-mega-cloud-computer.cjs').runCloudComputer({execute:true,selectedChecks:['tests/rx-queen-memory-chat-bridge.test.cjs','tests/rx-queen-live-memory-gate.test.cjs']});console.log(JSON.stringify({executed:r.executed,passed:r.passed,failed:r.failed}));if(r.failed||r.passed!==2)process.exitCode=1"
       - name: Run five coordinated RX agent cycles
         run: node tests/rx-autobots-batch.cjs
       - name: Practice Queen writing and answers
