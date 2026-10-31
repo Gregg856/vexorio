@@ -34,3 +34,10 @@ Ustaw `HOST=127.0.0.1`, `PORT=8787`.
 Audyt endpointów Worker, zdjęć i uploadów, autoryzacji, CORS, Google OAuth, powiadomień push, cache, limitów żądań, backupów, odtwarzania i planu rollback. Bez spełnienia bramki NIE zmieniać DNS, Cloudflare ani produkcyjnego Supabase.
 
 Stan na dziś: szablony i kod w GitHub; brak potwierdzonej maszyny, IP, DNS, uruchomionej usługi i certyfikatu.
+
+## Kontrola gotowości pamięci RX Brain (tylko odczyt)
+Na własnym serwerze, po ustawieniu zmiennych `RX_QUEEN_LOCAL_TOKEN`, `RX_CLOUD_BRAIN_MEMORY_URL` i opcjonalnie `RX_BRAIN_MEMORY_FILE`, uruchom:
+```bash
+node scripts/rx-brain-bridge-readiness.cjs
+```
+Kontrola nie łączy się z siecią i nie modyfikuje pliku. `OK` oznacza jedynie poprawną lokalną konfigurację i format migawki; **nie potwierdza** wdrożenia, certyfikatu HTTPS, uprawnień administratora ani działania czatu BIBI. Nie kopiuj tokenu do GitHub ani do rozmowy.
