@@ -1,0 +1,36 @@
+name: RX BIBI — learning batch
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '12 2 * * *'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate RX model and learning scripts
+        run: |
+          node --check rx-neural-core.cjs
+          node --check rx-text-learner.cjs
+          node --check tests/rx-learning-gate.cjs
+      - name: Train four RX candidate models and evaluate held-out examples
+        run: node tests/rx-learning-gate.cjs
+      - name: Run existing neural regression tests
+        run: |
+          node --test tests/rx-ai-router.cjs
+          node --test tests/rx-coordinator.cjs
+      - name: Save reproducible training comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-bibi-learning-gate
+          path: rx-bibi-reports/rx-learning-gate.json
+          if-no-files-found: warn
+          retention-days: 14
