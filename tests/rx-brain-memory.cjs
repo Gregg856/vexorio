@@ -30,3 +30,22 @@ test('duplicate evidence does not inflate learned success counts',()=>{
  assert.equal(result.successRate,1);
  assert.equal(result.requiresApproval,true);
 });
+
+test('RX NAUKA 3.4 labels weak evidence and repeated failures without executing',()=>{
+ const brain=createBrainMemory();
+ brain.learn({key:'android_chat',action:'inspect_logs',success:false,evidence:'Verified Android test failure run 001'});
+ let advice=brain.recommend('android_chat');
+ assert.equal(advice.confidence,'insufficient');
+ assert.equal(advice.warning,'more_failures_than_successes');
+ brain.learn({key:'android_chat',action:'inspect_logs',success:false,evidence:'Verified Android test failure run 002'});
+ brain.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android test success run 003'});
+ advice=brain.recommend('android_chat');
+ assert.equal(advice.confidence,'limited');
+ assert.equal(advice.warning,'more_failures_than_successes');
+ for(let i=4;i<=10;i++)brain.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android test success run '+i});
+ advice=brain.recommend('android_chat');
+ assert.equal(advice.confidence,'observed');
+ assert.equal(advice.warning,null);
+ assert.equal(advice.requiresApproval,true);
+ assert.equal(brain.snapshot().autoExecuted,0);
+});
