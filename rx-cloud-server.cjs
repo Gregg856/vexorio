@@ -244,7 +244,28 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
       for(const [key,val] of Object.entries(req.headers)) if(val!==undefined) headers.set(key,Array.isArray(val)?val.join(', '):val);
       const method=req.method||'GET';
       const request=new Request(url,{method,headers,body:['GET','HEAD'].includes(method)?undefined:Buffer.concat(chunks)});
-      const response=await worker.fetch(request,env);
+      let response=await worker.fetch(request,env);
+      // Self-hosted, authenticated RX client shadow mode. Only decorate an already
+      // successful worker response; never bypass worker authentication or change answers.
+      // Disabled by default and unavailable on the public Worker-only runtime.
+      if(process.env.RX_BIBI_INTENT_SHADOW==='true'&&url.pathname==='/api/rx/client/chat'&&method==='POST'&&response.status===200){
+        try{
+          const original=await response.clone().json();
+          const payload=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          if(original?.ok===true&&typeof original.answer==='string'&&typeof payload?.message==='string'&&payload.message.trim()&&payload.message.length<=1000){
+            const {chatRXWithIntentDiagnostics}=require('./rx-brain-chat-engine.cjs');
+            const diagnostics=chatRXWithIntentDiagnostics(payload.message).intentDiagnostics;
+            const body=JSON.stringify({...original,intentDiagnostics:diagnostics});
+            const outHeaders=new Headers(response.headers);
+            outHeaders.delete('Content-Length');
+            outHeaders.set('Content-Type','application/json');
+            outHeaders.set('Cache-Control','no-store');
+            response=new Response(body,{status:200,headers:outHeaders});
+          }
+        }catch{
+          // Advisory model failures never affect the authenticated original reply.
+        }
+      }
       res.writeHead(response.status,Object.fromEntries(response.headers));
       if(method==='HEAD'||!response.body){res.end();return;}
       for await(const chunk of response.body) res.write(chunk);

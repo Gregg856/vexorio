@@ -139,3 +139,17 @@ test('RX Brain opt-in neural shadow does not change answers or execute actions',
  assert.equal(math.executed,0);
  assert.deepEqual(chatRX('hej'),chatRX('hej'));
 });
+
+test('self-hosted BIBI bridge is opt-in and preserves worker authentication boundary',async()=>{
+ const fs=require('node:fs/promises');
+ const source=await fs.readFile(require('node:path').join(__dirname,'../rx-cloud-server.cjs'),'utf8');
+ const auth=source.indexOf('let response=await worker.fetch(request,env)');
+ const gate=source.indexOf("process.env.RX_BIBI_INTENT_SHADOW==='true'");
+ const diagnostic=source.indexOf('chatRXWithIntentDiagnostics(payload.message)',gate);
+ assert.ok(auth>=0&&gate>auth&&diagnostic>gate);
+ assert.match(source,/original\?\.ok===true/);
+ assert.match(source,/response\.status===200/);
+ assert.match(source,/response\.clone\(\)\.json\(\)/);
+ assert.match(source,/new Response\(body,\{status:200,headers:outHeaders\}\)/);
+ assert.match(source,/Advisory model failures never affect the authenticated original reply/);
+});
