@@ -48,3 +48,13 @@ test('polite Polish writing requests are understood',async()=>{
   assert.equal(composeClientWriting(prompt)?.answer,'Spotkanie jutro.',prompt);
  }
 });
+
+test('signature options and contradictory signature instructions',async()=>{
+ const {composeClientWriting:compose}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ assert.equal(compose('Napisz bez podpisu: potwierdzam termin').answer,'Cześć! Potwierdzam termin.');
+ assert.equal(compose('Napisz z podpisem: potwierdzam termin').answer,'Cześć! Potwierdzam termin. Pozdrawiam!');
+ assert.equal(compose('Napisz dodaj podpis: potwierdzam termin').answer,'Cześć! Potwierdzam termin. Pozdrawiam!');
+ const conflict=compose('Napisz bez podpisu, dodaj podpis: potwierdzam termin');
+ assert.equal(conflict?.requiresClarification,true);
+ assert.match(conflict.answer,/sprzeczne/);
+});
