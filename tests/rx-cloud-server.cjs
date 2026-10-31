@@ -123,6 +123,15 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
     assert.equal(response.status,401,'Private learning feed must reject missing or malformed authorization');
     assert.equal(response.headers.get('cache-control'),'no-store');
   }
+  // RX CLOUD #600: reject writes before reading the private learning feed.
+  for(const method of ['POST','PUT','PATCH','DELETE']){
+    const response=await fetch(learningPath,{method,headers:{Authorization:'Bearer '+validLearningToken}});
+    assert.equal(response.status,405,'Private learning feed must reject '+method);
+    assert.equal(response.headers.get('cache-control'),'no-store');
+  }
+  // Reject an invalid credential even when the caller attempts a write.
+  const unauthorizedWrite=await fetch(learningPath,{method:'POST',headers:{Authorization:'Bearer wrong-token'}});
+  assert.equal(unauthorizedWrite.status,401,'Authentication must run before method handling');
   const recoveredLearning=await fetch(learningPath,{headers:{Authorization:'Bearer '+validLearningToken}});
   assert.equal(recoveredLearning.status,200,'Valid token must still work after rejected requests');
   const queen=await fetch(base+'/__rxcloud/queen/status',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
