@@ -18,11 +18,13 @@ function trainQueen({approvedTraining=[],validation=[]}={}){
   if(forbidden.has(key)||trainTexts.has(key)||seen.has(key))throw Error('Validation overlap or benchmark leakage');
   seen.add(key);
  }
+ const baseModel=createLearner(SETTINGS[0]);
+ const baseline={correct:score(baseModel,validation),total:validation.length};
  const results=SETTINGS.map(settings=>{
   const model=trainCandidate(settings,approvedTraining);
   return {settings,correct:score(model,validation),total:validation.length,finalLoss:model.metrics.finalLoss};
  });
  const ranked=[...results].sort((a,b)=>b.correct-a.correct||a.finalLoss-b.finalLoss);
- return {kind:'rx-queen-training-selection',selected:ranked[0],candidates:results,productionConnected:false,trainedModelType:'neural-intent-classifier',benchmarkSetsUntouched:true};
+ return {kind:'rx-queen-training-selection',selected:ranked[0],baseline,improvement:ranked[0].correct-baseline.correct,candidates:results,productionConnected:false,trainedModelType:'neural-intent-classifier',benchmarkSetsUntouched:true};
 }
 module.exports={trainQueen};
