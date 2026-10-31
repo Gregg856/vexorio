@@ -38,6 +38,26 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.maxConnections,128,'Concurrent connection count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
+  const health=await fetch(base+'/__rxcloud/health');
+  assert.equal(health.status,200);
+  const healthData=await health.json();
+  assert.equal(healthData.service,'rx-cloud-2');
+  assert.equal(healthData.connectionsLimit,128);
+  assert.equal(healthData.load.activeRequests,1,'Health request should count itself');
+  assert.equal(healthData.load.peakActiveRequests,1,'First request should establish peak');
+  assert.equal(healthData.load.completedRequests,0,'First request should not yet be completed when snapshot is taken');
+  for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
+    assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
+  }
+  assert(healthData.memory.heapUsedBytes<=healthData.memory.heapTotalBytes,'Heap usage cannot exceed heap total');
+  assert.equal(health.headers.get('cache-control'),'no-store');
+  assert.equal(health.headers.get('x-content-type-options'),'nosniff');
+  const healthHead=await fetch(base+'/__rxcloud/health',{method:'HEAD'});
+  assert.equal(healthHead.status,200);
+  assert.equal(await healthHead.text(),'');
+  const healthPost=await fetch(base+'/__rxcloud/health',{method:'POST',body:'test'});
+  assert.equal(healthPost.status,405);
+  assert.equal(healthPost.headers.get('allow'),'GET, HEAD');
   // RX Brain private feed: live file, authorization, method and malformed snapshot.
   const brainFile=path.join(await fs.mkdtemp(path.join(require('node:os').tmpdir(),'rx-brain-test-')),'brain.json');
   const previousBrainFile=process.env.RX_BRAIN_MEMORY_FILE;
@@ -65,26 +85,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
    else process.env.RX_BRAIN_MEMORY_FILE=previousBrainFile;
    await fs.rm(path.dirname(brainFile),{recursive:true,force:true});
   }
-  const health=await fetch(base+'/__rxcloud/health');
-  assert.equal(health.status,200);
-  const healthData=await health.json();
-  assert.equal(healthData.service,'rx-cloud-2');
-  assert.equal(healthData.connectionsLimit,128);
-  assert.equal(healthData.load.activeRequests,1,'Health request should count itself');
-  assert.equal(healthData.load.peakActiveRequests,1,'First request should establish peak');
-  assert.equal(healthData.load.completedRequests,0,'First request should not yet be completed when snapshot is taken');
-  for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
-    assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
-  }
-  assert(healthData.memory.heapUsedBytes<=healthData.memory.heapTotalBytes,'Heap usage cannot exceed heap total');
-  assert.equal(health.headers.get('cache-control'),'no-store');
-  assert.equal(health.headers.get('x-content-type-options'),'nosniff');
-  const healthHead=await fetch(base+'/__rxcloud/health',{method:'HEAD'});
-  assert.equal(healthHead.status,200);
-  assert.equal(await healthHead.text(),'');
-  const healthPost=await fetch(base+'/__rxcloud/health',{method:'POST',body:'test'});
-  assert.equal(healthPost.status,405);
-  assert.equal(healthPost.headers.get('allow'),'GET, HEAD');
+
   assert.equal((await fetch(base+'/__rxcloud/queen/status')).status,401);
   // RX CLOUD security regression: local Queen and BIBI inbox require a valid private token.
   for(const endpoint of ['/__rxcloud/queen/status','/__rxcloud/bibi/learning','/__rxcloud/bibi/inbox']){
