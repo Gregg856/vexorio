@@ -530,3 +530,9 @@ assert.equal(rxCoreAnalyze("window.open('x')").findings.filter(f=>f.id==="RX012"
 assert.equal(rxCoreAnalyze("obj.setInterval(1)").findings.filter(f=>f.id==="RX013").length,0,'Core 0.3.5 boundary 11');
 assert.equal(rxCoreAnalyze("setInterval(1)").findings.filter(f=>f.id==="RX013").length,1,'Core 0.3.5 boundary 12');
 console.log('PASS: RX Core 0.3.5 boundary regressions');
+
+// Green CI is not proof that optional authenticated LIVE chat was verified.
+const testerStatus=fs.readFileSync('rx-bibi-tester-status.js','utf8');
+assert.match(testerStatus,/Czat LIVE: sam zielony etap CI nie potwierdza rozmowy/);
+assert.match(testerStatus,/status VERIFIED \(5\/5\)/);
+assert.match(testerStatus,/brak etapu zalogowanej rozmowy/);

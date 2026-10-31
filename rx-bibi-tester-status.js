@@ -43,6 +43,13 @@
     const failedSteps=steps.filter(step=>step.conclusion==='failure');
     const passedSteps=steps.filter(step=>step.conclusion==='success');
     details.replaceChildren(line('p','meta','Etapy GitHub Actions: '+passedSteps.length+' udanych · '+failedSteps.length+' nieudanych.'));
+    // A successful workflow does not prove that the optional authenticated LIVE chat ran.
+    const liveChatStep=steps.find(step=>String(step.name||'').includes('zalogowany czat klienta'));
+    if(liveChatStep){
+     details.append(line('p','wait','Czat LIVE: sam zielony etap CI nie potwierdza rozmowy zalogowanego użytkownika. Sprawdź raport „RX BIBI — prawdziwy czat klienta” i status VERIFIED (5/5).'));
+    }else{
+     details.append(line('p','wait','Czat LIVE: brak etapu zalogowanej rozmowy w tym przebiegu. Status niezweryfikowany.'));
+    }
     const testStep=steps.find(step=>step.name==='Uruchom testy RX BIBI');
     if(testStep)details.append(line('p',testStep.conclusion==='success'?'ok':testStep.conclusion==='failure'?'bad':'wait','Testy przeglądarkowe: '+(testStep.conclusion==='success'?'zaliczone':testStep.conclusion==='failure'?'wykryto problem':'brak rozstrzygnięcia')+'.'));
     if(failedSteps.length){
