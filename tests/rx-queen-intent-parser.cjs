@@ -12,7 +12,7 @@ function parseIntent({prompt,mode}={}){
  const constraints=[];
  if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)bez\s+(?:powitania|przywitania)(?=\s|$)/u.test(head))constraints.push('noGreeting');
  if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)bez\s+(?:pożegnania|zakonczenia|zakończenia)(?=\s|$)/u.test(head))constraints.push('noSignoff');
- if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)(?:krótko|krotko|zwięźle|zwiezle)(?=\s|$)/u.test(head))constraints.push('short');
+ if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)(?:krótko|krotko|zwięźle|zwiezle)(?=[\s,;]|$)/u.test(head))constraints.push('short');
  if(mode==='summary'&&writing&&/(?:^|\s)(?:jednym|jedno)\s+zdani(?:u|e|em)(?=\s|$)/u.test(head))constraints.push('oneSentence');
  if(mode==='message'&&writing&&/(?:\bbez\s+cytowania\b|(?:^|\s)własnymi\s+słowami(?=\s|$))/u.test(head))constraints.push('paraphrase');
  return constraints.length?{content,constraints,recognized:true}:{content:normalize(prompt),constraints:[],recognized:false};
