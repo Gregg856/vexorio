@@ -56,8 +56,14 @@
 - **Ograniczenie:** nie zapewnia synchronizacji między różnymi procesami, serwerami ani hostami; nie jest podłączony do autonomicznej nauki i nie potwierdza wdrożenia.
 - PR #466 scalony po zielonym VEXORIO checks.
 
-## Bieżący pakiet: RX NAUKA 4.1
+## Zakończony pakiet: RX NAUKA 4.1
 - Opcjonalny `chatRXWithStoredMemory(message,{memoryFile,...})` w istniejącym silniku BIBI: odczytuje prawdziwy plik pamięci i przekazuje go do istniejącej odpowiedzi doradczej.
 - Testy: prawdziwa zapisana obserwacja, brak zapisu i wykonania podczas rozmowy, brakujący plik, odrzucenie uszkodzonego pliku.
 - To funkcja silnika do użycia przez istniejące moduły, **nie jest jeszcze podłączeniem do produkcyjnego panelu ani serwera**.
-- Sprawdzić CI przed scaleniem.
+- PR #467 scalony po zielonych VEXORIO checks i RX CLOUD smoke tests.
+
+## Bieżący pakiet: RX NAUKA 4.2
+- W istniejącym panelu `rx-bibi-manager.html` ulepszono już istniejącą komendę odczytu `Co pamiętasz o zadaniu: klucz?`.
+- W odpowiedzi: liczba prób, skuteczność, jakość dowodów i ostrzeżenie przy przewadze niepowodzeń; odrzucenie nieprawidłowych wartości z API. Nadal tylko odczyt i wymóg zatwierdzenia.
+- Panel już miał uwierzytelnione żądanie do `/api/rx/admin/brain-memory`; nie dodano drugiej ścieżki ani nowego panelu. Dostępność zależy od konfiguracji prywatnego RX CLOUD, której wdrożenia nie potwierdzono.
+- Sprawdzić CI i scalić po zielonych testach; nie wdrażać produkcji.
