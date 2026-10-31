@@ -16,6 +16,7 @@ const profile='Mieszkam w Krakowie. Interesuję się astronomią. Lubię książ
 const profileAnswer=planRXChat('Co o mnie wiesz?', [first,answer1,profile,'Dzięki.']).answer;
 assert.match(profileAnswer,/Krakowie/);
 assert.match(profileAnswer,/astronomią/);
+assert.doesNotMatch(profileAnswer,/Interesujesz się astronomią i lubię książki/);
 assert.match(profileAnswer,/książki/);
 assert.doesNotMatch(planRXChat('Co o mnie wiesz?').answer,/Krakowie|astronomią|książki/);
-console.log('RX BIBI name memory: 11/11 passed');
+console.log('RX BIBI name memory: 12/12 passed');
