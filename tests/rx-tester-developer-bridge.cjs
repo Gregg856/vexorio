@@ -8,6 +8,9 @@ const repeated=buildDialogueDeveloperReviews({...input,items:[...input.items,...
 assert.equal(repeated.received,2);
 assert.equal(repeated.uniqueIssues,1);
 assert.equal(repeated.reviews[0].occurrences,2);
+const ranked=buildDialogueDeveloperReviews({...input,items:[{type:'generic-fallback',priority:'normal',message:'Cześć',answer:'Fallback'},...input.items]});
+assert.equal(ranked.reviews[0].category,'math-answer-missing');
+assert.ok(ranked.reviews[0].priorityScore>ranked.reviews[1].priorityScore);
 assert.equal(result.reviews[0].category,'math-answer-missing');
 assert.equal(result.reviews[0].requiresApproval,true);
 assert.equal(result.reviews[0].diagnosis.target,'rx-chat-planner.mjs');
