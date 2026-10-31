@@ -11,7 +11,8 @@ const {syntheticDemo}=require('./rx-higgs-lab.cjs');
 const CHECKS=Object.freeze([
  'tests/rx-ai-core.cjs','tests/rx-cloud-computer.cjs','tests/rx-integration.cjs',
  'tests/rx-higgs-lab.cjs','tests/rx-cosmic-collider.cjs','tests/rx-energy-lab.cjs',
- 'tests/rx-ant-ai-trainer.cjs','tests/rx-ant-task-board.cjs','tests/rx-medusa-engine.cjs'
+ 'tests/rx-ant-ai-trainer.cjs','tests/rx-ant-task-board.cjs','tests/rx-medusa-engine.cjs',
+ 'tests/rx-queen-memory-chat-bridge.test.cjs','tests/rx-queen-live-memory-gate.test.cjs'
 ]);
 function runCloudComputer({execute=false,selectedChecks=CHECKS,maxChecks=CHECKS.length}={}){
  if(!Array.isArray(selectedChecks)||selectedChecks.length>CHECKS.length||!Number.isSafeInteger(maxChecks)||maxChecks<0||maxChecks>CHECKS.length)throw Error('Invalid RX ant check budget');
