@@ -31,9 +31,20 @@ function approve(data,{prompt,answer,reviewId,approved}={}){
  updated.push(entry);
  return validate({...safe,entries:updated});
 }
+// Promote a reviewed writing exercise into the same approved memory used by RX CLOUD chat.
+// Exercises alone are never approval; the reviewer must explicitly approve the exact answer.
+function approveWritingExercise(data,{exercise,reviewId,approved}={}){
+ if(!exercise||typeof exercise!=='object'||Array.isArray(exercise))throw Error('Invalid writing exercise');
+ if(!['message','reply','summary','answer'].includes(exercise.mode))throw Error('Invalid writing mode');
+ if(typeof exercise.prompt!=='string'||typeof exercise.text!=='string')throw Error('Invalid writing exercise');
+ if(exercise.productionConnected===true||exercise.autoApplied===true)throw Error('Untrusted writing exercise');
+ const mode={message:'wiadomość',reply:'odpowiedź',summary:'streszczenie',answer:'odpowiedź'}[exercise.mode];
+ const prompt='Napisz '+mode+': '+exercise.prompt.trim();
+ return approve(data,{prompt,answer:exercise.text,reviewId,approved});
+}
 function lookup(data,prompt){
  const safe=validate(data);
  if(typeof prompt!=='string'||prompt.length>160)return null;
  return safe.entries.find(x=>x.prompt.toLocaleLowerCase('pl')===prompt.trim().toLocaleLowerCase('pl'))||null;
 }
-module.exports={validate,load,save,approve,lookup};
+module.exports={validate,load,save,approve,approveWritingExercise,lookup};
