@@ -77,6 +77,8 @@ jobs:
           node -e "const r=require('./tests/rx-queen-writing-agent-review.cjs').review();if(r.status!=='PASS'||r.passed!==r.total||r.productionConnected!==false)process.exit(1);console.log('Reviewed writing cases:',r.passed,'/',r.total)"
       - name: Practice Queen writing and answers
         run: node tests/rx-queen-response-practice.cjs
+      - name: Prepare reviewed Queen writing candidates automatically
+        run: node tests/rx-queen-writing-reviewed-batch.cjs
       - name: Queen writing agent review
         run: node tests/rx-queen-writing-agent-review.cjs
       - name: Queen response improvement proposals
