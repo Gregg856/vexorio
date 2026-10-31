@@ -50,8 +50,14 @@
 - Uwaga: to ochrona atomowego pliku, nie łączenie konkurencyjnych doświadczeń; to osobny przyszły etap.
 - PR #465 scalony po zielonym VEXORIO checks.
 
-## Bieżący pakiet: RX NAUKA 4.0
+## Zakończony pakiet: RX NAUKA 4.0
 - Dodano `learnAndSaveBrain(file, observation)` w istniejącym magazynie pamięci: kolejkuje odczyt → weryfikację → zapis dla jednego pliku w jednym procesie Node.js.
 - Test 20 jednoczesnych doświadczeń, odmowy duplikatu i odzyskania kolejki po błędzie.
 - **Ograniczenie:** nie zapewnia synchronizacji między różnymi procesami, serwerami ani hostami; nie jest podłączony do autonomicznej nauki i nie potwierdza wdrożenia.
-- Następnie sprawdzić CI, naprawić ewentualne błędy i scalić po sukcesie.
+- PR #466 scalony po zielonym VEXORIO checks.
+
+## Bieżący pakiet: RX NAUKA 4.1
+- Opcjonalny `chatRXWithStoredMemory(message,{memoryFile,...})` w istniejącym silniku BIBI: odczytuje prawdziwy plik pamięci i przekazuje go do istniejącej odpowiedzi doradczej.
+- Testy: prawdziwa zapisana obserwacja, brak zapisu i wykonania podczas rozmowy, brakujący plik, odrzucenie uszkodzonego pliku.
+- To funkcja silnika do użycia przez istniejące moduły, **nie jest jeszcze podłączeniem do produkcyjnego panelu ani serwera**.
+- Sprawdzić CI przed scaleniem.
