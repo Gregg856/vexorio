@@ -258,6 +258,9 @@ export default {
       }
       // RX BIBI 6.5: public identity is distinct from the private RX Queen.
       const normalizedMessage=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
+      // Answer common self-introduction requests before the task-planner fallback.
+      // This is a truthful deterministic reply, not simulated model inference.
+      const asksIntroduction=/(?:^|[.!? ]+)(?:napisz|powiedz|opowiedz|przedstaw)(?:\\s+(?:mi|nam))?\\s+(?:dwa\\s+zdania|2\\s+zdania|kilka\\s+zdan|cos|więcej|wiecej)?\\s*o\\s+sobie[?!. ]*$/u.test(normalizedMessage);
       const publicGreeting=/^(czesc|hej|witaj|witam|dzien dobry)[!?. ]*$/.test(normalizedMessage);
       const publicIdentity=/^(kim jestes|jak sie nazywasz|przedstaw sie)[!?. ]*$/.test(normalizedMessage);
       const publicThanks=/^(dzieki|dziekuje|dziekuje bardzo|wielkie dzieki)[!?. ]*$/.test(normalizedMessage);
@@ -265,7 +268,8 @@ export default {
       // Public RX BIBI identity and task transparency: no access to the local task store.
       const asksPublicIdentity=/(?:kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz)/i.test(message);
       const asksPublicTasks=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania)[?!.\s]*$/i.test(message.trim());
-      if(asksPublicIdentity)clientAnswer='Jestem RX BIBI, asystentem VEXORIO. Pomagam w rozmowie i prostym planowaniu. Nie jestem Królową RX ani samodzielnym modelem generatywnym.';
+      if(asksIntroduction)clientAnswer='Jestem RX BIBI, asystentem VEXORIO, i pomagam w prostych rozmowach oraz planowaniu. Obecnie odpowiadam za pomocą lokalnego mechanizmu, a nie uruchomionego modelu generatywnego.';
+      else if(asksPublicIdentity)clientAnswer='Jestem RX BIBI, asystentem VEXORIO. Pomagam w rozmowie i prostym planowaniu. Nie jestem Królową RX ani samodzielnym modelem generatywnym.';
       else if(asksPublicTasks)clientAnswer='Nie mam jeszcze dostępu do rejestru zadań w oficjalnym czacie. Nie mogę wiarygodnie podać listy oczekujących prac. Funkcja jest testowana w lokalnym silniku BIBI.';
       else if(publicGreeting)clientAnswer='Cześć! Jestem RX BIBI, asystentem do rozmowy i prostych wyjaśnień. W czym mogę Ci pomóc?';
       else if(publicIdentity)clientAnswer='Jestem RX BIBI — asystentem VEXORIO. Pomagam wyjaśniać zagadnienia i odpowiadać na pytania. Obecnie korzystam z lokalnego planera odpowiedzi, nie z generatywnego modelu AI.';
