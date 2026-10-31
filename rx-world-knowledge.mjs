@@ -42,13 +42,13 @@ export function getRXKnowledgeFollowupPrior(message,history){
  return null;
 }
 
-export function formatRXKnowledgeFollowup(knowledge,previousAnswer){
+export function formatRXKnowledgeFollowup(knowledge,previousAnswers){
  if(!knowledge||typeof knowledge.summary!=='string')return null;
  const summary=knowledge.summary.trim();
  if(!summary)return null;
  const sentences=summary.match(/[^.!?]+[.!?](?=\s|$)/g)||[];
  const clean=sentences.map(x=>x.trim()).filter(Boolean);
- const previous=typeof previousAnswer==='string'?previousAnswer:'';
+ const previous=Array.isArray(previousAnswers)?previousAnswers.filter(x=>typeof x==='string').join('\n'):(typeof previousAnswers==='string'?previousAnswers:'');
  // Prefer material that was not already included in the previous sourced answer.
  const unseen=clean.filter(sentence=>!previous.includes(sentence));
  const detail=unseen.slice(0,2).join(' ').trim();
