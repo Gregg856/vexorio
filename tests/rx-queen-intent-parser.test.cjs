@@ -31,7 +31,7 @@ test('composer follows surface constraints for shuffled instructions',()=>{
 });
 test('unrecognized content and mismatched modes are not stripped',()=>{
  for(const prompt of ['Uwaga: spotkanie jutro.','Napisz bez powitania wiadomość: spotkanie jutro.']){
-  const mode=prompt.startsWith('Uwaga')?'message':'reply';
+  const mode=prompt.startsWith('Uwaga')?'message':'summary';
   assert.equal(parseIntent({prompt,mode}).content,prompt);
  }
 });
