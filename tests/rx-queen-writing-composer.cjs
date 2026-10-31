@@ -13,6 +13,9 @@ function compose({prompt,mode='answer',tone='friendly'}={}){
   return {text:result.text,mode,tone,matched:result.matched,source:'approved-offline-examples',productionConnected:false};
  }
  const intent=parseIntent({prompt:cleaned,mode});
+ if(intent.requiresClarification){
+  return {text:'Polecenie zawiera sprzeczne wymagania. Doprecyzuj: '+intent.conflicts.join(', ')+'.',mode,tone,matched:false,requiresClarification:true,conflicts:intent.conflicts,source:'local-constraint-check',productionConnected:false};
+ }
  const contentPrompt=intent.content;
  const oneSentence=intent.constraints.includes('oneSentence');
  const noGreeting=intent.constraints.includes('noGreeting');
