@@ -7,63 +7,63 @@
   "checks": [
     {
       "file": "tests/rx-ai-core.cjs",
-      "durationMs": 33,
-      "status": "passed",
-      "exitCode": 0,
-      "error": null
-    },
-    {
-      "file": "tests/rx-cloud-computer.cjs",
-      "durationMs": 33,
-      "status": "passed",
-      "exitCode": 0,
-      "error": null
-    },
-    {
-      "file": "tests/rx-integration.cjs",
-      "durationMs": 67,
-      "status": "passed",
-      "exitCode": 0,
-      "error": null
-    },
-    {
-      "file": "tests/rx-higgs-lab.cjs",
-      "durationMs": 29,
-      "status": "passed",
-      "exitCode": 0,
-      "error": null
-    },
-    {
-      "file": "tests/rx-cosmic-collider.cjs",
       "durationMs": 38,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
+      "file": "tests/rx-cloud-computer.cjs",
+      "durationMs": 32,
+      "status": "passed",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "file": "tests/rx-integration.cjs",
+      "durationMs": 73,
+      "status": "passed",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "file": "tests/rx-higgs-lab.cjs",
+      "durationMs": 31,
+      "status": "passed",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "file": "tests/rx-cosmic-collider.cjs",
+      "durationMs": 31,
+      "status": "passed",
+      "exitCode": 0,
+      "error": null
+    },
+    {
       "file": "tests/rx-energy-lab.cjs",
-      "durationMs": 30,
+      "durationMs": 29,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-ant-ai-trainer.cjs",
-      "durationMs": 36,
+      "durationMs": 41,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-ant-task-board.cjs",
-      "durationMs": 37,
+      "durationMs": 39,
       "status": "passed",
       "exitCode": 0,
       "error": null
     },
     {
       "file": "tests/rx-medusa-engine.cjs",
-      "durationMs": 30,
+      "durationMs": 28,
       "status": "passed",
       "exitCode": 0,
       "error": null
@@ -76,7 +76,7 @@
   "passed": 9,
   "failed": 0,
   "planned": 0,
-  "totalTestDurationMs": 333,
+  "totalTestDurationMs": 342,
   "queue": {
     "schema": 1,
     "kind": "rx-cloud-computer-plan",

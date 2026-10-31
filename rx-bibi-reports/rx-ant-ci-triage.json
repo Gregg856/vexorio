@@ -1,39 +1,11 @@
 {
   "schema": 1,
   "kind": "rx-ant-ci-triage",
-  "tasks": [
-    {
-      "source": "github-actions",
-      "action": "Sprawdź nieudany przebieg CI: failure",
-      "target": "RX client security",
-      "priority": "high",
-      "runId": 41179810138,
-      "status": "needs_review",
-      "requiresApproval": true
-    },
-    {
-      "source": "github-actions",
-      "action": "Sprawdź nieudany przebieg CI: failure",
-      "target": "RX BIBI — szybki test rozmów klientów",
-      "priority": "high",
-      "runId": 41179810128,
-      "status": "needs_review",
-      "requiresApproval": true
-    },
-    {
-      "source": "github-actions",
-      "action": "Sprawdź nieudany przebieg CI: failure",
-      "target": "RX BIBI Tester — mobile browser",
-      "priority": "high",
-      "runId": 41155341293,
-      "status": "needs_review",
-      "requiresApproval": true
-    }
-  ],
+  "tasks": [],
   "executed": 0,
   "autoFixesApplied": 0,
   "note": "Proposals only. Human approval required before any code change.",
   "source": "github-actions",
-  "checkedAt": "2026-10-31T07:17:25.551Z",
+  "checkedAt": "2026-10-31T13:12:28.453Z",
   "sourceAvailable": true
 }\n
