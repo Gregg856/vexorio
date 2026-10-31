@@ -13,6 +13,13 @@ export function planRXChat(message,history=[],learning=null){
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
  const sessionName=history.filter((_,i)=>i%2===0).slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
+ const asksAboutSelf=/\b(?:co|czego)\s+(?:o mnie|o mojej osobie)\s+(?:wiesz|pamiętasz|pamietasz)\b|\bco\s+(?:wiesz|pamiętasz|pamietasz)\s+o\s+mnie\b/i.test(message);
+ if(asksAboutSelf){
+  const facts=[];
+  if(sessionName)facts.push('Masz na imię '+sessionName+'.');
+  const answer=facts.length?'👑 Z tej rozmowy wiem tylko tyle: '+facts.join(' ')+' Nie dopowiadam niczego, czego mi nie powiedziałeś.':'👑 Nie mam jeszcze potwierdzonych informacji o Tobie z tej rozmowy. Możesz mi coś o sobie opowiedzieć.';
+  return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(history.length),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
+ }
  const asksUserNameRecall=/\b(?:pamiętasz|pamietasz|przypomnij|jak)\b[\s\S]{0,90}\b(?:mam na imię|mam na imie|moje imię|moje imie)(?=\W|$)/i.test(message);
  const asksPrevious=/\b(?:o czym|co)\b[\s\S]{0,90}\b(?:przed chwilą|przed chwila|wcześniej|wczesniej)(?=\W|$)/i.test(message);
  const introductoryName=/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(message)?.[1]||null;
