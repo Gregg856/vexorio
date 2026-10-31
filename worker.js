@@ -118,6 +118,11 @@ export default {
       if(typeof message!=='string'||!message.trim()||message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
       const history=payload?.history??[];
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
+      // Explicit user-supplied writing is handled locally, after session validation.
+      // No private memory, model inference, task execution or external text generation.
+      const {composeClientWriting}=await import('./rx-client-writing.mjs');
+      const writing=composeClientWriting(message);
+      if(writing)return new Response(JSON.stringify({ok:true,answer:writing.answer,writingMode:'deterministic',requiresClarification:writing.requiresClarification,engine:'rx-client-writing',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       // RX client must not present a private RX CLOUD memory request as a task that was accepted.
       // Private verified learning is intentionally restricted to authenticated administrators.
       const normalizedIntent=message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
