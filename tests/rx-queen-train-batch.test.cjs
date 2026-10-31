@@ -78,3 +78,17 @@ test('experimental Polish byte-bigram learner is deterministic and keeps default
  const model=createLearner({epochs:10,features:'bigram'});
  assert.ok(['greeting','tests','memory','math'].includes(model.classify('dzień dobry').label));
 });
+
+test('offline frequency versus bigram features on untouched holdout and challenge',()=>{
+ const {createLearner}=require('../rx-text-learner.cjs');
+ const {HOLDOUT,CHALLENGE}=require('../rx-text-evaluation.cjs');
+ const evaluate=(learner,set)=>({correct:set.filter(([phrase,label])=>learner.classify(phrase).label===label).length,total:set.length});
+ const results={};
+ for(const features of ['frequency','bigram']){
+  const model=createLearner({features});
+  results[features]={holdout:evaluate(model,HOLDOUT),challenge:evaluate(model,CHALLENGE)};
+ }
+ assert.equal(results.frequency.holdout.total,24);
+ assert.equal(results.bigram.challenge.total,32);
+ console.log('BIBI FEATURE COMPARISON',JSON.stringify({results,productionConnected:false,trainedOnEvaluation:false}));
+});
