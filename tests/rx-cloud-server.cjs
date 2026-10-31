@@ -365,4 +365,20 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   console.log('RX CLOUD 5.9 progressive localhost load: '+JSON.stringify({stages:stageReports,peakActiveRequests:stageData.load.peakActiveRequests,connectionsLimit:stageData.connectionsLimit}));
   console.log('RX CLOUD 5.9 progressive localhost load and TCP tests passed');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
+// Enabled mode is configuration only: a real inference response is not asserted.
+ process.env.RX_BIBI_MODEL_ENABLED='true';
+ process.env.RX_BIBI_MODEL_PORT='11434';
+ const enabledServer=await start({port:0,host:'127.0.0.1'});
+ try{
+   const enabledUrl='http://127.0.0.1:'+enabledServer.address().port;
+   const response=await fetch(enabledUrl+'/__rxcloud/model/capabilities');
+   assert.equal(response.status,200);
+   const result=await response.json();
+   assert.equal(result.modelConfigured,true);
+   assert.equal(result.modelVerified,false);
+ }finally{
+   await new Promise((resolve,reject)=>enabledServer.close(e=>e?reject(e):resolve()));
+   delete process.env.RX_BIBI_MODEL_ENABLED;
+   delete process.env.RX_BIBI_MODEL_PORT;
+ }
 })().catch(e=>{console.error(e);process.exitCode=1;});
