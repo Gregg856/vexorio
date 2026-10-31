@@ -360,4 +360,4 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   return server;
 }
 if(require.main===module)start().then(s=>{console.log('RX CLOUD listening on '+JSON.stringify(s.address()));const shutdown=()=>s.close(()=>process.exit(0));process.once('SIGTERM',shutdown);process.once('SIGINT',shutdown);}).catch(e=>{console.error(e);process.exitCode=1;});
-module.exports={start,staticFetch};
+module.exports={start,staticFetch,createLocalModelService};
