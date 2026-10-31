@@ -44,6 +44,9 @@ function runLearning(){
   previousBest:previousBest<0?null:previousBest,
   improvedOverHistory:previousBest>=0&&record.correct>previousBest,
   plateau:previous.length>=3&&previous.slice(-3).every(r=>r.correct>=record.correct),
+  regressionDetected:previousBest>=0&&record.correct<previousBest,
+  safeToPromote:false,
+  nextAction:previousBest>=0&&record.correct<previousBest?'INVESTIGATE_REGRESSION':record.nextExercise,
   historyCount:runs.length,productionConnected:false};
  fs.writeFileSync(path.join(DIR,'rx-learning-progress.json'),JSON.stringify(summary,null,2)+'\n');
  console.log('RX BIBI LEARNING MEMORY',JSON.stringify({status:record.status,correct:record.correct,total:record.total,nextExercise:record.nextExercise,historyCount:runs.length}));
