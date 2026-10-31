@@ -188,6 +188,38 @@ const {pathToFileURL}=require('node:url');
    console.log('RX BIBI authenticated read-only individual run lookup passed');
 
 
+   // RX BIBI 7.4: owner-only Queen triage, real failed jobs, and no dispatch.
+   const queenEnv={...env,RX_ADMIN_USER_ID:'admin-user'};
+   const queenCall=(message)=>worker.fetch(new Request(origin+'/api/rx/chat',{method:'POST',headers:{Origin:origin,Authorization:'Bearer valid-user','Content-Type':'application/json'},body:JSON.stringify({message,history:[]})}),queenEnv);
+   let githubReads=0;
+   global.fetch=async(url,options={})=>{
+     const target=String(url);
+     if(target==='https://example.supabase.co/auth/v1/user')return Response.json({id:'admin-user',is_anonymous:false});
+     if(target==='https://example.supabase.co/rest/v1/rpc/is_vexorio_admin')return Response.json(true);
+     if(target.includes('/actions/workflows/rx-client-dialogue-baseline.yml/runs?')){
+       assert.equal(options.method,undefined,'Triage must only read');githubReads++;
+       return Response.json({workflow_runs:[{id:12345678,status:'completed',conclusion:'failure'}]});
+     }
+     if(target.endsWith('/actions/runs/12345678/jobs?per_page=100')){
+       assert.equal(options.method,undefined,'Job inspection must only read');githubReads++;
+       return Response.json({jobs:[{name:'RX dialogue tests',conclusion:'failure',steps:[{name:'Regression assertion',conclusion:'failure'}]}]});
+     }
+     throw Error('Unexpected privileged request: '+target);
+   };
+   const triage=await queenCall('Przygotuj zadanie dla RX Developer z wyniku RX Tester');
+   assert.equal(triage.status,200,'Owner triage accepted');
+   const triageData=await triage.json();
+   assert.equal(triageData.proposed,true);
+   assert.equal(triageData.executed,0);
+   assert.equal(triageData.queued,false);
+   assert.equal(triageData.requiresApproval,true);
+   assert.match(triageData.answer,/RX dialogue tests/);
+   assert.match(triageData.answer,/Regression assertion/);
+   assert.equal(githubReads,2,'Exactly two read-only GitHub calls');
+   queenEnv.RX_ADMIN_USER_ID='someone-else';
+   const deniedTriage=await queenCall('Przygotuj zadanie dla RX Developer z wyniku RX Tester');
+   assert.equal(deniedTriage.status,403,'Only owner can request triage');
+   global.fetch=authFetch;
    // Admin learning bridge: never query private cloud before verified admin authorization.
    const learningPath='/api/rx/admin/learning';
    const getLearning=(headers={})=>worker.fetch(new Request(origin+learningPath,{headers:{Origin:origin,Authorization:'Bearer valid-user',...headers}}),env);
