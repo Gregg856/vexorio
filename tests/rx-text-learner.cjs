@@ -84,3 +84,9 @@ console.log('RX GENERATION VARIANTS:',new Set(variants).size);
 assert.equal(heldOut.total,8);
 assert.equal(learner.examples,24);
 console.log('RX TRAINING BASELINE (batch rolled back after regression):',JSON.stringify({examples:learner.examples,heldOutCorrect:heldOut.correct,heldOutTotal:heldOut.total,lossBefore:learner.metrics.initialLoss,lossAfter:learner.metrics.finalLoss}));
+
+// RX BIBI 7.8: external examples must be explicitly approved before training.
+assert.throws(()=>createLearner({epochs:1,additionalExamples:[['nowa próbka','tests']]}),/approval/);
+assert.throws(()=>createLearner({epochs:1,additionalExamples:[[{text:'nowa próbka',approvedForTraining:false},'tests']]}),/approval/);
+const approvedLearner=createLearner({epochs:1,additionalExamples:[[{text:'nowa próbka',approvedForTraining:true},'tests']]});
+assert.equal(approvedLearner.examples,25);
