@@ -13,7 +13,7 @@ export function planRXChat(message,history=[],learning=null){
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
  const sessionName=history.filter((_,i)=>i%2===0).slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(turn)).find(Boolean)?.[1]||null;
- const asksAboutSelf=/\b(?:co|czego)\s+(?:o mnie|o mojej osobie)\s+(?:wiesz|pamiętasz|pamietasz)\b|\bco\s+(?:wiesz|pamiętasz|pamietasz)\s+o\s+mnie\b/i.test(message);
+ const asksAboutSelf=/\b(?:co|czego)\s+(?:teraz\s+)?(?:o mnie|o mojej osobie)\s+(?:wiesz|pamiętasz|pamietasz)\b|\bco\s+(?:wiesz|pamiętasz|pamietasz)\s+o\s+mnie\b/i.test(message);
  if(asksAboutSelf){
   const facts=[];
   if(sessionName)facts.push('Masz na imię '+sessionName+'.');
