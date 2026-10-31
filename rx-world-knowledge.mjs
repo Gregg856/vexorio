@@ -5,7 +5,7 @@ const MAX_CACHE_ENTRIES=100;
 const CACHE_TTL_MS=60*60*1000;
 export async function searchWorldKnowledge(question,{fetcher=fetch}={}){
  if(typeof question!=='string'||question.length>300||!question.trim())return null;
- const query=question.trim().replace(/^(co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|znajdź informacje(?: o)?|znajdz informacje(?: o)?|wyszukaj informacje(?: o)?|poszukaj informacji(?: o)?)\s+/i,'').replace(/[?!.]+$/,'').trim();
+ const query=question.trim().replace(/^(co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|wyjaśnij mi|wyjasnij mi|wyjaśnij|wyjasnij|chciałbym się dowiedzieć(?: o)?|chcialbym sie dowiedziec(?: o)?|chciałabym się dowiedzieć(?: o)?|chcialabym sie dowiedziec(?: o)?|znajdź informacje(?: o)?|znajdz informacje(?: o)?|wyszukaj informacje(?: o)?|poszukaj informacji(?: o)?)\s+/i,'').replace(/[?!.]+$/,'').trim();
  if(query.length<3||query.length>160)return null;
  const cacheKey=query.toLocaleLowerCase('pl-PL');
  const cached=CACHE.get(cacheKey);
@@ -36,7 +36,7 @@ export function getRXKnowledgeFollowupPrior(message,history){
   const answer=typeof history[i+1]==='string'?history[i+1].trim():'';
   if(!/^📚[\s\S]{0,1800}Źródło:\s*https:\/\/pl\.wikipedia\.org\//i.test(answer))return null;
   if(/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(prior))return null;
-  if(/^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+.{3,160}[?!.]?$/i.test(prior))return prior;
+  if(/^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|wyjaśnij mi|wyjasnij mi|wyjaśnij|wyjasnij|chciałbym się dowiedzieć(?: o)?|chcialbym sie dowiedziec(?: o)?|chciałabym się dowiedzieć(?: o)?|chcialabym sie dowiedziec(?: o)?)\s+.{3,160}[?!.]?$/i.test(prior))return prior;
   if(!/^(?:a )?(?:dlaczego|czemu|jak to działa|jak to dziala|opowiedz więcej|opowiedz wiecej|więcej|wiecej)[?!. ]*$/i.test(prior))return null;
  }
  return null;
