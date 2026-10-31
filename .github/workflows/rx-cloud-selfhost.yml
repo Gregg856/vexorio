@@ -11,6 +11,7 @@ on:
       - 'rx-bibi-quality-gate.cjs'
       - 'rx-bibi-exercise-rotation.cjs'
       - 'rx-bibi-supervised-cycle.cjs'
+      - 'tests/rx-bibi-training-panel-api.test.cjs'
       - 'tests/rx-bibi-supervised-cycle.test.cjs'
       - 'tests/rx-bibi-exercise-rotation.test.cjs'
       - 'tests/rx-bibi-quality-gate.test.cjs'
@@ -61,6 +62,7 @@ on:
       - 'rx-bibi-quality-gate.cjs'
       - 'rx-bibi-exercise-rotation.cjs'
       - 'rx-bibi-supervised-cycle.cjs'
+      - 'tests/rx-bibi-training-panel-api.test.cjs'
       - 'tests/rx-bibi-supervised-cycle.test.cjs'
       - 'tests/rx-bibi-exercise-rotation.test.cjs'
       - 'tests/rx-bibi-quality-gate.test.cjs'
@@ -163,6 +165,8 @@ jobs:
         run: node --test tests/rx-bibi-exercise-rotation.test.cjs
       - name: Test RX BIBI supervised training cycle
         run: node --test tests/rx-bibi-supervised-cycle.test.cjs
+      - name: Test private BIBI training preview API
+        run: node --test tests/rx-bibi-training-panel-api.test.cjs
       - name: Test isolated RX CLOUD installation layout
         run: node tests/rx-cloud-staged.cjs
       - name: Validate monitor failure reporting (no live server)

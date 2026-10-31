@@ -85,6 +85,30 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.end(JSON.stringify({ok:true,service:'rx-cloud-2',queenBridge:'connected',mode:'read-only',taskExecution:false,productionChanges:false}));
         return;
       }
+      // Private, read-only training preview for the existing Queen panel.
+      if(url.pathname==='/__rxcloud/bibi/training-preview'){
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('Content-Type','application/json');
+        res.setHeader('X-Content-Type-Options','nosniff');
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        if(!process.env.RX_BIBI_TRAINING_FILE||!process.env.RX_BIBI_HISTORY_FILE||!process.env.RX_BIBI_HOLDOUT_FILE){
+          res.writeHead(503);res.end(JSON.stringify({ok:false,error:'Training preview not configured'}));return;
+        }
+        try{
+          const casesData=JSON.parse(await fs.readFile(process.env.RX_BIBI_HOLDOUT_FILE,'utf8'));
+          const cases=Array.isArray(casesData)?casesData:casesData.cases;
+          const {preview}=require('./rx-bibi-supervised-cycle.cjs');
+          const result=await preview(process.env.RX_BIBI_TRAINING_FILE,process.env.RX_BIBI_HISTORY_FILE,cases);
+          // Expose aggregate counts only: no training samples or private prompts.
+          res.writeHead(200);res.end(JSON.stringify({ok:true,mode:'read-only',total:result.report.total,correct:result.report.correct,incorrect:result.report.total-result.report.correct,pending:result.pending.length,accuracy:result.report.accuracy}));return;
+        }catch(error){
+          res.writeHead(503);res.end(JSON.stringify({ok:false,error:'Training preview unavailable'}));return;
+        }
+      }
       // Private RX learning history: same bearer authentication as Queen bridge.
       if(url.pathname==='/__rxcloud/bibi/learning-history'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
