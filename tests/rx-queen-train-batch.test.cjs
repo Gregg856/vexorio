@@ -34,3 +34,9 @@ test('existing Queen trainer accepts human-reviewed ant samples without another 
  assert.throws(()=>convertAntReviews({reviews:[{...reviews[0],humanApproved:false},...reviews.slice(1)],validation}),/Unapproved/);
  assert.throws(()=>convertAntReviews({reviews:[...reviews.slice(0,3),reviews[0]],validation}),/Duplicate/);
 });
+
+test('Queen rejects validation phrases seen in its original training set',async()=>{
+ const {trainQueen}=require('../rx-queen-training-selection.cjs');
+ const validation=[['cześć królowo','greeting'],['skontroluj działanie','tests'],['odtwórz plan projektu','memory'],['dodaj wartości liczbowe','math']];
+ assert.throws(()=>trainQueen({validation}),/Validation overlap/);
+});
