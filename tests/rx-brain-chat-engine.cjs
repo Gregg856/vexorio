@@ -97,6 +97,12 @@ assert.match(chatRX('Co już zrobione?').answer,/Brak zadań oznaczonych/);
 assert.throws(()=>chatRX('Hej',{tasks:[{title:'Zadanie',status:'verified'}]}),/Invalid tasks/);
 assert.throws(()=>chatRX('Hej',{tasks:[{title:'',status:'completed'}]}),/Invalid tasks/);
 console.log('RX BIBI level 6: explicit task register and safe completion reporting checked');
+for(const [question,expected] of [['Co z zadaniem Naprawa klawiatury Android?',/Naprawa klawiatury Android.*ukończone/],['Czy zakończono zadanie Weryfikacja czatu?',/Weryfikacja czatu.*oczekujące/],['Co z zadaniem nieznane?',/Nie znalazłam dokładnego zadania/]]){
+ const result=chatRX(question,{tasks:taskRegister});
+ assert.match(result.answer,expected,question);
+ assert.equal(result.executed,0,question);
+}
+console.log('RX Brain: natural task lookup uses supplied registry');
 
 for(const [prompt,expected] of [['2 + 3','Wynik: 5'],['Oblicz 7 * 8','Wynik: 56'],['Policz 10 / 4','Wynik: 2.5'],['Ile to 9 - 12?','Wynik: -3'],['2,5 + 1,5','Wynik: 4'],['5 / 0','Nie można dzielić przez zero.']]){
  const result=chatRX(prompt);
