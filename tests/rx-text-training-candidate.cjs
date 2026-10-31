@@ -38,3 +38,13 @@ for(const [setName,total] of [['holdout',24],['challenge',32]]){
  assert.equal(rows.reduce((sum,row)=>sum+row.errors.length,0),total-b.candidate[setName]);
 }
 console.log('RX WAVE2 DIAGNOSIS',JSON.stringify(diagnosis));
+
+const {assessPromotion}=require('../rx-text-training-candidate.cjs');
+assert.deepEqual(assessPromotion({holdout:10,challenge:12},{holdout:11,challenge:12}),{
+ approved:true,holdoutDelta:1,challengeDelta:0,reason:'improved_without_regression',productionConnected:false
+});
+assert.equal(assessPromotion({holdout:10,challenge:12},{holdout:11,challenge:11}).approved,false);
+assert.equal(assessPromotion({holdout:10,challenge:12},{holdout:10,challenge:12}).approved,false);
+assert.throws(()=>assessPromotion({holdout:-1,challenge:12},{holdout:11,challenge:12}),/Invalid evaluation scores/);
+assert.equal(a.qualityGate.approved,a.improvesBoth);
+assert.equal(b.qualityGate.approved,b.improvesBoth);
