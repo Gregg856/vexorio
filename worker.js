@@ -642,6 +642,40 @@ export default {
       if(github.status!==204)return reply(502,'GitHub odrzucił uruchomienie (HTTP '+github.status+').');
       return new Response(JSON.stringify({ok:true,message:'Test zlecony. Odśwież wyniki za chwilę.'}),{status:202,headers});
     }
+    // RX Brain memory is a separate source; no fallback to RX CLOUD.
+    if(url.pathname==='/api/rx/admin/brain-memory'){
+      const headers={'Cache-Control':'no-store','Content-Type':'application/json'};
+      const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='GET')return reply(405,'GET required');
+      const origin=request.headers.get('Origin');
+      if(origin&&origin!==url.origin)return reply(403,'Origin rejected');
+      const site=request.headers.get('Sec-Fetch-Site');
+      if(site&&site!=='same-origin'&&site!=='none')return reply(403,'Site rejected');
+      const auth=request.headers.get('Authorization')||'';
+      if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Admin session required');
+      if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Auth unavailable');
+      let base;try{base=new URL(env.SUPABASE_URL);}catch{return reply(503,'Auth unavailable');}
+      if(base.protocol!=='https:'||!/^[a-z0-9-]+[.]supabase[.]co$/.test(base.hostname)||base.pathname!=='/'||base.search||base.hash||base.username||base.password||base.port)return reply(503,'Auth unavailable');
+      try{
+        const userResponse=await fetch(new URL('/auth/v1/user',base),{headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},signal:AbortSignal.timeout(8000)});
+        if(!userResponse.ok)return reply(401,'Session expired');
+        const user=await userResponse.json();
+        if(!user?.id||user.is_anonymous===true)return reply(403,'Forbidden');
+        const permission=await fetch(new URL('/rest/v1/rpc/is_vexorio_admin',base),{method:'POST',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)});
+        if(!permission.ok)return reply(502,'Permission check failed');
+        if((await permission.json())!==true)return reply(403,'Forbidden');
+      }catch{return reply(502,'Auth check unavailable');}
+      const raw=env.RX_BRAIN_MEMORY_SNAPSHOT;
+      if(typeof raw!=='string'||raw.length>100000||!raw.length)return reply(503,'RX Brain memory unavailable');
+      let data;try{data=JSON.parse(raw);}catch{return reply(503,'Invalid memory');}
+      if(data?.schema!==1||data.kind!=='rx-brain-memory'||!Array.isArray(data.records)||data.records.length>200)return reply(503,'Invalid memory');
+      const records=[];
+      for(const item of data.records){
+        if(!item||typeof item.key!=='string'||!/^[a-z0-9_-]{1,80}$/.test(item.key)||typeof item.action!=='string'||item.action.length<1||item.action.length>120||!Number.isSafeInteger(item.successes)||!Number.isSafeInteger(item.failures)||item.successes<0||item.failures<0||item.successes+item.failures<1||item.successes+item.failures>1000000)return reply(503,'Invalid memory');
+        records.push({key:item.key,action:item.action,samples:item.successes+item.failures,successRate:item.successes/(item.successes+item.failures),requiresApproval:true});
+      }
+      return new Response(JSON.stringify({ok:true,kind:'rx-brain-memory',records}),{status:200,headers});
+    }
     // Admin-only read bridge to the EXISTING private RX CLOUD learning feed.
     // Both the cloud URL and token are server-side secrets; never return either to browsers.
     if (url.pathname === '/api/rx/admin/learning') {
