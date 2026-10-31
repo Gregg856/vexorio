@@ -35,7 +35,7 @@ function runLearning(){
   winner:gate.winner,correct:best.correct,total:best.total,
   baselineCorrect:baseline.correct,improvement:gate.improvementOverBaseline,
   nextExercise:nextExercise(best.errors),trainingData:'approved-static-only',
-  tasks:queue().map(t=>({...t,status:cycle.jobs.find(j=>j.role===t.role)?.status||'UNKNOWN'}))
+  tasks:queue().map(t=>({...t,status:cycle.jobs.find(j=>j.id===t.role)?.status||'UNKNOWN'}))
  };
  const runs=[...previous,record];
  fs.writeFileSync(HISTORY,JSON.stringify({schema:1,kind:'rx-learning-history',runs},null,2)+'\n');
