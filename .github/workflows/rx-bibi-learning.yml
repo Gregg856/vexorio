@@ -25,6 +25,7 @@ jobs:
           node --check rx-learning-cloud-store.cjs
           node --check tests/rx-learning-cloud-sync.cjs
           node --check tests/rx-autobots-batch.cjs
+          node --check tests/rx-autobots-memory-watchdog.cjs
           node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs
       - name: Restore cloud history
         id: cloud
@@ -55,6 +56,8 @@ jobs:
             fs.writeFileSync('rx-bibi-reports/rx-learning-history.json',JSON.stringify(safe));
       - name: Run five coordinated RX agent cycles
         run: node tests/rx-autobots-batch.cjs
+      - name: Verify AutoBots memory continuity
+        run: node tests/rx-autobots-memory-watchdog.cjs
       - name: Persist GitHub history fallback
         if: success()
         uses: actions/github-script@v7
