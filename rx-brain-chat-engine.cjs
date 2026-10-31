@@ -167,4 +167,15 @@ function chatRXWithIntentDiagnostics(message,options={}){
   productionConnected:false,trainedOnUserMessages:false
  }};
 }
-module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory,chatRXWithIntentDiagnostics};
+
+// Explicit local writing mode in the EXISTING RX Brain chat engine.
+// No deployment switch or user-message training; default chatRX remains unchanged.
+function chatRXWithWriting(message,options={}){
+ const match=/^(?:napisz|ułóż|uloz|przygotuj)\s+(wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*:\s*([\s\S]{1,500})$/iu.exec(message.trim());
+ if(!match)return chatRX(message,options);
+ const {compose}=require('./tests/rx-queen-writing-composer.cjs');
+ const mode=/streszczenie/iu.test(match[1])?'summary':/odpowiedź|odpowiedz/iu.test(match[1])?'reply':'message';
+ const result=compose({prompt:match[2],mode});
+ return {answer:result.text,plan:{steps:[]},completedCount:0,contextUsed:false,executed:0,writingMode:mode,writingSource:result.source,productionConnected:false};
+}
+module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory,chatRXWithIntentDiagnostics,chatRXWithWriting};
