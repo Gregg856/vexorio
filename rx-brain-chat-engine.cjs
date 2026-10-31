@@ -109,6 +109,7 @@ function chatRX(message,{history=[],tasks=[]}={}){
    const userGoal=/^(?:chcę|chce|potrzebuję|potrzebuje|zależy mi na|zalezy mi na)\s+(.{3,160})[.!?]?$/i.exec(message.trim());
    if(conversational)answer='Jestem tutaj i możemy rozmawiać. Nad czym chcesz dziś popracować albo o czym porozmawiać?';
    else if(userGoal)answer='Rozumiem, że zależy Ci na: '+userGoal[1].replace(/[.!?]+$/,'').slice(0,160)+'. Jaki pierwszy krok mam pomóc Ci zaplanować?';
+   else if(/^(?:jak (?:mogę|moge|można|mozna)|w jaki sposób)\s+.{5,160}\??$/i.test(message.trim()))answer='Pytasz o sposób działania: '+message.trim().replace(/[?!.]+$/,'').slice(0,160)+'. Opisz, co już próbowałeś i jaki rezultat chcesz uzyskać, a dobierzemy następny krok. Nie uruchomiłam żadnej operacji.';
    else answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
  }
  return {answer,plan,completedCount:completed.length,contextUsed:(asksFix||asksRecheck||asksSuggestion)?!!topic:(contextual||continuation)&&(continuation?!!topic:!!contextAnchor),executed:0};
