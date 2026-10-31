@@ -11,6 +11,21 @@ export function planRXChat(message,history=[],learning=null){
  const recentUserTurns=history.filter((_,index)=>index%2===0).slice(-10);
  const preferences=recentUserTurns.filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/i.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
+ // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
+ const sessionName=history.filter((_,i)=>i%2===0).slice().reverse().map(turn=>/\\b(?:mam na imię|nazywam się)\\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\\b/i.exec(turn)).find(Boolean)?.[1]||null;
+ const asksName=/\\b(?:pamiętasz|pamietasz|przypomnij|jak)\\b[\\s\\S]{0,90}\\b(?:mam na imię|mam na imie|moje imię|moje imie)\\b/i.test(message);
+ const asksPrevious=/\\b(?:o czym|co)\\b[\\s\\S]{0,90}\\b(?:przed chwilą|przed chwila|wcześniej|wczesniej)\\b/i.test(message);
+ const introductoryName=/\\b(?:mam na imię|nazywam się)\\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\\b/i.exec(message)?.[1]||null;
+ if(asksName||asksPrevious||introductoryName){
+  const priorUser=history.filter((_,i)=>i%2===0).slice().reverse().find(turn=>turn.trim()&&!/\\b(?:pamiętasz|pamietasz)\\b/i.test(turn))||'';
+  let answer;
+  if(asksName||asksPrevious){
+   const namePart=asksName?(sessionName?'Masz na imię '+sessionName+'.':'Nie podałeś mi jeszcze imienia w tej rozmowie.') : '';
+   const topicPart=asksPrevious?(priorUser?'Wcześniej napisałeś: „'+priorUser.slice(0,180)+'”.':'Nie widzę wcześniejszej wiadomości w historii tego czatu.') : '';
+   answer='👑 '+[namePart,topicPart].filter(Boolean).join(' ');
+  }else answer='👑 Miło Cię poznać, '+introductoryName+'! Dzięki, że pytasz. Jestem tutaj i chętnie porozmawiam. Co u Ciebie?';
+  return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(history.length),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
+ }
  // Client follow-ups use the latest user turn, never the assistant's broad answer.
  const latestUserTurn=history.length>=2?history.at(-2):history.at(-1);
  const briefReference=/^(?:a (?:to|ten|tamten|one|oni|jak|dlaczego|co z tym)|co z tym|co z nimi|dalej|rozwin(?: to)?|jak to dziala|dlaczego)[?.! ]*$/i.test(message.trim());

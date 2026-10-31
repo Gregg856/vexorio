@@ -8,6 +8,7 @@ on:
       - 'rx-task-catalog.cjs'
       - 'rx-math-core.cjs'
       - 'tests/rx-client-dialogue-baseline.cjs'
+      - 'tests/rx-client-name-memory.mjs'
       - 'tests/rx-client-knowledge-regex.cjs'
       - 'tests/rx-client-knowledge-format.cjs'
       - 'tests/rx-client-knowledge-followup.cjs'
@@ -36,6 +37,8 @@ jobs:
         run: node tests/rx-client-knowledge-followup.cjs
       - name: Sprawdź zachowanie kontekstu na prawdziwych przykładach
         run: node tests/rx-client-knowledge-followup-behavior.cjs
+      - name: Sprawdź pamięć imienia w rozmowie klienta
+        run: node tests/rx-client-name-memory.mjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
