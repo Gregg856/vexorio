@@ -8,6 +8,8 @@ on:
       - 'tests/rx-cloud-server.cjs'
       - 'tests/rx-bibi-loopback-e2e.test.cjs'
       - 'rx-bibi-own-inference.cjs'
+      - 'rx-bibi-training-store.cjs'
+      - 'tests/rx-bibi-training-store.test.cjs'
       - 'tests/rx-bibi-own-inference.test.cjs'
       - 'tests/rx-bibi-evaluator.cjs'
       - 'tests/rx-bibi-evaluator.test.cjs'
@@ -138,6 +140,8 @@ jobs:
         run: node --test tests/rx-bibi-loopback-e2e.test.cjs
       - name: Test RX BIBI own CPU inference prototype
         run: node --test tests/rx-bibi-own-inference.test.cjs
+      - name: Test persistent RX BIBI training and quality evaluation
+        run: node --test tests/rx-bibi-training-store.test.cjs
       - name: Test isolated RX CLOUD installation layout
         run: node tests/rx-cloud-staged.cjs
       - name: Validate monitor failure reporting (no live server)
