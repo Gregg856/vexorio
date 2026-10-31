@@ -53,3 +53,25 @@ test('legacy GitHub Issue escaped newlines preserve saved curriculum',()=>{
  while(payload.endsWith(String.fromCharCode(92)+'n'))payload=payload.slice(0,-2);
  assert.equal(validateHistory(JSON.parse(payload.trim())).keys.length,3);
 });
+
+test('six saved exercises advance to nine, then rotate safely on the next run',()=>{
+ const first=buildBatch();
+ const second=buildBatch({previousKeys:first.candidates.map(c=>c.key)});
+ const six=validateHistory({schema:1,keys:[...first.candidates,...second.candidates].map(c=>c.key)});
+ assert.equal(six.keys.length,6);
+ const third=buildBatch({previousKeys:six.keys});
+ assert.equal(third.rotated,false);
+ assert.equal(third.status,'READY_FOR_REVIEW');
+ assert.equal(third.candidates.length,3);
+ assert.ok(third.candidates.every(c=>!six.keys.includes(c.key)&&!c.approved&&!c.applied));
+ const nine=validateHistory({schema:1,keys:[...six.keys,...third.candidates.map(c=>c.key)]});
+ assert.equal(nine.keys.length,CURRICULUM.length);
+ const next=buildBatch({previousKeys:nine.keys});
+ assert.equal(next.rotated,true);
+ assert.equal(next.status,'READY_FOR_REVIEW');
+ assert.equal(next.autoApproved,0);
+ assert.equal(next.autoApplied,0);
+ const restarted=validateHistory({schema:1,keys:next.candidates.map(c=>c.key)});
+ assert.equal(restarted.keys.length,3);
+ assert.deepEqual(restarted.keys,first.candidates.map(c=>c.key));
+});
