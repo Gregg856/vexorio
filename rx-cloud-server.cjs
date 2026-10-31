@@ -34,6 +34,13 @@ async function staticFetch(request) {
     return new Response(data,{status:200,headers});
   } catch(e) { if(e.code==='ENOENT'||e.code==='ENOTDIR') return new Response('Not found',{status:404}); throw e; }
 }
+function createLocalModelService(port){
+ if(!Number.isInteger(port)||port<1||port>65535)throw Error('Invalid RX_BIBI_MODEL_PORT');
+ return {fetch:async(_url,options={})=>fetch('http://127.0.0.1:'+port+'/infer',{
+  method:'POST',headers:{'Content-Type':'application/json'},body:options.body,
+  signal:options.signal||AbortSignal.timeout(8000)
+ })};
+}
 async function start({port=Number(process.env.PORT||8787),host=process.env.HOST||'127.0.0.1'}={}) {
   if(!Number.isInteger(port)||port<0||port>65535) throw Error('Invalid port');
   const supabaseUrl=process.env.SUPABASE_URL||'';
@@ -45,16 +52,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   const modelEnabled=process.env.RX_BIBI_MODEL_ENABLED==='true';
   if(modelEnabled){
     const modelPort=Number(process.env.RX_BIBI_MODEL_PORT||'');
-    if(!Number.isInteger(modelPort)||modelPort<1||modelPort>65535)throw Error('Invalid RX_BIBI_MODEL_PORT');
+    env.RX_BIBI_MODEL_SERVICE=createLocalModelService(modelPort);
     env.RX_BIBI_MODEL_ENABLED='true';
-    env.RX_BIBI_MODEL_SERVICE={
-      fetch:async(_url,options={})=>fetch('http://127.0.0.1:'+modelPort+'/infer',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:options.body,
-        signal:options.signal||AbortSignal.timeout(8000)
-      })
-    };
   }
   const startedAt=Date.now();
   let activeRequests=0,peakActiveRequests=0,completedRequests=0;
