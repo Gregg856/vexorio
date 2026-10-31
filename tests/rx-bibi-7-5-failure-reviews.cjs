@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {buildTesterFailureReviews}=require('../rx-queen-developer-queue.cjs');
+const result=buildTesterFailureReviews({run:{id:12345678,conclusion:'failure',html_url:'https://github.com/Gregg856/vexorio/actions/runs/12345678'},jobs:[{name:'RX dialogue tests',conclusion:'failure',steps:[{name:'Setup',conclusion:'success'},{name:'Regression assertion',conclusion:'failure'}]}]});
+assert.equal(result.reviews.length,1);
+assert.equal(result.reviews[0].runId,12345678);
+assert.equal(result.reviews[0].jobName,'RX dialogue tests');
+assert.equal(result.reviews[0].stepName,'Regression assertion');
+assert.equal(result.reviews[0].requiresApproval,true);
+assert.equal(result.reviews[0].executed,false);
+assert.equal(result.productionModified,false);
+assert.equal(result.autoFixesApplied,0);
+assert.equal(buildTesterFailureReviews({run:{id:12,conclusion:'failure'},jobs:[{name:'ok',conclusion:'success',steps:[]}]}).reviews.length,0);
+assert.throws(()=>buildTesterFailureReviews({run:{id:12,conclusion:'success'},jobs:[]}));
+assert.throws(()=>buildTesterFailureReviews({run:{id:12,conclusion:'failure'},jobs:[{name:'bad',conclusion:'failure',steps:null}]}));
+console.log('RX BIBI 7.5 failure evidence review regression passed');
