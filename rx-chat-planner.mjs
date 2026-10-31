@@ -43,9 +43,17 @@ export function planRXChat(message,history=[],learning=null){
  }
  // Client follow-ups use the latest user turn, never the assistant's broad answer.
  const latestUserTurn=history.length>=2?history.at(-2):history.at(-1);
- const briefReference=/^(?:a (?:to|ten|tamten|one|oni|jak|dlaczego|co z tym)|co z tym|co z nimi|dalej|rozwin(?: to)?|jak to dziala|dlaczego)[?.! ]*$/i.test(message.trim());
+ const briefReference=/^(?:a (?:to|ten|tamten|one|oni|jak|dlaczego|co z tym)|co z tym|co z nimi|dalej|rob|rób|zrob|zrób|popraw|sprawdz|sprawdź|gotowe|zielone|rozwin(?: to)?|rozwiń(?: to)?|jak to dziala|dlaczego)[?.! ]*$/i.test(message.trim());
  if(briefReference&&(!latestUserTurn||!latestUserTurn.trim())){
   return {ok:true,answer:'👑 Do czego nawiązujesz? Napisz proszę temat lub powtórz pytanie, żebym nie zgadywała.',topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:false,multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
+ }
+ // RX BIBI 7.0: terse status/command messages without an explicit user task must not invent completed work.
+ const shortCommand=/^(?:rob|rób|zrob|zrób|popraw|sprawdz|sprawdź|gotowe|zielone)[?.! ]*$/i.test(message.trim());
+ if(shortCommand){
+  const topicTurns=history.filter((_,i)=>i%2===0).filter(turn=>turn.trim()&&!/^(?:dalej|rob|rób|zrob|zrób|popraw|sprawdz|sprawdź|gotowe|zielone)[?.! ]*$/i.test(turn.trim()));
+  const lastTopic=topicTurns.at(-1)||'';
+  const answer=lastTopic?'👑 Ostatnie konkretne polecenie w tej rozmowie: „'+lastTopic.slice(0,180)+'”. Mogę je omówić lub przygotować plan, ale nie wykonałam żadnej zmiany ani testu automatycznie.':'👑 Podaj konkretne zadanie lub temat. Nie będę zgadywać ani twierdzić, że coś wykonałam.';
+  return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(lastTopic),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
  }
  const last=history.at(-1)||'';
  const previous=history.slice(-5).filter(x=>x.trim());
