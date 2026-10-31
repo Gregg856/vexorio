@@ -16,6 +16,9 @@ test('Queen trains approved examples from a local batch without changing product
   assert.equal(result.trainingExamples,4);
   assert.equal(result.candidates.length,5);
   assert.equal(result.baseline.total,4);
+  assert.deepEqual(Object.keys(result.baseline.byLabel),['greeting','tests','memory','math']);
+  assert.equal(Object.values(result.baseline.byLabel).reduce((n,v)=>n+v.total,0),4);
+  assert.ok(result.candidates.every(c=>Object.values(c.byLabel).reduce((n,v)=>n+v.correct,0)===c.correct));
   assert.equal(result.improvement,result.selected.correct-result.baseline.correct);
   console.log('BIBI OFFLINE TRAINING METRICS',JSON.stringify({training:result.trainingExamples,validation:result.validationExamples,baseline:result.baseline,selected:result.selected,improvement:result.improvement,productionConnected:result.productionConnected}));
   assert.equal(result.productionConnected,false);

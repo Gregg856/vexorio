@@ -5,6 +5,7 @@ const {createLearner,EXAMPLES}=require('./rx-text-learner.cjs');
 const {SETTINGS}=require('./rx-text-training-benchmark.cjs');
 const {HOLDOUT,CHALLENGE}=require('./rx-text-evaluation.cjs');
 function score(learner,cases){return cases.reduce((n,[phrase,label])=>n+Number(learner.classify(phrase).label===label),0);}
+function scoreByLabel(learner,cases){return Object.fromEntries(['greeting','tests','memory','math'].map(label=>{const subset=cases.filter(row=>row[1]===label);return [label,{correct:score(learner,subset),total:subset.length}];}));}
 function trainCandidate(settings,additionalExamples=[]){return createLearner({...settings,additionalExamples});}
 function trainQueen({approvedTraining=[],validation=[]}={}){
  if(!Array.isArray(approvedTraining)||!Array.isArray(validation)||validation.length<4||validation.length>100)throw Error('Independent validation examples required');
@@ -19,10 +20,10 @@ function trainQueen({approvedTraining=[],validation=[]}={}){
   seen.add(key);
  }
  const baseModel=createLearner(SETTINGS[0]);
- const baseline={correct:score(baseModel,validation),total:validation.length};
+ const baseline={correct:score(baseModel,validation),total:validation.length,byLabel:scoreByLabel(baseModel,validation)};
  const results=SETTINGS.map(settings=>{
   const model=trainCandidate(settings,approvedTraining);
-  return {settings,correct:score(model,validation),total:validation.length,finalLoss:model.metrics.finalLoss};
+  return {settings,correct:score(model,validation),total:validation.length,byLabel:scoreByLabel(model,validation),finalLoss:model.metrics.finalLoss};
  });
  const ranked=[...results].sort((a,b)=>b.correct-a.correct||a.finalLoss-b.finalLoss);
  return {kind:'rx-queen-training-selection',selected:ranked[0].correct>baseline.correct?ranked[0]:{settings:SETTINGS[0],correct:baseline.correct,total:baseline.total,source:'baseline'},baseline,improvement:Math.max(0,ranked[0].correct-baseline.correct),candidateImprovement:ranked[0].correct-baseline.correct,accepted:ranked[0].correct>baseline.correct,candidates:results,productionConnected:false,trainedModelType:'neural-intent-classifier',benchmarkSetsUntouched:true};
