@@ -75,3 +75,22 @@ test('RX NAUKA 4.0 preserves all concurrent verified updates in one process',asy
   assert.equal((await loadBrain(file)).recommend('android_chat').samples,21);
  }finally{await fs.rm(dir,{recursive:true,force:true})}
 });
+
+test('RX NAUKA 4.1 BIBI reads persisted evidence without writing or executing',async()=>{
+ const {chatRXWithStoredMemory}=require('../rx-brain-chat-engine.cjs');
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'rx-brain-chat-'));
+ try{
+  const file=path.join(dir,'memory.json');
+  await learnAndSaveBrain(file,{key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android CI chat run 401'});
+  const before=await fs.readFile(file,'utf8');
+  const reply=await chatRXWithStoredMemory('Co pamiętasz o zadaniu: android_chat?',{memoryFile:file});
+  assert.match(reply.answer,/inspect_logs/);
+  assert.match(reply.answer,/wymaga zatwierdzenia/);
+  assert.equal(reply.executed,0);
+  assert.equal(await fs.readFile(file,'utf8'),before);
+  const unknown=await chatRXWithStoredMemory('Co pamiętasz o zadaniu: android_chat?',{memoryFile:path.join(dir,'missing.json')});
+  assert.match(unknown.answer,/Nie mam zweryfikowanych doświadczeń/);
+  await fs.writeFile(file,'not-json');
+  await assert.rejects(chatRXWithStoredMemory('Co pamiętasz o zadaniu: android_chat?',{memoryFile:file}));
+ }finally{await fs.rm(dir,{recursive:true,force:true})}
+});
