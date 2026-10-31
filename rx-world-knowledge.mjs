@@ -41,3 +41,18 @@ export function getRXKnowledgeFollowupPrior(message,history){
  }
  return null;
 }
+
+export function formatRXKnowledgeFollowup(knowledge,previousAnswer){
+ if(!knowledge||typeof knowledge.summary!=='string')return null;
+ const summary=knowledge.summary.trim();
+ if(!summary)return null;
+ const sentences=summary.match(/[^.!?]+[.!?](?=\s|$)/g)||[];
+ const clean=sentences.map(x=>x.trim()).filter(Boolean);
+ const previous=typeof previousAnswer==='string'?previousAnswer:'';
+ // Prefer material that was not already included in the previous sourced answer.
+ const unseen=clean.filter(sentence=>!previous.includes(sentence));
+ const detail=unseen.slice(0,2).join(' ').trim();
+ if(detail)return detail.slice(0,440);
+ // Do not pretend repeated encyclopedia text answers a causal "why" question.
+ return null;
+}
