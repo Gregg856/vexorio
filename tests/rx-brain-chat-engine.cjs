@@ -185,7 +185,7 @@ const {chatRXWithKnowledge}=require('../rx-brain-chat-engine.cjs');
  console.log('RX sourced everyday knowledge: verified and safe fallback');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 
-const {createBrainMemory}=require('../rx-brain-memory.cjs');
+
 const learned=createBrainMemory();
 learned.learn({key:'android_chat',action:'inspect_logs',success:false,evidence:'Verified Android failure evidence A'});
 let learnedReply=chatRX('Co pamiętasz o zadaniu: android_chat?',{brainMemory:learned});
