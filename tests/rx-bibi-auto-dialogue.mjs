@@ -12,6 +12,8 @@ const scenarios=[
  {name:'no-fabricated-profile',turns:[['Co o mnie wiesz?',/Nie mam jeszcze/]]},
  {name:'basic-dialogue',turns:[['Jak się masz?',/./],['Mam pytanie',/./],['Ile to jest 12 plus 8?',/./]]}
 ];
+const prompts=['Cześć BIBI!','Jak się masz?','Mam pytanie','Opowiedz coś ciekawego.','Co potrafisz?','Ile to jest 12 plus 8?','Co to jest fotosynteza?','Wyjaśnij mi astronomię.','Lubię książki.','Co o mnie wiesz?'];
+for(let i=0;i<5;i++)scenarios.push({name:'automatic-conversation-'+(i+1),turns:prompts.map(message=>[message,/\\S/])});
 const results=[];
 for(const scenario of scenarios){
  const history=[];
