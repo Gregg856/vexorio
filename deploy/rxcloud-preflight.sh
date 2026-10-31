@@ -22,7 +22,7 @@ node_supported(){
   major="$(node -p 'Number(process.versions.node.split(".")[0])')" || return 1
   [[ "$major" =~ ^[0-9]+$ ]] && (( major >= 22 ))
 }
-echo 'RX CLOUD — read-only host readiness check'
+echo 'RX CLOUD — read-only server readiness check'
 check 'Linux operating system' test "$(uname -s)" = Linux
 check 'Node.js >=22' node_supported
 check 'git installed' command -v git
