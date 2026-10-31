@@ -8,6 +8,8 @@ on:
       - 'tests/rx-queen-writing-examiner.test.cjs'
       - 'tests/rx-queen-writing-heldout.cjs'
       - 'tests/rx-queen-writing-heldout.test.cjs'
+      - 'tests/rx-queen-semantic-gap.cjs'
+      - 'tests/rx-queen-semantic-gap.test.cjs'
       - '.github/workflows/rx-bibi-learning.yml'
       - '.github/workflows/rx-bibi-curriculum-ci.yml'
   workflow_dispatch:
@@ -26,4 +28,6 @@ jobs:
       - run: node --check tests/rx-queen-writing-examiner.cjs
       - run: node --check tests/rx-queen-writing-heldout.cjs
       - run: node --test tests/rx-queen-writing-reviewed-batch.test.cjs tests/rx-queen-writing-examiner.test.cjs tests/rx-queen-writing-heldout.test.cjs
+      - run: node --test tests/rx-queen-semantic-gap.test.cjs
       - run: node tests/rx-queen-writing-heldout.cjs
+      - run: node tests/rx-queen-semantic-gap.cjs
