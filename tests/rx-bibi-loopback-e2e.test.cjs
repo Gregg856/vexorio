@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const http=require('node:http');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
-const {start}=require('../rx-cloud-server.cjs');
+const {start,createLocalModelService}=require('../rx-cloud-server.cjs');
 const original={SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY,RX_BIBI_MODEL_ENABLED:process.env.RX_BIBI_MODEL_ENABLED,RX_BIBI_MODEL_PORT:process.env.RX_BIBI_MODEL_PORT};
 function restore(){for(const [k,v] of Object.entries(original)){if(v===undefined)delete process.env[k];else process.env[k]=v;}}
 function listen(server){return new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(server.address().port)));}
@@ -28,11 +28,7 @@ test('RX CLOUD loopback inference transport + existing bridge (mock backend only
   // The self-host app uses an internal fetch binding; check the same contract
   // through a real local TCP server, without touching Supabase or production.
   const bridge=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
-  const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{
-   fetch:(_url,options)=>fetch('http://127.0.0.1:'+port+'/infer',{
-    method:'POST',headers:{'Content-Type':'application/json'},body:options.body,signal:options.signal
-   })
-  }};
+  const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:createLocalModelService(port)};
   const result=await bridge.askClientModel('Zapytaj model: test RX',env);
   assert.equal(result.answer,'Odpowiedź testowa RX');
   assert.equal(result.modelInferenceUsed,true);
