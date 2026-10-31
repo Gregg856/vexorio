@@ -48,7 +48,12 @@ function chatRX(message,{history=[],tasks=[]}={}){
  const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\s]*$/i.test(message.trim());
  const statusQuery=/^(?:jaki status zadania|sprawdź status zadania|sprawdz status zadania):?\s+(.+)$/i.exec(message.trim());
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
- if(statusQuery){
+ const naturalTaskQuery=/^(?:co z zadaniem|jaki status zadania|czy zakończono zadanie)\s+[„"]?(.{3,160}?)[”"]?\??$/i.exec(message.trim());
+ if(naturalTaskQuery){
+   const name=naturalTaskQuery[1].replace(/[?!.]+$/,'').trim();
+   const matches=findSimilarTasks(tasks,name);
+   answer=matches.length===1?'W przekazanym rejestrze zadanie „'+matches[0].title+'” ma status: '+(matches[0].status==='completed'?'ukończone':'oczekujące')+'. To nie potwierdza wyniku testów ani wdrożenia.':matches.length>1?'Znalazłam kilka pasujących wpisów. Podaj dokładną nazwę zadania.':'Nie znalazłam dokładnego zadania „'+name.slice(0,160)+'” w przekazanym rejestrze. Nie zgaduję jego statusu.';
+ }else if(statusQuery){
    const matches=findSimilarTasks(tasks,statusQuery[1].trim());
    if(matches.length===1){
      answer='Status zadania „'+matches[0].title+'” w przekazanym rejestrze: '+(matches[0].status==='completed'?'ukończone':'oczekujące')+'. Nie potwierdzam wykonania bez niezależnych testów.';
