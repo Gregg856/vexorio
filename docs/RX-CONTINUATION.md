@@ -29,7 +29,12 @@
 - Testy regresji w `tests/rx-brain-chat-engine.cjs`.
 - PR #461 scalony po zielonych VEXORIO checks i RX CLOUD self-host smoke tests; naprawiono zdublowany import w testach.
 
-## Bieżący pakiet: RX NAUKA 3.6
+## Zakończony pakiet: RX NAUKA 3.6
 - Zabezpieczenie przed przekroczeniem 1 000 000 zapisanych prób dla pojedynczego klucza pamięci; odmowa zapisu bez zmiany istniejących danych.
 - Test regresji pamięci i integralności migawki. Bez nowego panelu, automatycznego wykonywania i wdrożenia.
-- Sprawdź oba CI przed scaleniem.
+- PR #462 scalony po zielonym VEXORIO checks.
+
+## Bieżący pakiet: RX NAUKA 3.7
+- Wzmocnienie odczytu pliku pamięci: odrzucenie dowiązań symbolicznych, katalogów i nieprawidłowych rozmiarów.
+- Testy odczytu/zapisu, brakującego pliku i niebezpiecznych ścieżek.
+- Następnie sprawdzić CI i scalić dopiero po sukcesie. Bez wdrożenia produkcyjnego.
