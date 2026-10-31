@@ -13,4 +13,8 @@ assert.equal(result.autoFixesApplied,0);
 assert.equal(buildTesterFailureReviews({run:{id:12,conclusion:'failure'},jobs:[{name:'ok',conclusion:'success',steps:[]}]}).reviews.length,0);
 assert.throws(()=>buildTesterFailureReviews({run:{id:12,conclusion:'success'},jobs:[]}));
 assert.throws(()=>buildTesterFailureReviews({run:{id:12,conclusion:'failure'},jobs:[{name:'bad',conclusion:'failure',steps:null}]}));
+const duplicates=buildTesterFailureReviews({run:{id:123,conclusion:'failure'},jobs:[{name:'dialogue',conclusion:'failure',steps:[{name:'assertion',conclusion:'failure'},{name:'assertion',conclusion:'failure'}]},{name:'dialogue',conclusion:'failure',steps:[{name:'assertion',conclusion:'failure'},{name:'setup',conclusion:'failure'}]}]});
+assert.equal(duplicates.reviews.length,2,'Repeated failure evidence must not create duplicate tickets');
+assert.deepEqual(duplicates.reviews.map(item=>item.stepName),['assertion','setup']);
+assert.equal(duplicates.reviews.every(item=>item.requiresApproval&&!item.executed),true);
 console.log('RX BIBI 7.5 failure evidence review regression passed');
