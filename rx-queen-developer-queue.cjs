@@ -39,10 +39,17 @@ function buildDialogueDeveloperReviews(queue){
   readyToApply:false,
   requiresApproval:true
  });
- const reviews=queue.items.map((item,index)=>{
+ const grouped=new Map();
+ for(const item of queue.items){
   if(!item||!allowed.has(item.type)||typeof item.message!=='string'||item.message.length>8000||typeof item.answer!=='string'||item.answer.length>1000)throw Error('Invalid RX dialogue issue');
-  return {id:index+1,source:'rx-bibi-auto-dialogue',category:item.type,priority:item.priority==='high'?'high':'normal',question:item.message,observedAnswer:item.answer,diagnosis:diagnoses[item.type],regressionProposal:regressionFor(item),status:'awaiting_review',approved:false,executed:false,requiresApproval:true};
+  const key=JSON.stringify([item.type,item.message,item.answer]);
+  const existing=grouped.get(key);
+  if(existing){existing.occurrences++;existing.priority=existing.priority==='high'||item.priority==='high'?'high':'normal';}
+  else grouped.set(key,{...item,occurrences:1});
+ }
+ const reviews=[...grouped.values()].map((item,index)=>{
+  return {id:index+1,occurrences:item.occurrences,source:'rx-bibi-auto-dialogue',category:item.type,priority:item.priority==='high'?'high':'normal',question:item.message,observedAnswer:item.answer,diagnosis:diagnoses[item.type],regressionProposal:regressionFor(item),status:'awaiting_review',approved:false,executed:false,requiresApproval:true};
  });
- return {schema:1,kind:'rx-dialogue-developer-review-queue',reviews,requiresApproval:true,productionModified:false,autoFixesApplied:0,automaticDeployment:false};
+ return {schema:1,kind:'rx-dialogue-developer-review-queue',received:queue.items.length,uniqueIssues:reviews.length,reviews,requiresApproval:true,productionModified:false,autoFixesApplied:0,automaticDeployment:false};
 }
 module.exports={buildDeveloperReviewQueue,buildDialogueDeveloperReviews};
