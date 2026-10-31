@@ -151,4 +151,4 @@ function evaluateSentenceExperiment(model,{sentences=SAFE_SENTENCES}={}){
   exactCopyRate:copies/count,completeSentences:complete,completeRate:complete/count,
   distinctOutputs:distinct,distinctRate:distinct/count,productionConnected:false,cases};
 }
-module.exports={createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES,evaluateSentenceExperiment};
+module.exports={EXAMPLES,createLearner,vector,LABELS,lexicalProbe,evaluateHeldOut,HELD_OUT,createSentenceExperiment,SAFE_SENTENCES,evaluateSentenceExperiment};
