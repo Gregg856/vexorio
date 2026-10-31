@@ -65,7 +65,7 @@ jobs:
             const data=validate(JSON.parse(fs.readFileSync('rx-bibi-reports/rx-learning-history.json','utf8')));
             const title='[RX BIBI MEMORY] Training metrics (no chat data)';
             const start='<!-- RX_BIBI_HISTORY_START -->',end='<!-- RX_BIBI_HISTORY_END -->';
-            const body='Offline training metrics only; no user chat data.\\n'+start+'\\n'+JSON.stringify(data)+'\\n'+end;
+            const body='Offline training metrics only; no user chat data.\n'+start+'\n'+JSON.stringify(data)+'\n'+end;
             const owner=context.repo.owner,repo=context.repo.repo;
             const found=await github.rest.issues.listForRepo({owner,repo,state:'open',per_page:100});
             const issue=found.data.find(i=>i.title===title);
