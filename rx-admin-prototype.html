@@ -257,7 +257,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
  #rxChatCard .composer .send{min-width:68px!important}
 }
 /* Override legacy forced chat display when Queen tab is selected. */
-#rxChatCard[hidden],#rxQueenCard[hidden],#rxCategoriesCard[hidden]{display:none!important}
+body #rxApp #rxChatCard[hidden],body #rxApp #rxQueenCard[hidden],body #rxApp #rxCategoriesCard[hidden]{display:none!important}
 #rxQueenCard:not([hidden]){order:-20;display:flex;flex-direction:column;min-height:0}
 #rxQueenCard .chat{overflow-y:auto;max-height:55dvh;min-height:160px}
 @media(max-width:720px){#rxQueenCard:not([hidden]){flex:1 1 auto;min-height:0}#rxQueenCard .chat{flex:1 1 auto;min-height:120px;max-height:none}#rxQueenCard .composer{flex:0 0 auto} }
