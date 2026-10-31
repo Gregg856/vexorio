@@ -10,6 +10,7 @@ on:
       - 'tests/rx-queen-writing-heldout.test.cjs'
       - 'tests/rx-queen-semantic-gap.cjs'
       - 'tests/rx-queen-semantic-gap.test.cjs'
+      - 'tests/rx-queen-writing-composer.cjs'
       - '.github/workflows/rx-bibi-learning.yml'
       - '.github/workflows/rx-bibi-curriculum-ci.yml'
   workflow_dispatch:
