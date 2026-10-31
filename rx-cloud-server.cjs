@@ -91,6 +91,31 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
           res.writeHead(502);res.end(JSON.stringify({ok:false,error:'GitHub verification unavailable'}));return;
         }
       }
+      // Private read-only RX Brain snapshot from the existing self-hosted server.
+      if(url.pathname==='/__rxcloud/bibi/brain-memory'){
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('Content-Type','application/json');
+        res.setHeader('X-Content-Type-Options','nosniff');
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        const file=path.resolve(process.env.RX_BRAIN_MEMORY_FILE||path.join(__dirname,'rx-cloud-private-inbox','rx-brain-memory.json'));
+        try{
+          const stat=await fs.lstat(file);
+          if(!stat.isFile()||stat.isSymbolicLink()||stat.size>100000)throw Error('Invalid snapshot file');
+          const {loadBrain}=require('./rx-brain-store.cjs');
+          const brain=await loadBrain(file);
+          const snapshot=brain.snapshot();
+          res.writeHead(200);
+          res.end(JSON.stringify({ok:true,kind:'rx-brain-memory',snapshot}));
+        }catch{
+          res.writeHead(503);
+          res.end(JSON.stringify({ok:false,error:'RX Brain memory unavailable'}));
+        }
+        return;
+      }
       // Private read-only learning feed for the RX Queen coordinator.
       if(url.pathname==='/__rxcloud/bibi/learning'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
