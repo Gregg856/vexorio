@@ -329,7 +329,7 @@ export default {
         }
         // RX BIBI 7.2: turn a verified failing RX Tester run into a review proposal.
         // Read-only until the owner explicitly requests a bounded Developer review.
-        if(/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:przygotuj|pokaz|pokaż)\\s+(?:zadanie|zgloszenie|zgłoszenie)\\s+(?:dla\\s+)?rx\\s+developer\\s+(?:z|na podstawie)\\s+(?:wyniku\\s+)?rx\\s+tester[?!. ]*$/i.test(message.trim())){
+        if(/^(?:królowa[,! ]*|krolowa[,! ]*)?(?:przygotuj|pokaz|pokaż)\s+(?:zadanie|zgloszenie|zgłoszenie)\s+(?:dla\s+)?rx\s+developer\s+(?:z|na podstawie)\s+(?:wyniku\s+)?rx\s+tester[?!. ]*$/i.test(message.trim())){
           if(!env.RX_ADMIN_USER_ID||identity.id!==env.RX_ADMIN_USER_ID)return reply(403,'Propozycje RX Developer są dostępne tylko dla właściciela RX.');
           try{
             const response=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/workflows/rx-client-dialogue-baseline.yml/runs?branch=main&per_page=1',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Tester-Review'},signal:AbortSignal.timeout(8000)});
@@ -337,7 +337,23 @@ export default {
             const run=(await response.json()).workflow_runs?.[0];
             const state=run?.status==='completed'?run.conclusion:run?.status||'brak danych';
             const failed=state==='failure';
-            const answer=failed?'👑 RX Tester: ostatni przebieg zakończył się błędem. Propozycja: zleć RX Developer przegląd kodu RX Developer poleceniem „Sprawdź RX Developer”. To analiza, nie automatyczna naprawa.':'👑 RX Tester: ostatni przebieg ma status '+state+'. Nie mam potwierdzonego błędu do przekazania RX Developer. Nie uruchomiłam analizy ani naprawy.';
+            let failureDetail='';
+            if(failed&&Number.isSafeInteger(run?.id)){
+              try{
+                const jobsResponse=await fetch('https://api.github.com/repos/Gregg856/vexorio/actions/runs/'+run.id+'/jobs?per_page=100',{headers:{Accept:'application/vnd.github+json','User-Agent':'RX-Queen-Tester-Review'},signal:AbortSignal.timeout(8000)});
+                if(jobsResponse.ok){
+                  const jobs=(await jobsResponse.json()).jobs;
+                  if(Array.isArray(jobs)){
+                    const failures=jobs.filter(job=>job.conclusion==='failure').slice(0,3).map(job=>{
+                      const step=Array.isArray(job.steps)?job.steps.find(item=>item.conclusion==='failure'):null;
+                      return String(job.name||'Nieznany test').slice(0,80)+(step?' / '+String(step.name||'Nieznany krok').slice(0,80):'');
+                    });
+                    if(failures.length)failureDetail=' Nieudane kroki: '+failures.join('; ')+'.';
+                  }
+                }
+              }catch{/* A workflow failure remains verified even if job details are unavailable. */}
+            }
+            const answer=failed?'👑 RX Tester: ostatni przebieg zakończył się błędem.'+failureDetail+' Propozycja: zleć RX Developer przegląd kodu RX Developer poleceniem „Sprawdź RX Developer”. To analiza, nie automatyczna naprawa.':'👑 RX Tester: ostatni przebieg ma status '+state+'. Nie mam potwierdzonego błędu do przekazania RX Developer. Nie uruchomiłam analizy ani naprawy.';
             return new Response(JSON.stringify({ok:true,answer,engine:'rx-queen-tester-developer-proposal',source:'github-actions',runId:run?.id||null,runStatus:state,proposed:failed,queued:false,executed:0,modelInferenceUsed:false,requiresApproval:true,productionModified:false}),{status:200,headers});
           }catch{return reply(502,'Nie udało się pobrać wyniku RX Tester. Nie utworzyłam zadania.');}
         }
