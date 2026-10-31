@@ -13,19 +13,20 @@ const scenarios=[
  {name:'basic-dialogue',turns:[['Jak się masz?',/./],['Mam pytanie',/./],['Ile to jest 12 plus 8?',/./]]}
 ];
 const prompts=['Cześć BIBI!','Jak się masz?','Mam pytanie','Opowiedz coś ciekawego.','Co potrafisz?','Ile to jest 12 plus 8?','Co to jest fotosynteza?','Wyjaśnij mi astronomię.','Lubię książki.','Co o mnie wiesz?'];
-for(let i=0;i<5;i++)scenarios.push({name:'automatic-conversation-'+(i+1),turns:prompts.map(message=>[message,/\\S/])});
+for(let i=0;i<5;i++)scenarios.push({name:'automatic-conversation-'+(i+1),turns:prompts.map(message=>[message,/.+/])});
 const results=[];
 for(const scenario of scenarios){
  const history=[];
  for(const [message,expected] of scenario.turns){
   const result=planRXChat(message,history);
-  const pass=expected.test(result.answer)&&result.executed===0;
+  const pass=expected.test(result.answer)&&result.answer.trim().length>0&&result.executed===0;
   results.push({scenario:scenario.name,message,pass,answer:result.answer,modelInferenceUsed:result.modelInferenceUsed});
   history.push(message,result.answer);
   assert.ok(history.length<=20);
  }
 }
-const report={kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,trainingPerformed:false,results};
+const generic=results.filter(r=>/Czat RX odpowiada przez serwerowy planer|Nie rozumiem jeszcze|Nie mam jeszcze silnika/i.test(r.answer));
+const report={genericFallbacks:generic.length,kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,trainingPerformed:false,results};
 writeFileSync('rx-bibi-auto-dialogue.json',JSON.stringify(report,null,2)+'\n');
 console.log('RX BIBI automatic conversations:',report.passed+'/'+report.cases);
 if(report.failed)process.exitCode=1;
