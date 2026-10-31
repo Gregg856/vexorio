@@ -19,6 +19,11 @@ foreach ($key in $vars.Keys) { if ($key -notin $allowed) { throw ('Unexpected co
 if (-not $vars.ContainsKey('SUPABASE_URL') -or $vars['SUPABASE_URL'] -notmatch '^https://[a-z0-9-]+\.supabase\.co/?$') { throw 'Valid staging SUPABASE_URL required' }
 if ($vars['SUPABASE_URL'] -match 'lfytoxcnutduahshbsko') { throw 'Production Supabase is forbidden in local staging start' }
 if (-not $vars.ContainsKey('SUPABASE_ANON_KEY') -or -not $vars['SUPABASE_ANON_KEY']) { throw 'Staging anon key required' }
+# Explicitly isolate the local staging process from inherited production credentials.
+# The private learning endpoint must never inherit a production Queen token.
+foreach ($key in @('RX_QUEEN_LOCAL_TOKEN','RX_CLOUD_BRAIN_MEMORY_URL','RX_BRAIN_MEMORY_FILE','RX_BIBI_MODEL_ENABLED','RX_BIBI_MODEL_PORT','RX_BIBI_CLIENT_MODEL_FIRST','RX_BIBI_TRAINING_FILE','RX_BIBI_HISTORY_FILE','RX_BIBI_HOLDOUT_FILE')) {
+  Remove-Item -Path ('Env:' + $key) -ErrorAction SilentlyContinue
+}
 $env:SUPABASE_URL = $vars['SUPABASE_URL']
 $env:SUPABASE_ANON_KEY = $vars['SUPABASE_ANON_KEY']
 $env:HOST = '127.0.0.1'

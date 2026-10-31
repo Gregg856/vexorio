@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const src=fs.readFileSync('deploy/rxcloud-windows-start.ps1','utf8');
+assert.match(src,/RX_QUEEN_LOCAL_TOKEN/);
+assert.match(src,/RX_CLOUD_BRAIN_MEMORY_URL/);
+assert.match(src,/RX_BIBI_MODEL_ENABLED/);
+assert.match(src,/Remove-Item -Path \('Env:' \+ \$key\)/);
+assert.match(src,/\$env:HOST = '127\.0\.0\.1'/);
+assert.match(src,/\$env:PORT = '8787'/);
+assert.match(src,/Production Supabase is forbidden/);
+for(const unsafe of [/wrangler\s+deploy/i,/git\s+push/i,/Start-Service/i,/New-NetFirewallRule/i])assert.doesNotMatch(src,unsafe);
+console.log('RX CLOUD Windows staging inherited-secret isolation: PASS');
