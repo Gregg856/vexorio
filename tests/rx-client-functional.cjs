@@ -75,6 +75,23 @@ const {pathToFileURL}=require('node:url');
      assert.equal(reply.adminToolsAvailable,false);
      assert.equal(reply.modelInferenceUsed,false);
    }
+   // RX BIBI 7.1: RX Tester CI status is read-only and cannot trigger privileged work.
+   const originalFetch=global.fetch;
+   global.fetch=async(url,options={})=>{
+     if(String(url).includes('/actions/workflows/rx-client-dialogue-baseline.yml/runs?')){
+       assert.equal(options.headers.Authorization,undefined,'Tester lookup must not send credentials');
+       return Response.json({workflow_runs:[{status:'completed',conclusion:'success',run_number:42}]});
+     }
+     return originalFetch(url,options);
+   };
+   const testerStatus=await call('/api/rx/client/chat',{body:JSON.stringify({message:'Sprawdź status RX Tester',history:[]})});
+   assert.equal(testerStatus.status,200);
+   const testerResult=await testerStatus.json();
+   assert.match(testerResult.answer,/RX Tester/);
+   assert.match(testerResult.answer,/success/);
+   assert.equal(testerResult.executed,0);
+   assert.equal(testerResult.adminToolsAvailable,false);
+   global.fetch=originalFetch;
    // RX BIBI 6.2: expired session and temporary authentication upstream outage.
    let denied=await call('/api/rx/client/chat',{headers:{Authorization:'Bearer expired-user'}});
    assert.equal(denied.status,401,'Expired token must be rejected');
