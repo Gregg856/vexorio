@@ -29,3 +29,27 @@ test('history rejects private text, unknown keys and duplicate keys',()=>{
  assert.throws(()=>validateHistory({schema:1,keys:['private chat text']}));
  assert.deepEqual(validateHistory({schema:1,keys:[k],privateChat:'secret'}),{schema:1,keys:[k]});
 });
+
+test('GitHub Issue curriculum markers restore the real saved keys and advance to six',()=>{
+ const first=buildBatch();
+ const body='Offline exercise identifiers only; no prompts, answers or private chat data.\n<!-- RX_CURRICULUM_START -->\n'+JSON.stringify({schema:1,keys:first.candidates.map(c=>c.key)})+'\n<!-- RX_CURRICULUM_END -->';
+ const start='<!-- RX_CURRICULUM_START -->',end='<!-- RX_CURRICULUM_END -->';
+ const a=body.indexOf(start),b=body.indexOf(end,a+start.length);
+ assert.ok(a>=0&&b>a);
+ const saved=validateHistory(JSON.parse(body.slice(a+start.length,b).trim()));
+ assert.equal(saved.keys.length,3);
+ const second=buildBatch({previousKeys:saved.keys});
+ assert.equal(second.status,'READY_FOR_REVIEW');
+ assert.equal(new Set([...saved.keys,...second.candidates.map(c=>c.key)]).size,6);
+ assert.ok(second.candidates.every(c=>!saved.keys.includes(c.key)));
+});
+test('legacy GitHub Issue escaped newlines preserve saved curriculum',()=>{
+ const first=buildBatch();
+ const start='<!-- RX_CURRICULUM_START -->',end='<!-- RX_CURRICULUM_END -->';
+ const body='Legacy\\n'+start+'\\n'+JSON.stringify({schema:1,keys:first.candidates.map(c=>c.key)})+'\\n'+end;
+ const a=body.indexOf(start),b=body.indexOf(end,a+start.length);
+ let payload=body.slice(a+start.length,b).trim();
+ while(payload.startsWith(String.fromCharCode(92)+'n'))payload=payload.slice(2);
+ while(payload.endsWith(String.fromCharCode(92)+'n'))payload=payload.slice(0,-2);
+ assert.equal(validateHistory(JSON.parse(payload.trim())).keys.length,3);
+});
