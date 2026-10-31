@@ -22,4 +22,7 @@ assert.doesNotMatch(planRXChat('Co o mnie wiesz?').answer,/Krakowie|astronomią|
 const changedCity=planRXChat('Co o mnie wiesz?', [first,answer1,'Mieszkam w Krakowie.','Rozumiem.','Przeprowadziłem się z Krakowa do Warszawy.','Powodzenia!']).answer;
 assert.match(changedCity,/miasto: Warszawy/);
 assert.doesNotMatch(changedCity,/miasto: Krakowie/);
-console.log('RX BIBI name memory: 14/14 passed');
+const sameTurn=planRXChat('Przeprowadziłem się z Krakowa do Warszawy. BIBI, co teraz o mnie wiesz?').answer;
+assert.match(sameTurn,/miasto: Warszawy/);
+assert.doesNotMatch(sameTurn,/RX Coordinator|Mrówek/);
+console.log('RX BIBI name memory: 16/16 passed');
