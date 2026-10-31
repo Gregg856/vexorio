@@ -17,14 +17,15 @@ function compose({prompt,mode='answer',tone='friendly'}={}){
  const oneSentence=intent.constraints.includes('oneSentence');
  const noGreeting=intent.constraints.includes('noGreeting');
  const noSignoff=intent.constraints.includes('noSignoff');
+ const short=intent.constraints.includes('short');
  if(mode==='summary'){
   const sentences=contentPrompt.match(/[^.!?]+[.!?]?/gu)||[];
   const text=normalize(sentences.slice(0,oneSentence?1:2).join(' '));
   return {text,mode,tone,matched:true,source:'user-supplied-text',productionConnected:false};
  }
  const content=contentPrompt.replace(/[.!?]+$/u,'');
- const prefix=noGreeting?'':tone==='formal'?'Dzień dobry,':tone==='friendly'?'Cześć!':'';
- const suffix=noSignoff?'':tone==='formal'?'Z poważaniem.':tone==='friendly'?'Pozdrawiam!':'';
+ const prefix=(noGreeting||short)?'':tone==='formal'?'Dzień dobry,':tone==='friendly'?'Cześć!':'';
+ const suffix=(noSignoff||short)?'':tone==='formal'?'Z poważaniem.':tone==='friendly'?'Pozdrawiam!':'';
  const text=[prefix,content.charAt(0).toLocaleUpperCase('pl')+content.slice(1)+'.',suffix].filter(Boolean).join(' ');
  return {text,mode,tone,matched:true,source:'user-supplied-text',productionConnected:false};
 }
