@@ -25,6 +25,6 @@ function trainQueen({approvedTraining=[],validation=[]}={}){
   return {settings,correct:score(model,validation),total:validation.length,finalLoss:model.metrics.finalLoss};
  });
  const ranked=[...results].sort((a,b)=>b.correct-a.correct||a.finalLoss-b.finalLoss);
- return {kind:'rx-queen-training-selection',selected:ranked[0],baseline,improvement:ranked[0].correct-baseline.correct,candidates:results,productionConnected:false,trainedModelType:'neural-intent-classifier',benchmarkSetsUntouched:true};
+ return {kind:'rx-queen-training-selection',selected:ranked[0].correct>baseline.correct?ranked[0]:{settings:SETTINGS[0],correct:baseline.correct,total:baseline.total,source:'baseline'},baseline,improvement:Math.max(0,ranked[0].correct-baseline.correct),candidateImprovement:ranked[0].correct-baseline.correct,accepted:ranked[0].correct>baseline.correct,candidates:results,productionConnected:false,trainedModelType:'neural-intent-classifier',benchmarkSetsUntouched:true};
 }
 module.exports={trainQueen};
