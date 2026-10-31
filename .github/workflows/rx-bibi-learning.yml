@@ -26,7 +26,8 @@ jobs:
           node --check tests/rx-learning-cloud-sync.cjs
           node --check tests/rx-autobots-batch.cjs
           node --check tests/rx-autobots-memory-watchdog.cjs
-          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs
+          node --check tests/rx-queen-response-practice.cjs
+          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs
       - name: Restore cloud history
         id: cloud
         continue-on-error: true
@@ -57,6 +58,8 @@ jobs:
             fs.writeFileSync('rx-bibi-reports/rx-learning-history.json',JSON.stringify(safe));
       - name: Run five coordinated RX agent cycles
         run: node tests/rx-autobots-batch.cjs
+      - name: Practice Queen writing and answers
+        run: node tests/rx-queen-response-practice.cjs
       - name: Verify AutoBots memory continuity
         run: node tests/rx-autobots-memory-watchdog.cjs
       - name: Persist GitHub history fallback
