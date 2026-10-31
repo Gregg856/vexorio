@@ -1,11 +1,30 @@
 {
   "schema": 1,
   "kind": "rx-ant-ci-triage",
-  "tasks": [],
+  "tasks": [
+    {
+      "source": "github-actions",
+      "action": "Sprawdź nieudany przebieg CI: failure",
+      "target": "RX client security",
+      "priority": "high",
+      "runId": 41141458456,
+      "status": "needs_review",
+      "requiresApproval": true
+    },
+    {
+      "source": "github-actions",
+      "action": "Sprawdź nieudany przebieg CI: cancelled",
+      "target": "RX BIBI — stały strażnik panelu",
+      "priority": "medium",
+      "runId": 41141355703,
+      "status": "needs_review",
+      "requiresApproval": true
+    }
+  ],
   "executed": 0,
   "autoFixesApplied": 0,
   "note": "Proposals only. Human approval required before any code change.",
   "source": "github-actions",
-  "checkedAt": "2026-10-30T19:08:26.054Z",
+  "checkedAt": "2026-10-31T01:23:35.069Z",
   "sourceAvailable": true
 }\n
