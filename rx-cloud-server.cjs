@@ -54,6 +54,7 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
     const modelPort=Number(process.env.RX_BIBI_MODEL_PORT||'');
     env.RX_BIBI_MODEL_SERVICE=createLocalModelService(modelPort);
     env.RX_BIBI_MODEL_ENABLED='true';
+    env.RX_BIBI_CLIENT_MODEL_FIRST=process.env.RX_BIBI_CLIENT_MODEL_FIRST==='true'?'true':'false';
   }
   const startedAt=Date.now();
   let activeRequests=0,peakActiveRequests=0,completedRequests=0;
