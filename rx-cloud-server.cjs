@@ -62,6 +62,28 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         res.end(JSON.stringify({ok:true,service:'rx-cloud-2',queenBridge:'connected',mode:'read-only',taskExecution:false,productionChanges:false}));
         return;
       }
+      // Private RX learning history: same bearer authentication as Queen bridge.
+      if(url.pathname==='/__rxcloud/bibi/learning-history'){
+        const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
+        const supplied=(req.headers.authorization||'').replace(/^Bearer /,'');
+        const valid=secret.length>=32&&supplied.length===secret.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(secret));
+        res.setHeader('Cache-Control','no-store');
+        res.setHeader('Content-Type','application/json');
+        res.setHeader('X-Content-Type-Options','nosniff');
+        if(!valid){res.writeHead(401);res.end(JSON.stringify({ok:false,error:'Unauthorized'}));return;}
+        if(!['GET','PUT'].includes(req.method)){res.writeHead(405,{'Allow':'GET, PUT'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
+        const store=require('./rx-learning-cloud-store.cjs');
+        try{
+          if(req.method==='GET'){res.writeHead(200);res.end(JSON.stringify(await store.read()));return;}
+          const chunks=[];let size=0;
+          for await(const chunk of req){size+=chunk.length;if(size>32768){res.writeHead(413);res.end(JSON.stringify({ok:false,error:'Payload too large'}));return;}chunks.push(chunk);}
+          const result=await store.write(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+          res.writeHead(200);res.end(JSON.stringify({ok:true,...result}));return;
+        }catch(e){
+          const bad=e instanceof SyntaxError||/^Invalid/.test(e.message);
+          res.writeHead(bad?400:500);res.end(JSON.stringify({ok:false,error:bad?'Invalid learning metrics':'Storage unavailable'}));return;
+        }
+      }
       // Explicit, authenticated GitHub Actions evidence sync; never trusts client-supplied status.
       if(url.pathname==='/__rxcloud/neuron/sync-run'){
         const secret=process.env.RX_QUEEN_LOCAL_TOKEN||'';
