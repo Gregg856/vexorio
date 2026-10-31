@@ -1081,6 +1081,24 @@ document.addEventListener('DOMContentLoaded',()=>{
    })();
    return;
   }
+  // Existing authenticated RX BIBI client bridge for writing tasks; no new chat or model.
+  if(/^(?:napisz|ułóż|uloz|przygotuj)\\s+(?:wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\\s*:/iu.test(message)){
+   (async()=>{
+    send.disabled=true;
+    try{
+     if(!window.supabase?.createClient)throw Error('Logowanie BIBI niedostępne.');
+     const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+     const {data,error}=await client.auth.getSession();
+     if(error||!data?.session?.access_token)throw Error('Zaloguj się, aby pisać z BIBI.');
+     const response=await fetch('/api/rx/client/chat',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({message})});
+     const result=await response.json().catch(()=>({}));
+     if(!response.ok||result.ok!==true||typeof result.answer!=='string')throw Error(result.message||'BIBI nie zwróciła odpowiedzi.');
+     explain(result.answer+(result.writingMode?'\\nTryb pisania RX BIBI.':'\\nOdpowiedź istniejącego API BIBI; tryb pisania w chmurze nie został potwierdzony.'));
+    }catch(error){explain('Nie mogę połączyć pisania BIBI z chmurą: '+String(error.message||error).slice(0,180));}
+    finally{send.disabled=false;}
+   })();
+   return;
+  }
   const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\s+zadani[ea]\s*[:,-]?\s*(.+)$/i);
   if(taskMatch){
    const title=taskMatch[1].trim().slice(0,180);
