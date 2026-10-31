@@ -27,6 +27,11 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
  delete process.env.SUPABASE_URL;
  await assert.rejects(start({port:0,host:'127.0.0.1'}),/explicit SUPABASE_URL/);
  process.env.SUPABASE_URL=configured;
+ process.env.RX_BIBI_MODEL_ENABLED='true';
+ process.env.RX_BIBI_MODEL_PORT='0';
+ await assert.rejects(start({port:0,host:'127.0.0.1'}),/Invalid RX_BIBI_MODEL_PORT/);
+ delete process.env.RX_BIBI_MODEL_ENABLED;
+ delete process.env.RX_BIBI_MODEL_PORT;
  process.env.RX_QUEEN_LOCAL_TOKEN='rx-queen-test-token-32-chars-minimum';
  const server=await start({port:0,host:'127.0.0.1'});
  try{
