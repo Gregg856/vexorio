@@ -2,7 +2,7 @@ name: RX BIBI — learning batch
 on:
   workflow_dispatch:
   schedule:
-    - cron: '12 2 * * *'
+    - cron: '12 */6 * * *'
 permissions:
   contents: read
   actions: read
@@ -24,7 +24,8 @@ jobs:
           node --check rx-cloud-server.cjs
           node --check rx-learning-cloud-store.cjs
           node --check tests/rx-learning-cloud-sync.cjs
-          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs
+          node --check tests/rx-autobots-batch.cjs
+          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs
       - name: Restore cloud history
         id: cloud
         continue-on-error: true
@@ -52,8 +53,8 @@ jobs:
             const safe=validate(data);
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
             fs.writeFileSync('rx-bibi-reports/rx-learning-history.json',JSON.stringify(safe));
-      - name: Train and verify coordinated RX agents once
-        run: node tests/rx-learning-memory.cjs
+      - name: Run five coordinated RX agent cycles
+        run: node tests/rx-autobots-batch.cjs
       - name: Persist GitHub history fallback
         if: success()
         uses: actions/github-script@v7
