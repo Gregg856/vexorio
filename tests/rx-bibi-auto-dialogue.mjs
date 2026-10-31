@@ -25,6 +25,11 @@ scenarios.push({name:'same-turn-profile',turns:[
  ['Mam na imię Ola. Co o mnie wiesz?',/Masz na imię Ola/],
  ['Przeprowadziłam się z Krakowa do Warszawy. Co teraz o mnie wiesz?',/Warszawy/]
 ]});
+scenarios.push({name:'polish-unicode-names',turns:[
+ ['Mam na imię Jaś.',/Jaś/],
+ ['Co o mnie wiesz?',/Jaś/],
+ ['Przypomnij, jak mam na imię.',/Jaś/]
+]});
 const results=[];
 for(const scenario of scenarios){
  const history=[];
