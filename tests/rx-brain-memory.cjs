@@ -49,3 +49,12 @@ test('RX NAUKA 3.4 labels weak evidence and repeated failures without executing'
  assert.equal(advice.requiresApproval,true);
  assert.equal(brain.snapshot().autoExecuted,0);
 });
+
+test('RX NAUKA 3.6 blocks sample overflow and preserves original evidence',()=>{
+ const brain=createBrainMemory({initialRecords:[{key:'android_chat',action:'inspect_logs',successes:1000000,failures:0,lastEvidence:'Verified Android baseline evidence'}]});
+ const before=brain.snapshot();
+ assert.throws(()=>brain.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified Android new test result'}),/Learning sample limit reached/);
+ assert.deepEqual(brain.snapshot(),before);
+ assert.equal(brain.recommend('android_chat').samples,1000000);
+ assert.equal(brain.snapshot().autoExecuted,0);
+});
