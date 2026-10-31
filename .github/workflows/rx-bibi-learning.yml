@@ -32,7 +32,8 @@ jobs:
           node --check tests/rx-queen-response-improvement.cjs
           node --check tests/rx-queen-candidate-selection.cjs
           node --check rx-queen-approved-memory.cjs
-          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs tests/rx-queen-writing-composer.test.cjs tests/rx-queen-writing-agent-review.test.cjs tests/rx-queen-response-improvement.test.cjs tests/rx-queen-candidate-selection.test.cjs tests/rx-queen-approved-memory.test.cjs tests/rx-queen-memory-chat-bridge.test.cjs
+          node --check rx-queen-live-memory-gate.cjs
+          node --test tests/rx-learning-cloud-store.test.cjs tests/rx-learning-memory.test.cjs tests/rx-agent-manager.test.cjs tests/rx-autobots-batch.test.cjs tests/rx-queen-response-practice.test.cjs tests/rx-queen-writing-composer.test.cjs tests/rx-queen-writing-agent-review.test.cjs tests/rx-queen-response-improvement.test.cjs tests/rx-queen-candidate-selection.test.cjs tests/rx-queen-approved-memory.test.cjs tests/rx-queen-memory-chat-bridge.test.cjs tests/rx-queen-live-memory-gate.test.cjs
       - name: Restore cloud history
         id: cloud
         continue-on-error: true
