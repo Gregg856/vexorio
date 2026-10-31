@@ -33,4 +33,5 @@ assert.match(planRXChat('Mam na imię Kasia. Jak się czujesz?').answer,/Dzięki
 const historyWithRecall=['Lubię astronomię.','Świetnie!','Przypomnij, o czym przed chwilą rozmawialiśmy.','Rozmawialiśmy o astronomii.'];
 assert.match(planRXChat('O czym przed chwilą rozmawialiśmy?',historyWithRecall).answer,/Lubię astronomię/);
 assert.doesNotMatch(planRXChat('O czym przed chwilą rozmawialiśmy?',historyWithRecall).answer,/Wcześniej napisałeś: „Przypomnij/);
-console.log('RX BIBI name memory: 23/23 passed');
+assert.match(planRXChat('Przypomnij, o czym przed chwilą rozmawialiśmy.', ['Lubię astronomię.','Rozumiem.']).answer,/Lubię astronomię/);
+console.log('RX BIBI name memory: 24/24 passed');

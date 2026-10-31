@@ -29,7 +29,7 @@ export function planRXChat(message,history=[],learning=null){
   return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(history.length),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
  }
  const asksUserNameRecall=/\b(?:pamiętasz|pamietasz|przypomnij|jak)\b[\s\S]{0,90}\b(?:mam na imię|mam na imie|moje imię|moje imie)(?=\W|$)/i.test(message);
- const asksPrevious=/\b(?:o czym|co)\b[\s\S]{0,90}\b(?:przed chwilą|przed chwila|wcześniej|wczesniej)(?=\W|$)/i.test(message);
+ const asksPrevious=/\b(?:o czym|co)\b[\s\S]{0,90}\b(?:przed chwilą|przed chwila|wcześniej|wczesniej)(?=\W|$)|\b(?:przypomnij|powiedz)\b[\s\S]{0,90}\bo czym\b/i.test(message);
  const introductoryName=/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})\b/i.exec(message)?.[1]||null;
  if(asksUserNameRecall||asksPrevious||introductoryName){
   const priorUser=history.filter((_,i)=>i%2===0).slice().reverse().find(turn=>turn.trim()&&!/\b(?:pamiętasz|pamietasz|przypomnij|o czym (?:przed chwilą|wcześniej)|co (?:przed chwilą|wcześniej))\b/i.test(turn))||'';

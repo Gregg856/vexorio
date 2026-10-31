@@ -14,6 +14,17 @@ const scenarios=[
 ];
 const prompts=['Cześć BIBI!','Jak się masz?','Mam pytanie','Opowiedz coś ciekawego.','Co potrafisz?','Ile to jest 12 plus 8?','Co to jest fotosynteza?','Wyjaśnij mi astronomię.','Lubię książki.','Co o mnie wiesz?'];
 for(let i=0;i<5;i++)scenarios.push({name:'automatic-conversation-'+(i+1),turns:prompts.map(message=>[message,/.+/])});
+// Regression cases for real customer-chat issues fixed in #421–#423.
+scenarios.push({name:'natural-customer-introductions',turns:[
+ ['Mam na imię Kasia.',/O czym masz ochotę porozmawiać/],
+ ['Co o mnie wiesz?',/Kasia/],
+ ['Przypomnij, o czym przed chwilą rozmawialiśmy.',/Mam na imię Kasia/],
+ ['O czym przed chwilą rozmawialiśmy?',/Mam na imię Kasia/]
+]});
+scenarios.push({name:'same-turn-profile',turns:[
+ ['Mam na imię Ola. Co o mnie wiesz?',/Masz na imię Ola/],
+ ['Przeprowadziłam się z Krakowa do Warszawy. Co teraz o mnie wiesz?',/Warszawy/]
+]});
 const results=[];
 for(const scenario of scenarios){
  const history=[];
