@@ -109,3 +109,33 @@ test('approved 40: compare frequency and bigram training on unseen validation',(
  assert.equal(approved.length,40);
  console.log('BIBI 40 FEATURE TRAINING COMPARISON',JSON.stringify({results,productionConnected:false}));
 });
+
+test('RX Brain opt-in neural shadow does not change answers or execute actions',()=>{
+ const {chatRX,chatRXWithIntentDiagnostics}=require('../rx-brain-chat-engine.cjs');
+ const unseen=[
+  ['serdecznie cię dzisiaj witam','greeting'],
+  ['skontroluj czy ostatni test się powiódł','tests'],
+  ['przywróć informacje z poprzednich ustaleń','memory'],
+  ['wylicz całkowitą sumę wydatków','math'],
+  ['miło cię znów spotkać','greeting'],
+  ['sprawdzenie jakości zakończyło się poprawnie','tests'],
+  ['odszukaj to co wcześniej zapamiętałaś','memory'],
+  ['jaki będzie wynik mnożenia tych liczb','math']
+ ];
+ let hits=0;
+ for(const [message,expected] of unseen){
+  const plain=chatRX(message);
+  const shadow=chatRXWithIntentDiagnostics(message);
+  assert.deepEqual({answer:shadow.answer,plan:shadow.plan,completedCount:shadow.completedCount,contextUsed:shadow.contextUsed,executed:shadow.executed},plain);
+  assert.equal(shadow.intentDiagnostics.advisoryOnly,true);
+  assert.equal(shadow.intentDiagnostics.changedAnswer,false);
+  assert.equal(shadow.intentDiagnostics.executed,0);
+  assert.equal(shadow.intentDiagnostics.trainedOnUserMessages,false);
+  if(shadow.intentDiagnostics.label===expected)hits++;
+ }
+ console.log('BIBI RX BRAIN SHADOW NEW PHRASES',JSON.stringify({correct:hits,total:unseen.length,productionConnected:false}));
+ const math=chatRXWithIntentDiagnostics('oblicz 2 + 3');
+ assert.equal(math.answer,'Wynik: 5');
+ assert.equal(math.executed,0);
+ assert.deepEqual(chatRX('hej'),chatRX('hej'));
+});

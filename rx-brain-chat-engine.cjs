@@ -149,4 +149,22 @@ async function chatRXWithStoredMemory(message,{memoryFile,...options}={}){
  const brainMemory=await loadBrain(memoryFile);
  return chatRX(message,{...options,brainMemory});
 }
-module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory};
+
+// Explicit offline shadow classification in the EXISTING RX Brain.
+// Does not alter answers, trigger commands, store messages or connect production.
+// Cache the deterministic learner once per process; never retrain on each chat turn.
+let shadowIntentLearner;
+function chatRXWithIntentDiagnostics(message,options={}){
+ const result=chatRX(message,options);
+ if(!shadowIntentLearner){
+  const {createLearner}=require('./rx-text-learner.cjs');
+  shadowIntentLearner=createLearner({features:'bigram'});
+ }
+ const intent=shadowIntentLearner.classify(message);
+ return {...result,intentDiagnostics:{
+  label:intent.label,model:'rx-neural-bigram-shadow',
+  advisoryOnly:true,changedAnswer:false,executed:0,
+  productionConnected:false,trainedOnUserMessages:false
+ }};
+}
+module.exports={chatRX,chatRXWithKnowledge,chatRXWithStoredMemory,chatRXWithIntentDiagnostics};
