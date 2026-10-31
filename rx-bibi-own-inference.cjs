@@ -53,6 +53,7 @@ function start({samples,port=0,host='127.0.0.1'}={}){
  server.headersTimeout=10000;
  return new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,()=>resolve(server));});
 }
+module.exports={tokens,train,infer,start};
 if(require.main===module){
  const {read}=require('./rx-bibi-training-store.cjs');
  try{
