@@ -11,11 +11,18 @@ function compose({prompt,mode='answer',tone='friendly'}={}){
   const result=answer(cleaned);
   return {text:result.text,mode,tone,matched:result.matched,source:'approved-offline-examples',productionConnected:false};
  }
- const oneSentence=mode==='summary'&&/^Streszcz w jednym zdaniu:\s*/iu.test(cleaned);
- const noGreeting=mode==='message'&&/^Napisz krótką wiadomość bez powitania:\s*/iu.test(cleaned);
- const noSignoff=mode==='reply'&&/^Odpowiedz bez pożegnania:\s*/iu.test(cleaned);
- const paraphrase=mode==='message'&&/^Przepisz sens bez cytowania:\s*/iu.test(cleaned);
- const contentPrompt=cleaned.replace(/^(?:Streszcz w jednym zdaniu|Napisz krótką wiadomość bez powitania|Odpowiedz bez pożegnania|Przepisz sens bez cytowania):\s*/iu,'');
+ // Explicitly supported variants only; no claim of open-ended language understanding.
+ const instructions=[
+  {kind:'oneSentence',mode:'summary',pattern:/^(?:Streszcz w jednym zdaniu|Podsumuj jednym zdaniem|Zrób streszczenie w jednym zdaniu):\s*/iu},
+  {kind:'noGreeting',mode:'message',pattern:/^(?:Napisz krótką wiadomość bez powitania|Napisz wiadomość bez powitania|Wiadomość bez przywitania):\s*/iu},
+  {kind:'noSignoff',mode:'reply',pattern:/^(?:Odpowiedz bez pożegnania|Napisz odpowiedź bez pożegnania|Odpowiedź bez zakończenia):\s*/iu},
+  {kind:'paraphrase',mode:'message',pattern:/^(?:Przepisz sens bez cytowania|Sparafrazuj bez cytowania|Napisz własnymi słowami):\s*/iu}
+ ];
+ const instruction=instructions.find(x=>x.mode===mode&&x.pattern.test(cleaned));
+ const contentPrompt=instruction?cleaned.replace(instruction.pattern,''):cleaned;
+ const oneSentence=instruction?.kind==='oneSentence';
+ const noGreeting=instruction?.kind==='noGreeting';
+ const noSignoff=instruction?.kind==='noSignoff';
  if(mode==='summary'){
   const sentences=contentPrompt.match(/[^.!?]+[.!?]?/gu)||[];
   const text=normalize(sentences.slice(0,oneSentence?1:2).join(' '));
