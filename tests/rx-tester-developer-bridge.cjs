@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {buildDialogueDeveloperReviews}=require('../rx-queen-developer-queue.cjs');
+const input={kind:'rx-developer-review-queue',items:[{type:'math-answer-missing',priority:'high',message:'Ile to jest 12 plus 8?',answer:'Nie wiem.'}]};
+const result=buildDialogueDeveloperReviews(input);
+assert.equal(result.reviews.length,1);
+assert.equal(result.reviews[0].category,'math-answer-missing');
+assert.equal(result.reviews[0].requiresApproval,true);
+assert.equal(result.autoFixesApplied,0);
+assert.equal(result.productionModified,false);
+assert.throws(()=>buildDialogueDeveloperReviews({kind:'invalid',items:[]}),/Invalid/);
+assert.throws(()=>buildDialogueDeveloperReviews({kind:'rx-developer-review-queue',items:[{type:'unsafe',message:'x',answer:'y'}]}),/Invalid/);
+console.log('RX Tester -> existing RX Developer queue: 7 assertions passed');
