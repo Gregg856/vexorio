@@ -17,5 +17,5 @@ test('server route invokes writing only after authenticated user validation',()=
  const auth=worker.indexOf('if(!user?.id||user.is_anonymous===true)',start);
  const invoke=worker.indexOf('const writing=composeClientWriting(message)',start);
  assert.ok(start>=0&&auth>start&&invoke>auth);
- assert.match(worker,/import \{composeClientWriting\} from '\.\/rx-client-writing\.mjs'/);
+ assert.ok(worker.includes("await import('./rx-client-writing.mjs')"));
 });
