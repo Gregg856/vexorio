@@ -19,3 +19,14 @@ test('rejects invalid and conflicting records',()=>{
  brain.learn({key:'test',action:'inspect_tests',success:true,evidence:'sufficient evidence'});
  assert.throws(()=>brain.learn({key:'test',action:'deploy',success:true,evidence:'sufficient evidence'}));
 });
+
+test('duplicate evidence does not inflate learned success counts',()=>{
+ const brain=createBrainMemory();
+ const record={key:'ci_failure',action:'inspect_tests',success:true,evidence:'Verified GitHub run 12345678'};
+ brain.learn(record);
+ assert.throws(()=>brain.learn(record),/Duplicate learning evidence/);
+ const result=brain.recommend('ci_failure');
+ assert.equal(result.samples,1);
+ assert.equal(result.successRate,1);
+ assert.equal(result.requiresApproval,true);
+});
