@@ -15,6 +15,8 @@ test('Queen trains approved examples from a local batch without changing product
   const result=await trainQueenFromBatch(file);
   assert.equal(result.trainingExamples,4);
   assert.equal(result.candidates.length,5);
+  assert.equal(result.baseline.total,4);
+  assert.equal(result.improvement,result.selected.correct-result.baseline.correct);
   assert.equal(result.productionConnected,false);
   training[0].approvedForTraining=false;
   await fs.writeFile(file,JSON.stringify({schema:1,approvedForTraining:true,training,validation}));
