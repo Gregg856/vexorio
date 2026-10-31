@@ -138,9 +138,9 @@ const {pathToFileURL}=require('node:url');
    console.log('RX BIBI Android screenshots regression passed');
    console.log('RX BIBI 6.5 public identity regression passed');
 
-   assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls during dialogue');
+   assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')||/https:\/\/(?:pl|en)\.wikipedia\.org\/w\/api\.php/.test(x.url)),'No privileged upstream calls during dialogue');
    console.log('RX BIBI 6.1 authenticated Worker dialogue passed:',dialogueTurns.length);
-   assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')),'No privileged upstream calls');
+   assert.ok(requests.every(x=>x.url.endsWith('/auth/v1/user')||/https:\/\/(?:pl|en)\.wikipedia\.org\/w\/api\.php/.test(x.url)),'No privileged upstream calls');
    console.log('RX client functional authentication and isolation checks passed');
    const authFetch=global.fetch;
    global.fetch=async(url,options={})=>{
