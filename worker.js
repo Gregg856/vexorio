@@ -118,6 +118,13 @@ export default {
       if(typeof message!=='string'||!message.trim()||message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
       const history=payload?.history??[];
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
+      // Explicit opt-in model request, isolated behind an existing service binding.
+      // Never send chat history, private RX memory, or administrator data.
+      if(/^(?:zapytaj model|zapytaj ai):/iu.test(message.trim())){
+        const {askClientModel}=await import('./rx-bibi-model-bridge.mjs');
+        const model=await askClientModel(message,env);
+        if(model)return new Response(JSON.stringify({ok:true,...model,executed:0,adminToolsAvailable:false}),{status:200,headers});
+      }
       // Explicit user-supplied writing is handled locally, after session validation.
       // No private memory, model inference, task execution or external text generation.
       const {composeClientWriting}=await import('./rx-client-writing.mjs');
