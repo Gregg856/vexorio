@@ -4,6 +4,7 @@
 const fs=require('node:fs'),path=require('node:path');
 const {CASES}=require('./rx-queen-writing-agent-review.cjs');
 const {compose}=require('./rx-queen-writing-composer.cjs');
+const {examine}=require('./rx-queen-writing-examiner.cjs');
 const CURRICULUM=Object.freeze([
  {prompt:'miłego dnia',mode:'message',mustInclude:'Miłego dnia'},
  {prompt:'dziękuję za wiadomość',mode:'reply',mustInclude:'Dziękuję'},
@@ -40,8 +41,9 @@ function buildBatch({previousKeys=[],limit=3}={}){
  if(rotated)selected=pool.slice(0,limit);
  const candidates=selected.map((item,index)=>{
   const output=compose(item);
-  const checks={nonempty:!!output.text.trim(),relevant:output.text.includes(item.mustInclude),bounded:output.text.length<=600,offline:output.productionConnected===false};
-  return {id:'queen-writing-'+(index+1),key:key(item),exercise:{mode:item.mode,prompt:item.prompt,text:output.text,productionConnected:false},checks,reviewPassed:Object.values(checks).every(Boolean),approved:false,applied:false};
+  const exam=examine({...item,text:output.text});
+  const checks={...exam.checks,offline:output.productionConnected===false};
+  return {id:'queen-writing-'+(index+1),key:key(item),exercise:{mode:item.mode,prompt:item.prompt,text:output.text,productionConnected:false},checks,exam:{score:exam.score,maximum:exam.maximum,failed:exam.failed,semanticAccuracyVerified:false},reviewPassed:Object.values(checks).every(Boolean),approved:false,applied:false};
  });
  return {schema:2,kind:'rx-queen-writing-reviewed-batch',status:candidates.every(c=>c.reviewPassed)?'READY_FOR_REVIEW':'NEEDS_REVIEW',curriculumSize:pool.length,rotated,candidates,autoApproved:0,autoApplied:0,productionConnected:false};
 }
