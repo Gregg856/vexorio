@@ -40,6 +40,22 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(supabaseUrl)) throw Error('RX CLOUD requires an explicit SUPABASE_URL; refusing to start without staging configuration');
   const {default:worker} = await import(pathToFileURL(path.join(__dirname,'worker.js')).href);
   const env = {ASSETS:{fetch:staticFetch},SUPABASE_URL:supabaseUrl,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||'',RX_ADMIN_USER_ID:process.env.RX_ADMIN_USER_ID||'',RX_GITHUB_DISPATCH_TOKEN:process.env.RX_GITHUB_DISPATCH_TOKEN||'',VIEW_COUNT_ENABLED:process.env.VIEW_COUNT_ENABLED||'false',VIEW_COUNT_SECRET:process.env.VIEW_COUNT_SECRET||'',SUPABASE_SERVICE_ROLE_KEY:process.env.SUPABASE_SERVICE_ROLE_KEY||'',RX_AI_ENABLED:'false',RX_QUEEN_LOCAL_TOKEN:process.env.RX_QUEEN_LOCAL_TOKEN||'',RX_CLOUD_BRAIN_MEMORY_URL:process.env.RX_CLOUD_BRAIN_MEMORY_URL||''};
+  // Optional self-hosted inference on loopback only. No external host or secrets.
+  // Disabled unless explicitly opted in; never exposed as a public proxy.
+  const modelEnabled=process.env.RX_BIBI_MODEL_ENABLED==='true';
+  if(modelEnabled){
+    const modelPort=Number(process.env.RX_BIBI_MODEL_PORT||'');
+    if(!Number.isInteger(modelPort)||modelPort<1||modelPort>65535)throw Error('Invalid RX_BIBI_MODEL_PORT');
+    env.RX_BIBI_MODEL_ENABLED='true';
+    env.RX_BIBI_MODEL_SERVICE={
+      fetch:async(_url,options={})=>fetch('http://127.0.0.1:'+modelPort+'/infer',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:options.body,
+        signal:options.signal||AbortSignal.timeout(8000)
+      })
+    };
+  }
   const startedAt=Date.now();
   let activeRequests=0,peakActiveRequests=0,completedRequests=0;
   const server=http.createServer(async(req,res)=>{
