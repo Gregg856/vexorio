@@ -78,7 +78,7 @@ jobs:
             if(!issue)return;
             const match=(issue.body||'').match(/<!-- RX_CURRICULUM_START -->([\\s\\S]*?)<!-- RX_CURRICULUM_END -->/);
             if(!match)throw Error('Missing curriculum markers');
-            const safe=validateHistory(JSON.parse(match[1].trim().replace(/^\\\\n|\\\\n$/g,'')));
+            const safe=validateHistory(JSON.parse(match[1].trim().replace(/^\\n|\\n$/g,'')));
             fs.mkdirSync('rx-bibi-reports',{recursive:true});
             fs.writeFileSync('rx-bibi-reports/rx-queen-writing-curriculum-history.json',JSON.stringify(safe));
       - name: RX MEGA execute existing Queen chat and memory tests
