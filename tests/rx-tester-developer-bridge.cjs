@@ -6,6 +6,8 @@ const result=buildDialogueDeveloperReviews(input);
 assert.equal(result.reviews.length,1);
 assert.equal(result.reviews[0].category,'math-answer-missing');
 assert.equal(result.reviews[0].requiresApproval,true);
+assert.equal(result.reviews[0].diagnosis.target,'rx-chat-planner.mjs');
+assert.match(result.reviews[0].diagnosis.suggestedCheck,/math|numeric/i);
 assert.equal(result.autoFixesApplied,0);
 assert.equal(result.productionModified,false);
 assert.throws(()=>buildDialogueDeveloperReviews({kind:'invalid',items:[]}),/Invalid/);
