@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const s=fs.readFileSync(require('node:path').join(__dirname,'../worker.js'),'utf8');
+const start=s.indexOf('const shortKnowledgeFollowup=');
+const end=s.indexOf('const clientResearch=',start);
+assert.ok(start>0&&end>start,'Follow-up before ordinary research');
+const code=s.slice(start,end);
+assert.ok(code.includes('history.at(-2)'),'Uses prior client message');
+assert.ok(code.includes('priorIsPublic&&!privateTopic'),'Requires public knowledge and blocks RX internal topics');
+assert.ok(code.includes('searchWorldKnowledge(prior)'),'Uses existing sourced knowledge module');
+assert.ok(code.includes('modelInferenceUsed:false'),'Does not claim model inference');
+assert.ok(code.includes('adminToolsAvailable:false'),'No admin tools');
+console.log('RX sourced follow-up routing OK');
