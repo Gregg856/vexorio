@@ -16,11 +16,13 @@ const EXTRAS=Object.freeze([
  ['oblicz dzielenie liczb','math'],['wylicz wynik działania','math'],
  ['policz połowę ceny','math'],['jaki rezultat mnożenia','math']
 ]);
+// Repo-maintained synthetic examples are explicitly approved only for offline evaluation.
+const approvedOffline=rows=>rows.map(([text,label])=>[{text,approvedForTraining:true},label]);
 function score(model,set){return set.reduce((n,[phrase,label])=>n+(model.classify(phrase).label===label),0)}
 function compare(){
  const settings={epochs:180,hidden:24,rate:0.06};
  const baseline=createLearner(settings);
- const candidate=createLearner({...settings,additionalExamples:EXTRAS});
+ const candidate=createLearner({...settings,additionalExamples:approvedOffline(EXTRAS)});
  const old={holdout:score(baseline,HOLDOUT),challenge:score(baseline,CHALLENGE)};
  const next={holdout:score(candidate,HOLDOUT),challenge:score(candidate,CHALLENGE)};
  return {kind:'rx-offline-candidate',trainingSamples:candidate.examples,baseline:old,candidate:next,
@@ -40,8 +42,8 @@ const WAVE2=Object.freeze([
 ]);
 function compareWave2(){
  const settings={epochs:180,hidden:24,rate:0.06};
- const previous=createLearner({...settings,additionalExamples:EXTRAS});
- const next=createLearner({...settings,additionalExamples:EXTRAS.concat(WAVE2)});
+ const previous=createLearner({...settings,additionalExamples:approvedOffline(EXTRAS)});
+ const next=createLearner({...settings,additionalExamples:approvedOffline(EXTRAS.concat(WAVE2))});
  const old={holdout:score(previous,HOLDOUT),challenge:score(previous,CHALLENGE)};
  const candidate={holdout:score(next,HOLDOUT),challenge:score(next,CHALLENGE)};
  return {kind:'rx-offline-wave2',trainingSamples:next.examples,previous:old,candidate,
@@ -62,7 +64,7 @@ function errorBreakdown(learner,set){
  return byLabel;
 }
 function diagnoseWave2(){
- const model=createLearner({epochs:180,hidden:24,rate:0.06,additionalExamples:EXTRAS.concat(WAVE2)});
+ const model=createLearner({epochs:180,hidden:24,rate:0.06,additionalExamples:approvedOffline(EXTRAS.concat(WAVE2))});
  return {kind:'rx-offline-wave2-diagnosis',trainingSamples:model.examples,
   holdout:errorBreakdown(model,HOLDOUT),challenge:errorBreakdown(model,CHALLENGE),
   productionConnected:false};
