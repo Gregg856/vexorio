@@ -103,6 +103,8 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
         if(req.method!=='GET'){res.writeHead(405,{'Allow':'GET'});res.end(JSON.stringify({ok:false,error:'Method not allowed'}));return;}
         const file=path.resolve(process.env.RX_BRAIN_MEMORY_FILE||path.join(__dirname,'rx-cloud-private-inbox','rx-brain-memory.json'));
         try{
+          const stat=await fs.lstat(file);
+          if(!stat.isFile()||stat.isSymbolicLink()||stat.size>100000)throw Error('Invalid snapshot file');
           const {loadBrain}=require('./rx-brain-store.cjs');
           const brain=await loadBrain(file);
           const snapshot=brain.snapshot();
