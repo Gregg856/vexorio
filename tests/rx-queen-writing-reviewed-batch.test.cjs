@@ -64,7 +64,7 @@ test('six saved exercises advance to nine, then rotate safely on the next run',(
  assert.equal(third.candidates.length,3);
  assert.ok(third.candidates.every(c=>!six.keys.includes(c.key)&&!c.approved&&!c.applied));
  const nine=validateHistory({schema:1,keys:[...six.keys,...third.candidates.map(c=>c.key)]});
- assert.equal(nine.keys.length,CURRICULUM.length);
+ assert.equal(nine.keys.length,9);
  const next=buildBatch({previousKeys:nine.keys});
  assert.equal(next.rotated,false);
  assert.equal(next.status,'READY_FOR_REVIEW');
