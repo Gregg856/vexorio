@@ -19,5 +19,7 @@ const path=require('node:path');
 
  assert.equal(detail({summary:'Pierwsze zdanie. Drugie zdanie.'},'📚 Tytuł\\nPierwsze zdanie.\\nŹródło: https://pl.wikipedia.org/wiki/Test'),'Drugie zdanie.');
  assert.equal(detail({summary:'Pierwsze zdanie.'},'📚 Tytuł\\nPierwsze zdanie.\\nŹródło: https://pl.wikipedia.org/wiki/Test'),null);
- console.log('RX BIBI sourced followup behavior: 12/12 passed');
+ assert.equal(detail({summary:'Pierwsze zdanie. Drugie zdanie. Trzecie zdanie.'},['📚 Pierwsze zdanie.','📚 Drugie zdanie.']),'Trzecie zdanie.');
+ assert.equal(detail({summary:'Pierwsze zdanie. Drugie zdanie.'},['Pierwsze zdanie.','Drugie zdanie.']),null);
+ console.log('RX BIBI sourced followup behavior: 14/14 passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});

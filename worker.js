@@ -212,7 +212,7 @@ export default {
         try{
           const knowledge=await searchWorldKnowledge(knowledgeFollowupPrior);
           if(knowledge){
-            const explanation=formatRXKnowledgeFollowup(knowledge,history.at(-1));
+            const explanation=formatRXKnowledgeFollowup(knowledge,history.filter((_,i)=>i%2===1).slice(-4));
             if(!explanation)return new Response(JSON.stringify({ok:true,answer:'👑 To źródło nie zawiera dodatkowego wyjaśnienia, którego jeszcze nie podałam. Możesz zadać bardziej szczegółowe pytanie.',engine:'rx-bibi-client-world-knowledge-followup',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
             return new Response(JSON.stringify({ok:true,answer:'📚 Wracając do tematu „'+knowledge.title+'”:\n'+explanation+'\nŹródło: '+knowledge.url+'\nTo informacje ze źródła; jeśli pytasz o konkretną przyczynę, doprecyzuj ją.',knowledge,engine:'rx-bibi-client-world-knowledge-followup',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
           }
