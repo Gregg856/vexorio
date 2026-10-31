@@ -1,0 +1,22 @@
+name: RX BIBI curriculum tests
+on:
+  pull_request:
+    paths:
+      - 'tests/rx-queen-writing-reviewed-batch.cjs'
+      - 'tests/rx-queen-writing-reviewed-batch.test.cjs'
+      - '.github/workflows/rx-bibi-learning.yml'
+      - '.github/workflows/rx-bibi-curriculum-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  curriculum:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check tests/rx-queen-writing-reviewed-batch.cjs
+      - run: node --test tests/rx-queen-writing-reviewed-batch.test.cjs
