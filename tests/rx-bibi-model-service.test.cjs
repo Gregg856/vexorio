@@ -1,0 +1,21 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+test('model systemd template remains loopback-only and does not auto-install',()=>{
+ const unit=fs.readFileSync(path.join(root,'deploy/rx-bibi-model.service'),'utf8');
+ assert.match(unit,/ExecStart=\/usr\/bin\/node \/opt\/rxcloud\/vexorio\/rx-bibi-own-inference\.cjs/);
+ assert.match(unit,/EnvironmentFile=\/etc\/rxcloud\/rxcloud\.env/);
+ assert.match(unit,/User=rxcloud/);
+ assert.match(unit,/NoNewPrivileges=true/);
+ assert.doesNotMatch(unit,/ExecStart=.*(?:curl|wget|npm|git)/);
+ const source=fs.readFileSync(path.join(root,'rx-bibi-own-inference.cjs'),'utf8');
+ assert.match(source,/host='127\.0\.0\.1'/);
+ assert.match(source,/if\(host!=='127\.0\.0\.1'\)/);
+ const example=fs.readFileSync(path.join(root,'deploy/rxcloud.env.example'),'utf8');
+ assert.match(example,/RX_BIBI_MODEL_ENABLED=false/);
+ assert.match(example,/RX_BIBI_CLIENT_MODEL_FIRST=false/);
+ assert.match(example,/RX_BIBI_TRAINING_FILE=/);
+});
