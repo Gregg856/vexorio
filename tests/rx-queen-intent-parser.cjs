@@ -14,9 +14,9 @@ function parseIntent({prompt,mode}={}){
  // Explicit opposing instructions: refuse ambiguous combinations rather than guessing.
  const has=(pattern)=>pattern.test(head);
  if(['message','reply'].includes(mode)&&writing){
-  if(has(/(?:^|\\s)bez\\s+(?:powitania|przywitania)(?=\\s|$)/u)&&has(/(?:^|\\s)(?:z\\s+powitaniem|dodaj\\s+powitanie|zacz[nń]ij\\s+od\\s+powitania)(?=\\s|$)/u))conflicts.push('greeting');
-  if(has(/(?:^|\\s)bez\\s+(?:pożegnania|zakończenia)(?=\\s|$)/u)&&has(/(?:^|\\s)(?:z\\s+pożegnaniem|dodaj\\s+pożegnanie)(?=\\s|$)/u))conflicts.push('signoff');
-  if(has(/(?:^|\\s)(?:krótko|zwięźle)(?=[\\s,;]|$)/u)&&has(/(?:^|\\s)(?:szczegółowo|obszernie)(?=[\\s,;]|$)/u))conflicts.push('length');
+  if(has(/(?:^|\s)bez\s+(?:powitania|przywitania)(?=\s|$)/u)&&has(/(?:^|\s)(?:z\s+powitaniem|dodaj\s+powitanie|zacz[nń]ij\s+od\s+powitania)(?=\s|$)/u))conflicts.push('greeting');
+  if(has(/(?:^|\s)bez\s+(?:pożegnania|zakończenia)(?=\s|$)/u)&&has(/(?:^|\s)(?:z\s+pożegnaniem|dodaj\s+pożegnanie)(?=\s|$)/u))conflicts.push('signoff');
+  if(has(/(?:^|\s)(?:krótko|zwięźle)(?=[\s,;]|$)/u)&&has(/(?:^|\s)(?:szczegółowo|obszernie)(?=[\s,;]|$)/u))conflicts.push('length');
  }
  if(conflicts.length)return {content, constraints:[],recognized:false,conflicts,requiresClarification:true};
  if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)bez\s+(?:powitania|przywitania)(?=\s|$)/u.test(head))constraints.push('noGreeting');
