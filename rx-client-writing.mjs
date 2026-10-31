@@ -5,13 +5,13 @@ export function composeClientWriting(message){
  if(!m)return null;
  const instruction=m[3].toLocaleLowerCase('pl');
  // Reject unsupported instructions instead of claiming they were understood.
- const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia)|z\s+(?:powitaniem|pożegnaniem)|dodaj\s+(?:powitanie|pożegnanie)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|i|[,;\s])/gu,'').trim();
+ const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|i|[,;\s])/gu,'').trim();
  if(tokens)return null;
  const has=re=>re.test(instruction);
  const noGreeting=has(/bez\s+(?:powitania|przywitania)(?=[\s,;]|$)/u);
  const yesGreeting=has(/(?:z\s+powitaniem|dodaj\s+powitanie)(?=[\s,;]|$)/u);
- const noSignoff=has(/bez\s+(?:pożegnania|zakończenia)(?=[\s,;]|$)/u);
- const yesSignoff=has(/(?:z\s+pożegnaniem|dodaj\s+pożegnanie)(?=[\s,;]|$)/u);
+ const noSignoff=has(/bez\s+(?:pożegnania|zakończenia|podpisu)(?=[\s,;]|$)/u);
+ const yesSignoff=has(/(?:z\s+(?:pożegnaniem|podpisem)|dodaj\s+(?:pożegnanie|podpis))(?=[\s,;]|$)/u);
  const short=has(/(?:krótko|krotko|zwięźle|zwiezle)(?=[\s,;]|$)/u);
  const long=has(/(?:szczegółowo|obszernie)(?=[\s,;]|$)/u);
  const conflicts=[noGreeting&&yesGreeting?'powitanie':null,noSignoff&&yesSignoff?'pożegnanie':null,short&&long?'długość':null].filter(Boolean);
