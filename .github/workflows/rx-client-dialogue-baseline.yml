@@ -10,6 +10,8 @@ on:
       - 'tests/rx-client-dialogue-baseline.cjs'
       - 'tests/rx-client-name-memory.mjs'
       - 'tests/rx-bibi-auto-dialogue.mjs'
+      - 'rx-queen-developer-queue.cjs'
+      - 'tests/rx-tester-developer-bridge.cjs'
       - 'tests/rx-client-knowledge-regex.cjs'
       - 'tests/rx-client-knowledge-format.cjs'
       - 'tests/rx-client-knowledge-followup.cjs'
@@ -45,6 +47,8 @@ jobs:
       - name: RX Developer — podsumuj wykryte problemy w GitHub Actions
         run: |
           node -e 'const fs=require("node:fs");const r=JSON.parse(fs.readFileSync("rx-bibi-developer-queue.json","utf8"));const counts={};for(const x of r.items)counts[x.type]=(counts[x.type]||0)+1;const lines=["## RX BIBI — problemy do przeglądu","","Liczba zgłoszeń: "+r.count,"",...Object.entries(counts).map(([type,n])=>"- "+type+": "+n),"","Pełna kolejka: artefakt rx-client-dialogue-baseline / rx-bibi-developer-queue.json"];fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\\n")+"\\n");console.log(lines.join("\\n"));'
+      - name: RX Developer — sprawdź most z testera
+        run: node tests/rx-tester-developer-bridge.cjs
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
