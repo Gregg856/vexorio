@@ -205,6 +205,24 @@ export default {
       }
       // Public factual research uses the same sourced RX World Knowledge as the Queen.
       // Never grant client access to Queen commands, private learning or privileged actions.
+      // RX BIBI: bounded, read-only sourced follow-up using the last client question.
+      // Never use the assistant's answer as a new search query or access private RX data.
+      const shortKnowledgeFollowup=/^(?:a )?(?:dlaczego|czemu|jak to działa|jak to dziala|opowiedz więcej|opowiedz wiecej|więcej|wiecej)[?!. ]*$/i.test(message.trim());
+      if(shortKnowledgeFollowup&&history.length>=2){
+        const prior=history.at(-2)?.trim()||'';
+        const priorIsPublic=/^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+.{3,160}[?!.]?$/i.test(prior);
+        const privateTopic=/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(prior);
+        if(priorIsPublic&&!privateTopic){
+          try{
+            const knowledge=await searchWorldKnowledge(prior);
+            if(knowledge){
+              const sentences=knowledge.summary.match(/[^.!?]+[.!?](?=\s|$)/g)||[];
+              const explanation=sentences.slice(0,3).join(' ').trim()||knowledge.summary.slice(0,300).trim();
+              return new Response(JSON.stringify({ok:true,answer:'📚 Wracając do tematu „'+knowledge.title+'”:\n'+explanation+'\nŹródło: '+knowledge.url+'\nTo informacje ze źródła; jeśli pytasz o konkretną przyczynę, doprecyzuj ją.',knowledge,engine:'rx-bibi-client-world-knowledge-followup',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+            }
+          }catch{/* Offline or unavailable sources fall back to the existing planner. */}
+        }
+      }
       const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji)(?: o)?\s+/i.test(message.trim()) || /^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest)\s+.{3,160}[?!.]?$/i.test(message.trim());
       const rxInternalTopic=/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(message);
       if(clientResearch&&!rxInternalTopic){
