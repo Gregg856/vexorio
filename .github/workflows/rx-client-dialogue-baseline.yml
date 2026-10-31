@@ -42,6 +42,9 @@ jobs:
         run: node tests/rx-client-name-memory.mjs
       - name: RX Tester — automatyczne rozmowy wieloetapowe
         run: node tests/rx-bibi-auto-dialogue.mjs
+      - name: RX Developer — podsumuj wykryte problemy w GitHub Actions
+        run: |
+          node -e 'const fs=require("node:fs");const r=JSON.parse(fs.readFileSync("rx-bibi-developer-queue.json","utf8"));const counts={};for(const x of r.items)counts[x.type]=(counts[x.type]||0)+1;const lines=["## RX BIBI — problemy do przeglądu","","Liczba zgłoszeń: "+r.count,"",...Object.entries(counts).map(([type,n])=>"- "+type+": "+n),"","Pełna kolejka: artefakt rx-client-dialogue-baseline / rx-bibi-developer-queue.json"];fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\\n")+"\\n");console.log(lines.join("\\n"));'
       - name: Zmierz rozmowy klientów BIBI
         run: node tests/rx-client-dialogue-baseline.cjs > rx-client-dialogue-baseline.json
       - name: Pokaż podsumowanie
