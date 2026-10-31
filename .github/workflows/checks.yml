@@ -71,3 +71,4 @@ jobs:
           node --test tests/rx-nauka-5-2-teach.test.cjs
           node --test tests/rx-queen-training-selection.test.cjs
           node --test tests/rx-queen-train-batch.test.cjs
+          node --test tests/rx-ant-queen-training.test.cjs
