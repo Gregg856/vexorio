@@ -21,30 +21,30 @@ function chatRX(message,{history=[],tasks=[]}={}){
   if(Number.isFinite(result))return {answer:'Wynik: '+Number(result.toPrecision(12)).toString(),plan:{steps:[]},completedCount:0,contextUsed:false,executed:0};
  }
  const completed=tasks.filter(t=>t.status==='completed');
- const asksCompleted=/^(co (już|juz) (zrobione|ukończone)|pokaż (ukończone|zakończone) zadania|co (jest )?gotowe)[?!\\s]*$/i.test(message.trim());
+ const asksCompleted=/^(co (już|juz) (zrobione|ukończone)|pokaż (ukończone|zakończone) zadania|co (jest )?gotowe)[?!\s]*$/i.test(message.trim());
  const isFollowup=text=>/^(?:dalej|sprawdź to|sprawdz to|a co z tym\??|co dalej\??|kontynuuj|wróć do tego|wroc do tego)[.!?\s]*$/i.test(text.trim());
  const isAcknowledgement=text=>/^(?:ok|gotowe|zielone|błąd|blad|dzięki|dzieki|super)[.!?\s]*$/i.test(text.trim());
  const previous=history.length?history[history.length-1]:'';
  const meaningful=[...history].reverse().filter(item=>!isFollowup(item)&&!isAcknowledgement(item));
  const topic=meaningful[0]||'';
- const wantsPreviousTopic=/^(?:wróć|wroc) do poprzedniego tematu[.!?\\s]*$/i.test(message.trim());
+ const wantsPreviousTopic=/^(?:wróć|wroc) do poprzedniego tematu[.!?\s]*$/i.test(message.trim());
  const olderTopic=meaningful.find(item=>item!==topic)||'';
  // Acknowledgements do not replace the actual topic when the user adds a short follow-up.
  const contextAnchor=isAcknowledgement(previous)?topic:previous;
 
  const contextual=/^(a |i |oraz |a co |co z |dalej|sprawdź to|sprawdz to|co dalej|sprawdź też|sprawdz tez)/i.test(message.trim());
  const continuation=isFollowup(message);
- const asksFix=/^(?:napraw to|popraw to)[.!?\\s]*$/i.test(message.trim());
- const asksRecheck=/^(?:sprawdź jeszcze raz|sprawdz jeszcze raz|sprawdź ponownie|sprawdz ponownie)[.!?\\s]*$/i.test(message.trim());
- const asksSuggestion=/^(?:co proponujesz|co byś zaproponował|co bys zaproponowal)[.!?\\s]*$/i.test(message.trim());
+ const asksFix=/^(?:napraw to|popraw to)[.!?\s]*$/i.test(message.trim());
+ const asksRecheck=/^(?:sprawdź jeszcze raz|sprawdz jeszcze raz|sprawdź ponownie|sprawdz ponownie)[.!?\s]*$/i.test(message.trim());
+ const asksSuggestion=/^(?:co proponujesz|co byś zaproponował|co bys zaproponowal)[.!?\s]*$/i.test(message.trim());
  // A standalone continuation should use the last meaningful topic, not a short acknowledgement.
  const request=(contextual||continuation)&&(continuation?topic:contextAnchor)?(continuation?topic:contextAnchor+' '+message):message;
  const plan=planCommand(request,{energyBalance:100});
- const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\\s+/g,' ').trim();
+ const phrase=request.toLocaleLowerCase('pl-PL').normalize('NFC').replace(/\s+/g,' ').trim();
  let answer;
- const asksPending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\\s]*$/i.test(message.trim());
+ const asksPending=/^(?:co (?:jeszcze )?(?:zostało|zostalo)(?: do zrobienia)?|pokaż (?:oczekujące|oczekujace|nieukończone|nieukonczone) zadania|jakie zadania (?:czekają|czekaja|są do zrobienia|sa do zrobienia))[?!.\s]*$/i.test(message.trim());
  const pending=tasks.filter(t=>t.status==='pending');
- const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\\s]*$/i.test(message.trim());
+ const asksEvidence=/^(czy (testy|test|naprawa) (są|sa|jest) (zielone|gotowa|gotowe)|jaki (jest )?wynik test(ów|ow|u)|czy to już naprawione|czy to juz naprawione)[?!\s]*$/i.test(message.trim());
  const statusQuery=/^(?:jaki status zadania|sprawdź status zadania|sprawdz status zadania):?\s+(.+)$/i.exec(message.trim());
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
  if(statusQuery){
@@ -104,8 +104,8 @@ function chatRX(message,{history=[],tasks=[]}={}){
    answer='Cześć! Jestem RX BIBI. Mogę pomóc opisać błąd, zaplanować testy i sprawdzić zadania.';
  }else{
    // Keep ordinary conversation useful without claiming untrained neural generation.
-   const conversational=/^(?:jak się masz|jak sie masz|co u ciebie|możemy porozmawiać|mozemy porozmawiac|porozmawiaj ze mną|porozmawiaj ze mna)[?!.\\s]*$/i.test(message.trim());
-   const userGoal=/^(?:chcę|chce|potrzebuję|potrzebuje|zależy mi na|zalezy mi na)\\s+(.{3,160})[.!?]?$/i.exec(message.trim());
+   const conversational=/^(?:jak się masz|jak sie masz|co u ciebie|możemy porozmawiać|mozemy porozmawiac|porozmawiaj ze mną|porozmawiaj ze mna)[?!.\s]*$/i.test(message.trim());
+   const userGoal=/^(?:chcę|chce|potrzebuję|potrzebuje|zależy mi na|zalezy mi na)\s+(.{3,160})[.!?]?$/i.exec(message.trim());
    if(conversational)answer='Jestem tutaj i możemy rozmawiać. Nad czym chcesz dziś popracować albo o czym porozmawiać?';
    else if(userGoal)answer='Rozumiem, że zależy Ci na: '+userGoal[1].replace(/[.!?]+$/,'').slice(0,160)+'. Jaki pierwszy krok mam pomóc Ci zaplanować?';
    else answer=plan.steps.length?'Rozpoznano zadania RX. Wymagają zatwierdzenia.':'Nie rozpoznano zadania. Zapytaj o testy, chmurę lub model AI.';
