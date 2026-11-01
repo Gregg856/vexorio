@@ -9,7 +9,7 @@ export function planRXChat(message,history=[],learning=null){
  if(!Array.isArray(history)||history.length>20||history.some(x=>typeof x!=='string'||x.length>8000))throw new TypeError('Invalid history');
  // RX NAUKA 1.0: read-only, bounded session preference extraction.
  const recentUserTurns=history.filter((_,index)=>index%2===0).slice(-10);
- const preferences=[...recentUserTurns,message].filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/i.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
+ const preferences=[...recentUserTurns,message].filter(value=>/^(prosze|proszę|chce|chcę|wole|wolę|zawsze|nie chce|nie chcę)\b/iu.test(value.trim())).filter(value=>value.length>=12&&value.length<=300).slice(-3);
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
  const sessionName=[...history.filter((_,i)=>i%2===0),message].slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})(?=\W|$)/i.exec(turn)).find(Boolean)?.[1]||null;
