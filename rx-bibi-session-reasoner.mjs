@@ -26,6 +26,14 @@ export function answerRXSession(message,history=[]){
  }
  const subtract=/odejme\s+(\d+)/.exec(input);
  if(input.includes('poprzedniego wyniku')&&subtract&&previous!==null)return {answer:'🧮 Wynik: '+(previous-Number(subtract[1])),contextUsed:true};
+ if(name&&/jak mam na imie|pamietasz moje imie|przypomnij moje imie/.test(input))return {answer:'👑 Masz na imię '+name+'.',contextUsed:true};
+ if(list.length===3&&/ile (?:mam|jest) zadan|ile zadan (?:mam|podalem)/.test(input))return {answer:'👑 Masz 3 zadania.',contextUsed:true};
+ if(list.length===3&&/ktore.*zada(?:n|ni).*pierwsze|pierwsze zadanie/.test(input))return {answer:'👑 Pierwsze zadanie to: '+list[0]+'.',contextUsed:true};
+ if(list.length===3&&/ktore.*zada(?:n|ni).*trzecie|trzecie zadanie/.test(input))return {answer:'👑 Trzecie zadanie to: '+list[2]+'.',contextUsed:true};
+ if(list.length===3&&/ktore.*zada(?:n|ni).*ostatnie|ostatnie zadanie/.test(input))return {answer:'👑 Ostatnie zadanie to: '+list[2]+'.',contextUsed:true};
+ if(previous!==null&&/jaki (?:byl|jest) (?:ostatni|poprzedni) wynik|przypomnij (?:ostatni|poprzedni) wynik/.test(input))return {answer:'🧮 Wynik: '+previous,contextUsed:true};
+ const addPrevious=/dodaj\s+(\d+)/.exec(input);
+ if(previous!==null&&input.includes('poprzedniego wyniku')&&addPrevious)return {answer:'🧮 Wynik: '+(previous+Number(addPrevious[1])),contextUsed:true};
  if(list.length===3&&/powtorz je|wymien je|jakie to zadania/.test(input))return {answer:'👑 Twoje trzy zadania: 1) '+list[0]+'; 2) '+list[1]+'; 3) '+list[2]+'.',contextUsed:true};
  if(list.length===3&&/ktore.*zada(?:n|ni).*drugie|drugie zadanie/.test(input))return {answer:'👑 Drugie zadanie to: '+list[1]+'.',contextUsed:true};
  if(list.length===3&&input.includes('podsumuj nasza rozmowe')){
