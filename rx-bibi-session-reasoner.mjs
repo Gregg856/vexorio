@@ -36,6 +36,18 @@ export function answerRXSession(message,history=[]){
  const cities=userTurns.map(x=>/(?:mieszkam w|moje aktualne miasto to|chodziło mi o miasto)\s+([\p{L}-]{2,40})/iu.exec(x)?.[1]).filter(Boolean);
  const currentCity=cities[cities.length-1];
  const cityChanged=new Set(cities.map(normalize)).size>1;
+ const interests=userTurns.map(x=>/(?:interesuję się|moje zainteresowanie to)\s+([^.!?]{2,80})/iu.exec(x)?.[1]?.trim()).filter(Boolean);
+ const preferences=userTurns.map(x=>/(?:lubię|wolę)\s+([^.!?]{2,80})/iu.exec(x)?.[1]?.trim()).filter(Boolean);
+ const interest=interests[interests.length-1],preference=preferences[preferences.length-1];
+ if(/^(?:co o mnie pamietasz|podsumuj co o mnie wiesz|jakie informacje o mnie pamietasz)[?.! ]*$/.test(question)){
+  const known=[name?'imię: '+name:null,currentCity?'miasto: '+currentCity:null,interest?'zainteresowanie: '+interest:null,preference?'preferencja: '+preference:null].filter(Boolean);
+  return {answer:known.length?'👑 Z tej rozmowy pamiętam: '+known.join('; ')+'.':'👑 Nie mam jeszcze potwierdzonych informacji o Tobie w tej rozmowie.',contextUsed:known.length>0};
+ }
+ if(/^(?:czym sie interesuje|jakie mam zainteresowania)[?.! ]*$/.test(question)&&interest)
+  return {answer:'👑 Podałeś zainteresowanie: '+interest+'.',contextUsed:true};
+ if(/^(?:co lubie|jakie mam preferencje)[?.! ]*$/.test(question)&&preference)
+  return {answer:'👑 Podałeś preferencję: '+preference+'.',contextUsed:true};
+
  if(name&&currentCity&&/jak mam na imie i gdzie mieszkam|gdzie mieszkam i jak mam na imie|podaj moje imie i miasto/.test(question))
   return {answer:'👑 Masz na imię '+name+' i według Twojej informacji mieszkasz w '+currentCity+'.',contextUsed:true};
  if(/gdzie mieszkam|w jakim miescie mieszkam|przypomnij moje miasto|jakie miasto podalem/.test(question)&&currentCity)
