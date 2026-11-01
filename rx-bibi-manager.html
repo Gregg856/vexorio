@@ -1038,7 +1038,7 @@ document.addEventListener('DOMContentLoaded',()=>{
      const response=await fetch('/api/rx/admin/queen-chat',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({message})});
      const result=await response.json().catch(()=>({}));
      if(!response.ok||result.ok!==true||typeof result.answer!=='string')throw Error(result.message||'Królowa nie odpowiedziała.');
-     explain(result.answer);
+     explain(result.answer+'\n'+(result.modelInferenceUsed===true?'Odpowiedź: lokalny model AI Królowej.':result.engine==='rx-queen-model-unavailable'?'Model Królowej nie jest podłączony.':result.engine==='rx-queen-model-error'?'Model Królowej nie odpowiedział.':'Odpowiedź podstawowa RX — bez generowania AI.'));
     }catch(error){explain('Czat Królowej: '+String(error.message||error).slice(0,180));}
     finally{send.disabled=false;}
    })();
@@ -1059,7 +1059,7 @@ document.addEventListener('DOMContentLoaded',()=>{
      const response=await fetch('/api/rx/admin/queen-chat',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({message:queenMessage})});
      const result=await response.json().catch(()=>({}));
      if(!response.ok||result.ok!==true||typeof result.answer!=='string')throw Error(result.message||'Królowa nie odpowiedziała.');
-     explain(result.answer);
+     explain(result.answer+'\n'+(result.modelInferenceUsed===true?'Odpowiedź: lokalny model AI Królowej.':result.engine==='rx-queen-model-unavailable'?'Model Królowej nie jest podłączony.':result.engine==='rx-queen-model-error'?'Model Królowej nie odpowiedział.':'Odpowiedź podstawowa RX — bez generowania AI.'));
     }catch(error){explain('Czat Królowej: '+String(error.message||error).slice(0,180));}
     finally{send.disabled=false;}
    })();
