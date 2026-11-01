@@ -7,7 +7,7 @@ export async function askQueenModel(message,env){
  try{
   const response=await env.RX_QUEEN_MODEL_SERVICE.fetch('https://rx-queen-model.internal/infer',{
    method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message:match[1]}),signal:AbortSignal.timeout(8000)
+   body:JSON.stringify({message:match[1]}),signal:AbortSignal.timeout(30000)
   });
   if(!response.ok)return {answer:'Model Królowej nie odpowiedział.',modelInferenceUsed:false,engine:'rx-queen-model-error'};
   const result=await response.json();
