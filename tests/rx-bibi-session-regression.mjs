@@ -76,6 +76,12 @@ const cases=[
  ['explain city', 'Na jakiej podstawie?', ['Gdzie mieszkam?','👑 Mieszkasz w Poznaniu.'], /nie weryfikowałam/i],
  ['explain no previous answer', 'Skąd to wiesz?', [], /Nie mam wcześniejszej/],
  ['explain unsupported source', 'Dlaczego tak odpowiedziałaś?', ['Cześć','Witaj'], /Nie mogę pewnie ustalić/],
+ ['corrected name explicit', 'Jak mam na imię?', ['Mam na imię Marek','OK','Moje aktualne imię to Adam','OK'], /Adam/],
+ ['corrected name contradiction', 'Czy zmieniłem imię?', ['Mam na imię Marek','OK','Moje aktualne imię to Adam','OK'], /Marek.*Adam/],
+ ['corrected city explicit', 'Gdzie mieszkam?', ['Mieszkam w Krakowie','OK','Moje aktualne miasto to Poznań','OK'], /Poznań/],
+ ['corrected city clarification', 'Gdzie mieszkam?', ['Mieszkam w Krakowie','OK','Chodziło mi o miasto Poznań','OK'], /Poznań/],
+ ['corrected city contradiction', 'Czy zmieniłem miasto?', ['Mieszkam w Krakowie','OK','Moje aktualne miasto to Poznań','OK'], /Krakowie.*Poznań/],
+ ['corrected name and city', 'Jak mam na imię i gdzie mieszkam?', ['Mam na imię Marek','OK','Moje imię to Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){
