@@ -23,7 +23,7 @@ export function answerRXSession(message,history=[]){
  }
  const question=input.replace(/^(?:prosze|powiedz mi|przypomnij mi|czy pamietasz)\s*,?\s*/,'');
  const userTurns=history.filter((_,i)=>i%2===0);
- const names=userTurns.map(x=>/mam na imię\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).filter(Boolean);
+ const names=userTurns.map(x=>/(?:mam na imię|moje aktualne imię to|moje imię to)\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).filter(Boolean);
  const distinctNames=[...new Set(names.map(normalize))];
  if(/czy podalem dwa rozne imiona|czy zmienilem imie|czy poprawilem swoje imie/.test(input)&&distinctNames.length>1)
   return {answer:'👑 Tak. Najpierw podałeś imię '+names[0]+', a później '+names[names.length-1]+'. Przyjmuję najnowsze: '+names[names.length-1]+'.',contextUsed:true};
