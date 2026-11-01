@@ -695,7 +695,14 @@ export default {
       if(/^(kim jestes|jak sie nazywasz|przedstaw sie|czesc|hej|witaj|witam)[?!. ]*$/.test(normalized)){
         return new Response(JSON.stringify({ok:true,answer:'Jestem Królową RX, prywatnym panelem zarządzania VEXORIO. Ten punkt kontrolny potwierdza tożsamość i uprawnienia; pełny silnik rozmowy nie jest jeszcze podłączony.',engine:'rx-queen-identity',modelInferenceUsed:false,executed:0}),{status:200,headers});
       }
-      return new Response(JSON.stringify({ok:true,answer:'Panel Królowej RX jest dostępny. Pełny silnik rozmowy nie jest jeszcze podłączony — nie wykonano polecenia.',engine:'rx-queen-identity',modelInferenceUsed:false,executed:0}),{status:200,headers});
+      const replyText=/^(?:co potrafisz|co umiesz|pomoc|help|jak dzialasz)[?!. ]*$/.test(normalized)
+        ? 'Mogę potwierdzić dostęp administratora i wyjaśnić stan czatu RX. W panelu są osobne narzędzia do pamięci, testów i zadań. Nie wykonuję ich automatycznie z tej rozmowy.'
+        : /^(?:jaki jest status|status|status rx|czy dzialasz|czy jestes online)[?!. ]*$/.test(normalized)
+        ? 'Prywatny punkt rozmowy Królowej RX odpowiada i sesja administratora została zweryfikowana. Nie jest to potwierdzenie działania modelu generatywnego ani pozostałych usług.'
+        : /^(?:dziekuje|dzieki|dobranoc|do widzenia|na razie)[?!. ]*$/.test(normalized)
+        ? 'Do zobaczenia! Panel Królowej RX pozostaje dostępny po zalogowaniu.'
+        : 'Rozumiem wiadomość, ale obecny czat Królowej RX obsługuje tylko podstawowe odpowiedzi. Nie mam jeszcze podłączonego pełnego silnika rozmowy i nie wykonałam polecenia.';
+      return new Response(JSON.stringify({ok:true,answer:replyText,engine:'rx-queen-basic-chat',modelInferenceUsed:false,executed:0}),{status:200,headers});
     }
     if(url.pathname==='/api/rx/admin/brain-memory'){
       const headers={'Cache-Control':'no-store','Content-Type':'application/json'};
