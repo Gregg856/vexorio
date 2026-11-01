@@ -54,6 +54,19 @@ Kod i naprawa testów: `55e52366e135f044bc344b7ee579ddefecf05c70`.
 CI: `RX BIBI curriculum tests` — success (41313156868); `VEXORIO checks` — success (41313156873); `RX CLOUD self-host smoke tests` — success (41313156869).
 Status: zatwierdzony testami na gałęzi PR #708; **nie scalono i nie wdrożono na produkcję**.
 
+## Pakiet 5 — pięć zabezpieczeń Unicode — CI zielone
+
+- Odrzucanie znaków sterujących C1 w pytaniu.
+- Odrzucanie znaków zmieniających kierunek tekstu w pytaniu.
+- Odrzucanie niedozwolonych kodów Unicode (noncharacters) w pytaniu.
+- Odrzucanie znaków sterujących C1 w odpowiedzi.
+- Odrzucanie niedozwolonych kodów Unicode w odpowiedzi.
+
+Pliki: `rx-bibi-model-bridge.mjs`, `tests/rx-bibi-model-bridge.test.cjs`.
+Kod: `1237d3a9c3b26f60c7f45d9f081591eac46d7e04`.
+CI: `RX BIBI curriculum tests` — success (41313258294); `VEXORIO checks` — success (41313258303); `RX CLOUD self-host smoke tests` — success (41313258298).
+Status: zatwierdzony testami na gałęzi PR #708; **nie scalono i nie wdrożono na produkcję**.
+
 ## Zasady dalszej pracy
 
 1. Przed nowym pakietem sprawdź ten rejestr oraz kod istniejących modułów.
