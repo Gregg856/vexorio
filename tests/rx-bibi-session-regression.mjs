@@ -132,6 +132,16 @@ const cases=[
  ['740 expired name 3', 'Jak mam na imię?', ["Mam na imię Adam","Zapamiętane.","Pytanie kontrolne 1","Nie mam danych.","Pytanie kontrolne 2","Nie mam danych.","Pytanie kontrolne 3","Nie mam danych.","Pytanie kontrolne 4","Nie mam danych.","Pytanie kontrolne 5","Nie mam danych.","Pytanie kontrolne 6","Nie mam danych.","Pytanie kontrolne 7","Nie mam danych.","Pytanie kontrolne 8","Nie mam danych.","Pytanie kontrolne 9","Nie mam danych.","Pytanie kontrolne 10","Nie mam danych."], null],
  ['740 expired name 4', 'Jak mam na imię?', ["Mam na imię Adam","Zapamiętane.","Pytanie kontrolne 1","Nie mam danych.","Pytanie kontrolne 2","Nie mam danych.","Pytanie kontrolne 3","Nie mam danych.","Pytanie kontrolne 4","Nie mam danych.","Pytanie kontrolne 5","Nie mam danych.","Pytanie kontrolne 6","Nie mam danych.","Pytanie kontrolne 7","Nie mam danych.","Pytanie kontrolne 8","Nie mam danych.","Pytanie kontrolne 9","Nie mam danych.","Pytanie kontrolne 10","Nie mam danych."], null],
  ['740 expired name 5', 'Jak mam na imię?', ["Mam na imię Adam","Zapamiętane.","Pytanie kontrolne 1","Nie mam danych.","Pytanie kontrolne 2","Nie mam danych.","Pytanie kontrolne 3","Nie mam danych.","Pytanie kontrolne 4","Nie mam danych.","Pytanie kontrolne 5","Nie mam danych.","Pytanie kontrolne 6","Nie mam danych.","Pytanie kontrolne 7","Nie mam danych.","Pytanie kontrolne 8","Nie mam danych.","Pytanie kontrolne 9","Nie mam danych.","Pytanie kontrolne 10","Nie mam danych."], null],
+ ['741 name unknown', "Jak mam na imię?", [], /imienia/],
+ ['741 name unknown reminder', "Przypomnij moje imię", [], /imienia/],
+ ['741 name unknown memory', "Pamiętasz moje imię?", [], /imienia/],
+ ['741 city unknown', "Gdzie mieszkam?", [], /miasta/],
+ ['741 city unknown city question', "W jakim mieście mieszkam?", [], /miasta/],
+ ['741 city unknown reminder', "Przypomnij moje miasto", [], /miasta/],
+ ['741 interest unknown', "Czym się interesuję?", [], /zainteresowań/],
+ ['741 interest unknown plural', "Jakie mam zainteresowania?", [], /zainteresowań/],
+ ['741 preference unknown', "Co lubię?", [], /preferencji/],
+ ['741 preference unknown plural', "Jakie mam preferencje?", [], /preferencji/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){
