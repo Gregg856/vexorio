@@ -43,6 +43,17 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.maxConnections,128,'Concurrent connection count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
+  // Offline-only Queen learning bridge: real loopback HTTP, no public hosting.
+  const learningRoute=base+'/__rxcloud/bibi/learning';
+  assert.equal((await fetch(learningRoute)).status,401,'Private learning must require a token');
+  assert.equal((await fetch(learningRoute,{headers:{Authorization:'Bearer invalid'}})).status,401);
+  const learningAuth={Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN};
+  assert.equal((await fetch(learningRoute,{method:'POST',headers:learningAuth})).status,405);
+  const learningResponse=await fetch(learningRoute,{headers:learningAuth});
+  assert.equal(learningResponse.status,200,'Queen learning must respond over local loopback');
+  const learningData=await learningResponse.json();
+  assert.equal(learningData.kind,'rx-queen-verified-learning');
+  assert(Array.isArray(learningData.lessons)&&Array.isArray(learningData.verified));
   const capability=await fetch(base+'/__rxcloud/model/capabilities');
   assert.equal(capability.status,200);
   assert.equal(capability.headers.get('cache-control'),'no-store');
