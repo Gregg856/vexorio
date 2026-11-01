@@ -756,10 +756,10 @@ export function planRXChat(message,history=[],learning=null){
  const rxAntRecentUserTurns=history.filter((_,i)=>i%2===0).slice(-4);
  const rxAntLastTopicTurn=[...rxAntRecentUserTurns].reverse().find(turn=>/(?:porozmawiajmy|pogadajmy)\s+o\s+|(?:teraz|zmieńmy|zmienmy)\s+(?:porozmawiajmy|pogadajmy)|wr[oó]ćmy\s+do\s+/iu.test(turn));
  const rxAntPrevious=Boolean(rxAntLastTopicTurn&&/mr[oó]w(?:e)?k/iu.test(rxAntLastTopicTurn)&&/(?:przyk[lł]ad|modu[lł]|wsp[oó]ln)/iu.test(rxAntLastTopicTurn));
- const rxAntFollowup=/^(?:(?:podaj|wyja[sś]nij|rozwi[nń])\s+(?:mi\s+)?)?(?:(pierwszy|drugi|trzeci)|([123])\.?)(?:\s+przyk[lł]ad\w*)?[.!? ]*$/iu.exec(message.trim());
- const rxAntSecond=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase()==='drugi'||rxAntFollowup[2]==='2');
- const rxAntFirst=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase()==='pierwszy'||rxAntFollowup[2]==='1');
- const rxAntThird=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase()==='trzeci'||rxAntFollowup[2]==='3');
+ const rxAntFollowup=/^(?:(?:(?:podaj|wyja[sś]nij|rozwi[nń])\s+(?:mi\s+)?)|(?:a\s+)|(?:co\s+z\s+))?(?:(pierwszy[m]?|drugi[m]?|trzeci[m]?)|([123])\.?)(?:\s+przyk[lł]ad\w*)?[.!? ]*$/iu.exec(message.trim());
+ const rxAntSecond=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase().startsWith('drugi')||rxAntFollowup[2]==='2');
+ const rxAntFirst=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase().startsWith('pierwszy')||rxAntFollowup[2]==='1');
+ const rxAntThird=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase().startsWith('trzeci')||rxAntFollowup[2]==='3');
  if(rxAntSecond){
   answer='👑 Drugi przykład: jedna RX Mrówka zbiera wyniki testów, druga wyszukuje powtarzające się błędy, a trzecia przygotowuje czytelne podsumowanie dla operatora. Koordynator porównuje wyniki przed zaproponowaniem poprawek. To przykład możliwej współpracy, nie informacja o wykonanym teście.';
   tasks.length=0;plan.work=null;
