@@ -15,6 +15,21 @@ test('health and reviewed memory yield readiness but not chat verification',asyn
   await save(file,approve({schema:1,kind:'rx-queen-approved-responses',entries:[]},{prompt:'cześć',answer:'Witaj',reviewId:'review-1',approved:true}));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));process.env.RX_BIBI_APPROVED_MEMORY_ENABLED='true';
   const r=await check({baseUrl:'http://127.0.0.1:'+server.address().port+'/',file});
-  assert.equal(r.ready,true);assert.equal(r.liveChatVerified,false);assert.equal(r.approvedMemory.entries,1);
+  assert.equal(r.ready,true);assert.equal(r.diagnosis,'ready-for-authenticated-chat-test');assert.equal(r.liveChatVerified,false);assert.equal(r.approvedMemory.entries,1);
  }finally{await new Promise(resolve=>server.close(resolve));await fs.rm(dir,{recursive:true,force:true});if(old===undefined)delete process.env.RX_BIBI_APPROVED_MEMORY_ENABLED;else process.env.RX_BIBI_APPROVED_MEMORY_ENABLED=old;}
+});
+
+test('unreachable RX CLOUD never claims live memory works',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'rx-queen-offline-'));const file=path.join(dir,'approved.json');
+ const old=process.env.RX_BIBI_APPROVED_MEMORY_ENABLED;
+ try{
+  await save(file,approve({schema:1,kind:'rx-queen-approved-responses',entries:[]},{prompt:'cześć',answer:'Witaj',reviewId:'review-665',approved:true}));
+  process.env.RX_BIBI_APPROVED_MEMORY_ENABLED='true';
+  const r=await check({baseUrl:'http://127.0.0.1:1/',file,timeoutMs:500});
+  assert.equal(r.server.healthy,false);
+  assert.equal(r.ready,false);
+  assert.equal(r.liveChatVerified,false);
+  assert.equal(r.diagnosis,'server-not-confirmed');
+  assert.ok(r.errors.includes('rx-cloud-unreachable-or-invalid-url'));
+ }finally{await fs.rm(dir,{recursive:true,force:true});if(old===undefined)delete process.env.RX_BIBI_APPROVED_MEMORY_ENABLED;else process.env.RX_BIBI_APPROVED_MEMORY_ENABLED=old;}
 });
