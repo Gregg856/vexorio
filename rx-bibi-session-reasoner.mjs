@@ -4,7 +4,7 @@ function facts(history){
  const users=history.filter((_,i)=>i%2===0);
  const listText=users.slice().reverse().map(x=>/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(x)?.[1]).find(Boolean);
  const list=listText?listText.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):[];
- const name=users.slice().reverse().map(x=>/mam na imię\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).find(Boolean);
+ const name=users.slice().reverse().map(x=>/(?:mam na imię|jednak mam na imię)\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).find(Boolean);
  const answers=history.filter((_,i)=>i%2===1);
  const previous=answers.slice().reverse().map(x=>/wynik\s*:\s*(-?\d+(?:[.,]\d+)?)/iu.exec(x)?.[1]).find(Boolean);
  return {list,name,previous:previous===undefined?null:Number(previous.replace(',','.')),answers};
