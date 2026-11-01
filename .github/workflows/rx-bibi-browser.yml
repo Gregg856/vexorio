@@ -32,6 +32,9 @@ jobs:
           node tests/rx-chat-planner.mjs > /tmp/rx-bibi-dialogues.log 2>&1
           result=$?
           cat /tmp/rx-bibi-dialogues.log
+          mkdir -p rx-bibi-reports
+          cp /tmp/rx-bibi-dialogues.log rx-bibi-reports/rx-fast-dialogues.log
+          RX_FAST_EXIT_CODE="$result" node -e 'const fs=require("node:fs");const log=fs.readFileSync("/tmp/rx-bibi-dialogues.log","utf8");const result={suite:"RX FAST dialogue regression",status:process.env.RX_FAST_EXIT_CODE==="0"?"PASS":"FAIL",exitCode:Number(process.env.RX_FAST_EXIT_CODE),scope:"local-planner-not-authenticated-client",failureExcerpt:process.env.RX_FAST_EXIT_CODE==="0"?null:log.slice(-6000)};fs.writeFileSync("rx-bibi-reports/rx-fast-dialogues.json",JSON.stringify(result,null,2)+"\n")}'
           {
             echo '### RX FAST — automatyczny test rozmów BIBI'
             if [ "$result" -eq 0 ]; then
