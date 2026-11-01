@@ -712,7 +712,7 @@ jobs:
           try{auth=JSON.parse(fs.readFileSync(file,'utf8'))}catch{auth=null}
           const verified=auth?.clientChatVerified===true;
           const category=auth?.failureCategory||'NOT_VERIFIED';
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\\n### RX BIBI — końcowy status autoryzowanego czatu\\n- '+(verified?'VERIFIED':'NOT VERIFIED')+' ('+category+')\\n- Lokalny PASS nie oznacza prawdziwego E2E.\\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n### RX BIBI — końcowy status autoryzowanego czatu\n- '+(verified?'VERIFIED':'NOT VERIFIED')+' ('+category+')\n- Lokalny PASS nie oznacza prawdziwego E2E.\n');
           if(!verified){
             console.error('::error::RX BIBI authenticated client chat NOT VERIFIED ('+category+'). Full browser audit must not report success.');
             process.exitCode=1;
