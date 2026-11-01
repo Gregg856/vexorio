@@ -58,6 +58,10 @@ chown -R rxcloud:rxcloud /opt/rxcloud/vexorio/public
 install -d -m 0700 -o root -g root /etc/rxcloud
 install -m 0600 -o root -g root deploy/rxcloud.env.example /etc/rxcloud/rxcloud.env
 install -m 0644 -o root -g root deploy/rxcloud.service /etc/systemd/system/rxcloud.service
+# RX #617: stage the optional Queen gateway unit, but do not enable or start it.
+# It must be activated separately only after the local runtime/model pass the live probe.
+install -m 0644 -o root -g root deploy/rx-queen-model.service /etc/systemd/system/rx-queen-model.service
 systemctl daemon-reload
 echo "Staged only: fill /etc/rxcloud/rxcloud.env with STAGING credentials, then validate before enabling service."
+echo "Queen gateway unit staged but NOT enabled or started. Run the local Queen live probe before activation."
 echo "No service started, no DNS modified, no production migration."
