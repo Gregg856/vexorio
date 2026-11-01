@@ -28,4 +28,7 @@ assert.match(route,/co potrafisz\\|co umiesz/,'Queen should handle capability qu
 assert.match(route,/status rx/,'Queen should handle status questions');
 assert.match(route,/rx-queen-basic-chat/,'Queen should label basic dialogue truthfully');
 assert.match(panel,/co potrafisz\\|co umiesz/,'Manager should route basic dialogue privately');
+assert.match(panel,/explicit Queen conversation prefix supports free-form text/,'Queen free-form entry must exist');
+assert.match(panel,/message:queenMessage/,'Queen free-form message must be sent to private endpoint');
+assert.match(panel,/królowa\\|krolowa\\|queen/,'Queen prefix must be explicit');
 console.log('RX #604 Queen security and identity contract: PASS');
