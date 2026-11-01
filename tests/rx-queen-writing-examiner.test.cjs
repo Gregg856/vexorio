@@ -26,3 +26,9 @@ test('all 18 existing curriculum examples pass the stricter offline examiner',()
  }
  assert.equal(new Set(keys).size,CURRICULUM.length);
 });
+
+test('examiner rejects three repeated adjacent words',()=>{
+ const result=examine({prompt:'Napisz krótkie potwierdzenie',mode:'reply',text:'Potwierdzam potwierdzam potwierdzam termin.',mustInclude:'termin'});
+ assert.equal(result.checks.noAdjacentRepetition,false);
+ assert.ok(result.failed.includes('noAdjacentRepetition'));
+});
