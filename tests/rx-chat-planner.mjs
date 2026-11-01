@@ -6,6 +6,8 @@ assert.ok(currentPreference.learning.preferences.includes('Wolę krótkie odpowi
 const assistantOnly=planRXChat('Cześć',['Cześć','Wolę długie odpowiedzi i żarty.']);
 assert.ok(!assistantOnly.learning.preferences.includes('Wolę długie odpowiedzi i żarty.'));
 assert.equal(currentPreference.learning.trainingPerformed,false);
+const repeatedPreference=planRXChat('Wolę krótkie odpowiedzi i konkretne kroki.',['Wolę krótkie odpowiedzi i konkretne kroki.','Dobrze, zapamiętam.']);
+assert.deepEqual(repeatedPreference.learning.preferences,['Wolę krótkie odpowiedzi i konkretne kroki.']);
 
 // Regression for the exact customer message (Polish genitive plural: "mrówek").
 assert.match(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Aby zwiększyć moc mrówek RX/);
