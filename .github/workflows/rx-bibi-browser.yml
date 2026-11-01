@@ -580,7 +580,7 @@ jobs:
           }finally{fs.rmSync(tmp,{recursive:true,force:true});}
           const dir='rx-bibi-reports';
           fs.mkdirSync(dir,{recursive:true});
-          fs.writeFileSync(path.join(dir,'rx-patch-isolation-selftest.json'),JSON.stringify({schema:1,kind:'rx-patch-isolation-selftest',status,positiveCandidate:'PASS',negativeCandidate:'REJECTED',productionChanged:false},null,2)+'\\n');
+          fs.writeFileSync(path.join(dir,'rx-patch-isolation-selftest.json'),JSON.stringify({schema:1,kind:'rx-patch-isolation-selftest',status,positiveCandidate:'PASS',negativeCandidate:'REJECTED',productionChanged:false},null,2)+'\n');
           console.log('RX Developer isolated patch self-test:',status);
           NODE
       - name: RX AUTOPILOT — wykonaj bezpieczne kontrole wskazanych plików
