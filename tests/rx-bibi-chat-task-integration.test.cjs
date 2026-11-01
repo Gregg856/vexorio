@@ -188,6 +188,18 @@ function ask(port,message,history,historyToken){
    assert.match(unknown.reply,/Nie zgaduję rozwiązania/);
    assert.equal(unknown.executed,0);
   }finally{await new Promise(resolve=>issueServer.close(resolve));}
+  // RX #632: diagnostic code resolves to safe steps without needing secrets.
+  const diagnosticServer=await start({memoryFile});
+  try{
+   const diagnostic=await ask(diagnosticServer.address().port,'Diagnoza: HISTORY_UNAVAILABLE');
+   assert.equal(diagnostic.status,200);
+   assert.match(diagnostic.reply,/Sprawdź uprawnienia/);
+   assert.equal(diagnostic.executed,0);
+   const auth=await ask(diagnosticServer.address().port,'Diagnostyka AUTH_REQUIRED');
+   assert.equal(auth.status,200);
+   assert.match(auth.reply,/Nie wklejaj tokenu/);
+   assert.equal(auth.executed,0);
+  }finally{await new Promise(resolve=>diagnosticServer.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
