@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   live-chat:
-    name: RX BIBI — real authenticated two-turn conversation
+    name: RX BIBI — real authenticated ten-turn conversation
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
