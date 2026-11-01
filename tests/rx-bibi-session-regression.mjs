@@ -35,7 +35,15 @@ const cases=[
  ['corrected name', 'Jak mam na imię?', ['Mam na imię Marek','OK','Jednak mam na imię Adam','Rozumiem'], /Adam/],
  ['corrected second task', 'Drugie zadanie?', [tasks,list,'Poprawka: drugie zadanie to sprawdzić serwer','Zapisane'], /sprawdzić serwer/],
  ['corrected list repeat', 'Wymień je', [tasks,list,'Poprawka: drugie zadanie to sprawdzić serwer','Zapisane'], /naprawić czat.*sprawdzić serwer.*przetestować matematykę/],
- ['no correction invented', 'Drugie zadanie?', [tasks,list], /sprawdzić pamięć/]
+ ['no correction invented', 'Drugie zadanie?', [tasks,list], /sprawdzić pamięć/],
+ ['four operation chain', 'Oblicz 10 + 2 × 3 - 4 + 8', [], /20/],
+ ['five operation chain', 'Policz 100 / 5 + 3 × 4 - 2 + 1', [], /31/],
+ ['mixed multiplication precedence', 'Oblicz 2 + 3 × 4 - 5 × 2', [], /4/],
+ ['all additions', 'Policz 1 + 2 + 3 + 4', [], /10/],
+ ['all subtractions', 'Policz 30 - 5 - 4 - 3', [], /18/],
+ ['division precedence', 'Policz 20 + 18 / 3 - 2', [], /24/],
+ ['multi division zero safe', 'Policz 10 + 20 / 0 - 3', [], null],
+ ['multi negative safe', 'Policz -10 + 5 × 3 - 2', [], /3/]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
