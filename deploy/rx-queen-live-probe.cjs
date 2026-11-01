@@ -3,9 +3,9 @@
 // No credentials, remote URLs, installations, or model downloads.
 const http=require('node:http');
 function validPort(value){const n=Number(value);return Number.isInteger(n)&&n>0&&n<=65535?n:null;}
-function request(port,path,method='GET',payload){
+function request(port,path,method='GET',payload,timeoutMs=3500){
  return new Promise((resolve,reject)=>{
-  const req=http.request({hostname:'127.0.0.1',port,path,method,timeout:3500,
+  const req=http.request({hostname:'127.0.0.1',port,path,method,timeout:timeoutMs,
    headers:payload?{'Content-Type':'application/json'}:{}},res=>{
     let body='';res.setEncoding('utf8');
     res.on('data',chunk=>{body+=chunk;if(body.length>65536)req.destroy(Error('Response too large'));});
@@ -36,7 +36,7 @@ async function probe(env=process.env,output=console.log){
   report.model='installed';
  }catch{output('NOT READY: local runtime unreachable or invalid');return report;}
  try{
-  const answer=await request(gatewayPort,'/infer','POST',{message:'Odpowiedz jednym słowem: gotowe'});
+  const answer=await request(gatewayPort,'/infer','POST',{message:'Odpowiedz jednym słowem: gotowe'},30000);
   if(answer.status!==200||typeof answer.data?.answer!=='string'||!answer.data.answer.trim())
    throw Error('No answer');
   report.gateway='responding';
