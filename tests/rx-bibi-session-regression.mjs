@@ -82,6 +82,14 @@ const cases=[
  ['corrected city clarification', 'Gdzie mieszkam?', ['Mieszkam w Krakowie','OK','Chodziło mi o miasto Poznań','OK'], /Poznań/],
  ['corrected city contradiction', 'Czy zmieniłem miasto?', ['Mieszkam w Krakowie','OK','Moje aktualne miasto to Poznań','OK'], /Krakowie.*Poznań/],
  ['corrected name and city', 'Jak mam na imię i gdzie mieszkam?', ['Mam na imię Marek','OK','Moje imię to Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
+ ['summary all facts', 'Co o mnie pamiętasz?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK'], /Adam.*Poznaniu.*muzyką.*kawę/],
+ ['summary corrected name', 'Podsumuj co o mnie wiesz', ['Mam na imię Marek','OK','Moje aktualne imię to Adam','OK'], /Adam/],
+ ['summary corrected city', 'Jakie informacje o mnie pamiętasz?', ['Mieszkam w Krakowie','OK','Moje aktualne miasto to Poznań','OK'], /Poznań/],
+ ['summary empty', 'Co o mnie pamiętasz?', [], /Nie mam jeszcze/],
+ ['interest recall', 'Czym się interesuję?', ['Interesuję się muzyką','OK'], /muzyką/],
+ ['interest updated', 'Jakie mam zainteresowania?', ['Interesuję się muzyką','OK','Moje zainteresowanie to fotografia','OK'], /fotografia/],
+ ['preference recall', 'Co lubię?', ['Lubię kawę','OK'], /kawę/],
+ ['preference updated', 'Jakie mam preferencje?', ['Lubię kawę','OK','Wolę herbatę','OK'], /herbatę/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){
