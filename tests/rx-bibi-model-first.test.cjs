@@ -45,5 +45,5 @@ test('existing public chat model-first is gated behind authentication and privat
  const first=worker.indexOf("if(env.RX_BIBI_CLIENT_MODEL_FIRST==='true'",privacy);
  const fallback=worker.indexOf('const moduleStatusMatch=',first);
  assert.ok(route>=0&&auth>route&&privacy>auth&&first>privacy&&fallback>first);
- assert.match(worker.slice(first,fallback),/model\\?\.modelInferenceUsed/);
+ assert.ok(worker.slice(first,fallback).includes('model?.modelInferenceUsed'));
 });
