@@ -37,6 +37,7 @@ jobs:
           node tests/rx-queen-runtime-610.cjs
           node tests/rx-queen-install-611.cjs
           node tests/rx-queen-live-probe-612.cjs
+          node tests/rx-queen-host-613.cjs
           node tests/rx-chat-planner.mjs
           node tests/rx-world-knowledge.mjs
           node tests/rx-knowledge-base.mjs
