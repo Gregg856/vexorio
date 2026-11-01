@@ -39,6 +39,20 @@ export function answerRXSession(message,history=[]){
  const interests=userTurns.map(x=>/(?:interesuję się|moje zainteresowanie to)\s+([^.!?]{2,80})/iu.exec(x)?.[1]?.trim()).filter(Boolean);
  const preferences=userTurns.map(x=>/(?:lubię|wolę)\s+([^.!?]{2,80})/iu.exec(x)?.[1]?.trim()).filter(Boolean);
  const interest=interests[interests.length-1],preference=preferences[preferences.length-1];
+ // #738: compose answers to multiple explicitly requested facts without guessing.
+ const asks={
+  name:/\b(?:imie|imienia)\b/.test(question),
+  city:/\b(?:miasto|mieszkam|mieszkasz|gdzie mieszkam)\b/.test(question),
+  interest:/\b(?:zainteresowania|interesuje)\b/.test(question),
+  preference:/\b(?:lubie|preferencje|wole)\b/.test(question),
+  tasks:/\b(?:zadania|zadan)\b/.test(question)
+ };
+ const requested=Object.entries(asks).filter(([,yes])=>yes).map(([key])=>key);
+ const multiIntent=/^(?:przypomnij|podaj|powiedz|wymien|co pamietasz|zbierz|podsumuj)/.test(input)||/\b(?:oraz|i)\b/.test(question);
+ if(requested.length>=2&&multiIntent){
+  const values={name:name?'imię: '+name:'imię: nie podano',city:currentCity?'miasto: '+currentCity:'miasto: nie podano',interest:interest?'zainteresowanie: '+interest:'zainteresowanie: nie podano',preference:preference?'preferencja: '+preference:'preferencja: nie podano',tasks:priorList.length===3?'zadania: '+priorList.join('; '):'zadania: nie podano'};
+  return {answer:'👑 Z tej rozmowy: '+requested.map(k=>values[k]).join(' | ')+'.',contextUsed:requested.some(k=>k==='name'&&name||k==='city'&&currentCity||k==='interest'&&interest||k==='preference'&&preference||k==='tasks'&&priorList.length===3)};
+ }
  if(/^(?:co o mnie pamietasz|podsumuj co o mnie wiesz|jakie informacje o mnie pamietasz)[?.! ]*$/.test(question)){
   const known=[name?'imię: '+name:null,currentCity?'miasto: '+currentCity:null,interest?'zainteresowanie: '+interest:null,preference?'preferencja: '+preference:null].filter(Boolean);
   return {answer:known.length?'👑 Z tej rozmowy pamiętam: '+known.join('; ')+'.':'👑 Nie mam jeszcze potwierdzonych informacji o Tobie w tej rozmowie.',contextUsed:known.length>0};

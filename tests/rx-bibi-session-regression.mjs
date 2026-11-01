@@ -99,6 +99,18 @@ const cases=[
  ['followup why city', 'Dlaczego tak?', ['Mieszkam w Poznaniu','OK','Gdzie mieszkam?','Poznaniu'], /mieście.*rozmowie/],
  ['followup ambiguous', 'Przypomnij mi', [], /Doprecyzuj/],
  ['followup why ambiguous', 'Dlaczego?', [], /Doprecyzuj/],
+ ['multi name city', 'Podaj moje imię i miasto', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /Adam.*Poznaniu/],
+ ['multi city preference', 'Powiedz gdzie mieszkam i co lubię', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /Poznaniu.*kawę/],
+ ['multi name interest', 'Przypomnij imię i zainteresowania', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /Adam.*muzyką/],
+ ['multi interest preference', 'Podaj zainteresowania i preferencje', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /muzyką.*kawę/],
+ ['multi name tasks', 'Podaj moje imię i zadania', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /Adam.*zakupy.*spacer/],
+ ['multi city tasks', 'Przypomnij miasto oraz zadania', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /Poznaniu.*zakupy/],
+ ['multi all five', 'Podaj imię, miasto, zainteresowania, preferencje i zadania', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK','Interesuję się muzyką','OK','Lubię kawę','OK','Mam trzy zadania: zakupy, spacer i sprzątanie','OK'], /Adam.*Poznaniu.*muzyką.*kawę.*zakupy/],
+ ['multi missing city', 'Podaj imię i miasto', ['Mam na imię Adam','OK'], /Adam.*nie podano/],
+ ['multi no facts', 'Podaj imię i miasto', [], /nie podano.*nie podano/],
+ ['multi corrected name', 'Podaj imię i miasto', ['Mam na imię Marek','OK','Moje aktualne imię to Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
+ ['multi corrected city', 'Podaj imię i miasto', ['Mam na imię Adam','OK','Mieszkam w Krakowie','OK','Moje aktualne miasto to Poznań','OK'], /Adam.*Poznań/],
+ ['multi missing interest', 'Podaj imię i zainteresowania', ['Mam na imię Adam','OK'], /Adam.*nie podano/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){
