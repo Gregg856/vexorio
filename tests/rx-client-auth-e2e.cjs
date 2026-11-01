@@ -5,12 +5,15 @@ const fs=require('node:fs');
 const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev').replace(/\/$/,'');
 const email=process.env.RX_BIBI_TEST_EMAIL;
 const password=process.env.RX_BIBI_TEST_PASSWORD;
+// Normalize accidental whitespace in the test-account email only; never alter passwords.
+const normalizedEmail=typeof email==='string'?email.trim():email;
 // Optional, operator-approved canary already present in the live approved-response store.
 const memoryPrompt=process.env.RX_BIBI_APPROVED_TEST_PROMPT||'';
 const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
 (async()=>{
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  const report={kind:'rx-client-auth-e2e',mode:'REAL_AUTH_REAL_API',checks:[],failureCategory:null};
+ if(email&&email!==normalizedEmail)report.checks.push('test_email_whitespace_normalized');
  if(!email||!password){report.status='BLOCKED_MISSING_TEST_CREDENTIALS';report.failureCategory='TEST_CREDENTIALS_MISSING';report.clientChatVerified=false;report.reason='Dedicated test-account credentials required; mock and anonymous checks do not prove authenticated chat behavior.';fs.writeFileSync('rx-bibi-reports/rx-client-auth-e2e.json',JSON.stringify(report,null,2));console.log('BLOCKED RX client authenticated E2E: dedicated credentials unavailable; NOT VERIFIED');return;}
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
@@ -33,7 +36,7 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
   const initialStatus=await page.locator('#status').textContent().catch(()=>'');
   if(/Konfiguracja logowania|Nie udało się|Błąd/i.test(initialStatus))throw Error('Client auth initialization failed: '+initialStatus);
   if(!(await chat.isVisible())){
-   await page.locator('#email').fill(email);
+   await page.locator('#email').fill(normalizedEmail);
    await page.locator('#password').fill(password);
    await page.locator('#signin').click();
    // Fail quickly and informatively if the real Supabase login rejects the test account.
