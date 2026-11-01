@@ -96,6 +96,23 @@ export default {
       if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(base)||!key)return new Response(JSON.stringify({ok:false}),{status:503,headers:{'Cache-Control':'no-store'}});
       return new Response(JSON.stringify({url:base,anonKey:key}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     }
+    // RX BIBI #717: public, stateless demonstration of the existing deterministic planner.
+    // No identity, storage, private RX memory, AI inference, tasks, or admin capabilities.
+    if(url.pathname==='/api/rx/client/demo/chat'){
+      const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Robots-Tag':'noindex, nofollow'};
+      const fail=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='POST')return fail(405,'Dozwolone tylko POST.');
+      if(request.headers.get('Origin')!==url.origin)return fail(403,'Nieprawidłowe pochodzenie.');
+      if(Number(request.headers.get('Content-Length')||0)>12000)return fail(413,'Za duża wiadomość.');
+      let payload;try{payload=await request.json();}catch{return fail(400,'Nieprawidłowy JSON.');}
+      const message=payload?.message,history=payload?.history??[];
+      if(typeof message!=='string'||!message.trim()||message.length>1000)return fail(400,'Wiadomość: 1–1000 znaków.');
+      if(!Array.isArray(history)||history.length>10||history.some(x=>typeof x!=='string'||x.length>1000))return fail(400,'Nieprawidłowa historia.');
+      try{
+        const planned=planRXChat(message,history,null);
+        return new Response(JSON.stringify({ok:true,answer:String(planned.answer||'').slice(0,4000),contextUsed:planned.contextUsed===true,engine:'rx-bibi-demo-local-planner',demo:true,executed:0,adminToolsAvailable:false,modelInferenceUsed:false}),{status:200,headers});
+      }catch{return fail(400,'Nie można przetworzyć wiadomości.');}
+    }
     // RX BIBI client: authenticated, read-only planner; never enters admin dispatch routes.
     if(url.pathname==='/api/rx/client/chat'){
       const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
