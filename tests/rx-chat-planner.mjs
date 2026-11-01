@@ -975,3 +975,12 @@ assert.match(rxAntInvitation.answer,/Co najbardziej Cię w tym temacie interesuj
 const rxAntWithHistory=planRXChat('Porozmawiajmy o RX Mrówkach. Wyjaśnij, jak moduły wspólnie rozwiązują zadania. Podaj trzy przykłady.', ['Cześć','Witaj!']);
 assert.match(rxAntWithHistory.answer,/Trzy przykłady:/);
 assert.equal(rxAntWithHistory.executed,0);
+
+// Contextual RX Ants follow-up must expand example two without inventing execution.
+const rxAntSecondExample=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o RX Mrówkach. Wyjaśnij, jak moduły wspólnie rozwiązują zadania. Podaj trzy przykłady.',
+ '👑 Trzy przykłady: 1) analiza, 2) testy, 3) podsumowanie.'
+]);
+assert.match(rxAntSecondExample.answer,/Drugi przykład:/);
+assert.match(rxAntSecondExample.answer,/wyniki testów/);
+assert.equal(rxAntSecondExample.executed,0);
