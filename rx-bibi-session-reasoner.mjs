@@ -21,7 +21,7 @@ export function answerRXSession(message,history=[]){
    return {answer:'👑 Oparłam odpowiedź na informacjach, które podałeś wcześniej w tej rozmowie. Nie weryfikowałam ich w zewnętrznym źródle.',contextUsed:true};
   return {answer:'👑 Nie mogę pewnie ustalić podstawy tej wcześniejszej odpowiedzi na podstawie dostępnego kontekstu.',contextUsed:true};
  }
- const question=input.replace(/^(?:prosze|powiedz mi|przypomnij mi|czy pamietasz)\s*,?\s*/,'');
+ const question=input.replace(/^(?:prosze|powiedz mi|przypomnij mi\b|czy pamietasz)\s*,?\s*/,'');
  const userTurns=history.filter((_,i)=>i%2===0);
  const names=userTurns.map(x=>/(?:mam na imię|moje aktualne imię to|moje imię to)\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).filter(Boolean);
  const distinctNames=[...new Set(names.map(normalize))];
