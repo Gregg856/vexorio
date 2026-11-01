@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const s=fs.readFileSync('rx-queen-local-model.cjs','utf8');
+assert.match(s,/host!=='127\.0\.0\.1'/);
+assert.match(s,/http:\/\/127\.0\.0\.1:/);
+assert.match(s,/\/api\/generate/);
+assert.match(s,/stream:false/);
+assert.match(s,/RX_QUEEN_MODEL_NAME/);
+assert.match(s,/AbortSignal\.timeout\(6500\)/);
+assert.doesNotMatch(s,/exec\(|spawn\(|eval\(/);
+console.log('RX #610 Queen local model gateway contract: PASS');
