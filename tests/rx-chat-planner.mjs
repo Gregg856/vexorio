@@ -9,6 +9,13 @@ assert.equal(currentPreference.learning.trainingPerformed,false);
 const repeatedPreference=planRXChat('Wolę krótkie odpowiedzi i konkretne kroki.',['Wolę krótkie odpowiedzi i konkretne kroki.','Dobrze, zapamiętam.']);
 assert.deepEqual(repeatedPreference.learning.preferences,['Wolę krótkie odpowiedzi i konkretne kroki.']);
 
+// RX BIBI: explicit session preferences can be recalled, but are not permanent model training.
+const learnedPreference=planRXChat('Jakie preferencje pamiętasz?',['Wolę krótkie odpowiedzi i konkretne kroki.','Rozumiem.']);
+assert.match(learnedPreference.answer,/Wolę krótkie odpowiedzi/);
+assert.equal(learnedPreference.learning.trainingPerformed,false);
+assert.doesNotMatch(planRXChat('Jakie preferencje pamiętasz?',['Cześć','Wolę długie odpowiedzi.']).answer,/Wolę długie odpowiedzi/);
+assert.match(planRXChat('Jakie preferencje pamiętasz?').answer,/Nie widzę jeszcze/);
+
 // Regression for the exact customer message (Polish genitive plural: "mrówek").
 assert.match(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Aby zwiększyć moc mrówek RX/);
 assert.doesNotMatch(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Co najbardziej Cię w tym temacie interesuje/);
