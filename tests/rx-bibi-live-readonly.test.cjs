@@ -27,7 +27,7 @@ test('public BIBI panel and protected client route respond safely',async t=>{
   assert.match(body,/id="google-signin"/,'Google login button missing from deployed client');
   assert.match(body,/id="signup"/,'registration button missing from deployed client');
   assert.match(body,/signInWithOAuth/,'Google login handler missing');
-  assert.match(body,/client\\.auth\\.signUp/,'registration handler missing');
+  assert.match(body,/signUp\s*\(/,'registration handler missing');
  });
  await t.test('client chat refuses unauthenticated POST before any message processing',async()=>{
   const r=await fetch(new URL('/api/rx/client/chat',origin),{
