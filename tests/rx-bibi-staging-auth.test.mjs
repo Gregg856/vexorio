@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {createClient} from '@supabase/supabase-js';
 import {saveBibiChatSnapshot,loadBibiChatSnapshot} from '../rx-bibi-chat-cloud.mjs';
 const keys=['RX_BIBI_STAGING_URL','RX_BIBI_STAGING_ANON_KEY','RX_BIBI_TEST_A_EMAIL','RX_BIBI_TEST_A_PASSWORD','RX_BIBI_TEST_B_EMAIL','RX_BIBI_TEST_B_PASSWORD'];
-if(keys.some(k=>!process.env[k])){console.log('SKIP staging authenticated isolation test: dedicated staging credentials not configured');process.exit(0);}
+if(keys.some(k=>!process.env[k])){console.error('FAIL: staging authenticated isolation test requires all dedicated staging credentials; do not report a skipped test as PASS');process.exit(2);}
 const url=process.env.RX_BIBI_STAGING_URL;
 if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)||url.includes('lfytoxcnutduahshbsko')||!url.includes('owkjdlpawczrnwyszduj'))throw Error('Staging-only Supabase URL required');
 const make=()=>createClient(url,process.env.RX_BIBI_STAGING_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
