@@ -56,6 +56,7 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
    }
   }
   report.checks.push('authenticated_customer_chat_visible');
+  report.authenticatedLoginVerified=true;
   // Real multi-turn regression: check the actual authenticated API, not just HTTP 200.
   const scenarios=[
    {input:'Porozmawiajmy o mrówkach',expected:/mrówk/i},
