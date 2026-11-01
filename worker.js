@@ -691,7 +691,7 @@ export default {
       }catch{return reply(502,'Weryfikacja administratora niedostępna.');}
       let payload;try{payload=await request.json();}catch{return reply(400,'Nieprawidłowy JSON.');}
       if(typeof payload?.message!=='string'||!payload.message.trim()||payload.message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
-      const normalized=payload.message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\\p{M}/gu,'').replace(/ł/g,'l');
+      const normalized=payload.message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
       if(/^(kim jestes|jak sie nazywasz|przedstaw sie|czesc|hej|witaj|witam)[?!. ]*$/.test(normalized)){
         return new Response(JSON.stringify({ok:true,answer:'Jestem Królową RX, prywatnym panelem zarządzania VEXORIO. Ten punkt kontrolny potwierdza tożsamość i uprawnienia; pełny silnik rozmowy nie jest jeszcze podłączony.',engine:'rx-queen-identity',modelInferenceUsed:false,executed:0}),{status:200,headers});
       }
