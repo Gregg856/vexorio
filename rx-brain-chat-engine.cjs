@@ -50,7 +50,7 @@ function chatRX(message,{history=[],tasks=[],brainMemory=null}={}){
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
  const naturalTaskQuery=/^(?:co z zadaniem|jaki status zadania|czy zakończono zadanie)\s+[„"]?(.{3,160}?)[”"]?\??$/i.exec(message.trim());
  const taskFollowup=/^(?:a (?:to|tamto) zadanie|a jaki (?:ma )?status|czy (?:to|ono) (?:już )?(?:gotowe|zrobione))[?!.\s]*$/i.test(message.trim());
- const recurringQuery=/^(?:znany problem|powtarzający się problem|powtarzajacy sie problem|znana naprawa):?\\s+([a-z0-9_-]{1,80})\\??$/i.exec(message.trim());
+ const recurringQuery=/^(?:znany problem|powtarzający się problem|powtarzajacy sie problem|znana naprawa):?\s+([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
  const memoryQuery=/^(?:co pamiętasz o zadaniu|co pamietasz o zadaniu|jakie doświadczenie masz z zadaniem):?\s+([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
  if(recurringQuery){
    const key=recurringQuery[1].toLowerCase();
