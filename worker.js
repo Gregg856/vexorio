@@ -253,13 +253,16 @@ export default {
           }
         }catch{/* External lookup failure falls back to planner. */}
       }
-      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji)(?: o)?\s+/i.test(message.trim()) || /^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|wyjaśnij mi|wyjasnij mi|wyjaśnij|wyjasnij|chciałbym się dowiedzieć(?: o)?|chcialbym sie dowiedziec(?: o)?|chciałabym się dowiedzieć(?: o)?|chcialabym sie dowiedziec(?: o)?)\s+.{3,160}[?!.]?$/i.test(message.trim());
+      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji|sprawdź w internecie|sprawdz w internecie|wyszukaj w internecie|poszukaj w internecie|szukaj w internecie|sprawdź w sieci|sprawdz w sieci)(?: o)?\s+/i.test(message.trim()) || /^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|wyjaśnij mi|wyjasnij mi|wyjaśnij|wyjasnij|chciałbym się dowiedzieć(?: o)?|chcialbym sie dowiedziec(?: o)?|chciałabym się dowiedzieć(?: o)?|chcialabym sie dowiedziec(?: o)?)\s+.{3,160}[?!.]?$/i.test(message.trim());
       const rxInternalTopic=/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(message);
       if(clientResearch&&!rxInternalTopic){
         try{
           const knowledge=await searchWorldKnowledge(message);
           if(knowledge)return new Response(JSON.stringify({ok:true,answer:'📚 '+knowledge.title+'\n'+(knowledge.summary.length<=360?knowledge.summary:(()=>{const excerpt=knowledge.summary.slice(0,360);const endings=[...excerpt.matchAll(/[.!?](?=\s|$)/g)];const last=endings.at(-1);return last&&last.index>=80?excerpt.slice(0,last.index+1):excerpt.slice(0,excerpt.lastIndexOf(' ')>80?excerpt.lastIndexOf(' '):360).trimEnd()+'…';})())+'\nŹródło: '+knowledge.url+' (Wikipedia; sprawdź aktualność informacji)',knowledge,engine:'rx-bibi-client-world-knowledge',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
-        }catch{/* External source failures must not break the authenticated chat. */}
+        }catch{
+          return new Response(JSON.stringify({ok:true,answer:'Nie udało się teraz pobrać informacji z internetu (Wikipedia). Spróbuj ponownie później.',engine:'rx-bibi-client-world-knowledge-error',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }
+        return new Response(JSON.stringify({ok:true,answer:'Nie znalazłam potwierdzonej odpowiedzi w dostępnym źródle internetowym. Spróbuj doprecyzować pytanie.',engine:'rx-bibi-client-world-knowledge-no-result',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
       // Client requests use only the shared deterministic planner; no GitHub dispatch,
       // administrator commands, persistent memory writes, or privileged RX tools.
