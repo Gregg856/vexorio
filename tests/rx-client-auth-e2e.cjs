@@ -37,11 +37,20 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
    await page.locator('#password').fill(password);
    await page.locator('#signin').click();
    // Fail quickly and informatively if the real Supabase login rejects the test account.
-   await Promise.race([
-    chat.waitFor({state:'visible',timeout:20000}),
-    page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Logowanie nie powiodło się.'),null,{timeout:20000}).then(()=>{throw Error('Test-account sign-in rejected by Supabase. Verify RX_BIBI_TEST_EMAIL and RX_BIBI_TEST_PASSWORD in GitHub secrets; no password is logged.');})
-   ]);
-   if(!(await chat.isVisible()))throw Error('Authenticated chat did not become visible after sign-in.');
+   // One bounded wait handles both outcomes; no losing Promise.race branch can reject later.
+   await page.waitForFunction(()=>{
+    const chat=document.querySelector('#chat');
+    const status=document.querySelector('#status')?.textContent||'';
+    return !chat?.hidden||status.includes('Logowanie nie powiodło się.')||/Konfiguracja logowania|Nie udało się|Błąd/i.test(status);
+   },null,{timeout:20000}).catch(async()=>{
+    const status=await page.locator('#status').textContent().catch(()=>'');
+    throw Error('Test-account sign-in did not finish within 20s; status: '+String(status||'empty').slice(0,180));
+   });
+   if(!(await chat.isVisible())){
+    const status=await page.locator('#status').textContent().catch(()=>'');
+    if(String(status).includes('Logowanie nie powiodło się.'))throw Error('Test-account sign-in rejected by Supabase. Verify dedicated test credentials in GitHub secrets; no password is logged.');
+    throw Error('Authenticated chat did not become visible after sign-in; status: '+String(status||'empty').slice(0,180));
+   }
   }
   report.checks.push('authenticated_customer_chat_visible');
   // Real multi-turn regression: check the actual authenticated API, not just HTTP 200.
