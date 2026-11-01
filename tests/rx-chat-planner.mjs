@@ -965,3 +965,8 @@ assert.match(rxAntExplanation.answer,/2\)/);
 assert.match(rxAntExplanation.answer,/3\)/);
 assert.doesNotMatch(rxAntExplanation.answer,/Co najbardziej Cię w tym temacie interesuje/);
 assert.equal(rxAntExplanation.executed,0);
+
+// RX Ants: an ordinary topic invitation without a concrete question should still invite discussion.
+const rxAntInvitation=planRXChat('Porozmawiajmy o RX Mrówkach.');
+assert.doesNotMatch(rxAntInvitation.answer,/Trzy przykłady:/);
+assert.match(rxAntInvitation.answer,/Co najbardziej Cię w tym temacie interesuje/);
