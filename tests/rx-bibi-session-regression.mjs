@@ -142,6 +142,16 @@ const cases=[
  ['741 interest unknown plural', "Jakie mam zainteresowania?", [], /zainteresowań/],
  ['741 preference unknown', "Co lubię?", [], /preferencji/],
  ['741 preference unknown plural', "Jakie mam preferencje?", [], /preferencji/],
+ ['742 new second task', "Drugie zadanie?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /sprawdzić pamięć/],
+ ['742 new first task', "Pierwsze zadanie?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /naprawić czat/],
+ ['742 new last task', "Ostatnie zadanie?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /przetestować matematykę/],
+ ['742 new task list', "Wymień je", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /naprawić czat.*sprawdzić pamięć.*przetestować matematykę/],
+ ['742 new summary', "Podsumuj naszą rozmowę", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /sprawdzić pamięć/],
+ ['742 new multi facts', "Podaj moje imię i zadania", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /sprawdzić pamięć/],
+ ['742 new task count', "Ile mam zadań?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /3 zadania/],
+ ['742 new task repeat', "Jakie to zadania?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /sprawdzić pamięć/],
+ ['742 new second explicit', "Które zadanie jest drugie?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /sprawdzić pamięć/],
+ ['742 new last explicit', "Które zadanie jest trzecie?", ["Mam trzy zadania: czytać, pisać i liczyć","OK","Poprawka: drugie zadanie to śpiewać","OK","Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę","OK"], /przetestować matematykę/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){
