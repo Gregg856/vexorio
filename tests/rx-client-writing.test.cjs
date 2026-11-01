@@ -82,3 +82,12 @@ test('detailed writing asks for missing facts rather than pretending to expand',
  assert.equal(conflict?.requiresClarification,true);
  assert.match(conflict.answer,/sprzeczne/);
 });
+
+test('five client writing safeguards work in the existing chat helper',async()=>{
+ const {composeClientWriting:compose}=await import(pathToFileURL(path.join(__dirname,'..','rx-client-writing.mjs')));
+ assert.equal(compose('Przygotuj krótką wiadomość: spotkanie jutro')?.answer,'Spotkanie jutro.');
+ assert.equal(compose('Ułóż zwięzłą wiadomość: termin potwierdzony')?.answer,'Termin potwierdzony.');
+ assert.equal(compose('Napisz krótko:  spotkanie   jutro  ')?.answer,'Spotkanie jutro.');
+ assert.equal(compose('Napisz własnymi słowami: spotkanie jutro'),null);
+ assert.equal(compose('Napisz Streszczenie: Pierwsze. Drugie.')?.requiresClarification,true);
+});
