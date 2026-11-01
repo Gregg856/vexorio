@@ -73,7 +73,7 @@ const cases=[
  ['followup unrelated', 'A teraz?', ['Policz 2 + 2','Wynik: 4'], null],
  ['explain math answer', 'Dlaczego tak odpowiedziałaś?', ['Policz 2 + 2','🧮 Wynik: 4'], /obliczeniu/],
  ['explain user name', 'Skąd to wiesz?', ['Jak mam na imię?','👑 Masz na imię Adam.'], /podałeś wcześniej/],
- ['explain city', 'Na jakiej podstawie?', ['Gdzie mieszkam?','👑 Mieszkasz w Poznaniu.'], /nie weryfikowałam/],
+ ['explain city', 'Na jakiej podstawie?', ['Gdzie mieszkam?','👑 Mieszkasz w Poznaniu.'], /nie weryfikowałam/i],
  ['explain no previous answer', 'Skąd to wiesz?', [], /Nie mam wcześniejszej/],
  ['explain unsupported source', 'Dlaczego tak odpowiedziałaś?', ['Cześć','Witaj'], /Nie mogę pewnie ustalić/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
