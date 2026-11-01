@@ -25,4 +25,6 @@ jobs:
       - name: Test actual production chat (not mocked)
         env:
           RX_BIBI_TEST_ACCESS_TOKEN: ${{ secrets.RX_BIBI_TEST_ACCESS_TOKEN }}
+          RX_BIBI_TEST_EMAIL: ${{ secrets.RX_BIBI_TEST_EMAIL }}
+          RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
         run: node tests/rx-bibi-real-chat.cjs
