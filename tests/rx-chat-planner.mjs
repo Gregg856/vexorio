@@ -997,3 +997,12 @@ const rxAntUnrelatedHistory=planRXChat('Podaj drugi przykład',[
 ]);
 assert.doesNotMatch(rxAntUnrelatedHistory.answer,/Drugi przykład:/);
 assert.equal(rxAntUnrelatedHistory.executed,0);
+
+// A topic change after RX Ants should not reuse an obsolete RX Ants explanation.
+const rxAntChangedTopic=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o RX Mrówkach. Podaj trzy przykłady.',
+ 'Oto trzy przykłady współpracy modułów.',
+ 'Teraz porozmawiajmy o gotowaniu. Podaj przykłady.',
+ 'Oto przykłady potraw.'
+]);
+assert.doesNotMatch(rxAntChangedTopic.answer,/Drugi przykład:/);
