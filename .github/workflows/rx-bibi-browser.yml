@@ -331,6 +331,7 @@ jobs:
         run: |
           if [ -z "$RX_BIBI_TEST_EMAIL" ]; then echo "::warning::RX BIBI: missing TEST_EMAIL in repository secrets or variables"; fi
           if [ -z "$RX_BIBI_TEST_PASSWORD" ]; then echo "::warning::RX BIBI: missing TEST_PASSWORD in repository secrets"; fi
+          if [ -z "$RX_BIBI_APPROVED_TEST_PROMPT" ] || [ -z "$RX_BIBI_APPROVED_TEST_ANSWER" ]; then echo "::warning::RX BIBI: approved-memory canary incomplete; configure both test values in repository secrets; live memory NOT VERIFIED"; fi
           node tests/rx-client-auth-e2e.cjs
       - name: RX BIBI — raport wiarygodności testów zalogowanego czatu
         if: ${{ always() }}
