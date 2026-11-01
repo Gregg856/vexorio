@@ -702,6 +702,22 @@ jobs:
       - name: RX BIBI — test agent managera
         if: ${{ !cancelled() }}
         run: node --test tests/rx-agent-manager.test.cjs
+      - name: RX BIBI — końcowa bramka prawdziwego czatu
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const file='rx-bibi-reports/rx-client-auth-e2e.json';
+          let auth;
+          try{auth=JSON.parse(fs.readFileSync(file,'utf8'))}catch{auth=null}
+          const verified=auth?.clientChatVerified===true;
+          const category=auth?.failureCategory||'NOT_VERIFIED';
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\\n### RX BIBI — końcowy status autoryzowanego czatu\\n- '+(verified?'VERIFIED':'NOT VERIFIED')+' ('+category+')\\n- Lokalny PASS nie oznacza prawdziwego E2E.\\n');
+          if(!verified){
+            console.error('::error::RX BIBI authenticated client chat NOT VERIFIED ('+category+'). Full browser audit must not report success.');
+            process.exitCode=1;
+          }
+          NODE
       - name: Zachowaj raporty i zrzuty
         if: always()
         uses: actions/upload-artifact@v6
