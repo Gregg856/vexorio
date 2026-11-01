@@ -10,6 +10,9 @@ function facts(history){
  return {list,name,previous:previous===undefined?null:Number(previous.replace(',','.')),answers};
 }
 export function answerRXSession(message,history=[]){
+ // #740: the demo API accepts at most 20 history entries; mirror its finite window locally.
+ const boundedHistory=Array.isArray(history)?history.slice(-20):[];
+ history=boundedHistory;
  const input=normalize(message.trim()),{list:priorList,name,previous,answers}=facts(history);
  if(/gdy nie znasz odpowiedzi|kiedy nie znasz odpowiedzi|co robisz gdy nie wiesz|co zrobisz jesli nie wiesz/.test(input))return {answer:'👑 Gdy nie znam odpowiedzi, powiem wprost, że nie wiem. Nie będę zgadywać ani wymyślać faktów. Poproszę o doprecyzowanie albo zaproponuję sprawdzenie informacji w wiarygodnym źródle.',contextUsed:false};
  if(/^(?:dlaczego tak odpowiedzialas|skad to wiesz|na jakiej podstawie)[?.! ]*$/u.test(input)){
