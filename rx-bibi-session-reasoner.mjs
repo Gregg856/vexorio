@@ -33,6 +33,15 @@ export function answerRXSession(message,history=[]){
   return {answer:'👑 Według Twojej ostatniej informacji mieszkasz w '+currentCity+'.',contextUsed:true};
  if(/czy zmienilem miasto|czy podalem dwa rozne miasta/.test(input))
   return {answer:cityChanged?'👑 Tak. Najpierw podałeś '+cities[0]+', a później '+currentCity+'.':'👑 Nie widzę dwóch różnych miast w tej rozmowie.',contextUsed:true};
+ const shortFollowup=/^(?:a wczesniej|a teraz|co bylo wczesniej|co jest teraz)[?.! ]*$/u.test(question);
+ if(shortFollowup&&userTurns.length){
+  const lastQuestion=normalize(userTurns[userTurns.length-1]);
+  const aboutCity=/miast|mieszkam|gdzie mieszkam/.test(lastQuestion);
+  const aboutName=/imie|imienia/.test(lastQuestion);
+  const older=/(wczesniej)/.test(question);
+  if(aboutCity&&cities.length)return {answer:'👑 '+(older?'Wcześniej podałeś '+cities[0]:'Teraz podajesz '+currentCity)+'.',contextUsed:true};
+  if(aboutName&&names.length)return {answer:'👑 '+(older?'Wcześniej podałeś imię '+names[0]:'Teraz podajesz imię '+names[names.length-1])+'.',contextUsed:true};
+ }
  const currentList=/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(message)?.[1];
  const list=currentList?currentList.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):priorList;
  const correctedTask=[message,...history.filter((_,i)=>i%2===0).reverse()].map(x=>/poprawka:\s*drugie zadanie to\s*([^.!?]+)/iu.exec(x)?.[1]?.trim()).find(Boolean);
