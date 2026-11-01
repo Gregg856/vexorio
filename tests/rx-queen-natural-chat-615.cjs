@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const worker=fs.readFileSync('worker.js','utf8');
+const panel=fs.readFileSync('rx-bibi-manager.html','utf8');
+const start=worker.indexOf("if(url.pathname==='/api/rx/admin/queen-chat')");
+const end=worker.indexOf("if(url.pathname==='/api/rx/admin/brain-memory')",start);
+assert.ok(start>=0&&end>start);
+const route=worker.slice(start,end);
+assert.match(route,/is_vexorio_admin/);
+assert.match(route,/const queenPlain=payload\.message\.trim\(\)/);
+assert.match(route,/!queenBasic&&env\.RX_QUEEN_MODEL_ENABLED==='true'/);
+assert.match(route,/askQueenModel\('Zapytaj model: '\+queenPlain,env\)/);
+assert.match(route,/if\(model\.modelInferenceUsed\)/);
+assert.match(route,/executed:0,adminToolsAvailable:false/);
+assert.match(panel,/message:queenMessage/);
+assert.doesNotMatch(route,/askClientModel|RX_BIBI_MODEL_SERVICE/);
+console.log('RX #615 Queen natural chat model-first contract: PASS');
