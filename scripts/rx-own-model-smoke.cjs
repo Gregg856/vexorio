@@ -1,0 +1,36 @@
+'use strict';
+// RX #641: one-command local end-to-end smoke test, no external AI or network.
+// Runs only on loopback with a temporary, explicitly supplied test curriculum.
+const fs=require('node:fs/promises');
+const os=require('node:os');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+const {start}=require('../rx-cloud-server.cjs');
+(async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'rx-own-smoke-'));
+ const training=path.join(dir,'training.json');
+ const before={...process.env};
+ let server;
+ try{
+  await fs.writeFile(training,JSON.stringify({version:1,samples:[
+   {input:'witaj bibi',answer:'Witaj! Tu nasz RX BIBI.'},
+   {input:'jak masz na imie',answer:'Nazywam się RX BIBI.'}
+  ]}),{mode:0o600});
+  process.env.SUPABASE_URL='https://example.supabase.co';
+  process.env.RX_BIBI_MODEL_ENABLED='true';
+  process.env.RX_BIBI_EMBEDDED_MODEL='true';
+  process.env.RX_BIBI_TRAINING_FILE=training;
+  process.env.RX_BIBI_CLIENT_MODEL_FIRST='false';
+  server=await start({port:0,host:'127.0.0.1'});
+  const url='http://127.0.0.1:'+server.address().port;
+  const capabilities=await (await fetch(url+'/__rxcloud/model/capabilities')).json();
+  assert.equal(capabilities.modelConfigured,true);
+  const denied=await fetch(url+'/__rxcloud/model/probe');
+  assert.equal(denied.status,401);
+  console.log(JSON.stringify({ok:true,embeddedModelConfigured:true,probeProtected:true,publicModelEndpoint:false,note:'local-only smoke; no production or generative model'}));
+ }finally{
+  if(server)await new Promise(resolve=>server.close(resolve));
+  for(const key of ['SUPABASE_URL','RX_BIBI_MODEL_ENABLED','RX_BIBI_EMBEDDED_MODEL','RX_BIBI_TRAINING_FILE','RX_BIBI_CLIENT_MODEL_FIRST']){if(Object.hasOwn(before,key))process.env[key]=before[key];else delete process.env[key];}
+  await fs.rm(dir,{recursive:true,force:true});
+ }
+})().catch(e=>{console.error(e);process.exitCode=1;});
