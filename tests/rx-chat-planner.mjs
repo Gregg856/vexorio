@@ -1006,3 +1006,14 @@ const rxAntChangedTopic=planRXChat('Podaj drugi przykład',[
  'Oto przykłady potraw.'
 ]);
 assert.doesNotMatch(rxAntChangedTopic.answer,/Drugi przykład:/);
+
+// A fresh explicit return to RX Ants should restore the relevant follow-up context.
+const rxAntReturnTopic=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o RX Mrówkach. Podaj trzy przykłady.',
+ 'Trzy przykłady współpracy.',
+ 'Porozmawiajmy o gotowaniu. Podaj przykłady.',
+ 'Oto przykłady potraw.',
+ 'Wróćmy do RX Mrówek. Podaj trzy przykłady współpracy modułów.',
+ 'Oto trzy przykłady.'
+]);
+assert.match(rxAntReturnTopic.answer,/Drugi przykład:/);
