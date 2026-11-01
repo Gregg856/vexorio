@@ -7,7 +7,7 @@ const http=require('node:http');
 const {start}=require('../rx-bibi-local-chat-adapter.cjs');
 const {saveTasks,readTasks}=require('../rx-bibi-task-store.cjs');
 const {createBrainMemory}=require('../rx-brain-memory.cjs');
-const {saveBrain}=require('../rx-brain-store.cjs');
+const {saveBrain,learnAndSaveBrain}=require('../rx-brain-store.cjs');
 function ask(port,message){
  return new Promise((resolve,reject)=>{
   const req=http.request({hostname:'127.0.0.1',port,path:'/chat',method:'POST',headers:{'Content-Type':'application/json'}},res=>{
@@ -78,6 +78,17 @@ function ask(port,message){
    assert.equal(unknown.status,200);
    assert.doesNotMatch(unknown.reply,/inspect_logs/);
   }finally{await new Promise((resolve,reject)=>memoryServer.close(e=>e?reject(e):resolve()));}
+  await learnAndSaveBrain(memoryFile,{key:'restart_chat',action:'check_health',success:true,evidence:'Verified offline restart test 623'});
+  const restarted=await start({memoryFile});
+  try{
+   const response=await ask(restarted.address().port,'Co pamiętasz o zadaniu: restart_chat');
+   assert.equal(response.status,200);
+   assert.match(response.reply,/check_health/);
+   assert.equal(response.executed,0);
+   const earlier=await ask(restarted.address().port,'Co pamiętasz o zadaniu: android_chat');
+   assert.match(earlier.reply,/inspect_logs/);
+  }finally{await new Promise((resolve,reject)=>restarted.close(e=>e?reject(e):resolve()));}
+  await assert.rejects(learnAndSaveBrain(memoryFile,{key:'restart_chat',action:'check_health',success:true,evidence:'Verified offline restart test 623'}),/Duplicate learning evidence/);
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
