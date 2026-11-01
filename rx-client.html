@@ -23,7 +23,38 @@ textarea{border:1px solid #307c7e;border-radius:18px;background:#0c2330;min-heig
 #status{color:#9ac6b7}
 @media(max-width:600px){main{padding:8px}header{padding:11px;gap:8px}header h1{font-size:1.4rem}.header-actions{gap:6px}.header-actions button{min-height:42px;font-size:.76rem;padding:9px}.bubble{max-width:92%}#messages{padding:12px 4px}#send{padding:10px 13px}}
 @media(max-width:380px){header h1{width:auto}.header-actions{justify-content:flex-end}}
-</style><style>.bibi-head-avatar{width:64px;height:74px;object-fit:contain;filter:drop-shadow(0 0 10px #14e97d88)}.bibi-chat-layout{display:flex;flex:1;min-height:0;gap:12px}.bibi-chat-layout #messages{flex:1;min-width:0}.bibi-hero{width:31%;max-width:250px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;border:1px solid #176b52;border-radius:20px;background:radial-gradient(ellipse at center,#0b3b2c,#06151a 75%);box-shadow:inset 0 0 28px #12ee6a16}.bibi-hero img{width:100%;max-height:290px;object-fit:contain;filter:drop-shadow(0 0 12px #00fa7880)}.bibi-hero strong{font-size:1.4rem;color:#adffcc}.bibi-hero span{font-size:.8rem;color:#a7dfc8;margin-bottom:12px}@media(max-width:650px){.bibi-head-avatar{width:54px;height:62px}.bibi-hero{width:94px;min-width:94px;justify-content:flex-start;padding:10px 2px}.bibi-hero img{max-height:130px}.bibi-hero strong{font-size:1rem}.bibi-hero span{font-size:.62rem;text-align:center}.bibi-chat-layout{gap:5px}.bibi-chat-layout #messages{padding:9px 2px}.bubble{font-size:.92rem;padding:11px 12px}}@media(max-width:380px){.bibi-hero{width:72px;min-width:72px}.bibi-head-avatar{width:45px;height:55px}}</style></head>
+</style><style>.bibi-head-avatar{width:64px;height:74px;object-fit:contain;filter:drop-shadow(0 0 10px #14e97d88)}.bibi-chat-layout{display:flex;flex:1;min-height:0;gap:12px}.bibi-chat-layout #messages{flex:1;min-width:0}.bibi-hero{width:31%;max-width:250px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;border:1px solid #176b52;border-radius:20px;background:radial-gradient(ellipse at center,#0b3b2c,#06151a 75%);box-shadow:inset 0 0 28px #12ee6a16}.bibi-hero img{width:100%;max-height:290px;object-fit:contain;filter:drop-shadow(0 0 12px #00fa7880)}.bibi-hero strong{font-size:1.4rem;color:#adffcc}.bibi-hero span{font-size:.8rem;color:#a7dfc8;margin-bottom:12px}@media(max-width:650px){.bibi-head-avatar{width:54px;height:62px}.bibi-hero{width:94px;min-width:94px;justify-content:flex-start;padding:10px 2px}.bibi-hero img{max-height:130px}.bibi-hero strong{font-size:1rem}.bibi-hero span{font-size:.62rem;text-align:center}.bibi-chat-layout{gap:5px}.bibi-chat-layout #messages{padding:9px 2px}.bubble{font-size:.92rem;padding:11px 12px}}@media(max-width:380px){.bibi-hero{width:72px;min-width:72px}.bibi-head-avatar{width:45px;height:55px}}</style><style>
+/* RX BIBI 5D: visual depth only; existing functionality stays unchanged. */
+body{background:radial-gradient(ellipse at 45% 0%,#0d4538 0%,#061b20 34%,#030b14 82%);}
+main{box-shadow:inset 0 0 70px #04ff7210,0 0 50px #0008}
+header{position:relative;overflow:hidden;box-shadow:inset 0 1px #c1ffe522,0 12px 36px #0008,0 0 30px #00ff7620;background:linear-gradient(140deg,#123b35 0%,#081b2a 48%,#050f1b 100%);}
+header::before{content:'';position:absolute;inset:-90px 35% 60% -15%;pointer-events:none;background:radial-gradient(ellipse,#17ff8550,transparent 70%);filter:blur(15px)}
+.bibi-head-avatar{position:relative;z-index:1;filter:drop-shadow(0 0 12px #00ff8b) drop-shadow(0 5px 8px #0009)}
+.bubble{box-shadow:inset 0 1px #baffff16,0 10px 28px #0008,0 0 16px #06ff6610;border-color:#2e7976;background:linear-gradient(145deg,#153748,#0b1e2d 80%)}
+.bubble.me{background:linear-gradient(135deg,#0a8d67,#08a96d 60%,#086b56);border-color:#36eaa1;box-shadow:0 6px 22px #00ff7025,inset 0 1px #dcffdb40}
+#send{box-shadow:0 0 22px #00f78c65,inset 0 1px #d5ffdf88;background:linear-gradient(145deg,#49ffa0,#08db74 60%,#03ad69)}
+textarea{box-shadow:inset 0 3px 12px #0007,0 0 0 1px #00ec6420}
+@media(max-width:650px){
+ main{padding:8px 9px}
+ header{display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:4px 10px;padding:10px 12px;border-radius:18px}
+ .bibi-head-avatar{grid-column:1;grid-row:1;width:74px;height:82px;object-fit:contain}
+ header h1{grid-column:2;grid-row:1;font-size:clamp(1.35rem,5.2vw,1.75rem);width:auto!important}
+ .header-actions{grid-column:1/-1;grid-row:2;display:flex;justify-content:space-between;flex-wrap:nowrap;gap:6px;width:100%}
+ .header-actions button{flex:1;min-width:0;min-height:41px;font-size:clamp(.66rem,2.6vw,.84rem);padding:8px 4px;white-space:nowrap}
+ .note.intro{font-size:.72rem;line-height:1.35;margin:5px 0;padding:6px 8px}
+ .bibi-chat-layout{display:flex;flex-direction:column;gap:0;flex:1;min-height:0}
+ .bibi-hero{display:none}
+ .bibi-chat-layout #messages{width:100%;flex:1;min-height:0;padding:10px 3px;gap:11px}
+ .bubble{max-width:93%;font-size:1rem;line-height:1.45;padding:12px 14px;border-radius:17px 17px 17px 5px}
+ .bubble.me{border-radius:17px 17px 5px 17px}
+ form{gap:7px;padding:7px 0 max(8px,env(safe-area-inset-bottom))}
+ textarea{min-height:52px;border-radius:15px}
+ #send{border-radius:15px;padding:10px 13px}
+ #status{font-size:.7rem;margin:2px 0}
+}
+@media(max-width:380px){header{grid-template-columns:59px minmax(0,1fr)}.bibi-head-avatar{width:58px;height:67px}.header-actions button{font-size:.64rem}}
+@media(prefers-reduced-motion:no-preference){.bibi-head-avatar{animation:bibi-glow 3.6s ease-in-out infinite alternate}@keyframes bibi-glow{from{filter:drop-shadow(0 0 6px #00ff8b)}to{filter:drop-shadow(0 0 18px #00ff8b) drop-shadow(0 0 12px #00e5ff66)}}}
+</style></head>
 <body><main><header><img class="bibi-head-avatar" src="/rx-bibi-mascot.svg" alt="BIBI — maskotka RX"><h1>👑 RX BIBI</h1><div class="header-actions"><button id="tasks-toggle" class="secondary" type="button" hidden>Zadania</button><button id="new-chat" class="secondary" type="button" hidden>Nowa rozmowa</button><button id="logout" type="button" hidden>Wyloguj</button></div></header><p class="note intro">Nasz asystent RX. Odpowiedzi generuje obecnie lokalny planer — bez zewnętrznego modelu AI.</p>
 <section id="login"><h2>Zaloguj się</h2><p class="note">Użyj istniejącego konta VEXORIO.</p><label>Email<input id="email" type="email" autocomplete="email"></label><label>Hasło<input id="password" type="password" autocomplete="current-password"></label><button id="signin" type="button">Zaloguj</button></section>
 <section id="task-panel" hidden style="border:1px solid #387b65;border-radius:12px;padding:10px"><label>Nowe zadanie<input id="task-title" maxlength="160" placeholder="Nazwa zadania" style="width:100%;padding:10px;background:#102721;color:white;border:1px solid #387b65;border-radius:8px"></label><button id="task-add" type="button">Dodaj</button><div id="task-list" aria-live="polite"></div><p class="note">Zadania są synchronizowane z kontem VEXORIO, gdy dostępny jest serwer. Przy problemach z siecią pozostają lokalne. Nie są synchronizowane z GitHub.</p></section><section id="chat" hidden style="flex:1;display:flex;flex-direction:column"><div class="bibi-chat-layout"><aside class="bibi-hero"><img src="/rx-bibi-mascot.svg" alt="BIBI, Twój AI Asystent"><strong>👑 BIBI</strong><span>Twój AI Asystent</span></aside><div id="messages" aria-live="polite"></div></div><form id="form"><textarea id="message" rows="2" maxlength="2000" placeholder="Napisz wiadomość…" aria-label="Wiadomość"></textarea><button id="send" type="submit">Wyślij</button></form></section><p id="status" class="note" role="status"></p></main>
