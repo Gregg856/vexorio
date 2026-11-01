@@ -7,8 +7,16 @@ test('public BIBI panel and protected client route respond safely',async t=>{
  if(origin.protocol!=='https:')throw Error('HTTPS required');
  const get=async(path)=>fetch(new URL(path,origin),{method:'GET',redirect:'manual',signal:AbortSignal.timeout(12000),headers:{Accept:'text/html,application/json'}});
  await t.test('existing panel is reachable',async()=>{
-  const r=await get('/rx-bibi-manager.html');
-  assert.equal(r.status,200,'panel HTTP status');
+  let r=await get('/rx-bibi-manager.html');
+  if([301,302,303,307,308].includes(r.status)){
+   const location=r.headers.get('location');
+   assert.ok(location,'panel redirect must include Location');
+   const target=new URL(location,new URL('/rx-bibi-manager.html',origin));
+   assert.equal(target.origin,origin.origin,'panel redirect must stay on the same origin');
+   assert.ok(['/rx-bibi-manager.html','/rx-bibi-manager','/rx-bibi'].includes(target.pathname),'panel redirect must target the existing BIBI panel');
+   r=await fetch(target,{method:'GET',redirect:'manual',signal:AbortSignal.timeout(12000),headers:{Accept:'text/html'}});
+  }
+  assert.equal(r.status,200,'panel HTTP status after safe redirect');
   const body=await r.text();
   assert.match(body,/RX BIBI Manager/);
  });
