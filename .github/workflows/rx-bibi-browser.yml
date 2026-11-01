@@ -50,6 +50,8 @@ jobs:
               echo '::error::RX FAST conversation regression failed; inspect step summary and logs.'
             fi
             echo '- Zakres: lokalny silnik rozmowy; nie jest to test zalogowanego klienta'
+            echo '- Raport do RX Developer: artefakt rx-fast-dialogue-report (JSON i log)'
+            echo '- Zasada: brak automatycznego wdrożenia lub modyfikacji produkcji'
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$result"
       - name: RX FAST — zachowaj raporty rozmów również po błędzie
