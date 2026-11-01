@@ -26,6 +26,18 @@ export function answerRXSession(message,history=[]){
   else result=calc(calc(a,math[2],b),math[4],c);
   if(Number.isFinite(result))return {answer:'🧮 Wynik: '+result,contextUsed:false};
  }
+ const multi=/^(?:oblicz|policz|ile to jest)\s+(-?\d{1,7})(\s*[+\-×*x/]\s*-?\d{1,7}){3,6}[?.! ]*$/iu.exec(message.trim());
+ if(multi){
+  const expr=message.trim().replace(/^(?:oblicz|policz|ile to jest)\s+/iu,'').replace(/[?.! ]+$/u,'').replace(/\s/g,'');
+  const parts=expr.match(/-?\d+|[+\-×*x/]/gu);
+  if(parts&&parts.join('')===expr&&parts.length%2===1){
+   const nums=[Number(parts[0])],ops=[];
+   for(let i=1;i<parts.length;i+=2){ops.push(parts[i]);nums.push(Number(parts[i+1]));}
+   for(let i=0;i<ops.length;){if(/[×*x/]/i.test(ops[i])){const n=ops[i]==='/'?nums[i]/nums[i+1]:nums[i]*nums[i+1];nums.splice(i,2,n);ops.splice(i,1);}else i++;}
+   const result=ops.reduce((v,op,i)=>op==='+'?v+nums[i+1]:v-nums[i+1],nums[0]);
+   if(Number.isFinite(result))return {answer:'🧮 Wynik: '+result,contextUsed:false};
+  }
+ }
  const subtract=/odejme\s+(\d+)/.exec(input);
  if(input.includes('poprzedniego wyniku')&&subtract&&previous!==null)return {answer:'🧮 Wynik: '+(previous-Number(subtract[1])),contextUsed:true};
  if(name&&/jak mam na imie|pamietasz moje imie|przypomnij moje imie/.test(input))return {answer:'👑 Masz na imię '+name+'.',contextUsed:true};
