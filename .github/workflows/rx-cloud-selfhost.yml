@@ -48,6 +48,8 @@ on:
       - 'tests/rx-cloud-package.cjs'
       - 'tests/rx-cloud-queen-panel.cjs'
       - 'rx-admin-prototype.html'
+      - 'rx-bibi-worker-own-model.mjs'
+      - 'tests/rx-bibi-worker-own-model.test.mjs'
       - 'worker.js'
       - 'public/**'
       - 'index.html'
@@ -96,6 +98,8 @@ on:
       - 'tests/rx-bibi-learning-cases.json'
       - 'tests/rx-cloud-modules.cjs'
       - 'tests/rx-cloud-package.cjs'
+      - 'rx-bibi-worker-own-model.mjs'
+      - 'tests/rx-bibi-worker-own-model.test.mjs'
       - 'worker.js'
       - 'public/**'
       - 'deploy/rxcloud-preflight.sh'
@@ -120,6 +124,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Test own Worker-compatible RX BIBI model
+        run: node tests/rx-bibi-worker-own-model.test.mjs
       - name: Test RX BIBI supervised evaluator
         run: node tests/rx-bibi-evaluator.test.cjs
       - name: Test RX BIBI local chat adapter
