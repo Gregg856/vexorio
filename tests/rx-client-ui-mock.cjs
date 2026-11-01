@@ -10,6 +10,8 @@ const path=require('node:path');
   const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
   const origin='https://vexorio.grzegorzbub1985.workers.dev';
   const html=fs.readFileSync(path.join(__dirname,'../rx-client.html'),'utf8');
+  if(!html.includes('data.history.length%2===0')||!html.includes('data.history.every('))throw Error('Conversation restore must reject incomplete or invalid history pairs');
+  report.checks.push({name:'history_restore_pair_integrity_guard',passed:true});
   await page.route(origin+'/rx-client',route=>route.fulfill({status:200,contentType:'text/html',body:html}));
   await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:`
 window.supabase={createClient:()=>({
