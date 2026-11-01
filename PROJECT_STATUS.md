@@ -169,3 +169,16 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - RX Mrówki mają moduły triage, supervisor i builder, ale raporty \`rx-bibi-reports/rx-ant-task-board.json\` i \`rx-ant-ci-triage.json\` pokazywały 0 zadań i 0 automatycznych napraw. Nie przedstawiać tego jako autonomicznej pracy 24/7.
 
 **Najbliższy krok — nie powtarzać wcześniejszych pakietów:** zweryfikować realną gotowość *istniejącego* runtime modelu i service binding na środowisku, następnie wykonać uwierzytelniony test end-to-end czatu klienta; dopiero po potwierdzeniu i świadomej zgodzie włączyć produkcyjny model-first. Zachować separację prywatnego RX Brain od użytkowników publicznych. Weryfikować GitHub Actions i wdrożenie osobno. Nie wymagać od użytkownika zrzutów ekranu ani kopiowania kodu, jeśli da się sprawdzić narzędziami.
+
+
+## RX VPN — Android najpierw, komputer później (2026-11-01, #635)
+
+Użytkownik wybrał **prywatną sieć RX VPN dla telefonu z Androidem**, a później komputera. Nie utożsamiać istniejącego HTTPS BIBI CONNECT z prawdziwym VPN.
+
+**Audyt przed budową:** na głównej liście repozytorium brak istniejącego modułu WireGuard/VPN; istnieją \`rx-cloud-server.cjs\`, \`rx-queen-cloud.mjs\` i \`worker.js\`. \`rx-cloud-server.cjs\` to adapter HTTP Node 22, **nie serwer WireGuard**. Nie tworzyć drugiego RX CLOUD ani nie twierdzić, że obecny Cloudflare Worker obsługuje tunel UDP.
+
+**Wybrana architektura:** WireGuard na *istniejącym* hoście RX CLOUD **tylko jeśli** host zapewnia dostęp administracyjny do systemu, UDP i możliwość instalacji WireGuard; Android korzysta z oficjalnego klienta WireGuard i osobnego klucza urządzenia. Później drugi klucz dla komputera. Prywatne API Królowej i RX Brain pozostają za uwierzytelnieniem, także wewnątrz VPN. Nie publikować kluczy prywatnych, tokenów ani gotowych profili Androida w GitHubie.
+
+**Warunki przed uruchomieniem:** ustalić, czy obecny RX CLOUD to serwer/VPS z obsługą UDP i prawami administratora czy tylko Cloudflare Workers; potwierdzić publiczny adres lub nazwę DNS, UDP port i trasę dostępu; bez tych faktów nie można bezpiecznie wygenerować działającego profilu. Cloudflare Workers nie jest zwykłym serwerem WireGuard. Jeśli brak hosta UDP, rozważyć prywatny tunel HTTPS wyłącznie do BIBI jako etap przejściowy, **nie nazywać go VPN**.
+
+**Plan wdrożenia bez powtórek:** (1) audyt infrastruktury, (2) konfiguracja WireGuard na potwierdzonym istniejącym hoście, (3) generacja par kluczy lokalnie, poza repozytorium, (4) import profilu przez QR do Androida, (5) test handshake i dostępu do prywatnych usług, (6) dopiero potem komputer. Żadnego automatycznego wdrożenia ani ujawnienia prywatnych endpointów przed weryfikacją.
