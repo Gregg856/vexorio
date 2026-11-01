@@ -326,6 +326,8 @@ jobs:
         env:
           RX_BIBI_TEST_EMAIL: ${{ secrets.RX_BIBI_TEST_EMAIL || vars.RX_BIBI_TEST_EMAIL }}
           RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
+          RX_BIBI_APPROVED_TEST_PROMPT: ${{ secrets.RX_BIBI_APPROVED_TEST_PROMPT }}
+          RX_BIBI_APPROVED_TEST_ANSWER: ${{ secrets.RX_BIBI_APPROVED_TEST_ANSWER }}
         run: |
           if [ -z "$RX_BIBI_TEST_EMAIL" ]; then echo "::warning::RX BIBI: missing TEST_EMAIL in repository secrets or variables"; fi
           if [ -z "$RX_BIBI_TEST_PASSWORD" ]; then echo "::warning::RX BIBI: missing TEST_PASSWORD in repository secrets"; fi
@@ -338,7 +340,7 @@ jobs:
           const file='rx-bibi-reports/rx-client-auth-e2e.json';
           const r=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):{status:'NOT_RUN',clientChatVerified:false};
           const verdict=r.clientChatVerified?'VERIFIED':r.status||'NOT_VERIFIED';
-          const lines=['### RX BIBI — prawdziwy czat klienta','', '- Status: **'+verdict+'**','- Autentyczne rozmowy: '+(r.turns?.length||0)+'/5','- Testy lokalne i mock nie zastępują zalogowanego E2E.'];
+          const lines=['### RX BIBI — prawdziwy czat klienta','', '- Status: **'+verdict+'**','- Autentyczne rozmowy: '+(r.turns?.length||0)+'/5','- Zatwierdzona pamięć na żywo: **'+(r.approvedMemoryVerified===true?'VERIFIED':r.approvedMemoryStatus||'NOT_VERIFIED')+'**','- Testy lokalne i mock nie zastępują zalogowanego E2E.'];
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
           console.log('RX BIBI REAL CHAT VERDICT:',verdict);
           NODE
