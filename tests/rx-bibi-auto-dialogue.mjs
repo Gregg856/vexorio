@@ -56,7 +56,14 @@ const generic=results.filter(r=>/Czat RX odpowiada przez serwerowy planer|Nie ro
 const uniquePrompts=new Set(results.map(r=>r.message));
 const uniqueScenarios=new Set(results.map(r=>r.scenario));
 const failingPrompts=new Set(results.filter(r=>!r.pass).map(r=>r.message));
-const report={qualityIssues:issues.length,issues,genericFallbacks:generic.length,kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,uniquePromptCount:uniquePrompts.size,uniqueScenarioCount:uniqueScenarios.size,failedUniquePromptCount:failingPrompts.size,repeatedTurnCount:results.length-uniquePrompts.size,trainingPerformed:false,productionChatVerified:false,results};
+// Rank weak dialogue areas using unique failed prompts, not repeated smoke turns.
+const weakAreas=[...new Set(results.map(r=>r.scenario))].map(scenario=>{
+ const entries=results.filter(r=>r.scenario===scenario);
+ const failed=entries.filter(r=>!r.pass);
+ return {scenario,uniqueQuestions:new Set(entries.map(r=>r.message)).size,failedUniqueQuestions:new Set(failed.map(r=>r.message)).size,failedTurns:failed.length};
+}).filter(x=>x.failedUniqueQuestions>0).sort((a,b)=>b.failedUniqueQuestions-a.failedUniqueQuestions||a.scenario.localeCompare(b.scenario));
+const recommendedPractice=weakAreas.slice(0,5).map(x=>({scenario:x.scenario,reason:'failed-unique-dialogue-questions',failedUniqueQuestions:x.failedUniqueQuestions,requiresReview:true,trainingPerformed:false}));
+const report={qualityIssues:issues.length,issues,genericFallbacks:generic.length,kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,uniquePromptCount:uniquePrompts.size,uniqueScenarioCount:uniqueScenarios.size,failedUniquePromptCount:failingPrompts.size,repeatedTurnCount:results.length-uniquePrompts.size,weakAreas,recommendedPractice,trainingPerformed:false,productionChatVerified:false,results};
 writeFileSync('rx-bibi-auto-dialogue.json',JSON.stringify(report,null,2)+'\n');
 console.log('RX BIBI automatic conversations:',report.passed+'/'+report.cases);
 if(report.failed)process.exitCode=1;
