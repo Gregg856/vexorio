@@ -6,6 +6,8 @@ const path=require('node:path');
 const http=require('node:http');
 const {start}=require('../rx-bibi-local-chat-adapter.cjs');
 const {saveTasks,readTasks}=require('../rx-bibi-task-store.cjs');
+const {createBrainMemory}=require('../rx-brain-memory.cjs');
+const {saveBrain}=require('../rx-brain-store.cjs');
 function ask(port,message){
  return new Promise((resolve,reject)=>{
   const req=http.request({hostname:'127.0.0.1',port,path:'/chat',method:'POST',headers:{'Content-Type':'application/json'}},res=>{
@@ -61,6 +63,21 @@ function ask(port,message){
   const unrelated=await ask(port,'Czy to zadanie już było: Rozliczenie ogrodu');
   assert.match(unrelated.reply,/Nie znalazłam/);
   assert.deepEqual(readTasks(taskFile).map(t=>t.status),['completed','pending']);
+  // RX #622: exercise existing chat HTTP endpoint with persisted brain memory.
+  const memoryFile=path.join(dir,'brain.json');
+  const brain=createBrainMemory();
+  brain.learn({key:'android_chat',action:'inspect_logs',success:true,evidence:'Verified offline chat test 622'});
+  await saveBrain(memoryFile,brain);
+  const memoryServer=await start({memoryFile});
+  try{
+   const remembered=await ask(memoryServer.address().port,'Co pamiętasz o zadaniu: android_chat');
+   assert.equal(remembered.status,200);
+   assert.match(remembered.reply,/inspect_logs/);
+   assert.equal(remembered.executed,0);
+   const unknown=await ask(memoryServer.address().port,'Co pamiętasz o zadaniu: missing_key');
+   assert.equal(unknown.status,200);
+   assert.doesNotMatch(unknown.reply,/inspect_logs/);
+  }finally{await new Promise((resolve,reject)=>memoryServer.close(e=>e?reject(e):resolve()));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
