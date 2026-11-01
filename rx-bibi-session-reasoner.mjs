@@ -89,6 +89,15 @@ export function answerRXSession(message,history=[]){
   if(previousTopic&&history.length>=2)return {answer:'👑 Odniosłam się do informacji o '+({name:'imieniu',city:'mieście',interest:'zainteresowaniach',preference:'preferencjach',tasks:'zadaniach'}[previousTopic])+', którą podałeś wcześniej w tej rozmowie. Nie sprawdzałam jej poza rozmową.',contextUsed:true};
   return {answer:'👑 Nie potrafię ustalić, do której odpowiedzi odnosi się to pytanie. Doprecyzuj proszę.',contextUsed:false};
  }
+ // #741: avoid inventing absent personal facts; distinguish no data from a confirmed fact.
+ if(/^(?:jak mam na imie|pamietasz moje imie|przypomnij moje imie)[?.! ]*$/.test(question)&&!name)
+  return {answer:'👑 Nie podałeś jeszcze imienia w dostępnej części tej rozmowy.',contextUsed:false};
+ if(/^(?:gdzie mieszkam|w jakim miescie mieszkam|przypomnij moje miasto|jakie miasto podalem)[?.! ]*$/.test(question)&&!currentCity)
+  return {answer:'👑 Nie podałeś jeszcze miasta w dostępnej części tej rozmowy.',contextUsed:false};
+ if(/^(?:czym sie interesuje|jakie mam zainteresowania)[?.! ]*$/.test(question)&&!interest)
+  return {answer:'👑 Nie podałeś jeszcze zainteresowań w dostępnej części tej rozmowy.',contextUsed:false};
+ if(/^(?:co lubie|jakie mam preferencje)[?.! ]*$/.test(question)&&!preference)
+  return {answer:'👑 Nie podałeś jeszcze preferencji w dostępnej części tej rozmowy.',contextUsed:false};
  const shortFollowup=/^(?:a wczesniej|a teraz|co bylo wczesniej|co jest teraz)[?.! ]*$/u.test(question);
  if(shortFollowup&&userTurns.length){
   const lastQuestion=normalize(userTurns[userTurns.length-1]);
