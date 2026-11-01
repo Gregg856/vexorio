@@ -522,6 +522,36 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n### RX AUTOPILOT — wykonane kontrole\n'+(tasks.length?tasks.map(t=>'- '+t.component+': '+t.status).join('\n'):'- Brak zadań do sprawdzenia')+'\n');
           console.log('RX AUTOPILOT checks executed:',tasks.length);
           NODE
+      - name: RX AUTOPILOT — sprawdź cały łańcuch i zapisz dowody
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const dir='rx-bibi-reports';
+          const read=name=>{try{return JSON.parse(fs.readFileSync(dir+'/'+name,'utf8'))}catch{return null}};
+          const handoff=read('rx-developer-test-handoff.json');
+          const proposals=read('rx-developer-repair-proposals.json');
+          const execution=read('rx-autopilot-executed-checks.json');
+          const tasks=Array.isArray(handoff?.tasks)?handoff.tasks:[];
+          const plans=Array.isArray(proposals?.tasks)?proposals.tasks:[];
+          const checks=Array.isArray(execution?.tasks)?execution.tasks:[];
+          const uncovered=tasks.filter(t=>!plans.some(p=>p.component===t.component)).map(t=>t.component);
+          const result={
+            schema:1,kind:'rx-autopilot-chain-verification',
+            runId:process.env.GITHUB_RUN_ID||'',
+            handoffPresent:!!handoff,proposalsPresent:!!proposals,executionPresent:!!execution,
+            reportedFailures:tasks.length,repairPlans:plans.length,executedChecks:checks.length,
+            uncovered,checkFailures:checks.filter(t=>t.status==='FAIL').map(t=>t.component),
+            verified:!!handoff&&!!proposals&&!!execution&&uncovered.length===0&&checks.every(t=>t.status!=='FAIL'),
+            codeChanged:false,productionChanged:false
+          };
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(dir+'/rx-autopilot-chain-verification.json',JSON.stringify(result,null,2)+'\\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\\n### RX AUTOPILOT — łańcuch diagnostyczny\\n'+
+            '- Raporty: '+(result.verified?'kompletne':'wymagają uwagi')+'\\n'+
+            '- Zgłoszenia: '+tasks.length+', plany: '+plans.length+', wykonane kontrole: '+checks.length+'\\n');
+          console.log('RX AUTOPILOT chain verified:',result.verified,'executed:',checks.length);
+          NODE
       - name: RX BIBI — trening kandydatów i ocena na niewidzianych przykładach
         if: ${{ !cancelled() }}
         run: node tests/rx-learning-gate.cjs
