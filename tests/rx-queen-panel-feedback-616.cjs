@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const panel=fs.readFileSync('rx-bibi-manager.html','utf8');
+const start=panel.indexOf('// RX #605: Queen conversational requests');
+const end=panel.indexOf('// Keep the RX Brain advisory-memory syntax',start);
+assert.ok(start>=0&&end>start);
+const queen=panel.slice(start,end);
+assert.equal((queen.match(/result\.modelInferenceUsed===true/g)||[]).length,2,'both Queen panel handlers must report model provenance');
+assert.equal((queen.match(/Odpowiedź: lokalny model AI Królowej/g)||[]).length,2);
+assert.equal((queen.match(/Odpowiedź podstawowa RX/g)||[]).length,2);
+assert.equal((queen.match(/Model Królowej nie odpowiedział/g)||[]).length,2);
+assert.equal((queen.match(/finally\{send\.disabled=false;/g)||[]).length,2);
+assert.match(queen,/Authorization:'Bearer '\+data\.session\.access_token/);
+assert.match(queen,/message:queenMessage/);
+assert.doesNotMatch(queen,/\/api\/rx\/client\/chat/);
+console.log('RX #616 Queen panel provenance feedback: PASS');
