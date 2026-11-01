@@ -754,7 +754,7 @@ export function planRXChat(message,history=[],learning=null){
  }
  // Session-only follow-up to the RX Ants explanation; never claim work was executed.
  const rxAntPrevious=history.filter((_,i)=>i%2===0).slice(-4).some(turn=>/mr[oó]wk/iu.test(turn)&&/(?:przyk[lł]ad|modu[lł]|wsp[oó]ln)/iu.test(turn));
- const rxAntSecond=rxAntPrevious&&/^(?:podaj|wyja[sś]nij|rozwi[nń])\\s+(?:mi\\s+)?(?:drugi|2\\.?|drug[ią]\\s+)(?:\\s+przyk[lł]ad\\w*)?[.!? ]*$/iu.test(message.trim());
+ const rxAntSecond=rxAntPrevious&&/^(?:podaj|wyja[sś]nij|rozwi[nń])\\s+(?:mi\\s+)?(?:drugi|2\\.?)(?:\\s+przyk[lł]ad\\w*)?[.!? ]*$/iu.test(message.trim());
  if(rxAntSecond){
   answer='👑 Drugi przykład: jedna RX Mrówka zbiera wyniki testów, druga wyszukuje powtarzające się błędy, a trzecia przygotowuje czytelne podsumowanie dla operatora. Koordynator porównuje wyniki przed zaproponowaniem poprawek. To przykład możliwej współpracy, nie informacja o wykonanym teście.';
   tasks.length=0;plan.work=null;
