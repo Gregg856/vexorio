@@ -25,7 +25,7 @@ function answer(prompt){
   const similarity=common/(q.size+tokens.size-common||1);
   if(similarity>score){score=similarity;best={response,intent};}
  }
- if(score<0.3)return {text:'Nie mam jeszcze wystarczających danych, żeby odpowiedzieć pewnie. Doprecyzuj pytanie.',matched:false,confidence:score,productionConnected:false};
+ if(score<0.6)return {text:'Nie mam jeszcze wystarczających danych, żeby odpowiedzieć pewnie. Doprecyzuj pytanie.',matched:false,confidence:score,productionConnected:false};
  return {text:best.response,matched:true,intent:best.intent,confidence:score,productionConnected:false};
 }
 function evaluate(){
