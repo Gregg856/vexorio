@@ -1,0 +1,23 @@
+[Unit]
+Description=RX Queen local language model gateway (optional)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rxcloud
+Group=rxcloud
+WorkingDirectory=/opt/rxcloud/vexorio
+EnvironmentFile=/etc/rxcloud/rxcloud.env
+ExecStart=/usr/bin/node /opt/rxcloud/vexorio/rx-queen-local-model.cjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/rxcloud/vexorio
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
