@@ -23,7 +23,7 @@ const cases=[
  ['unknown-answer policy', 'Co powinnaś zrobić, gdy nie znasz odpowiedzi na pytanie?', [], /nie wiem.*nie będę zgadywać/i],
  ['unknown-answer paraphrase', 'Co robisz gdy nie wiesz?', [], /nie wiem.*wiarygodnym źródle/i],
  ['remember given name', 'Jak mam na imię?', ['Mam na imię Marek.','Miło Cię poznać'], /Marek/],
- ['name unknown is not fabricated', 'Jak mam na imię?', [], null],
+ ['name unknown is not fabricated', 'Jak mam na imię?', [], /Nie podałeś jeszcze imienia/],
  ['first task', 'Które z moich zadań jest pierwsze?', [tasks,list], /naprawić czat/],
  ['third task', 'Które z moich zadań jest trzecie?', [tasks,list], /przetestować matematykę/],
  ['last task', 'Ostatnie zadanie?', [tasks,list], /przetestować matematykę/],
