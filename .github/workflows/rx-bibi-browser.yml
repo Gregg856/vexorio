@@ -542,14 +542,14 @@ jobs:
             handoffPresent:!!handoff,proposalsPresent:!!proposals,executionPresent:!!execution,
             reportedFailures:tasks.length,repairPlans:plans.length,executedChecks:checks.length,
             uncovered,checkFailures:checks.filter(t=>t.status==='FAIL').map(t=>t.component),
-            verified:!!handoff&&!!proposals&&!!execution&&uncovered.length===0&&checks.every(t=>t.status!=='FAIL'),
+            verified:!!handoff&&!!proposals&&!!execution&&uncovered.length===0&&tasks.every(t=>checks.some(c=>c.component===t.component&&c.status==='PASS'))&&checks.every(t=>t.status==='PASS'),
             codeChanged:false,productionChanged:false
           };
           fs.mkdirSync(dir,{recursive:true});
-          fs.writeFileSync(dir+'/rx-autopilot-chain-verification.json',JSON.stringify(result,null,2)+'\\n');
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\\n### RX AUTOPILOT — łańcuch diagnostyczny\\n'+
-            '- Raporty: '+(result.verified?'kompletne':'wymagają uwagi')+'\\n'+
-            '- Zgłoszenia: '+tasks.length+', plany: '+plans.length+', wykonane kontrole: '+checks.length+'\\n');
+          fs.writeFileSync(dir+'/rx-autopilot-chain-verification.json',JSON.stringify(result,null,2)+'\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n### RX AUTOPILOT — łańcuch diagnostyczny\\n'+
+            '- Raporty: '+(result.verified?'kompletne':'wymagają uwagi')+'\n'+
+            '- Zgłoszenia: '+tasks.length+', plany: '+plans.length+', wykonane kontrole: '+checks.length+'\n');
           console.log('RX AUTOPILOT chain verified:',result.verified,'executed:',checks.length);
           NODE
       - name: RX BIBI — trening kandydatów i ocena na niewidzianych przykładach
