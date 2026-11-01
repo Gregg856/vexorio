@@ -160,6 +160,8 @@ function ask(port,message,history,historyToken){
    const response=await ask(damagedServer.address().port,'Dalej',undefined,combinedToken);
    assert.equal(response.status,503);
    assert.equal(response.code,'HISTORY_UNAVAILABLE');
+   assert.match(response.diagnostic,/plik historii/);
+   assert.doesNotMatch(response.diagnostic,/rx-test-token-627/);
    assert.equal(fs.readFileSync(damagedFile,'utf8'),'{invalid-json');
   }finally{await new Promise(resolve=>damagedServer.close(resolve));}
   // Requests arriving concurrently must be serialized and persist both messages.
