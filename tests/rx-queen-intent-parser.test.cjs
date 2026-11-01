@@ -26,7 +26,12 @@ test('composer follows surface constraints for shuffled instructions',()=>{
   if(kind==='noGreeting')assert.ok(!out.text.includes('Cześć!'),prompt);
   if(kind==='noSignoff')assert.ok(!out.text.includes('Pozdrawiam!'),prompt);
   if(kind==='oneSentence')assert.ok((out.text.match(/[^.!?]+[.!?]+/gu)||[]).length<=1,prompt);
-  if(kind==='paraphrase')assert.ok(!out.text.includes('własnymi słowami')&&!out.text.includes('bez cytowania'),prompt);
+  if(kind==='paraphrase'){
+   assert.equal(out.matched,false,prompt);
+   assert.equal(out.source,'local-semantic-limit',prompt);
+   assert.equal(out.requiresClarification,true,prompt);
+   assert.equal(out.productionConnected,false,prompt);
+  }
  }
 });
 test('unrecognized content and mismatched modes are not stripped',()=>{
