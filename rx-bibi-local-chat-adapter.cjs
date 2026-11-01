@@ -40,7 +40,19 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
     if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000)){
      sendError(res,historyFile?503:400,historyFile?'HISTORY_UNAVAILABLE':'INVALID_REQUEST');return;
     }
-    const result=memoryFile?await chatRXWithStoredMemory(data.message,{tasks,memoryFile,history}):await chatRXWithKnowledge(data.message,{tasks,history,...(knowledgeLookup?{knowledgeLookup}:{})});
+    const diagnosticQuery=/^(?:diagnoza|diagnostyka|pomoc dla błędu|pomoc dla bledu):?\\s+(AUTH_REQUIRED|HISTORY_UNAVAILABLE|INVALID_REQUEST)\\??$/i.exec(data.message.trim());
+    let result;
+    if(diagnosticQuery){
+     const code=diagnosticQuery[1].toUpperCase();
+     let advisory='';
+     if(memoryFile){
+      const {loadBrain}=require('./rx-brain-store.cjs');
+      const brain=await loadBrain(memoryFile);
+      const recommendation=brain.recommend(code.toLowerCase());
+      if(recommendation.known&&typeof recommendation.action==='string')advisory=' RX Brain: '+recommendation.action.slice(0,120)+'. To tylko zapisana wskazówka, nie dowód naprawy.';
+     }
+     result={answer:'Diagnostyka '+code+': '+SAFE_DIAGNOSTICS[code]+advisory,executed:0};
+    }else result=memoryFile?await chatRXWithStoredMemory(data.message,{tasks,memoryFile,history}):await chatRXWithKnowledge(data.message,{tasks,history,...(knowledgeLookup?{knowledgeLookup}:{})});
     const evidenceQuery=/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:wynik |status )?(?:testu |testów |github actions )?(?:run |przebiegu )?(\d{8,20})[?!. ]*$/i.exec(data.message.trim());
     if(evidenceQuery){
       const evidence=await getVerifiedRun(evidenceQuery[1],{fetchImpl:githubFetch});
