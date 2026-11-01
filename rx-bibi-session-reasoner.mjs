@@ -26,7 +26,7 @@ export function answerRXSession(message,history=[]){
  const subtract=/odejme\s+(\d+)/.exec(input);
  if(input.includes('poprzedniego wyniku')&&subtract&&previous!==null)return {answer:'🧮 Wynik: '+(previous-Number(subtract[1])),contextUsed:true};
  if(list.length===3&&/powtorz je|wymien je|jakie to zadania/.test(input))return {answer:'👑 Twoje trzy zadania: 1) '+list[0]+'; 2) '+list[1]+'; 3) '+list[2]+'.',contextUsed:true};
- if(list.length===3&&/ktore.*zadani.*drugie|ktore.*zadani.*jest drugie|drugie zadanie/.test(input))return {answer:'👑 Drugie zadanie to: '+list[1]+'.',contextUsed:true};
+ if(list.length===3&&/ktore.*zada(?:n|ni).*drugie|drugie zadanie/.test(input))return {answer:'👑 Drugie zadanie to: '+list[1]+'.',contextUsed:true};
  if(list.length===3&&input.includes('podsumuj nasza rozmowe')){
   const result=answers.slice().reverse().map(x=>/wynik\s*:\s*(-?\d+)/iu.exec(x)?.[1]).find(Boolean);
   return {answer:'👑 Imię: '+(name||'nie podano')+'. Trzy zadania: '+list.join('; ')+'. Końcowy wynik obliczenia: '+(result||'nie ustalono')+'.',contextUsed:true};
