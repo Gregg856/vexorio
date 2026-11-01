@@ -18,7 +18,7 @@ function compose({prompt,mode='answer',tone='friendly'}={}){
  }
  const contentPrompt=intent.content;
  if(intent.constraints.includes('paraphrase')){
-  return {text:'Nie potrafię jeszcze wiarygodnie sparafrazować tego tekstu własnymi słowami. Mogę przygotować prostą wersję, jeśli podasz gotową treść.',mode,tone,matched:false,requiresClarification:true,source:'local-semantic-limit',productionConnected:false};
+  return {text:'Nie potrafię jeszcze wiarygodnie sparafrazować tego tekstu własnymi słowami. To zadanie wymaga modelu rozumiejącego znaczenie tekstu.',mode,tone,matched:false,requiresClarification:true,source:'local-semantic-limit',productionConnected:false};
  }
  const oneSentence=intent.constraints.includes('oneSentence');
  const noGreeting=intent.constraints.includes('noGreeting');
