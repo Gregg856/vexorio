@@ -78,6 +78,16 @@ function ask(port,message){
    assert.equal(unknown.status,200);
    assert.doesNotMatch(unknown.reply,/inspect_logs/);
   }finally{await new Promise((resolve,reject)=>memoryServer.close(e=>e?reject(e):resolve()));}
+  await learnAndSaveBrain(memoryFile,{key:'restart_chat',action:'check_health',success:true,evidence:'Verified offline restart test 623'});
+  const restarted=await start({memoryFile});
+  try{
+   const response=await ask(restarted.address().port,'Co pamiętasz o zadaniu: restart_chat');
+   assert.equal(response.status,200);
+   assert.match(response.reply,/check_health/);
+   assert.equal(response.executed,0);
+   const earlier=await ask(restarted.address().port,'Co pamiętasz o zadaniu: android_chat');
+   assert.match(earlier.reply,/inspect_logs/);
+  }finally{await new Promise((resolve,reject)=>restarted.close(e=>e?reject(e):resolve()));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
