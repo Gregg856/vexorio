@@ -56,6 +56,16 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
     env.RX_BIBI_MODEL_ENABLED='true';
     env.RX_BIBI_CLIENT_MODEL_FIRST=process.env.RX_BIBI_CLIENT_MODEL_FIRST==='true'?'true':'false';
   }
+  // RX #609: isolated Queen inference binding on loopback only.
+  // This is transport wiring, not a claim that a conversational model is installed.
+  const queenModelEnabled=process.env.RX_QUEEN_MODEL_ENABLED==='true';
+  if(queenModelEnabled){
+    const queenPort=Number(process.env.RX_QUEEN_MODEL_PORT||'');
+    if(!Number.isInteger(queenPort)||queenPort<1||queenPort>65535)
+      throw Error('Invalid RX_QUEEN_MODEL_PORT');
+    env.RX_QUEEN_MODEL_SERVICE=createLocalModelService(queenPort);
+    env.RX_QUEEN_MODEL_ENABLED='true';
+  }
   const startedAt=Date.now();
   let activeRequests=0,peakActiveRequests=0,completedRequests=0;
   const server=http.createServer(async(req,res)=>{
