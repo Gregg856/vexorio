@@ -485,7 +485,7 @@ jobs:
           const handoff=read('rx-developer-test-handoff.json');
           const plans={
             'authenticated-client-chat':{diagnosis:'Authentication rejected; application chat remains unverified',checks:['Inspect the Supabase authentication error code without logging secrets','Verify existing test-account configuration and server auth settings','Rerun authenticated end-to-end chat after correcting configuration'],target:'tests/rx-client-auth-e2e.cjs',safeToAutofix:false},
-            'local-dialogue':{diagnosis:'Local dialogue regression',checks:['Inspect failed dialogue scenarios','Reproduce with existing local test harness','Prepare minimal patch and run regression tests'],target:'tests/rx-dialogue-tests.cjs',safeToAutofix:false}
+            'local-dialogue':{diagnosis:'Local dialogue regression',checks:['Inspect failed dialogue scenarios','Reproduce with existing local test harness','Prepare minimal patch and run regression tests'],target:'tests/rx-chat-planner.mjs',safeToAutofix:false}
           };
           const tasks=(handoff?.tasks||[]).map(task=>({...task,proposal:plans[task.component]||{diagnosis:'Unknown test failure',checks:['Inspect source report'],safeToAutofix:false}}));
           const result={schema:1,kind:'rx-developer-repair-proposals',runId:handoff?.runId||'',tasks,requiresReview:true,codeChanged:false};
@@ -502,7 +502,7 @@ jobs:
           const dir='rx-bibi-reports';
           const read=name=>{try{return JSON.parse(fs.readFileSync(dir+'/'+name,'utf8'))}catch{return null}};
           const proposals=read('rx-developer-repair-proposals.json');
-          const allow=new Set(['tests/rx-client-auth-e2e.cjs','tests/rx-dialogue-tests.cjs']);
+          const allow=new Set(['tests/rx-client-auth-e2e.cjs','tests/rx-chat-planner.mjs']);
           const tasks=[];
           for(const item of (proposals?.tasks||[]).slice(0,10)){
             const target=item.proposal?.target;
