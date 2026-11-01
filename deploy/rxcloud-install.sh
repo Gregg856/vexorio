@@ -49,7 +49,7 @@ find . -maxdepth 1 -type f -name '*.html' -exec cp -t /opt/rxcloud/vexorio/publi
 for pattern in '*.js' '*.css' '*.svg' '*.png' '*.jpg' '*.jpeg' '*.webp' '*.ico' '*.json' '*.txt' '*.webmanifest'; do
   find . -maxdepth 1 -type f -name "$pattern" -exec cp -t /opt/rxcloud/vexorio/public/ -- {} +
 done
-runtime_modules=(rx-persistent-memory.mjs rx-knowledge-base.mjs rx-world-knowledge.mjs rx-chat-planner.mjs rx-task-catalog.cjs rx-math-core.cjs)
+runtime_modules=(rx-persistent-memory.mjs rx-knowledge-base.mjs rx-world-knowledge.mjs rx-chat-planner.mjs rx-task-catalog.cjs rx-math-core.cjs rx-queen-model-bridge.mjs rx-bibi-model-bridge.mjs rx-queen-local-model.cjs)
 for module in "${runtime_modules[@]}"; do
   if [[ ! -f "$module" || -L "$module" ]]; then echo "Missing or unsafe runtime module: $module" >&2; exit 1; fi
 done
