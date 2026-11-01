@@ -4,7 +4,7 @@ function facts(history){
  const users=history.filter((_,i)=>i%2===0);
  const listText=users.slice().reverse().map(x=>/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(x)?.[1]).find(Boolean);
  const list=listText?listText.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):[];
- const name=users.slice().reverse().map(x=>/(?:mam na imię|jednak mam na imię)\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).find(Boolean);
+ const name=users.slice().reverse().map(x=>/(?:mam na imię|jednak mam na imię|moje aktualne imię to|moje imię to)\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).find(Boolean);
  const answers=history.filter((_,i)=>i%2===1);
  const previous=answers.slice().reverse().map(x=>/wynik\s*:\s*(-?\d+(?:[.,]\d+)?)/iu.exec(x)?.[1]).find(Boolean);
  return {list,name,previous:previous===undefined?null:Number(previous.replace(',','.')),answers};
@@ -33,7 +33,7 @@ export function answerRXSession(message,history=[]){
   const remembered=priorList.length===3?'3':'nie podano';
   return {answer:'👑 Masz na imię '+name+'. Liczba zadań: '+remembered+'.',contextUsed:true};
  }
- const cities=userTurns.map(x=>/mieszkam w\s+([\p{L}-]{2,40})/iu.exec(x)?.[1]).filter(Boolean);
+ const cities=userTurns.map(x=>/(?:mieszkam w|moje aktualne miasto to|chodziło mi o miasto|chodziło mi o)\s+([\p{L}-]{2,40})/iu.exec(x)?.[1]).filter(Boolean);
  const currentCity=cities[cities.length-1];
  const cityChanged=new Set(cities.map(normalize)).size>1;
  if(name&&currentCity&&/jak mam na imie i gdzie mieszkam|gdzie mieszkam i jak mam na imie|podaj moje imie i miasto/.test(question))
