@@ -10,7 +10,16 @@ const cases=[
  ['simple multiplication', 'Policz 12 * 9', [], /108/],
  ['follow-up subtraction', 'Jeśli od poprzedniego wyniku odejmę 250, ile zostanie?', ['Oblicz 125 × 8 + 350.','🧮 Wynik: 1350'], /1100/],
  ['division by zero is not invented', 'Policz 5 / 0', [], null],
- ['no invented second task', 'Które z moich zadań jest drugie?', [], null]
+ ['no invented second task', 'Które z moich zadań jest drugie?', [], null],
+ ['no invented task list', 'Wymień je', [], null],
+ ['no invented previous result', 'Jeśli od poprzedniego wyniku odejmę 250, ile zostanie?', [], null],
+ ['zero divided by nonzero', 'Policz 0 / 5', [], /0/],
+ ['simple subtraction', 'Policz 999 - 111', [], /888/],
+ ['simple addition', 'Policz 17 + 25', [], /42/],
+ ['simple division', 'Policz 81 / 9', [], /9/],
+ ['math operator precedence', 'Oblicz 2 + 3 × 4', [], /14/],
+ ['task memory from earlier context', 'Które z moich zadań jest drugie?', [tasks,list,'Dziękuję','Proszę'], /sprawdzić pamięć/],
+ ['summary with no invented math', 'Podsumuj naszą rozmowę', [tasks,list], /nie ustalono/]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);

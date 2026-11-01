@@ -34,6 +34,9 @@ async function main(){
   if(i===3){passed=/pami[eę]/i.test(answer);reason='Drugie zadanie';}
   if(i===4){passed=/1350|1[\s.]350/.test(answer);reason='Matematyka: 1350';}
   if(i===5){passed=/1100|1[\s.]100/.test(answer);reason='Matematyka z kontekstem: 1100';}
+  if(i===6){passed=/mr[oó]wk|zadani|test|prac|automat/i.test(answer)&&answer.trim().length>=35;reason='Merytoryczna odpowiedź o RX Mrówkach';}
+  if(i===7){passed=/kr[oó]low|koordyn|decyz|plan|zarz[aą]dz/i.test(answer)&&answer.trim().length>=35;reason='Merytoryczna odpowiedź o RX Królowej';}
+  if(i===8){passed=/nie wiem|nie znam|nie jestem pew|sprawdz|weryfik|dopyt|nie zgad|nie wymy[sś]l/i.test(answer);reason='Postępowanie przy braku wiedzy';}
   if(i===9){passed=/marek/i.test(answer)&&/1100|1[\s.]100/.test(answer);reason='Podsumowanie kontekstu';}
   results.push({turn:i+1,passed,reason,question:message,answer:answer.slice(0,1500)});
   history.push(message,answer);
