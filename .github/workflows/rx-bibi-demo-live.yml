@@ -1,0 +1,29 @@
+name: RX BIBI DEMO — 10 automatic live chat tests
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '27 8 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: rx-bibi-demo-live
+  cancel-in-progress: false
+jobs:
+  demo-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Send 10 real chat messages without login
+        run: node tests/rx-bibi-demo-live.cjs
+      - name: Upload dialogue and failure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rx-bibi-demo-ten-turn-report
+          path: rx-bibi-demo-report.json
+          if-no-files-found: warn
+          retention-days: 14
