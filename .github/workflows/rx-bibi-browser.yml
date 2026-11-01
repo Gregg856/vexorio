@@ -29,12 +29,17 @@ jobs:
         shell: bash
         run: |
           set +e
+          node --test tests/rx-bibi-client-route.test.mjs > /tmp/rx-bibi-route.log 2>&1
+          route_result=$?
+          cat /tmp/rx-bibi-route.log
           node tests/rx-chat-planner.mjs > /tmp/rx-bibi-dialogues.log 2>&1
           result=$?
+          if [ "$route_result" -ne 0 ]; then result="$route_result"; fi
           cat /tmp/rx-bibi-dialogues.log
           echo "RX FAST dialogue exit code: $result"
           mkdir -p rx-bibi-reports
           cp /tmp/rx-bibi-dialogues.log rx-bibi-reports/rx-fast-dialogues.log
+          cp /tmp/rx-bibi-route.log rx-bibi-reports/rx-client-route.log
           RX_FAST_EXIT_CODE="$result" node -e 'const fs=require("node:fs");const log=fs.readFileSync("/tmp/rx-bibi-dialogues.log","utf8");const result={suite:"RX FAST dialogue regression",status:process.env.RX_FAST_EXIT_CODE==="0"?"PASS":"FAIL",exitCode:Number(process.env.RX_FAST_EXIT_CODE),scope:"local-planner-not-authenticated-client",failureExcerpt:process.env.RX_FAST_EXIT_CODE==="0"?null:log.slice(-6000)};fs.writeFileSync("rx-bibi-reports/rx-fast-dialogues.json",JSON.stringify(result,null,2)+"\n")}'
           RX_FAST_EXIT_CODE="$result" node - <<'NODE'
           const fs=require('node:fs');
@@ -82,6 +87,7 @@ jobs:
           path: |
             rx-bibi-reports/rx-fast-dialogues.json
             rx-bibi-reports/rx-fast-dialogues.log
+            rx-bibi-reports/rx-client-route.log
             rx-bibi-reports/rx-developer-dialogue-handoff.md
           if-no-files-found: warn
           retention-days: 7
