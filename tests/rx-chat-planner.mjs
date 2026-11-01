@@ -16,6 +16,15 @@ assert.equal(learnedPreference.learning.trainingPerformed,false);
 assert.doesNotMatch(planRXChat('Jakie preferencje pamiętasz?',['Cześć','Wolę długie odpowiedzi.']).answer,/Wolę długie odpowiedzi/);
 assert.match(planRXChat('Jakie preferencje pamiętasz?').answer,/Nie widzę jeszcze/);
 
+// RX BIBI #707: short commands retain user context and do not claim execution.
+const context=['Chcę poprawić pamięć BIBI.','Omówmy plan.'];
+assert.match(planRXChat('Rób',context).answer,/kontynuować temat:.*pamięć BIBI/);
+assert.match(planRXChat('Popraw',context).answer,/poprawić temat:.*pamięć BIBI/);
+assert.match(planRXChat('Sprawdź',context).answer,/sprawdzić temat:.*pamięć BIBI/);
+assert.match(planRXChat('Rób',context).answer,/nie wykonałam automatycznie/);
+assert.equal(planRXChat('Rób',context).executed,0);
+assert.match(planRXChat('Rób').answer,/Podaj konkretne zadanie/);
+
 // Regression for the exact customer message (Polish genitive plural: "mrówek").
 assert.match(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Aby zwiększyć moc mrówek RX/);
 assert.doesNotMatch(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Co najbardziej Cię w tym temacie interesuje/);
