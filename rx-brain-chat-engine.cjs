@@ -50,8 +50,15 @@ function chatRX(message,{history=[],tasks=[],brainMemory=null}={}){
  const relatedQuery=/^(?:czy to zadanie już było|czy to zadanie juz bylo|sprawdź podobne zadanie|sprawdz podobne zadanie):?\s+(.+)$/i.exec(message.trim());
  const naturalTaskQuery=/^(?:co z zadaniem|jaki status zadania|czy zakończono zadanie)\s+[„"]?(.{3,160}?)[”"]?\??$/i.exec(message.trim());
  const taskFollowup=/^(?:a (?:to|tamto) zadanie|a jaki (?:ma )?status|czy (?:to|ono) (?:już )?(?:gotowe|zrobione))[?!.\s]*$/i.test(message.trim());
+ const recurringQuery=/^(?:znany problem|powtarzający się problem|powtarzajacy sie problem|znana naprawa):?\s+([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
  const memoryQuery=/^(?:co pamiętasz o zadaniu|co pamietasz o zadaniu|jakie doświadczenie masz z zadaniem):?\s+([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
- if(memoryQuery){
+ if(recurringQuery){
+   const key=recurringQuery[1].toLowerCase();
+   const record=brainMemory&&typeof brainMemory.recommend==='function'?brainMemory.recommend(key):null;
+   answer=record&&record.known&&typeof record.action==='string'&&Number.isSafeInteger(record.samples)&&record.samples>0&&Number.isFinite(record.successRate)
+    ?'Znany problem „'+key+'” w RX Brain. Wcześniejsza wskazówka: '+record.action.slice(0,120)+'. Zapisane próby: '+record.samples+', sukcesy: '+Math.round(record.successRate*100)+'%. '+(record.warning?'Uwaga: więcej niepowodzeń niż sukcesów. ':'')+'To sugestia z historii, nie dowód aktualnej naprawy. Wymaga sprawdzenia i zatwierdzenia.'
+    :'Brak zapisanej wskazówki RX Brain dla problemu „'+key+'”. Nie zgaduję rozwiązania.';
+ }else if(memoryQuery){
    const key=memoryQuery[1].toLowerCase();
    const record=brainMemory&&typeof brainMemory.recommend==='function'?brainMemory.recommend(key):null;
    answer=record&&record.known&&typeof record.action==='string'&&Number.isSafeInteger(record.samples)&&record.samples>0&&Number.isFinite(record.successRate)
