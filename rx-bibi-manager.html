@@ -1026,8 +1026,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(key){const action=document.createElement('button');action.type='button';action.textContent='Otwórz: '+buttons.get(key).textContent;action.addEventListener('click',()=>activate(key));log.append(action);}
    log.scrollTop=log.scrollHeight;
   };
-  // RX #604: Queen identity questions use the private admin endpoint, not BIBI.
-  if(/^(?:kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz|przedstaw się|przedstaw sie|cześć|czesc|hej|witaj|witam)[?!. ]*$/iu.test(message)){
+  // RX #605: Queen conversational requests use the admin-only endpoint.
+  if(/^(?:kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz|przedstaw się|przedstaw sie|cześć|czesc|hej|witaj|witam|co potrafisz|co umiesz|pomoc|help|jak działasz|jak dzialasz|jaki jest status|status|status rx|czy działasz|czy dzialasz|czy jesteś online|czy jestes online|dziękuję|dziekuje|dzięki|dzieki|dobranoc|do widzenia|na razie)[?!. ]*$/iu.test(message)){
    (async()=>{
     send.disabled=true;
     try{
