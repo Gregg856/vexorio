@@ -23,7 +23,7 @@ assert.match(planRXChat('Popraw',context).answer,/poprawić temat:.*pamięć BIB
 assert.match(planRXChat('Sprawdź',context).answer,/sprawdzić temat:.*pamięć BIBI/);
 assert.match(planRXChat('Rób',context).answer,/nie wykonałam automatycznie/);
 assert.equal(planRXChat('Rób',context).executed,0);
-assert.match(planRXChat('Rób').answer,/Podaj konkretne zadanie/);
+assert.match(planRXChat('Rób').answer,/Do czego nawiązujesz/);
 
 // Regression for the exact customer message (Polish genitive plural: "mrówek").
 assert.match(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Aby zwiększyć moc mrówek RX/);
