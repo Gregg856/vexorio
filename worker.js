@@ -1,3 +1,4 @@
+import {ownWorkerAnswer} from './rx-bibi-worker-own-model.mjs';
 import {handleRXMemory} from './rx-persistent-memory.mjs';
 import {findRXKnowledge} from './rx-knowledge-base.mjs';
 import {searchWorldKnowledge,getRXKnowledgeFollowupPrior,formatRXKnowledgeFollowup} from './rx-world-knowledge.mjs';
@@ -118,6 +119,12 @@ export default {
       if(typeof message!=='string'||!message.trim()||message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
       const history=payload?.history??[];
       if(!Array.isArray(history)||history.length>10||history.some(item=>typeof item!=='string'||item.length>2000))return reply(400,'Nieprawidłowa historia.');
+      // Opt-in only: authentication and Origin checks above are mandatory.
+      // Training examples must be approved and contain no private RX memory.
+      if(env.RX_BIBI_WORKER_OWN_MODEL==='true'){
+        const answer=ownWorkerAnswer(message,env.RX_BIBI_WORKER_TRAINING_JSON);
+        if(answer)return new Response(JSON.stringify({ok:true,answer,modelInferenceUsed:true,engine:'rx-bibi-worker-own-model',executed:0,adminToolsAvailable:false}),{status:200,headers});
+      }
       // Explicit opt-in model request, isolated behind an existing service binding.
       // Never send chat history, private RX memory, or administrator data.
       if(/^(?:zapytaj model|zapytaj ai):/iu.test(message.trim())){
