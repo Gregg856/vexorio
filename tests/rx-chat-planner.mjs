@@ -984,3 +984,8 @@ const rxAntSecondExample=planRXChat('Podaj drugi przykład',[
 assert.match(rxAntSecondExample.answer,/Drugi przykład:/);
 assert.match(rxAntSecondExample.answer,/wyniki testów/);
 assert.equal(rxAntSecondExample.executed,0);
+
+// Without earlier RX Ants context, a short follow-up must not invent a specific prior example.
+const rxAntSecondNoContext=planRXChat('Podaj drugi przykład');
+assert.doesNotMatch(rxAntSecondNoContext.answer,/Drugi przykład:/);
+assert.equal(rxAntSecondNoContext.executed,0);
