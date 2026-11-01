@@ -64,7 +64,13 @@ const cases=[
  ['combined facts paraphrase', 'Podaj moje imię i miasto', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
  ['polite combined facts', 'Powiedz mi, jak mam na imię i gdzie mieszkam?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
  ['combined tasks paraphrase', 'Podaj moje imię i liczbę zadań', ['Mam na imię Adam','OK',tasks,list], /Adam.*3/],
- ['polite combined tasks', 'Proszę, jak mam na imię i ile mam zadań?', ['Mam na imię Adam','OK',tasks,list], /Adam.*3/]
+ ['polite combined tasks', 'Proszę, jak mam na imię i ile mam zadań?', ['Mam na imię Adam','OK',tasks,list], /Adam.*3/],
+ ['followup city earlier', 'A wcześniej?', ['Mieszkam w Krakowie','OK','Mieszkam w Poznaniu','OK','Gdzie mieszkam?','W Poznaniu'], /Krakowie/],
+ ['followup city now', 'A teraz?', ['Mieszkam w Krakowie','OK','Mieszkam w Poznaniu','OK','Gdzie mieszkam?','W Poznaniu'], /Poznaniu/],
+ ['followup name earlier', 'A wcześniej?', ['Mam na imię Marek','OK','Mam na imię Adam','OK','Jak mam na imię?','Adam'], /Marek/],
+ ['followup name now', 'A teraz?', ['Mam na imię Marek','OK','Mam na imię Adam','OK','Jak mam na imię?','Adam'], /Adam/],
+ ['followup no context', 'A wcześniej?', [], null],
+ ['followup unrelated', 'A teraz?', ['Policz 2 + 2','Wynik: 4'], null]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
