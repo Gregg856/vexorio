@@ -8,5 +8,7 @@ const src=fs.readFileSync('deploy/rx-queen-live-probe.cjs','utf8');
 assert.match(src,/hostname:'127\.0\.0\.1'/);
 assert.match(src,/\/api\/tags/);
 assert.match(src,/\/infer/);
+assert.match(src,/timeoutMs=3500/);
+assert.match(src,/\},30000\)/);
 assert.doesNotMatch(src,/https:\/\//);
 console.log('RX #612 Queen local probe contract: PASS');
