@@ -506,6 +506,18 @@ jobs:
           fs.mkdirSync(dir,{recursive:true});
           const result={schema:1,kind:'rx-developer-patch-candidate',status:'NO_SAFE_PATCH',candidates:[],codeChanged:false,productionChanged:false};
           for(const task of (plans?.tasks||[]).slice(0,10)){
+            if(task.component==='authenticated-client-chat'){
+              const category=task.failureCategory||'UNCLASSIFIED';
+              const guidance={
+                TEST_CREDENTIALS_MISSING:{status:'ACTION_REQUIRED_TEST_SECRETS',action:'Configure dedicated test account credentials in GitHub Actions secrets; do not bypass login'},
+                TEST_ACCOUNT_LOGIN_REJECTED:{status:'ACTION_REQUIRED_TEST_ACCOUNT',action:'Verify dedicated test account is active and credentials match, without logging values'},
+                AUTH_UI_OR_NETWORK_FAILURE:{status:'REPRODUCE_AUTH_UI_FAILURE',action:'Inspect browser login UI and network failures before proposing code changes'},
+                AUTHENTICATED_CHAT_FAILURE:{status:'REPRODUCE_CHAT_FAILURE',action:'Inspect failed authenticated turn and response; require reproduction before code changes'}
+              };
+              const entry=guidance[category]||{status:'AUTH_FAILURE_UNCLASSIFIED',action:'Inspect authentication evidence'};
+              result.candidates.push({component:task.component,failureCategory:category,...entry,codePatchAllowed:false});
+              continue;
+            }
             if(task.component!=='local-dialogue'||task.status!=='FAIL')continue;
             const target='tests/rx-chat-planner.mjs';
             if(!fs.existsSync(target)){result.candidates.push({component:task.component,status:'TARGET_MISSING'});continue;}
