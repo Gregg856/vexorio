@@ -535,14 +535,17 @@ jobs:
           const tasks=Array.isArray(handoff?.tasks)?handoff.tasks:[];
           const plans=Array.isArray(proposals?.tasks)?proposals.tasks:[];
           const checks=Array.isArray(execution?.tasks)?execution.tasks:[];
+          const auth=read('rx-client-auth-e2e.json');
+          const authVerified=auth?.clientChatVerified===true;
+          const unresolvedAuth=tasks.some(t=>t.component==='authenticated-client-chat')&&!authVerified;
           const uncovered=tasks.filter(t=>!plans.some(p=>p.component===t.component)).map(t=>t.component);
           const result={
             schema:1,kind:'rx-autopilot-chain-verification',
             runId:process.env.GITHUB_RUN_ID||'',
             handoffPresent:!!handoff,proposalsPresent:!!proposals,executionPresent:!!execution,
             reportedFailures:tasks.length,repairPlans:plans.length,executedChecks:checks.length,
-            uncovered,checkFailures:checks.filter(t=>t.status==='FAIL').map(t=>t.component),
-            verified:!!handoff&&!!proposals&&!!execution&&uncovered.length===0&&tasks.every(t=>checks.some(c=>c.component===t.component&&c.status==='PASS'))&&checks.every(t=>t.status==='PASS'),
+            uncovered,authVerified,unresolvedAuth,checkFailures:checks.filter(t=>t.status==='FAIL').map(t=>t.component),
+            verified:!!handoff&&!!proposals&&!!execution&&!unresolvedAuth&&uncovered.length===0&&tasks.every(t=>checks.some(c=>c.component===t.component&&c.status==='PASS'))&&checks.every(t=>t.status==='PASS'),
             codeChanged:false,productionChanged:false
           };
           fs.mkdirSync(dir,{recursive:true});
