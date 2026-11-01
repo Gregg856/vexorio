@@ -493,6 +493,29 @@ jobs:
           fs.writeFileSync(dir+'/rx-developer-repair-proposals.json',JSON.stringify(result,null,2)+'\n');
           console.log('RX Developer repair proposals:',tasks.length,'manual review required');
           NODE
+      - name: RX AUTOPILOT — wykonaj bezpieczne kontrole wskazanych plików
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const cp=require('node:child_process');
+          const dir='rx-bibi-reports';
+          const read=name=>{try{return JSON.parse(fs.readFileSync(dir+'/'+name,'utf8'))}catch{return null}};
+          const proposals=read('rx-developer-repair-proposals.json');
+          const allow=new Set(['tests/rx-client-auth-e2e.cjs','tests/rx-dialogue-tests.cjs']);
+          const tasks=[];
+          for(const item of (proposals?.tasks||[]).slice(0,10)){
+            const target=item.proposal?.target;
+            if(!allow.has(target)){tasks.push({component:item.component,status:'SKIPPED_UNAPPROVED_TARGET'});continue;}
+            const run=cp.spawnSync(process.execPath,['--check',target],{encoding:'utf8',timeout:15000,maxBuffer:8192});
+            tasks.push({component:item.component,target,check:'node --check',status:run.status===0?'PASS':'FAIL',exitCode:run.status,error:run.status===0?null:String(run.stderr||'syntax check failed').slice(0,300)});
+          }
+          const result={schema:1,kind:'rx-autopilot-executed-checks',runId:process.env.GITHUB_RUN_ID||'',tasks,codeChanged:false,productionChanged:false};
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(dir+'/rx-autopilot-executed-checks.json',JSON.stringify(result,null,2)+'\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n### RX AUTOPILOT — wykonane kontrole\n'+(tasks.length?tasks.map(t=>'- '+t.component+': '+t.status).join('\n'):'- Brak zadań do sprawdzenia')+'\n');
+          console.log('RX AUTOPILOT checks executed:',tasks.length);
+          NODE
       - name: RX BIBI — trening kandydatów i ocena na niewidzianych przykładach
         if: ${{ !cancelled() }}
         run: node tests/rx-learning-gate.cjs
