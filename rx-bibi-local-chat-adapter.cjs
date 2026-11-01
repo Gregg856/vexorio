@@ -6,6 +6,15 @@ const path=require('node:path');
 const {chatRXWithKnowledge,chatRXWithStoredMemory}=require('./rx-brain-chat-engine.cjs');
 const {readTasks}=require('./rx-bibi-task-store.cjs');
 const {getVerifiedRun}=require('./rx-bibi-github-evidence.cjs');
+const SAFE_DIAGNOSTICS=Object.freeze({
+ AUTH_REQUIRED:'Sprawdź, czy klient przesyła prawidłowy token historii. Nie wklejaj tokenu do czatu ani logów.',
+ HISTORY_UNAVAILABLE:'Sprawdź uprawnienia, dostępność i poprawność pliku historii. Zachowaj kopię przed naprawą.',
+ INVALID_REQUEST:'Sprawdź format JSON, źródło żądania, treść wiadomości i dopuszczalne limity.',
+});
+function sendError(res,status,code){
+ res.writeHead(status);
+ res.end(JSON.stringify({error:code==='AUTH_REQUIRED'?'Unauthorized':code==='HISTORY_UNAVAILABLE'?'History unavailable':'Invalid request',code,diagnostic:SAFE_DIAGNOSTICS[code]}));
+}
 function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fetch,knowledgeLookup,memoryFile=null,historyFile=null,historyToken=null}={}){
  if(!['127.0.0.1','::1'].includes(host))throw Error('Local host only');
  if(historyFile&&(!historyToken||typeof historyToken!=='string'||historyToken.length<32))throw Error('History token required');
@@ -21,15 +30,15 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
    try{
     const data=JSON.parse(body);
     if(data.source!=='rx-bibi-learning-test'||typeof data.message!=='string')throw Error('Invalid request');
-    if(historyFile&&data.historyToken!==historyToken){res.writeHead(401);res.end(JSON.stringify({error:'Unauthorized',code:'AUTH_REQUIRED'}));return;}
+    if(historyFile&&data.historyToken!==historyToken){sendError(res,401,'AUTH_REQUIRED');return;}
     const tasks=taskFile?readTasks(taskFile):[];
     let history=data.history===undefined?[]:data.history;
     if(historyFile){
      try{const stat=await fs.stat(historyFile);if(stat.size>8192)throw Error('History too large');history=JSON.parse(await fs.readFile(historyFile,'utf8'));}
-     catch(error){if(error.code!=='ENOENT'){res.writeHead(503);res.end(JSON.stringify({error:'History unavailable',code:'HISTORY_UNAVAILABLE'}));return;}}
+     catch(error){if(error.code!=='ENOENT'){sendError(res,503,'HISTORY_UNAVAILABLE');return;}}
     }
     if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000)){
-     res.writeHead(historyFile?503:400);res.end(JSON.stringify({error:historyFile?'History unavailable':'Invalid request',code:historyFile?'HISTORY_UNAVAILABLE':'INVALID_REQUEST'}));return;
+     sendError(res,historyFile?503:400,historyFile?'HISTORY_UNAVAILABLE':'INVALID_REQUEST');return;
     }
     const result=memoryFile?await chatRXWithStoredMemory(data.message,{tasks,memoryFile,history}):await chatRXWithKnowledge(data.message,{tasks,history,...(knowledgeLookup?{knowledgeLookup}:{})});
     const evidenceQuery=/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:wynik |status )?(?:testu |testów |github actions )?(?:run |przebiegu )?(\d{8,20})[?!. ]*$/i.exec(data.message.trim());
@@ -52,7 +61,7 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
      finally{await fs.rm(tmp,{force:true});}
     }
     res.writeHead(200);res.end(JSON.stringify({reply:result.answer,executed:result.executed}));
-   }catch{res.writeHead(400);res.end(JSON.stringify({error:'Invalid request',code:'INVALID_REQUEST'}));}
+   }catch{sendError(res,400,'INVALID_REQUEST');}
    };
    if(historyFile){historyQueue=historyQueue.then(handle,handle);}else{void handle();}
   });
