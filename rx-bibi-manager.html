@@ -1141,6 +1141,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   // Existing authenticated RX BIBI client bridge for writing tasks; no new chat or model.
   // Explicit AI requests reuse the authenticated client bridge, never admin commands.
+  const deferMatch=message.match(/^(?:bibi[, ]+)?(?:odłóż|odloz|zostaw na później|zostaw na pozniej)\s*[:,-]?\s*(.+?)\s*(?:;|\|)\s*(.+)$/i);
+  if(deferMatch){
+   const result=deferRxTask(deferMatch[1],deferMatch[2]);
+   explain(result.ok?(result.duplicate?'Ten temat już jest odłożony.':'Zapisałam odłożony temat lokalnie: '+result.task.topic+'. Następny krok: '+result.task.nextStep+'. Nie zapisano w RX CLOUD.'):'Nie udało się zapisać tematu na tym urządzeniu.');
+   return;
+  }
+  if(/^(?:bibi[, ]+)?(?:wróć do odłożonego|wroc do odlozonego|kontynuuj odłożone|kontynuuj odlozone)$/i.test(message.trim())){
+   const task=resumeRxTask();
+   explain(task?'Wracamy do: '+task.topic+'. Następny krok: '+task.nextStep+'.':'Brak odłożonego tematu lub nie udało się zapisać wznowienia.');
+   return;
+  }
   if(/^(?:zapytaj (?:model|ai):|(?:(?:proszę|prosze)\s+)?(?:napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(?:wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?(?:(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|formalnie|oficjalnie|nieformalnie|i)[\s,]*){0,8}:)/iu.test(message)){
    (async()=>{
     send.disabled=true;
@@ -1156,17 +1167,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     }catch(error){explain('Nie mogę połączyć pisania BIBI z chmurą: '+String(error.message||error).slice(0,180));}
     finally{send.disabled=false;}
    })();
-   return;
-  }
-  const deferMatch=message.match(/^(?:bibi[, ]+)?(?:odłóż|odloz|zostaw na później|zostaw na pozniej)\\s*[:,-]?\\s*(.+?)\\s*(?:;|\\|)\\s*(.+)$/i);
-  if(deferMatch){
-   const result=deferRxTask(deferMatch[1],deferMatch[2]);
-   explain(result.ok?(result.duplicate?'Ten temat już jest odłożony.':'Zapisałam odłożony temat lokalnie: '+result.task.topic+'. Następny krok: '+result.task.nextStep+'. Nie zapisano w RX CLOUD.'):'Nie udało się zapisać tematu na tym urządzeniu.');
-   return;
-  }
-  if(/^(?:bibi[, ]+)?(?:wróć do odłożonego|wroc do odlozonego|kontynuuj odłożone|kontynuuj odlozone)$/i.test(message.trim())){
-   const task=resumeRxTask();
-   explain(task?'Wracamy do: '+task.topic+'. Następny krok: '+task.nextStep+'.':'Brak odłożonego tematu lub nie udało się zapisać wznowienia.');
    return;
   }
   const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\s+zadani[ea]\s*[:,-]?\s*(.+)$/i);
