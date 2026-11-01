@@ -557,6 +557,32 @@ jobs:
           fs.writeFileSync(path.join(dir,'rx-developer-patch-candidate.json'),JSON.stringify(result,null,2)+'\n');
           console.log('RX Developer patch candidate:',result.status);
           NODE
+      - name: RX Developer — sprawdź mechanizm izolacji na dobrym i złym kandydacie
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const cp=require('node:child_process');
+          const os=require('node:os');
+          const path=require('node:path');
+          const assert=require('node:assert/strict');
+          const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'rx-patch-selftest-'));
+          const run=(source)=>{
+            const file=path.join(tmp,'candidate.cjs');
+            fs.writeFileSync(file,source);
+            return cp.spawnSync(process.execPath,[file],{cwd:tmp,encoding:'utf8',timeout:10000,maxBuffer:4096}).status;
+          };
+          let status='FAIL';
+          try{
+            assert.equal(run("const assert=require('node:assert/strict');assert.equal(2+2,4);"),0);
+            assert.notEqual(run("const assert=require('node:assert/strict');assert.equal(2+2,5);"),0);
+            status='PASS';
+          }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+          const dir='rx-bibi-reports';
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(path.join(dir,'rx-patch-isolation-selftest.json'),JSON.stringify({schema:1,kind:'rx-patch-isolation-selftest',status,positiveCandidate:'PASS',negativeCandidate:'REJECTED',productionChanged:false},null,2)+'\n');
+          console.log('RX Developer isolated patch self-test:',status);
+          NODE
       - name: RX AUTOPILOT — wykonaj bezpieczne kontrole wskazanych plików
         if: ${{ always() }}
         run: |
