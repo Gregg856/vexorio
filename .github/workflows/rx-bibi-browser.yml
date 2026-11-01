@@ -493,6 +493,41 @@ jobs:
           fs.writeFileSync(dir+'/rx-developer-repair-proposals.json',JSON.stringify(result,null,2)+'\n');
           console.log('RX Developer repair proposals:',tasks.length,'manual review required');
           NODE
+      - name: RX Developer — przygotuj bezpiecznego kandydata poprawki (bez zapisu do repo)
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const cp=require('node:child_process');
+          const path=require('node:path');
+          const dir='rx-bibi-reports';
+          const read=name=>{try{return JSON.parse(fs.readFileSync(path.join(dir,name),'utf8'))}catch{return null}};
+          const plans=read('rx-developer-repair-proposals.json');
+          const result={schema:1,kind:'rx-developer-patch-candidate',status:'NO_SAFE_PATCH',candidates:[],codeChanged:false,productionChanged:false};
+          for(const task of (plans?.tasks||[]).slice(0,10)){
+            if(task.component!=='local-dialogue'||task.status!=='FAIL')continue;
+            const target='tests/rx-chat-planner.mjs';
+            if(!fs.existsSync(target)){result.candidates.push({component:task.component,status:'TARGET_MISSING'});continue;}
+            const original=fs.readFileSync(target,'utf8');
+            // Strictly allow one known, deterministic typo repair; never execute proposed shell commands.
+            const typo='tests/rx-dialogue-tests.cjs';
+            const correct='tests/rx-chat-planner.mjs';
+            if(!original.includes(typo)){result.candidates.push({component:task.component,status:'NO_APPROVED_RECIPE'});continue;}
+            const fixed=original.split(typo).join(correct);
+            const candidatePath=path.join(dir,'rx-dialogue-candidate.mjs');
+            fs.writeFileSync(candidatePath,fixed);
+            const syntax=cp.spawnSync(process.execPath,['--check',candidatePath],{encoding:'utf8',timeout:15000,maxBuffer:8192});
+            if(syntax.status!==0){result.candidates.push({component:task.component,status:'CANDIDATE_SYNTAX_FAIL'});continue;}
+            const patch=cp.spawnSync('diff',['-u','--label','a/'+target,'--label','b/'+target,target,candidatePath],{encoding:'utf8',timeout:10000,maxBuffer:32768});
+            if(patch.status!==1){result.candidates.push({component:task.component,status:'PATCH_NOT_CREATED'});continue;}
+            fs.writeFileSync(path.join(dir,'rx-developer-proposed.patch'),patch.stdout);
+            result.candidates.push({component:task.component,status:'PATCH_READY_FOR_REVIEW',target,recipe:'known-dialogue-path-typo',syntax:'PASS'});
+            result.status='PATCH_READY_FOR_REVIEW';
+          }
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(path.join(dir,'rx-developer-patch-candidate.json'),JSON.stringify(result,null,2)+'\n');
+          console.log('RX Developer patch candidate:',result.status);
+          NODE
       - name: RX AUTOPILOT — wykonaj bezpieczne kontrole wskazanych plików
         if: ${{ always() }}
         run: |
