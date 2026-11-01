@@ -52,7 +52,11 @@ const issues=results.flatMap((r,index)=>{
 const developerQueue=issues.map(issue=>({source:'rx-bibi-auto-dialogue',priority:issue.type==='assertion-failed'?'high':'normal',status:'needs-review',...issue}));
 writeFileSync('rx-bibi-developer-queue.json',JSON.stringify({schema:1,kind:'rx-developer-review-queue',generatedAt:new Date().toISOString(),count:developerQueue.length,items:developerQueue},null,2)+'\n');
 const generic=results.filter(r=>/Czat RX odpowiada przez serwerowy planer|Nie rozumiem jeszcze|Nie mam jeszcze silnika/i.test(r.answer));
-const report={qualityIssues:issues.length,issues,genericFallbacks:generic.length,kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,trainingPerformed:false,results};
+// Separate repeated smoke prompts from unique test coverage: 50 repetitions are not 50 distinct skills.
+const uniquePrompts=new Set(results.map(r=>r.message));
+const uniqueScenarios=new Set(results.map(r=>r.scenario));
+const failingPrompts=new Set(results.filter(r=>!r.pass).map(r=>r.message));
+const report={qualityIssues:issues.length,issues,genericFallbacks:generic.length,kind:'rx-bibi-auto-dialogue',schema:1,generatedAt:new Date().toISOString(),cases:results.length,passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length,uniquePromptCount:uniquePrompts.size,uniqueScenarioCount:uniqueScenarios.size,failedUniquePromptCount:failingPrompts.size,repeatedTurnCount:results.length-uniquePrompts.size,trainingPerformed:false,productionChatVerified:false,results};
 writeFileSync('rx-bibi-auto-dialogue.json',JSON.stringify(report,null,2)+'\n');
 console.log('RX BIBI automatic conversations:',report.passed+'/'+report.cases);
 if(report.failed)process.exitCode=1;
