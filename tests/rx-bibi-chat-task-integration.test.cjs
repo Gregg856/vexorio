@@ -8,13 +8,13 @@ const {start}=require('../rx-bibi-local-chat-adapter.cjs');
 const {saveTasks,readTasks}=require('../rx-bibi-task-store.cjs');
 const {createBrainMemory}=require('../rx-brain-memory.cjs');
 const {saveBrain,learnAndSaveBrain}=require('../rx-brain-store.cjs');
-function ask(port,message,history){
+function ask(port,message,history,historyToken){
  return new Promise((resolve,reject)=>{
   const req=http.request({hostname:'127.0.0.1',port,path:'/chat',method:'POST',headers:{'Content-Type':'application/json'}},res=>{
    let body='';res.on('data',c=>body+=c);res.on('end',()=>resolve({status:res.statusCode,...JSON.parse(body)}));
   });
   req.on('error',reject);
-  req.end(JSON.stringify({source:'rx-bibi-learning-test',message,...(history?{history}:{})}));
+  req.end(JSON.stringify({source:'rx-bibi-learning-test',message,...(history?{history}:{}),...(historyToken?{historyToken}:{})}));
  });
 }
 (async()=>{
@@ -94,6 +94,23 @@ function ask(port,message,history){
   assert.equal(contextual.executed,0);
   const invalidContext=await ask(port,'Dalej',Array(7).fill('Sprawdź testy'));
   assert.equal(invalidContext.status,400);
+  const historyFile=path.join(dir,'history.json');
+  const historyToken='rx-test-token-625-abcdefghijklmnopqrstuvwxyz';
+  const historyServerFirst=await start({historyFile,historyToken});
+  try{
+   const unauthorized=await ask(historyServerFirst.address().port,'Sprawdź testy');
+   assert.equal(unauthorized.status,400);
+   const saved=await ask(historyServerFirst.address().port,'Sprawdź testy',undefined,historyToken);
+   assert.equal(saved.status,200);
+   assert.equal(saved.executed,0);
+  }finally{await new Promise(resolve=>historyServerFirst.close(resolve));}
+  const historyServerSecond=await start({historyFile,historyToken});
+  try{
+   const followup=await ask(historyServerSecond.address().port,'A chmura?',undefined,historyToken);
+   assert.equal(followup.status,200);
+   assert.equal(followup.executed,0);
+   assert.match(fs.readFileSync(historyFile,'utf8'),/A chmura/);
+  }finally{await new Promise(resolve=>historyServerSecond.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
