@@ -31,4 +31,11 @@ assert.match(panel,/co potrafisz\\|co umiesz/,'Manager should route basic dialog
 assert.match(panel,/explicit Queen conversation prefix supports free-form text/,'Queen free-form entry must exist');
 assert.match(panel,/message:queenMessage/,'Queen free-form message must be sent to private endpoint');
 assert.match(panel,/królowa\\|krolowa\\|queen/,'Queen prefix must be explicit');
+assert.match(route,/askQueenModel/,'Queen endpoint should use separate model bridge');
+assert.doesNotMatch(route,/askClientModel|RX_BIBI_MODEL_SERVICE/,'Queen endpoint must not use BIBI model');
+const queenBridge=fs.readFileSync('rx-queen-model-bridge.mjs','utf8');
+assert.match(queenBridge,/RX_QUEEN_MODEL_ENABLED/);
+assert.match(queenBridge,/RX_QUEEN_MODEL_SERVICE/);
+assert.match(queenBridge,/modelInferenceUsed:false/);
+assert.doesNotMatch(queenBridge,/RX_BIBI_MODEL_SERVICE|Authorization|history|adminToken/);
 console.log('RX #604 Queen security and identity contract: PASS');
