@@ -17,7 +17,9 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
     const data=JSON.parse(body);
     if(data.source!=='rx-bibi-learning-test'||typeof data.message!=='string')throw Error('Invalid request');
     const tasks=taskFile?readTasks(taskFile):[];
-    const result=memoryFile?await chatRXWithStoredMemory(data.message,{tasks,memoryFile}):await chatRXWithKnowledge(data.message,{tasks,...(knowledgeLookup?{knowledgeLookup}:{})});
+    const history=data.history===undefined?[]:data.history;
+    if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000))throw Error('Invalid history');
+    const result=memoryFile?await chatRXWithStoredMemory(data.message,{tasks,memoryFile,history}):await chatRXWithKnowledge(data.message,{tasks,history,...(knowledgeLookup?{knowledgeLookup}:{})});
     const evidenceQuery=/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:wynik |status )?(?:testu |testów |github actions )?(?:run |przebiegu )?(\d{8,20})[?!. ]*$/i.exec(data.message.trim());
     if(evidenceQuery){
       const evidence=await getVerifiedRun(evidenceQuery[1],{fetchImpl:githubFetch});
