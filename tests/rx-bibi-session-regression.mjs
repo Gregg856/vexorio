@@ -21,7 +21,17 @@ const cases=[
  ['task memory from earlier context', 'Które z moich zadań jest drugie?', [tasks,list,'Dziękuję','Proszę'], /sprawdzić pamięć/],
  ['summary with no invented math', 'Podsumuj naszą rozmowę', [tasks,list], /nie ustalono/],
  ['unknown-answer policy', 'Co powinnaś zrobić, gdy nie znasz odpowiedzi na pytanie?', [], /nie wiem.*nie będę zgadywać/i],
- ['unknown-answer paraphrase', 'Co robisz gdy nie wiesz?', [], /nie wiem.*wiarygodnym źródle/i]
+ ['unknown-answer paraphrase', 'Co robisz gdy nie wiesz?', [], /nie wiem.*wiarygodnym źródle/i],
+ ['remember given name', 'Jak mam na imię?', ['Mam na imię Marek.','Miło Cię poznać'], /Marek/],
+ ['name unknown is not fabricated', 'Jak mam na imię?', [], null],
+ ['first task', 'Które z moich zadań jest pierwsze?', [tasks,list], /naprawić czat/],
+ ['third task', 'Które z moich zadań jest trzecie?', [tasks,list], /przetestować matematykę/],
+ ['last task', 'Ostatnie zadanie?', [tasks,list], /przetestować matematykę/],
+ ['count tasks', 'Ile mam zadań?', [tasks,list], /3 zadania/],
+ ['recall last result', 'Jaki był poprzedni wynik?', ['Policz 5 + 7','🧮 Wynik: 12'], /12/],
+ ['add to previous result', 'Jeśli do poprzedniego wyniku dodaj 5, ile wyjdzie?', ['Policz 5 + 7','🧮 Wynik: 12'], /17/],
+ ['no fabricated last result', 'Jaki był poprzedni wynik?', [], null],
+ ['no fabricated third task', 'Trzecie zadanie?', [], null]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
