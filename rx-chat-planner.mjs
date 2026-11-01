@@ -756,9 +756,20 @@ export function planRXChat(message,history=[],learning=null){
  const rxAntRecentUserTurns=history.filter((_,i)=>i%2===0).slice(-4);
  const rxAntLastTopicTurn=[...rxAntRecentUserTurns].reverse().find(turn=>/(?:porozmawiajmy|pogadajmy)\s+o\s+|(?:teraz|zmieńmy|zmienmy)\s+(?:porozmawiajmy|pogadajmy)|wr[oó]ćmy\s+do\s+/iu.test(turn));
  const rxAntPrevious=Boolean(rxAntLastTopicTurn&&/mr[oó]w(?:e)?k/iu.test(rxAntLastTopicTurn)&&/(?:przyk[lł]ad|modu[lł]|wsp[oó]ln)/iu.test(rxAntLastTopicTurn));
- const rxAntSecond=rxAntPrevious&&/^(?:podaj|wyja[sś]nij|rozwi[nń])\s+(?:mi\s+)?(?:drugi|2\.?)(?:\s+przyk[lł]ad\w*)?[.!? ]*$/iu.test(message.trim());
+ const rxAntFollowup=/^(?:(?:podaj|wyja[sś]nij|rozwi[nń])\s+(?:mi\s+)?)?(?:(pierwszy|drugi|trzeci)|([123])\.?)(?:\s+przyk[lł]ad\w*)?[.!? ]*$/iu.exec(message.trim());
+ const rxAntSecond=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase()==='drugi'||rxAntFollowup[2]==='2');
+ const rxAntFirst=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase()==='pierwszy'||rxAntFollowup[2]==='1');
+ const rxAntThird=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase()==='trzeci'||rxAntFollowup[2]==='3');
  if(rxAntSecond){
   answer='👑 Drugi przykład: jedna RX Mrówka zbiera wyniki testów, druga wyszukuje powtarzające się błędy, a trzecia przygotowuje czytelne podsumowanie dla operatora. Koordynator porównuje wyniki przed zaproponowaniem poprawek. To przykład możliwej współpracy, nie informacja o wykonanym teście.';
+  tasks.length=0;plan.work=null;
+ }
+ if(rxAntFirst){
+  answer='👑 Pierwszy przykład: jedna RX Mrówka analizuje zgłoszony błąd kodu, druga proponuje zmianę, a trzecia weryfikuje ją testami. Koordynator zbiera wyniki. To opis sposobu współpracy, a nie potwierdzenie wykonania działań.';
+  tasks.length=0;plan.work=null;
+ }
+ if(rxAntThird){
+  answer='👑 Trzeci przykład: koordynator dzieli duże zadanie na mniejsze części, kilka RX Mrówek wykonuje niezależne obliczenia, a moduł sprawdzający porównuje wyniki i zgłasza rozbieżności. To przykład architektury, nie wykonana operacja.';
   tasks.length=0;plan.work=null;
  }
  // Answer an explicit educational request rather than echoing it as a topic invitation.
