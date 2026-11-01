@@ -136,6 +136,21 @@ export default {
       if(/(?:pamiec|rx cloud|potwierdzone naprawy|historia napraw)/.test(normalizedIntent)&&/(?:pokaz|odczytaj|sprawdz|wyswietl|jakie|co jest|dostep)/.test(normalizedIntent)){
         return new Response(JSON.stringify({ok:true,answer:'Pamięć RX CLOUD i potwierdzone naprawy są prywatnymi danymi administracyjnymi. Ten czat RX BIBI nie ma do nich dostępu. Nie pobrałam pamięci ani nie utworzyłam zadania. Weryfikację można wykonać wyłącznie w uprawnionym panelu administratora.',engine:'rx-bibi-client-access-boundary',modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
+      // RX #639: optional internet-hosted BIBI replies using the ALREADY deployed Workers AI binding.
+      // Authenticate and enforce the private-memory boundary above before invoking AI.
+      // Opt-in only: no private RX Brain, chat history, admin tools or credentials sent.
+      if(env.RX_BIBI_WORKERS_AI_ENABLED==='true'&&typeof env.AI?.run==='function'){
+        try{
+          const inference=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{
+            messages:[
+              {role:'system',content:'Jesteś BIBI, pomocnym asystentem VEXORIO. Odpowiadaj po polsku, rzeczowo i zgodnie z prawdą. Nie masz dostępu do prywatnej pamięci RX Brain, kont administracyjnych ani narzędzi wykonawczych. Nie twierdź, że wykonujesz zadania lub sterujesz Królową.'},
+              {role:'user',content:message.trim().slice(0,1000)}
+            ],max_tokens:384,temperature:0.3
+          });
+          const answer=typeof inference?.response==='string'?inference.response.trim():'';
+          if(answer&&answer.length<=4000)return new Response(JSON.stringify({ok:true,answer,engine:'cloudflare-workers-ai-client',modelInferenceUsed:true,executed:0,adminToolsAvailable:false}),{status:200,headers});
+        }catch{/* Keep existing client planner available if Workers AI fails. */}
+      }
       // Model-first mode is explicitly configured; preserve admin/private-data boundary.
       // A failed or unknown model answer falls through to the existing safe planner.
       if(env.RX_BIBI_CLIENT_MODEL_FIRST==='true'&&!/^(?:zapytaj model|zapytaj ai):/iu.test(message.trim())){
