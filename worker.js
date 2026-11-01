@@ -107,8 +107,11 @@ export default {
       let payload;try{payload=await request.json();}catch{return fail(400,'Nieprawidłowy JSON.');}
       const message=payload?.message,history=payload?.history??[];
       if(typeof message!=='string'||!message.trim()||message.length>1000)return fail(400,'Wiadomość: 1–1000 znaków.');
-      if(!Array.isArray(history)||history.length>10||history.some(x=>typeof x!=='string'||x.length>1000))return fail(400,'Nieprawidłowa historia.');
+      if(!Array.isArray(history)||history.length>20||history.some(x=>typeof x!=='string'||x.length>1000))return fail(400,'Nieprawidłowa historia.');
       try{
+        const {answerRXSession}=await import('./rx-bibi-session-reasoner.mjs');
+        const session=answerRXSession(message,history);
+        if(session)return new Response(JSON.stringify({ok:true,...session,engine:'rx-bibi-session-reasoner',demo:true,executed:0,adminToolsAvailable:false,modelInferenceUsed:false}),{status:200,headers});
         const planned=planRXChat(message,history,null);
         return new Response(JSON.stringify({ok:true,answer:String(planned.answer||'').slice(0,4000),contextUsed:planned.contextUsed===true,engine:'rx-bibi-demo-local-planner',demo:true,executed:0,adminToolsAvailable:false,modelInferenceUsed:false}),{status:200,headers});
       }catch{return fail(400,'Nie można przetworzyć wiadomości.');}

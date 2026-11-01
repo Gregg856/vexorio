@@ -20,7 +20,7 @@ async function main(){
  const history=[],results=[];
  for(let i=0;i<questions.length;i++){
   const message=questions[i];
-  const response=await fetch(origin+'/api/rx/client/demo/chat',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({message,history:history.slice(-10)}),signal:AbortSignal.timeout(12000)});
+  const response=await fetch(origin+'/api/rx/client/demo/chat',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({message,history:history.slice(-20)}),signal:AbortSignal.timeout(12000)});
   assert.equal(response.status,200,'DEMO API HTTP '+response.status+' at turn '+(i+1));
   const data=await response.json();
   assert.equal(data.ok,true,'DEMO response failed at turn '+(i+1));
