@@ -153,3 +153,19 @@ Priorytet: najpierw problemy blokujące użytkowników, potem kontrola języków
 - **WYKONANE:** domyślne limity planowania w `rx-bibi-budget.cjs` zwiększono do 30 zadań, 12/źródło, 10 wysokich priorytetów (`a56bfe65`); generator raportów `rx-ant-task-board.cjs` podłączono do `enforceLimits` (`4a061ba3`). Testy i deploy dla `4a061ba3` zakończone sukcesem: VEXORIO checks https://github.com/Gregg856/vexorio/actions/runs/40826372481 ; Deploy https://github.com/Gregg856/vexorio/actions/runs/40826372532 . Nie wracać do tych zmian bez nowego błędu.
 - **PRIORYTET OD TERAZ: BUDOWA WŁASNEGO MODELU RX.** Kontynuować istniejące `rx-neural-core.cjs`, `rx-math-core.cjs`, `rx-ant-ai-trainer.cjs` i powiązane testy. Najpierw ocenić aktualne możliwości, ustalić następny mierzalny krok modelu, implementować i testować. Nie tworzyć duplikatów modułów ani nie przedstawiać obecnego klasyfikatora jako generatywnego modelu rozmowy.
 - **PROCES:** przy każdej zmianie podawać bezpośrednie linki do testów GitHub Actions i wdrożenia; sprawdzać faktyczne wyniki. Nie zmieniać strony głównej VEXORIO, nie tworzyć kont.
+
+
+## RX BIBI / Królowa / RX Brain — punkt wznowienia 2026-11-01
+
+**Priorytet użytkownika:** jeden istniejący czat BIBI dla ludzi, połączony z działającym modelem; administrator osobno zarządza Królową, RX Brain i treningiem. Pracujemy przez GitHub na telefonie; komputer podłączymy dopiero później. Nie zakładać nowych paneli, serwerów, modeli ani pamięci bez sprawdzenia istniejących modułów.
+
+**Potwierdzone w repozytorium:**
+- \`rx-bibi-local-chat-adapter.cjs\` + \`rx-brain-chat-engine.cjs\` + \`rx-brain-store.cjs\`: opcjonalne \`memoryFile\`, odczyt RX Brain i trwała lokalna historia \`historyFile\` z tokenem. Integracje i testy pakietów #622–#632 zostały scalone. To **lokalny adapter**, nie dowód podłączenia prywatnej pamięci do publicznego czatu.
+- \`rx-cloud-server.cjs\`, \`rx-queen-cloud.mjs\` i \`worker.js\`: istniejące moduły RX CLOUD / Królowej oraz prywatny endpoint administracyjny Brain. Nie zakładać, że produkcyjna konfiguracja sieciowa została zweryfikowana.
+- \`worker.js\` obsługuje istniejący uwierzytelniony \`/api/rx/client/chat\`; chroni prywatną pamięć administratora. Opcjonalny \`RX_BIBI_CLIENT_MODEL_FIRST==='true'\` wywołuje \`askClientModel(message,env,{direct:true})\` dla zwykłych wiadomości; bez działającej usługi następuje powrót do bezpiecznego istniejącego planera.
+- \`rx-bibi-model-bridge.mjs\` wymaga \`RX_BIBI_MODEL_ENABLED==='true'\` oraz prawdziwego service binding \`RX_BIBI_MODEL_SERVICE\`. \`rx-bibi-own-inference.cjs\` jest prostym lokalnym klasyfikatorem tokenowym, **nie** pełnym generatywnym LLM.
+- \`deploy/rxcloud.env.example\` ma domyślnie \`RX_BIBI_MODEL_ENABLED=false\` i \`RX_BIBI_CLIENT_MODEL_FIRST=false\`. Przykład ustawień **nie dowodzi** aktualnego stanu produkcji.
+- Pakiet #633, https://github.com/Gregg856/vexorio/pull/633, scalony do main jako \`513dc861d24907d8ab3025bdd6bc72fcb444ee66\`. Trzy GitHub Actions zakończone sukcesem; dodano testy istniejącego model-first, uwierzytelnienia, prywatności i fallbacku. **Nie wykonano wdrożenia produkcyjnego**.
+- RX Mrówki mają moduły triage, supervisor i builder, ale raporty \`rx-bibi-reports/rx-ant-task-board.json\` i \`rx-ant-ci-triage.json\` pokazywały 0 zadań i 0 automatycznych napraw. Nie przedstawiać tego jako autonomicznej pracy 24/7.
+
+**Najbliższy krok — nie powtarzać wcześniejszych pakietów:** zweryfikować realną gotowość *istniejącego* runtime modelu i service binding na środowisku, następnie wykonać uwierzytelniony test end-to-end czatu klienta; dopiero po potwierdzeniu i świadomej zgodzie włączyć produkcyjny model-first. Zachować separację prywatnego RX Brain od użytkowników publicznych. Weryfikować GitHub Actions i wdrożenie osobno. Nie wymagać od użytkownika zrzutów ekranu ani kopiowania kodu, jeśli da się sprawdzić narzędziami.
