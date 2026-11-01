@@ -139,9 +139,9 @@ export default {
       // RX BIBI: keep explicit multi-turn educational requests in the same planner
       // used by regression tests, even when model-first flags are enabled.
       // This avoids losing numbered examples and contextual follow-ups.
-      const rxAntContext=history.filter((_,index)=>index%2===0).slice(-4).some(turn=>/rx\\s*mr[oó]wk|mr[oó]wk/iu.test(turn)&&/przyk[lł]ad|modu[lł]/iu.test(turn));
+      const rxAntContext=history.filter((_,index)=>index%2===0).slice(-4).some(turn=>/rx\s*mr[oó]wk|mr[oó]wk/iu.test(turn)&&/przyk[lł]ad|modu[lł]/iu.test(turn));
       const rxAntEducational=/mr[oó]wk/iu.test(message)&&/wyja[sś]nij|podaj|przyk[lł]ad/iu.test(message)&&/modu[lł]|wsp[oó]ln|zadani/iu.test(message);
-      const rxAntFollowup=rxAntContext&&/^(?:(?:a|co z|podaj|wyja[sś]nij)\\s+)?(?:pierwsz\\w*|drugi\\w*|trzeci\\w*|[123])(?:\\s+przyk[lł]ad\\w*)?[?!. ]*$/iu.test(message.trim());
+      const rxAntFollowup=rxAntContext&&/^(?:(?:a|co z|podaj|wyja[sś]nij)\s+)?(?:pierwsz\w*|drugi\w*|trzeci\w*|[123])(?:\s+przyk[lł]ad\w*)?[?!. ]*$/iu.test(message.trim());
       const rxAntIntro=/mr[oó]wk/iu.test(message)&&/porozmawiajmy|pogadajmy/iu.test(message)&&/przyk[lł]ad/iu.test(message);
       if(rxAntEducational||rxAntIntro||rxAntFollowup){
         const planned=planRXChat(message,history,null);
