@@ -509,6 +509,12 @@ jobs:
             if(!allow.has(target)){tasks.push({component:item.component,status:'SKIPPED_UNAPPROVED_TARGET'});continue;}
             const run=cp.spawnSync(process.execPath,['--check',target],{encoding:'utf8',timeout:15000,maxBuffer:8192});
             tasks.push({component:item.component,target,check:'node --check',status:run.status===0?'PASS':'FAIL',exitCode:run.status,error:run.status===0?null:String(run.stderr||'syntax check failed').slice(0,300)});
+            // Execute the existing regression harness when a local dialogue failure is reported.
+            // The authenticated browser check cannot be repeated without valid test credentials.
+            if(item.component==='local-dialogue'&&run.status===0){
+              const regression=cp.spawnSync(process.execPath,[target],{encoding:'utf8',timeout:90000,maxBuffer:16384,env:{...process.env,CI:'true'}});
+              tasks.push({component:item.component,target,check:'local dialogue regression',status:regression.status===0?'PASS':'FAIL',exitCode:regression.status,output:String((regression.stdout||'')+'\\n'+(regression.stderr||'')).slice(-1000)});
+            }
           }
           const result={schema:1,kind:'rx-autopilot-executed-checks',runId:process.env.GITHUB_RUN_ID||'',tasks,codeChanged:false,productionChanged:false};
           fs.mkdirSync(dir,{recursive:true});
