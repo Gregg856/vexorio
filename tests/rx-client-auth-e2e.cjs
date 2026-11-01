@@ -5,6 +5,9 @@ const fs=require('node:fs');
 const base=(process.env.RX_BIBI_URL||'https://vexorio.grzegorzbub1985.workers.dev').replace(/\/$/,'');
 const email=process.env.RX_BIBI_TEST_EMAIL;
 const password=process.env.RX_BIBI_TEST_PASSWORD;
+// Optional, operator-approved canary already present in the live approved-response store.
+const memoryPrompt=process.env.RX_BIBI_APPROVED_TEST_PROMPT||'';
+const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
 (async()=>{
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  const report={kind:'rx-client-auth-e2e',mode:'REAL_AUTH_REAL_API',checks:[]};
@@ -66,6 +69,23 @@ const password=process.env.RX_BIBI_TEST_PASSWORD;
    await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.',null,{timeout:10000});
   }
   report.checks.push('authenticated_customer_chat_real_api_multiturn');
+  report.approvedMemoryVerified=false;
+  if(memoryPrompt&&memoryAnswer){
+   if(memoryPrompt.length>1000||memoryAnswer.length>4000)throw Error('Approved-memory canary exceeds safe test bounds');
+   const api=page.waitForResponse(r=>r.url().includes('/api/rx/client/chat')&&r.request().method()==='POST',{timeout:30000});
+   await page.locator('#message').fill(memoryPrompt);
+   await page.locator('#send').click();
+   const reply=await api;
+   const data=await reply.json().catch(()=>({}));
+   const passed=reply.status()===200&&data.ok===true&&data.answer===memoryAnswer;
+   report.approvedMemoryVerified=passed;
+   report.checks.push(passed?'authenticated_approved_memory_exact_answer':'approved_memory_canary_failed');
+   if(!passed)throw Error('Authenticated approved-memory canary mismatch (HTTP '+reply.status()+'); answer withheld from logs');
+   await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.',null,{timeout:10000});
+  }else{
+   report.approvedMemoryStatus='BLOCKED_MISSING_APPROVED_CANARY';
+   report.approvedMemoryReason='Provide both RX_BIBI_APPROVED_TEST_PROMPT and RX_BIBI_APPROVED_TEST_ANSWER matching an already approved live response; live memory NOT VERIFIED';
+  }
   report.status='PASS';report.clientChatVerified=true;
   console.log('PASS RX client authenticated E2E: '+report.checks.join(', '));
  }catch(e){report.status='FAIL';report.clientChatVerified=false;report.error=e.message;console.error('FAIL RX client authenticated E2E: '+e.message);process.exitCode=1;}
