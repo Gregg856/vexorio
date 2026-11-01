@@ -14,6 +14,8 @@ export function answerRXSession(message,history=[]){
  if(/gdy nie znasz odpowiedzi|kiedy nie znasz odpowiedzi|co robisz gdy nie wiesz|co zrobisz jesli nie wiesz/.test(input))return {answer:'👑 Gdy nie znam odpowiedzi, powiem wprost, że nie wiem. Nie będę zgadywać ani wymyślać faktów. Poproszę o doprecyzowanie albo zaproponuję sprawdzenie informacji w wiarygodnym źródle.',contextUsed:false};
  const currentList=/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(message)?.[1];
  const list=currentList?currentList.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):priorList;
+ const correctedTask=[message,...history.filter((_,i)=>i%2===0).reverse()].map(x=>/poprawka:\s*drugie zadanie to\s*([^.!?]+)/iu.exec(x)?.[1]?.trim()).find(Boolean);
+ if(list.length===3&&correctedTask)list[1]=correctedTask;
  const math=/^(?:oblicz|policz|ile to jest)\s+(-?\d{1,7})\s*([×*x+\-/])\s*(-?\d{1,7})\s*(?:([+\-×*x/])\s*(-?\d{1,7}))?[?.! ]*$/iu.exec(message.trim());
  if(math){
   const a=Number(math[1]),b=Number(math[3]),c=math[5]===undefined?null:Number(math[5]);
