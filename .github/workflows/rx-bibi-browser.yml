@@ -27,6 +27,11 @@ jobs:
           node-version: '22'
       - name: RX BIBI — bot sam prowadzi rozmowy i sprawdza odpowiedzi
         run: node tests/rx-chat-planner.mjs
+      - name: RX BIBI — wynik dialogów zapisany w logach testera
+        if: always()
+        run: |
+          echo 'RX FAST: scenariusze rozmów BIBI uruchomiono; wynik każdego kroku jest w logach zadania powyżej.'
+          echo 'Nie oznacza to testu zalogowanego klienta ani wdrożenia na produkcji.'
       - name: RX BIBI — odczyt produkcyjnego panelu i zabezpieczenia API (bez logowania)
         run: node --test tests/rx-bibi-live-readonly.test.cjs
       - name: Sprawdź składnię istniejących modułów
