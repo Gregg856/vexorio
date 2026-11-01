@@ -10,7 +10,9 @@ function facts(history){
  return {list,name,previous:previous===undefined?null:Number(previous.replace(',','.')),answers};
 }
 export function answerRXSession(message,history=[]){
- const input=normalize(message.trim()),{list,name,previous,answers}=facts(history);
+ const input=normalize(message.trim()),{list:priorList,name,previous,answers}=facts(history);
+ const currentList=/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(message)?.[1];
+ const list=currentList?currentList.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):priorList;
  const math=/^(?:oblicz|policz|ile to jest)\s+(-?\d{1,7})\s*([×*x+\-/])\s*(-?\d{1,7})\s*(?:([+\-×*x/])\s*(-?\d{1,7}))?[?.! ]*$/iu.exec(message.trim());
  if(math){
   const a=Number(math[1]),b=Number(math[3]),c=math[5]===undefined?null:Number(math[5]);
