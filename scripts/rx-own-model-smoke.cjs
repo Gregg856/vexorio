@@ -21,16 +21,22 @@ const {start}=require('../rx-cloud-server.cjs');
   process.env.RX_BIBI_EMBEDDED_MODEL='true';
   process.env.RX_BIBI_TRAINING_FILE=training;
   process.env.RX_BIBI_CLIENT_MODEL_FIRST='false';
+  process.env.RX_QUEEN_LOCAL_TOKEN='rx-test-local-probe-token-643-000000000000';
   server=await start({port:0,host:'127.0.0.1'});
   const url='http://127.0.0.1:'+server.address().port;
   const capabilities=await (await fetch(url+'/__rxcloud/model/capabilities')).json();
   assert.equal(capabilities.modelConfigured,true);
   const denied=await fetch(url+'/__rxcloud/model/probe');
   assert.equal(denied.status,401);
-  console.log(JSON.stringify({ok:true,embeddedModelConfigured:true,probeProtected:true,publicModelEndpoint:false,note:'local-only smoke; no production or generative model'}));
+  const probe=await fetch(url+'/__rxcloud/model/probe',{headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN}});
+  assert.equal(probe.status,200,'embedded inference must respond to authorized probe');
+  const probeResult=await probe.json();
+  assert.equal(probeResult.modelVerified,true);
+  assert.equal(probeResult.status,422,'unknown input must abstain');
+  console.log(JSON.stringify({ok:true,embeddedModelConfigured:true,probeProtected:true,liveInferenceProbe:true,unknownInputAbstains:true,publicModelEndpoint:false,note:'local-only smoke; no production or generative model'}));
  }finally{
   if(server)await new Promise(resolve=>server.close(resolve));
-  for(const key of ['SUPABASE_URL','RX_BIBI_MODEL_ENABLED','RX_BIBI_EMBEDDED_MODEL','RX_BIBI_TRAINING_FILE','RX_BIBI_CLIENT_MODEL_FIRST']){if(Object.hasOwn(before,key))process.env[key]=before[key];else delete process.env[key];}
+  for(const key of ['SUPABASE_URL','RX_BIBI_MODEL_ENABLED','RX_BIBI_EMBEDDED_MODEL','RX_BIBI_TRAINING_FILE','RX_BIBI_CLIENT_MODEL_FIRST','RX_QUEEN_LOCAL_TOKEN']){if(Object.hasOwn(before,key))process.env[key]=before[key];else delete process.env[key];}
   await fs.rm(dir,{recursive:true,force:true});
  }
 })().catch(e=>{console.error(e);process.exitCode=1;});
