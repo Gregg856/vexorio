@@ -86,6 +86,30 @@ textarea{box-shadow:inset 0 3px 12px #0007,0 0 0 1px #00ec6420}
  header h1{font-size:1.35rem}
 }
 @media(max-height:650px) and (max-width:650px){.bibi-hero{height:104px;min-height:104px}.bibi-hero::after{bottom:5px}.bibi-hero span{top:calc(50% + 16px)}}
+</style><style>
+/* RX 654 compact BIBI / stronger neon contrast, visual-only */
+@media(max-width:650px){
+ body{background:#01080d}
+ main{background:linear-gradient(160deg,#010b10,#02070e 75%);box-shadow:inset 0 0 36px #00ff6b14}
+ header{padding:7px 9px 8px;background:linear-gradient(135deg,#031c18,#030c17 65%);border:1px solid #0a8d62;box-shadow:0 0 12px #08ff7b30,inset 0 0 12px #00ff6d15}
+ header h1{font-size:1.35rem;padding-bottom:6px;text-shadow:0 0 18px #00ff8b90}
+ header h1::after{color:#c7f9df}
+ .header-actions{gap:6px}
+ .header-actions button{min-height:38px;border:1px solid #158a76;background:linear-gradient(135deg,#0c2530,#061420);color:#f3fffb;box-shadow:inset 0 1px #64ffbd28,0 0 8px #00ff6620}
+ .header-actions #logout{border-color:#158a76;color:#f3fffb}
+ .bibi-chat-layout{gap:4px}
+ .bibi-hero{height:clamp(90px,15dvh,120px);min-height:90px;padding:2px 10px;gap:8px;border-radius:16px;background:radial-gradient(ellipse at 22% 48%,#106f3a 0%,#04221a 44%,#010b13 88%);border:1px solid #0dff7b;box-shadow:0 0 16px #00ff764d,inset 0 0 25px #00ff6c2d}
+ .bibi-hero img{width:32%;max-width:116px;max-height:100%;filter:drop-shadow(0 0 14px #00ff84)}
+ .bibi-hero strong{font-size:clamp(1.35rem,6vw,1.9rem);color:#c5ffcf;text-shadow:0 0 14px #00ff8b}
+ .bibi-hero span{left:calc(min(32%,116px) + 19px);top:calc(50% + 16px);font-size:clamp(.66rem,2.6vw,.82rem);color:#e3fff2}
+ .bibi-hero::after{right:8px;bottom:5px;font-size:clamp(.46rem,1.8vw,.59rem);color:#62ff9b}
+ .bibi-chat-layout #messages{padding:8px 3px}
+ .bubble{background:linear-gradient(145deg,#0b2634,#071723);border:1px solid #217d80;box-shadow:0 0 12px #00d9a018,0 6px 15px #0008}
+ .bubble.me{background:linear-gradient(125deg,#079b64,#02c875);border-color:#45ffa4;box-shadow:0 0 14px #00ff7645}
+ textarea{background:#061b25;border:1px solid #21aa9a;box-shadow:inset 0 2px 10px #0009,0 0 10px #00ffa21c}
+ #send{background:linear-gradient(145deg,#67ff9f,#03ed6d 65%,#00b95c);color:#021a10;box-shadow:0 0 16px #00ff7d90,inset 0 1px #f1ffdd}
+}
+@media(max-width:380px){.bibi-hero{height:92px;min-height:92px}.bibi-hero img{width:30%}.bibi-hero span{left:calc(30% + 18px)}}
 </style></head>
 <body><main><header><img class="bibi-head-avatar" src="/rx-bibi-mascot.svg" alt="BIBI — maskotka RX"><h1>👑 RX BIBI</h1><div class="header-actions"><button id="tasks-toggle" class="secondary" type="button" hidden>Zadania</button><button id="new-chat" class="secondary" type="button" hidden>Nowa rozmowa</button><button id="logout" type="button" hidden>Wyloguj</button></div></header><p class="note intro">Nasz asystent RX. Odpowiedzi generuje obecnie lokalny planer — bez zewnętrznego modelu AI.</p>
 <section id="login"><h2>Zaloguj się</h2><p class="note">Użyj istniejącego konta VEXORIO.</p><label>Email<input id="email" type="email" autocomplete="email"></label><label>Hasło<input id="password" type="password" autocomplete="current-password"></label><button id="signin" type="button">Zaloguj</button></section>
