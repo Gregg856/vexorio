@@ -94,12 +94,14 @@ function ask(port,message,history,historyToken){
   assert.equal(contextual.executed,0);
   const invalidContext=await ask(port,'Dalej',Array(7).fill('Sprawdź testy'));
   assert.equal(invalidContext.status,400);
+  assert.equal(invalidContext.code,'INVALID_REQUEST');
   const historyFile=path.join(dir,'history.json');
   const historyToken='rx-test-token-625-abcdefghijklmnopqrstuvwxyz';
   const historyServerFirst=await start({historyFile,historyToken});
   try{
    const unauthorized=await ask(historyServerFirst.address().port,'Sprawdź testy');
-   assert.equal(unauthorized.status,400);
+   assert.equal(unauthorized.status,401);
+   assert.equal(unauthorized.code,'AUTH_REQUIRED');
    const saved=await ask(historyServerFirst.address().port,'Sprawdź testy',undefined,historyToken);
    assert.equal(saved.status,200);
    assert.equal(saved.executed,0);
@@ -156,7 +158,8 @@ function ask(port,message,history,historyToken){
   const damagedServer=await start({historyFile:damagedFile,historyToken:combinedToken});
   try{
    const response=await ask(damagedServer.address().port,'Dalej',undefined,combinedToken);
-   assert.equal(response.status,400);
+   assert.equal(response.status,503);
+   assert.equal(response.code,'HISTORY_UNAVAILABLE');
    assert.equal(fs.readFileSync(damagedFile,'utf8'),'{invalid-json');
   }finally{await new Promise(resolve=>damagedServer.close(resolve));}
   // Requests arriving concurrently must be serialized and persist both messages.
