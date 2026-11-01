@@ -66,6 +66,14 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
     env.RX_QUEEN_MODEL_SERVICE=createLocalModelService(queenPort);
     env.RX_QUEEN_MODEL_ENABLED='true';
   }
+  // Same-host RX CLOUD learning bridge: no public URL, no outbound Internet.
+  // Admin authentication remains enforced in worker.js before this service is called.
+  if((process.env.RX_QUEEN_LOCAL_TOKEN||'').length>=32){
+    env.RX_CLOUD_LOCAL_LEARNING_SERVICE={fetch:async(_url,options={})=>fetch('http://127.0.0.1:'+port+'/__rxcloud/bibi/learning',{
+      method:'GET',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN,Accept:'application/json'},
+      signal:options.signal||AbortSignal.timeout(7000)
+    })};
+  }
   const startedAt=Date.now();
   let activeRequests=0,peakActiveRequests=0,completedRequests=0;
   const server=http.createServer(async(req,res)=>{
