@@ -12,6 +12,17 @@ function facts(history){
 export function answerRXSession(message,history=[]){
  const input=normalize(message.trim()),{list:priorList,name,previous,answers}=facts(history);
  if(/gdy nie znasz odpowiedzi|kiedy nie znasz odpowiedzi|co robisz gdy nie wiesz|co zrobisz jesli nie wiesz/.test(input))return {answer:'👑 Gdy nie znam odpowiedzi, powiem wprost, że nie wiem. Nie będę zgadywać ani wymyślać faktów. Poproszę o doprecyzowanie albo zaproponuję sprawdzenie informacji w wiarygodnym źródle.',contextUsed:false};
+ const userTurns=history.filter((_,i)=>i%2===0);
+ const names=userTurns.map(x=>/mam na imię\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).filter(Boolean);
+ const distinctNames=[...new Set(names.map(normalize))];
+ if(/czy podalem dwa rozne imiona|czy zmienilem imie|czy poprawilem swoje imie/.test(input)&&distinctNames.length>1)
+  return {answer:'👑 Tak. Najpierw podałeś imię '+names[0]+', a później '+names[names.length-1]+'. Przyjmuję najnowsze: '+names[names.length-1]+'.',contextUsed:true};
+ if(/czy podalem dwa rozne imiona|czy zmienilem imie|czy poprawilem swoje imie/.test(input))
+  return {answer:'👑 Nie widzę dwóch różnych imion w tej rozmowie.',contextUsed:true};
+ if(name&&/jak mam na imie i ile mam zadan|ile mam zadan i jak mam na imie/.test(input)){
+  const remembered=priorList.length===3?'3':'nie podano';
+  return {answer:'👑 Masz na imię '+name+'. Liczba zadań: '+remembered+'.',contextUsed:true};
+ }
  const currentList=/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(message)?.[1];
  const list=currentList?currentList.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):priorList;
  const correctedTask=[message,...history.filter((_,i)=>i%2===0).reverse()].map(x=>/poprawka:\s*drugie zadanie to\s*([^.!?]+)/iu.exec(x)?.[1]?.trim()).find(Boolean);
