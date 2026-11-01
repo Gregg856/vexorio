@@ -342,7 +342,7 @@ jobs:
           const file='rx-bibi-reports/rx-client-auth-e2e.json';
           const r=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):{status:'NOT_RUN',clientChatVerified:false};
           const verdict=r.clientChatVerified?'VERIFIED':r.status||'NOT_VERIFIED';
-          const lines=['### RX BIBI — prawdziwy czat klienta','', '- Status: **'+verdict+'**','- Autentyczne rozmowy: '+(r.turns?.length||0)+'/5','- Zatwierdzona pamięć na żywo: **'+(r.approvedMemoryVerified===true?'VERIFIED':r.approvedMemoryStatus||'NOT_VERIFIED')+'**','- Testy lokalne i mock nie zastępują zalogowanego E2E.'];
+          const lines=['### RX BIBI — prawdziwy czat klienta','', '- Status: **'+verdict+'**','- Wykonane tury prawdziwego czatu: '+(r.turns?.length||0)+' (zaliczone: '+(r.turns||[]).filter(t=>t.passed===true).length+')','- Zatwierdzona pamięć na żywo: **'+(r.approvedMemoryVerified===true?'VERIFIED':r.approvedMemoryStatus||'NOT_VERIFIED')+'**','- Testy lokalne i mock nie zastępują zalogowanego E2E.'];
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
           console.log('RX BIBI REAL CHAT VERDICT:',verdict);
           NODE
