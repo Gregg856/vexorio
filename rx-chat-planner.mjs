@@ -56,9 +56,10 @@ export function planRXChat(message,history=[],learning=null){
  // RX BIBI 7.0: terse status/command messages without an explicit user task must not invent completed work.
  const shortCommand=/^(?:rob|rób|zrob|zrób|popraw|sprawdz|sprawdź|gotowe|zielone)[?.! ]*$/i.test(message.trim());
  if(shortCommand){
-  const topicTurns=history.filter((_,i)=>i%2===0).filter(turn=>turn.trim()&&!/^(?:dalej|rob|rób|zrob|zrób|popraw|sprawdz|sprawdź|gotowe|zielone)[?.! ]*$/i.test(turn.trim()));
+  const topicTurns=history.filter((_,i)=>i%2===0).filter(turn=>turn.trim()&&!/^(?:dalej|rob|rób|zrob|zrób|popraw|sprawdz|sprawdź|gotowe|zielone|ok|tak|nie)[?.! ]*$/i.test(turn.trim()));
   const lastTopic=topicTurns.at(-1)||'';
-  const answer=lastTopic?'👑 Ostatnie konkretne polecenie w tej rozmowie: „'+lastTopic.slice(0,180)+'”. Mogę je omówić lub przygotować plan, ale nie wykonałam żadnej zmiany ani testu automatycznie.':'👑 Podaj konkretne zadanie lub temat. Nie będę zgadywać ani twierdzić, że coś wykonałam.';
+  const action=/^(?:popraw)[?.! ]*$/i.test(message.trim())?'poprawić':/^(?:sprawdz|sprawdź)[?.! ]*$/i.test(message.trim())?'sprawdzić':'kontynuować';
+  const answer=lastTopic?'👑 Rozumiem, chcesz '+action+' temat: „'+lastTopic.slice(0,180)+'”. Mogę przygotować następny krok, ale nie wykonałam automatycznie żadnej zmiany ani testu.':'👑 Podaj konkretne zadanie lub temat. Nie będę zgadywać ani twierdzić, że coś wykonałam.';
   return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(lastTopic),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
  }
  const last=history.at(-1)||'';
