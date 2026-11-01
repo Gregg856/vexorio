@@ -13,6 +13,12 @@ export function planRXChat(message,history=[],learning=null){
  const rxLearning={kind:'rx-session-learning',preferences,verifiedFacts:0,trainingPerformed:false};
  // RX BIBI: bounded, session-only name recall from user messages (never from assistant text).
  const sessionName=[...history.filter((_,i)=>i%2===0),message].slice().reverse().map(turn=>/\b(?:mam na imię|nazywam się)\s+([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,30})(?=\W|$)/i.exec(turn)).find(Boolean)?.[1]||null;
+ // RX BIBI session learning: explicitly recall the latest user preference without treating it as model training.
+ const asksPreferences=/^(?:jakie|jaką|jaka|co)\\s+(?:mam\\s+)?(?:preferencje|preferencję|preferencje\\s+rozmowy)\\s*(?:pamiętasz|pamietasz)?[?.! ]*$|^(?:co|jakie)\\s+(?:zapamiętałaś|zapamietalas)\\s+(?:o\\s+moich\\s+)?preferencjach[?.! ]*$/iu.test(message.trim());
+ if(asksPreferences){
+  const answer=preferences.length?'👑 W tej rozmowie zapamiętałam Twoje wskazówki: '+preferences.map(p=>'„'+p.slice(0,180)+'”').join('; ')+'.':'👑 Nie widzę jeszcze zapisanych wskazówek dotyczących stylu rozmowy w tej sesji.';
+  return {ok:true,answer,topics:[],tasks:[],plan:{queen:{requiresApproval:true},work:null},learning:rxLearning,contextUsed:Boolean(history.length),multiIntent:false,intents:[],executed:0,modelInferenceUsed:false};
+ }
  const asksAboutSelf=/\b(?:co|czego)\s+(?:teraz\s+)?(?:o mnie|o mojej osobie)\s+(?:wiesz|pamiętasz|pamietasz)\b|\bco\s+(?:wiesz|pamiętasz|pamietasz)\s+o\s+mnie\b/i.test(message);
  if(asksAboutSelf){
   const facts=[];
