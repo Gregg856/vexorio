@@ -111,6 +111,7 @@ const cases=[
  ['multi corrected name', 'Podaj imię i miasto', ['Mam na imię Marek','OK','Moje aktualne imię to Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
  ['multi corrected city', 'Podaj imię i miasto', ['Mam na imię Adam','OK','Mieszkam w Krakowie','OK','Moje aktualne miasto to Poznań','OK'], /Adam.*Poznań/],
  ['multi missing interest', 'Podaj imię i zainteresowania', ['Mam na imię Adam','OK'], /Adam.*nie podano/],
+ ['full dialogue summary priority', 'Podsumuj naszą rozmowę: moje imię, trzy zadania i końcowy wynik obliczenia.', ['Mam na imię Marek','OK','Mam trzy zadania: naprawić czat, sprawdzić pamięć i przetestować matematykę','OK','Oblicz 125 × 8 + 350','🧮 Wynik: 1350','Odejmij 250 od poprzedniego wyniku','🧮 Wynik: 1100'], /Marek.*naprawić czat.*1100/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){

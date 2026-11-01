@@ -39,6 +39,11 @@ export function answerRXSession(message,history=[]){
  const interests=userTurns.map(x=>/(?:interesuję się|moje zainteresowanie to)\s+([^.!?]{2,80})/iu.exec(x)?.[1]?.trim()).filter(Boolean);
  const preferences=userTurns.map(x=>/(?:lubię|wolę)\s+([^.!?]{2,80})/iu.exec(x)?.[1]?.trim()).filter(Boolean);
  const interest=interests[interests.length-1],preference=preferences[preferences.length-1];
+ // Preserve the established full-dialogue summary (name, tasks and last result).
+ if(input.includes('podsumuj nasza rozmowe')&&priorList.length===3){
+  const result=answers.slice().reverse().map(x=>/wynik\s*:\s*(-?\d+(?:[.,]\d+)?)/iu.exec(x)?.[1]).find(Boolean);
+  return {answer:'👑 Imię: '+(name||'nie podano')+'. Trzy zadania: '+priorList.join('; ')+'. Końcowy wynik obliczenia: '+(result||'nie ustalono')+'.',contextUsed:true};
+ }
  // #738: compose answers to multiple explicitly requested facts without guessing.
  const asks={
   name:/\b(?:imie|imienia)\b/.test(question),
