@@ -49,8 +49,28 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   const env = {ASSETS:{fetch:staticFetch},SUPABASE_URL:supabaseUrl,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||'',RX_ADMIN_USER_ID:process.env.RX_ADMIN_USER_ID||'',RX_GITHUB_DISPATCH_TOKEN:process.env.RX_GITHUB_DISPATCH_TOKEN||'',VIEW_COUNT_ENABLED:process.env.VIEW_COUNT_ENABLED||'false',VIEW_COUNT_SECRET:process.env.VIEW_COUNT_SECRET||'',SUPABASE_SERVICE_ROLE_KEY:process.env.SUPABASE_SERVICE_ROLE_KEY||'',RX_AI_ENABLED:'false',RX_QUEEN_LOCAL_TOKEN:process.env.RX_QUEEN_LOCAL_TOKEN||'',RX_CLOUD_BRAIN_MEMORY_URL:process.env.RX_CLOUD_BRAIN_MEMORY_URL||''};
   // Optional self-hosted inference on loopback only. No external host or secrets.
   // Disabled unless explicitly opted in; never exposed as a public proxy.
+  // RX #640: own inference can run INSIDE the existing RX CLOUD process.
+  // No second server, external model, external provider or public model endpoint.
+  // Opt-in and fail closed when training data is absent/invalid.
+  const embeddedOwnModel=process.env.RX_BIBI_EMBEDDED_MODEL==='true';
+  if(embeddedOwnModel){
+    if(process.env.RX_BIBI_MODEL_ENABLED!=='true')throw Error('Embedded model requires RX_BIBI_MODEL_ENABLED=true');
+    if(!process.env.RX_BIBI_TRAINING_FILE)throw Error('Embedded model requires RX_BIBI_TRAINING_FILE');
+    const {read}=require('./rx-bibi-training-store.cjs');
+    const {train,infer}=require('./rx-bibi-own-inference.cjs');
+    const {samples}=await read(process.env.RX_BIBI_TRAINING_FILE);
+    const ownModel=train(samples);
+    env.RX_BIBI_MODEL_SERVICE={fetch:async(_url,options={})=>{
+      let message;
+      try{message=JSON.parse(options.body).message;}catch{return new Response(JSON.stringify({error:'Invalid input'}),{status:400});}
+      const result=infer(ownModel,message);
+      return new Response(JSON.stringify(result||{error:'No trained answer'}),{status:result?200:422,headers:{'Content-Type':'application/json'}});
+    }};
+    env.RX_BIBI_MODEL_ENABLED='true';
+    env.RX_BIBI_CLIENT_MODEL_FIRST=process.env.RX_BIBI_CLIENT_MODEL_FIRST==='true'?'true':'false';
+  }
   const modelEnabled=process.env.RX_BIBI_MODEL_ENABLED==='true';
-  if(modelEnabled){
+  if(modelEnabled&&!embeddedOwnModel){
     const modelPort=Number(process.env.RX_BIBI_MODEL_PORT||'');
     env.RX_BIBI_MODEL_SERVICE=createLocalModelService(modelPort);
     env.RX_BIBI_MODEL_ENABLED='true';
