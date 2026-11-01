@@ -10,8 +10,8 @@ const memoryPrompt=process.env.RX_BIBI_APPROVED_TEST_PROMPT||'';
 const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
 (async()=>{
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
- const report={kind:'rx-client-auth-e2e',mode:'REAL_AUTH_REAL_API',checks:[]};
- if(!email||!password){report.status='BLOCKED_MISSING_TEST_CREDENTIALS';report.clientChatVerified=false;report.reason='Dedicated test-account credentials required; mock and anonymous checks do not prove authenticated chat behavior.';fs.writeFileSync('rx-bibi-reports/rx-client-auth-e2e.json',JSON.stringify(report,null,2));console.log('BLOCKED RX client authenticated E2E: dedicated credentials unavailable; NOT VERIFIED');return;}
+ const report={kind:'rx-client-auth-e2e',mode:'REAL_AUTH_REAL_API',checks:[],failureCategory:null};
+ if(!email||!password){report.status='BLOCKED_MISSING_TEST_CREDENTIALS';report.failureCategory='TEST_CREDENTIALS_MISSING';report.clientChatVerified=false;report.reason='Dedicated test-account credentials required; mock and anonymous checks do not prove authenticated chat behavior.';fs.writeFileSync('rx-bibi-reports/rx-client-auth-e2e.json',JSON.stringify(report,null,2));console.log('BLOCKED RX client authenticated E2E: dedicated credentials unavailable; NOT VERIFIED');return;}
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
@@ -48,7 +48,7 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
    });
    if(!(await chat.isVisible())){
     const status=await page.locator('#status').textContent().catch(()=>'');
-    if(String(status).includes('Logowanie nie powiodło się.'))throw Error('Test-account sign-in rejected by Supabase. Verify dedicated test credentials in GitHub secrets; no password is logged.');
+    if(String(status).includes('Logowanie nie powiodło się.')){report.failureCategory='TEST_ACCOUNT_LOGIN_REJECTED';throw Error('Test-account sign-in rejected by Supabase. Verify dedicated test credentials in GitHub secrets; no password is logged.');}
     throw Error('Authenticated chat did not become visible after sign-in; status: '+String(status||'empty').slice(0,180));
    }
   }
@@ -108,6 +108,6 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
   }
   report.status='PASS';report.clientChatVerified=true;
   console.log('PASS RX client authenticated E2E: '+report.checks.join(', '));
- }catch(e){report.status='FAIL';report.clientChatVerified=false;report.error=e.message;console.error('FAIL RX client authenticated E2E: '+e.message);process.exitCode=1;}
+ }catch(e){report.status='FAIL';report.clientChatVerified=false;report.failureCategory ||= report.checks.includes('authenticated_customer_chat_visible')?'AUTHENTICATED_CHAT_FAILURE':'AUTH_UI_OR_NETWORK_FAILURE';report.error=e.message;console.error('FAIL RX client authenticated E2E: '+e.message);process.exitCode=1;}
  finally{fs.writeFileSync('rx-bibi-reports/rx-client-auth-e2e.json',JSON.stringify(report,null,2));await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
