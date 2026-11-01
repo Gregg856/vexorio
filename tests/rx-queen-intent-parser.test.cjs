@@ -57,3 +57,16 @@ test('more Polish writing verbs honor explicit constraints',()=>{
   if(kind==='short')assert.ok(!out.text.includes('Cześć!')&&!out.text.includes('Pozdrawiam!'),prompt);
  }
 });
+
+test('short instructions recognize common Polish grammatical forms',()=>{
+ const samples=[
+  ['reply','Przygotuj krótki tekst odpowiedzi: termin potwierdzony.'],
+  ['message','Ułóż zwięzłą wiadomość: spotkanie w piątek.']
+ ];
+ for(const [mode,prompt] of samples){
+  const parsed=parseIntent({mode,prompt});
+  assert.ok(parsed.constraints.includes('short'),prompt);
+  const output=compose({mode,prompt});
+  assert.ok(!output.text.includes('Cześć!')&&!output.text.includes('Pozdrawiam!'),prompt);
+ }
+});
