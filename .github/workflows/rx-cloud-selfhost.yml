@@ -2,6 +2,7 @@ name: RX CLOUD self-host smoke tests
 on:
   push:
     paths:
+      - 'scripts/rx-own-model-smoke.cjs'
       - 'rx-cloud-server.cjs'
       - 'rx-money-engine.cjs'
       - 'tests/rx-money-engine.cjs'
@@ -165,6 +166,8 @@ jobs:
         run: node tests/rx-cloud-migration-readiness.cjs
       - name: Run RX CLOUD smoke tests
         run: node tests/rx-cloud-server.cjs
+      - name: Run our own embedded RX model in real RX CLOUD process
+        run: node scripts/rx-own-model-smoke.cjs
       - name: Test local model inference transport
         run: node --test tests/rx-bibi-loopback-e2e.test.cjs
       - name: Test RX BIBI own CPU inference prototype
