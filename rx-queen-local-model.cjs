@@ -5,7 +5,7 @@ const http=require('node:http');
 function start({port=Number(process.env.RX_QUEEN_MODEL_PORT||8798),host='127.0.0.1',
   runtimePort=Number(process.env.RX_QUEEN_RUNTIME_PORT||11434),
   model=process.env.RX_QUEEN_MODEL_NAME||''}={}){
- if(host!=='127.0.0.1'||!Number.isInteger(port)||port<1||port>65535||
+ if(host!=='127.0.0.1'||!Number.isInteger(port)||port<0||port>65535||
     !Number.isInteger(runtimePort)||runtimePort<1||runtimePort>65535)
   throw Error('Queen gateway requires valid loopback ports');
  if(!/^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,100}$/.test(model))
