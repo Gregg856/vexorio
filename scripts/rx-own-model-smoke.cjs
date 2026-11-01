@@ -51,7 +51,7 @@ const {start}=require('../rx-cloud-server.cjs');
   assert.equal(reply.answer,'Witaj! Tu nasz RX BIBI.');
   assert.equal(reply.modelInferenceUsed,true);
   assert.equal(reply.adminToolsAvailable,false);
-  const unauthorized=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Origin:url},body:JSON.stringify({message:'witaj bibi'})});
+  const unauthorized=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Origin:'http://localhost'},body:JSON.stringify({message:'witaj bibi'})});
   assert.equal(unauthorized.status,401);
   console.log(JSON.stringify({ok:true,authenticatedClientChat:true,unauthorizedClientDenied:true,embeddedModelConfigured:true,probeProtected:true,liveInferenceProbe:true,unknownInputAbstains:true,publicModelEndpoint:false,note:'local-only smoke; no production or generative model'}));
  }finally{
