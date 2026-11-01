@@ -96,21 +96,21 @@ function ask(port,message,history,historyToken){
   assert.equal(invalidContext.status,400);
   const historyFile=path.join(dir,'history.json');
   const historyToken='rx-test-token-625-abcdefghijklmnopqrstuvwxyz';
-  const first=await start({historyFile,historyToken});
+  const historyServerFirst=await start({historyFile,historyToken});
   try{
-   const unauthorized=await ask(first.address().port,'Sprawdź testy');
+   const unauthorized=await ask(historyServerFirst.address().port,'Sprawdź testy');
    assert.equal(unauthorized.status,400);
-   const saved=await ask(first.address().port,'Sprawdź testy',undefined,historyToken);
+   const saved=await ask(historyServerFirst.address().port,'Sprawdź testy',undefined,historyToken);
    assert.equal(saved.status,200);
    assert.equal(saved.executed,0);
-  }finally{await new Promise(resolve=>first.close(resolve));}
-  const second=await start({historyFile,historyToken});
+  }finally{await new Promise(resolve=>historyServerFirst.close(resolve));}
+  const historyServerSecond=await start({historyFile,historyToken});
   try{
-   const followup=await ask(second.address().port,'A chmura?',undefined,historyToken);
+   const followup=await ask(historyServerSecond.address().port,'A chmura?',undefined,historyToken);
    assert.equal(followup.status,200);
    assert.equal(followup.executed,0);
    assert.match(fs.readFileSync(historyFile,'utf8'),/A chmura/);
-  }finally{await new Promise(resolve=>second.close(resolve));}
+  }finally{await new Promise(resolve=>historyServerSecond.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
