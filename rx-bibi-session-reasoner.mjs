@@ -12,6 +12,7 @@ function facts(history){
 export function answerRXSession(message,history=[]){
  const input=normalize(message.trim()),{list:priorList,name,previous,answers}=facts(history);
  if(/gdy nie znasz odpowiedzi|kiedy nie znasz odpowiedzi|co robisz gdy nie wiesz|co zrobisz jesli nie wiesz/.test(input))return {answer:'👑 Gdy nie znam odpowiedzi, powiem wprost, że nie wiem. Nie będę zgadywać ani wymyślać faktów. Poproszę o doprecyzowanie albo zaproponuję sprawdzenie informacji w wiarygodnym źródle.',contextUsed:false};
+ const question=input.replace(/^(?:prosze|powiedz mi|przypomnij mi|czy pamietasz)\s*,?\s*/,'');
  const userTurns=history.filter((_,i)=>i%2===0);
  const names=userTurns.map(x=>/mam na imię\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).filter(Boolean);
  const distinctNames=[...new Set(names.map(normalize))];
@@ -19,16 +20,16 @@ export function answerRXSession(message,history=[]){
   return {answer:'👑 Tak. Najpierw podałeś imię '+names[0]+', a później '+names[names.length-1]+'. Przyjmuję najnowsze: '+names[names.length-1]+'.',contextUsed:true};
  if(/czy podalem dwa rozne imiona|czy zmienilem imie|czy poprawilem swoje imie/.test(input))
   return {answer:'👑 Nie widzę dwóch różnych imion w tej rozmowie.',contextUsed:true};
- if(name&&/jak mam na imie i ile mam zadan|ile mam zadan i jak mam na imie/.test(input)){
+ if(name&&/jak mam na imie i ile mam zadan|ile mam zadan i jak mam na imie|podaj moje imie i liczbe zadan/.test(question)){
   const remembered=priorList.length===3?'3':'nie podano';
   return {answer:'👑 Masz na imię '+name+'. Liczba zadań: '+remembered+'.',contextUsed:true};
  }
  const cities=userTurns.map(x=>/mieszkam w\s+([\p{L}-]{2,40})/iu.exec(x)?.[1]).filter(Boolean);
  const currentCity=cities[cities.length-1];
  const cityChanged=new Set(cities.map(normalize)).size>1;
- if(name&&currentCity&&/jak mam na imie i gdzie mieszkam|gdzie mieszkam i jak mam na imie/.test(input))
+ if(name&&currentCity&&/jak mam na imie i gdzie mieszkam|gdzie mieszkam i jak mam na imie|podaj moje imie i miasto/.test(question))
   return {answer:'👑 Masz na imię '+name+' i według Twojej informacji mieszkasz w '+currentCity+'.',contextUsed:true};
- if(/gdzie mieszkam|w jakim miescie mieszkam/.test(input)&&currentCity)
+ if(/gdzie mieszkam|w jakim miescie mieszkam|przypomnij moje miasto|jakie miasto podalem/.test(question)&&currentCity)
   return {answer:'👑 Według Twojej ostatniej informacji mieszkasz w '+currentCity+'.',contextUsed:true};
  if(/czy zmienilem miasto|czy podalem dwa rozne miasta/.test(input))
   return {answer:cityChanged?'👑 Tak. Najpierw podałeś '+cities[0]+', a później '+currentCity+'.':'👑 Nie widzę dwóch różnych miast w tej rozmowie.',contextUsed:true};
