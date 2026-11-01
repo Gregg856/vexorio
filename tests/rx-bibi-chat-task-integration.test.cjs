@@ -111,6 +111,27 @@ function ask(port,message,history,historyToken){
    assert.equal(followup.executed,0);
    assert.match(fs.readFileSync(historyFile,'utf8'),/A chmura/);
   }finally{await new Promise(resolve=>historyServerSecond.close(resolve));}
+  // RX #626: both persisted conversation context and RX Brain observations survive restart.
+  const combinedHistory=path.join(dir,'combined-history.json');
+  const combinedToken='rx-test-token-626-abcdefghijklmnopqrstuvwxyz';
+  const combinedFirst=await start({historyFile:combinedHistory,historyToken:combinedToken,memoryFile});
+  try{
+   const learned=await ask(combinedFirst.address().port,'Co pamiętasz o zadaniu: android_chat',undefined,combinedToken);
+   assert.equal(learned.status,200);
+   assert.match(learned.reply,/inspect_logs/);
+   assert.equal(learned.executed,0);
+  }finally{await new Promise(resolve=>combinedFirst.close(resolve));}
+  const combinedSecond=await start({historyFile:combinedHistory,historyToken:combinedToken,memoryFile});
+  try{
+   const later=await ask(combinedSecond.address().port,'Co pamiętasz o zadaniu: restart_chat',undefined,combinedToken);
+   assert.equal(later.status,200);
+   assert.match(later.reply,/check_health/);
+   assert.equal(later.executed,0);
+   const persisted=JSON.parse(fs.readFileSync(combinedHistory,'utf8'));
+   assert.ok(persisted.some(turn=>turn.includes('android_chat')));
+   assert.ok(persisted.some(turn=>turn.includes('restart_chat')));
+   assert.ok(persisted.length<=6);
+  }finally{await new Promise(resolve=>combinedSecond.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
