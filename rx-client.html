@@ -121,6 +121,16 @@ textarea{box-shadow:inset 0 3px 12px #0007,0 0 0 1px #00ec6420}
  body.rx-typing form{flex-shrink:0;padding:5px 0 max(4px,env(safe-area-inset-bottom))}
  body.rx-typing #status{display:none}
 }
+</style><style>
+/* RX 656: one BIBI identity on mobile, preserve compact mascot and full-width chat. */
+@media(max-width:650px){
+ header{display:none!important}
+ .bibi-hero{margin-top:0}
+ .bibi-chat-layout{gap:5px}
+ .bibi-hero::after{content:'BIBI • ONLINE';}
+ body:not(.rx-typing) .bibi-hero{display:flex}
+ body.rx-typing .bibi-hero{display:none!important}
+}
 </style></head>
 <body><main><header><img class="bibi-head-avatar" src="/rx-bibi-mascot.svg" alt="BIBI — maskotka RX"><h1>👑 RX BIBI</h1><div class="header-actions"><button id="tasks-toggle" class="secondary" type="button" hidden>Zadania</button><button id="new-chat" class="secondary" type="button" hidden>Nowa rozmowa</button><button id="logout" type="button" hidden>Wyloguj</button></div></header><p class="note intro">Nasz asystent RX. Odpowiedzi generuje obecnie lokalny planer — bez zewnętrznego modelu AI.</p>
 <section id="login"><h2>Zaloguj się</h2><p class="note">Użyj istniejącego konta VEXORIO.</p><label>Email<input id="email" type="email" autocomplete="email"></label><label>Hasło<input id="password" type="password" autocomplete="current-password"></label><button id="signin" type="button">Zaloguj</button></section>
