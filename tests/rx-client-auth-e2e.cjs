@@ -14,7 +14,7 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
  fs.mkdirSync('rx-bibi-reports',{recursive:true});
  const report={kind:'rx-client-auth-e2e',mode:'REAL_AUTH_REAL_API',checks:[],failureCategory:null};
  if(email&&email!==normalizedEmail)report.checks.push('test_email_whitespace_normalized');
- if(!email||!password){report.status='BLOCKED_MISSING_TEST_CREDENTIALS';report.failureCategory='TEST_CREDENTIALS_MISSING';report.clientChatVerified=false;report.reason='Dedicated test-account credentials required; mock and anonymous checks do not prove authenticated chat behavior.';fs.writeFileSync('rx-bibi-reports/rx-client-auth-e2e.json',JSON.stringify(report,null,2));console.log('BLOCKED RX client authenticated E2E: dedicated credentials unavailable; NOT VERIFIED');return;}
+ if(!normalizedEmail||!password){report.status='BLOCKED_MISSING_TEST_CREDENTIALS';report.failureCategory='TEST_CREDENTIALS_MISSING';report.clientChatVerified=false;report.reason='Dedicated test-account credentials required; mock and anonymous checks do not prove authenticated chat behavior.';fs.writeFileSync('rx-bibi-reports/rx-client-auth-e2e.json',JSON.stringify(report,null,2));console.log('BLOCKED RX client authenticated E2E: dedicated credentials unavailable; NOT VERIFIED');return;}
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
