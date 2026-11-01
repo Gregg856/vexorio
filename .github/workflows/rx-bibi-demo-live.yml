@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify local BIBI session reasoning regression cases
+        run: node tests/rx-bibi-session-regression.mjs
       - name: Send 10 real chat messages without login
         run: node tests/rx-bibi-demo-live.cjs
       - name: Upload dialogue and failure report
