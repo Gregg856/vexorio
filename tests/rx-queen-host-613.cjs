@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const ps=fs.readFileSync('deploy/rx-queen-windows-preflight.ps1','utf8');
+assert.match(ps,/rx-queen-live-probe\.cjs/);
+assert.match(ps,/\$LASTEXITCODE/);
+assert.match(ps,/Node\.js 22\+/);
+assert.doesNotMatch(ps,/Invoke-WebRequest|Start-Process|Set-Content|New-Item|Install-Module|Set-ItemProperty/);
+const guide=fs.readFileSync('deploy/RX-QUEEN-HOST-613.md','utf8');
+assert.match(guide,/Windows/);
+assert.match(guide,/Linux/);
+console.log('RX #613 host preflight packaging: PASS');
