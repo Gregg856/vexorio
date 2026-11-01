@@ -50,7 +50,14 @@ const cases=[
  ['combined name and tasks', 'Jak mam na imię i ile mam zadań?', ['Mam na imię Marek','OK',tasks,list], /Marek.*3/],
  ['combined reverse order', 'Ile mam zadań i jak mam na imię?', ['Mam na imię Marek','OK',tasks,list], /Marek.*3/],
  ['combined missing list', 'Jak mam na imię i ile mam zadań?', ['Mam na imię Marek','OK'], /Marek.*nie podano/],
- ['name correction query', 'Czy zmieniłem imię?', ['Mam na imię Marek','OK','Mam na imię Adam','OK'], /Marek.*Adam/]
+ ['name correction query', 'Czy zmieniłem imię?', ['Mam na imię Marek','OK','Mam na imię Adam','OK'], /Marek.*Adam/],
+ ['city remembered', 'Gdzie mieszkam?', ['Mieszkam w Krakowie','OK'], /Krakowie/],
+ ['city correction', 'Gdzie mieszkam?', ['Mieszkam w Krakowie','OK','Mieszkam w Poznaniu','OK'], /Poznaniu/],
+ ['city contradiction', 'Czy zmieniłem miasto?', ['Mieszkam w Krakowie','OK','Mieszkam w Poznaniu','OK'], /Krakowie.*Poznaniu/],
+ ['same city no contradiction', 'Czy zmieniłem miasto?', ['Mieszkam w Krakowie','OK','Mieszkam w Krakowie','OK'], /Nie widzę/],
+ ['no city contradiction invented', 'Czy zmieniłem miasto?', [], /Nie widzę/],
+ ['combined name and city', 'Jak mam na imię i gdzie mieszkam?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
+ ['combined reverse name and city', 'Gdzie mieszkam i jak mam na imię?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
