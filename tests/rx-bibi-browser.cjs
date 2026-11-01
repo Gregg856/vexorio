@@ -206,7 +206,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX BIBI 1.5 plan dla każdej sklasyfikowanej awarii',planCount===incidentPriorities,'Plany: '+planCount+', priorytety: '+incidentPriorities);
     const unsafePlans=await diagnosticPlans.filter({hasText:/undefined|NaN|\\[object Object\\]/}).count();
     record('RX BIBI 1.5 czytelne podpowiedzi',unsafePlans===0,'Niepoprawne plany: '+unsafePlans);
-    await openRxTab('🧠 Rozmowa z RX Strażakiem');
+    await openRxTab('👑 Królowa BIBI — czat');
     // Visual UX regression: mobile chat-first layout and navigation.
     const visual = await page.evaluate(() => {
       const menu=document.querySelector('.rx-menu-toggle');
