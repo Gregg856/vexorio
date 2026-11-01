@@ -666,6 +666,37 @@ export default {
       return new Response(JSON.stringify({ok:true,message:'Test zlecony. Odśwież wyniki za chwilę.'}),{status:202,headers});
     }
     // RX Brain memory is a separate source; no fallback to RX CLOUD.
+    // RX #604: private Queen identity probe; no client-chat fallback or model claim.
+    if(url.pathname==='/api/rx/admin/queen-chat'){
+      const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+      const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});
+      if(request.method!=='POST')return reply(405,'Dozwolone tylko POST.');
+      const origin=request.headers.get('Origin');
+      if(origin&&origin!==url.origin)return reply(403,'Nieprawidłowe pochodzenie.');
+      const site=request.headers.get('Sec-Fetch-Site');
+      if(site&&site!=='same-origin'&&site!=='none')return reply(403,'Żądanie spoza witryny.');
+      const auth=request.headers.get('Authorization')||'';
+      if(!/^Bearer [A-Za-z0-9._~-]+$/.test(auth))return reply(401,'Wymagane logowanie administratora.');
+      if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY)return reply(503,'Logowanie jest niedostępne.');
+      let base;try{base=new URL(env.SUPABASE_URL);}catch{return reply(503,'Błędna konfiguracja.');}
+      if(base.protocol!=='https:'||!/^[a-z0-9-]+[.]supabase[.]co$/.test(base.hostname)||base.pathname!=='/'||base.search||base.hash||base.username||base.password||base.port)return reply(503,'Błędna konfiguracja.');
+      try{
+        const identity=await fetch(new URL('/auth/v1/user',base),{headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth},signal:AbortSignal.timeout(8000)});
+        if(!identity.ok)return reply(401,'Sesja wygasła.');
+        const user=await identity.json();
+        if(!user?.id||user.is_anonymous===true)return reply(403,'Brak uprawnień.');
+        const permission=await fetch(new URL('/rest/v1/rpc/is_vexorio_admin',base),{method:'POST',headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:auth,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)});
+        if(!permission.ok)return reply(502,'Nie można sprawdzić uprawnień.');
+        if((await permission.json())!==true)return reply(403,'Brak uprawnień administratora.');
+      }catch{return reply(502,'Weryfikacja administratora niedostępna.');}
+      let payload;try{payload=await request.json();}catch{return reply(400,'Nieprawidłowy JSON.');}
+      if(typeof payload?.message!=='string'||!payload.message.trim()||payload.message.length>2000)return reply(400,'Wiadomość musi mieć od 1 do 2000 znaków.');
+      const normalized=payload.message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
+      if(/^(kim jestes|jak sie nazywasz|przedstaw sie|czesc|hej|witaj|witam)[?!. ]*$/.test(normalized)){
+        return new Response(JSON.stringify({ok:true,answer:'Jestem Królową RX, prywatnym panelem zarządzania VEXORIO. Ten punkt kontrolny potwierdza tożsamość i uprawnienia; pełny silnik rozmowy nie jest jeszcze podłączony.',engine:'rx-queen-identity',modelInferenceUsed:false,executed:0}),{status:200,headers});
+      }
+      return new Response(JSON.stringify({ok:true,answer:'Panel Królowej RX jest dostępny. Pełny silnik rozmowy nie jest jeszcze podłączony — nie wykonano polecenia.',engine:'rx-queen-identity',modelInferenceUsed:false,executed:0}),{status:200,headers});
+    }
     if(url.pathname==='/api/rx/admin/brain-memory'){
       const headers={'Cache-Control':'no-store','Content-Type':'application/json'};
       const reply=(status,message)=>new Response(JSON.stringify({ok:false,message}),{status,headers});

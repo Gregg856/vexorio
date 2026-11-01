@@ -1005,7 +1005,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   (views.get(target)||fallback).append(node);
  }
  const chat=views.get('chat');chat.classList.add('rx-chat');
- const title=document.createElement('h2');title.textContent='👑 RX BIBI — panel Królowej';title.setAttribute('aria-label','RX BIBI, istniejący czat i narzędzia');
+ const title=document.createElement('h2');title.textContent='👑 Panel Królowej RX — zarządzanie BIBI';title.setAttribute('aria-label','Panel Królowej RX z narzędziami i czatem BIBI');
  const notice=document.createElement('p');notice.className='meta';notice.textContent='Czat BIBI korzysta z istniejącego API dla obsługiwanych poleceń. Pozostałe odpowiedzi mogą pochodzić z lokalnego planera; uruchomienie własnego modelu na serwerze nie jest jeszcze potwierdzone. Narzędzia Strażaka pozostają dostępne osobno.';
  const log=document.createElement('div');log.className='rx-chatlog';log.setAttribute('aria-live','polite');
  const mascotSvg="<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 80 90\" aria-hidden=\"true\"><path d=\"M16 86Q14 63 40 63Q66 63 64 86\" fill=\"#16ac61\" stroke=\"#a8ff9c\" stroke-width=\"3\"/><path d=\"M20 76H60M22 83H58\" stroke=\"#f5ec83\" stroke-width=\"4\"/><ellipse cx=\"40\" cy=\"47\" rx=\"25\" ry=\"26\" fill=\"#ffc49d\"/><circle cx=\"31\" cy=\"48\" r=\"7\" fill=\"#fff\"/><circle cx=\"49\" cy=\"48\" r=\"7\" fill=\"#fff\"/><circle cx=\"32\" cy=\"48\" r=\"4\" fill=\"#219d60\"/><circle cx=\"48\" cy=\"48\" r=\"4\" fill=\"#219d60\"/><circle cx=\"33\" cy=\"47\" r=\"2\" fill=\"#14261c\"/><circle cx=\"49\" cy=\"47\" r=\"2\" fill=\"#14261c\"/><path d=\"M33 61Q40 67 48 60\" stroke=\"#ad5144\" fill=\"none\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><path d=\"M13 35Q14 5 40 5Q66 5 67 35\" fill=\"#20d26a\" stroke=\"#b5ff9b\" stroke-width=\"3\"/><path d=\"M9 35Q40 28 71 35L69 42Q40 37 11 42Z\" fill=\"#08784b\" stroke=\"#b5ff9b\" stroke-width=\"2\"/><rect x=\"29\" y=\"16\" width=\"22\" height=\"18\" rx=\"4\" fill=\"#092d25\" stroke=\"#d4ffb4\" stroke-width=\"2\"/><text x=\"40\" y=\"29\" font-size=\"12\" text-anchor=\"middle\" fill=\"#fff\" font-weight=\"bold\">RX</text><circle cx=\"40\" cy=\"6\" r=\"4\" fill=\"#e6ff9d\"/></svg>";
@@ -1026,6 +1026,24 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(key){const action=document.createElement('button');action.type='button';action.textContent='Otwórz: '+buttons.get(key).textContent;action.addEventListener('click',()=>activate(key));log.append(action);}
    log.scrollTop=log.scrollHeight;
   };
+  // RX #604: Queen identity questions use the private admin endpoint, not BIBI.
+  if(/^(?:kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz|przedstaw się|przedstaw sie|cześć|czesc|hej|witaj|witam)[?!. ]*$/iu.test(message)){
+   (async()=>{
+    send.disabled=true;
+    try{
+     if(!window.supabase?.createClient)throw Error('Logowanie administratora niedostępne.');
+     const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+     const {data,error}=await client.auth.getSession();
+     if(error||!data?.session?.access_token)throw Error('Zaloguj się jako administrator.');
+     const response=await fetch('/api/rx/admin/queen-chat',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({message})});
+     const result=await response.json().catch(()=>({}));
+     if(!response.ok||result.ok!==true||typeof result.answer!=='string')throw Error(result.message||'Królowa nie odpowiedziała.');
+     explain(result.answer);
+    }catch(error){explain('Czat Królowej: '+String(error.message||error).slice(0,180));}
+    finally{send.disabled=false;}
+   })();
+   return;
+  }
   // Keep the RX Brain advisory-memory syntax distinct from RX CLOUD admin memory.
   const brainMatch=/^co (?:pamiętasz|pamietasz) o zadaniu\s*:\s*([a-z0-9_-]{1,80})\??$/i.exec(message.trim());
   const brainList=/^(?:pokaż|pokaz|wyświetl|wyswietl|lista)\s+(?:zadania\s+)?(?:pamięci|pamieci)\s*(?:rx\s*brain)?\??$/i.test(message.trim());
