@@ -23,7 +23,7 @@ function start({port=Number(process.env.RX_QUEEN_MODEL_PORT||8798),host='127.0.0
    const response=await fetch('http://127.0.0.1:'+runtimePort+'/api/generate',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model,prompt:'Jesteś Królową RX, asystentką administracyjną VEXORIO. Odpowiadaj po polsku. Nie twierdź, że wykonałaś działania administracyjne. Nie ujawniaj sekretów.\\nUżytkownik: '+input.message.trim()+'\\nKrólowa RX:',stream:false,options:{num_predict:384}}),
-    signal:AbortSignal.timeout(20000)
+    signal:AbortSignal.timeout(6500)
    });
    if(!response.ok)return respond(503,{error:'Local model unavailable'});
    const data=await response.json();
