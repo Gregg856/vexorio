@@ -3,7 +3,7 @@ export function composeClientWriting(message){
  if(typeof message!=='string'||message.length>2000)return null;
  const m=/^(?:(?:proszę|prosze)\s+)?(napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?([^:]{0,180}):\s*(.{1,1500})$/isu.exec(message.trim());
  if(!m)return null;
- const instruction=m[3].toLocaleLowerCase('pl');
+ const instruction=m[3].toLocaleLowerCase('pl').trim();
  // Reject unsupported instructions instead of claiming they were understood.
  const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|krótką|krotka|krótki|krotki|krótkie|krotkie|zwięźle|zwiezle|zwięzłą|zwiezla|szczegółowo|obszernie|nieformalnie|formalnie|oficjalnie|i|[,;\s])/gu,'').trim();
  if(tokens)return null;
@@ -24,7 +24,7 @@ export function composeClientWriting(message){
  // Explicit semantic transformations cannot be performed reliably by a formatter.
  if(/\b(?:własnymi\s+słowami|bez\s+cytowania|sparafrazuj)\b/iu.test(message.slice(0,message.indexOf(':'))))return {answer:'Nie potrafię jeszcze wiarygodnie sparafrazować tekstu. Skorzystaj z modelu AI.',requiresClarification:true};
  if(!content)return null;
- if(m[2]==='streszczenie')return {answer:'Nie potrafię jeszcze wiarygodnie streścić dowolnego tekstu. Podaj krótszy fragment lub sprecyzuj cel.',requiresClarification:true};
+ if(m[2]?.toLocaleLowerCase('pl')==='streszczenie')return {answer:'Nie potrafię jeszcze wiarygodnie streścić dowolnego tekstu. Podaj krótszy fragment lub sprecyzuj cel.',requiresClarification:true};
  const normalized=content.trim().replace(/\s+/gu,' ');
  const ending=/[.!?…]$/u.test(normalized)?'':'.';
  const answer=[noGreeting||short?'':formal?'Dzień dobry!':'Cześć!',normalized.charAt(0).toLocaleUpperCase('pl')+normalized.slice(1)+ending,noSignoff||short?'':formal?'Z poważaniem!':'Pozdrawiam!'].filter(Boolean).join(' ');
