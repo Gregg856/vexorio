@@ -65,3 +65,17 @@ test('model bridge package 4: reject invisible prompt and answer controls',async
  assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\u007f'))).modelInferenceUsed,false);
  assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\u202e'))).modelInferenceUsed,false);
 });
+
+
+test('model bridge package 5: five additional Unicode safety regressions',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ let calls=0;
+ const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch:async()=>{calls++;return {ok:true,json:async()=>({answer:'OK'})};}}};
+ assert.equal(await ask('Zapytaj model: a\u0085b',env),null);
+ assert.equal(await ask('Zapytaj model: a\u202eb',env),null);
+ assert.equal(await ask('Zapytaj model: a\ufffeb',env),null);
+ assert.equal(calls,0);
+ const reply=answer=>({...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer})})}});
+ assert.equal((await ask('Zapytaj model: test',reply('a\u0085b'))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',reply('a\uffffb'))).modelInferenceUsed,false);
+});
