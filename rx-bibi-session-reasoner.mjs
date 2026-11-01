@@ -33,7 +33,7 @@ export function answerRXSession(message,history=[]){
   const remembered=priorList.length===3?'3':'nie podano';
   return {answer:'👑 Masz na imię '+name+'. Liczba zadań: '+remembered+'.',contextUsed:true};
  }
- const cities=userTurns.map(x=>/(?:mieszkam w|moje aktualne miasto to|chodziło mi o miasto|chodziło mi o)\s+([\p{L}-]{2,40})/iu.exec(x)?.[1]).filter(Boolean);
+ const cities=userTurns.map(x=>/(?:mieszkam w|moje aktualne miasto to|chodziło mi o miasto)\s+([\p{L}-]{2,40})/iu.exec(x)?.[1]).filter(Boolean);
  const currentCity=cities[cities.length-1];
  const cityChanged=new Set(cities.map(normalize)).size>1;
  if(name&&currentCity&&/jak mam na imie i gdzie mieszkam|gdzie mieszkam i jak mam na imie|podaj moje imie i miasto/.test(question))
