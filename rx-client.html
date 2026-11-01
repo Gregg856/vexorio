@@ -110,6 +110,17 @@ textarea{box-shadow:inset 0 3px 12px #0007,0 0 0 1px #00ec6420}
  #send{background:linear-gradient(145deg,#67ff9f,#03ed6d 65%,#00b95c);color:#021a10;box-shadow:0 0 16px #00ff7d90,inset 0 1px #f1ffdd}
 }
 @media(max-width:380px){.bibi-hero{height:92px;min-height:92px}.bibi-hero img{width:30%}.bibi-hero span{left:calc(30% + 18px)}}
+</style><style>
+/* RX 655: preserve the conversation area when the mobile keyboard opens. */
+@media(max-width:650px){
+ body.rx-typing main{height:var(--rx-visible-height,100dvh);min-height:0}
+ body.rx-typing header,body.rx-typing .note.intro,body.rx-typing .bibi-hero{display:none!important}
+ body.rx-typing .bibi-chat-layout{min-height:0;flex:1}
+ body.rx-typing #chat{flex:1;min-height:0}
+ body.rx-typing #messages{flex:1;min-height:0;overflow-y:auto}
+ body.rx-typing form{flex-shrink:0;padding:5px 0 max(4px,env(safe-area-inset-bottom))}
+ body.rx-typing #status{display:none}
+}
 </style></head>
 <body><main><header><img class="bibi-head-avatar" src="/rx-bibi-mascot.svg" alt="BIBI — maskotka RX"><h1>👑 RX BIBI</h1><div class="header-actions"><button id="tasks-toggle" class="secondary" type="button" hidden>Zadania</button><button id="new-chat" class="secondary" type="button" hidden>Nowa rozmowa</button><button id="logout" type="button" hidden>Wyloguj</button></div></header><p class="note intro">Nasz asystent RX. Odpowiedzi generuje obecnie lokalny planer — bez zewnętrznego modelu AI.</p>
 <section id="login"><h2>Zaloguj się</h2><p class="note">Użyj istniejącego konta VEXORIO.</p><label>Email<input id="email" type="email" autocomplete="email"></label><label>Hasło<input id="password" type="password" autocomplete="current-password"></label><button id="signin" type="button">Zaloguj</button></section>
@@ -159,9 +170,19 @@ function saveConversation(){if(!activeUserId)return;try{localStorage.setItem(sto
 function restoreConversation(id){history=[];pendingRetryMessage=null;$('messages').replaceChildren();if(!id)return;try{const data=JSON.parse(localStorage.getItem(storageKey(id))||'null');if(!data||!Array.isArray(data.messages))return;history=Array.isArray(data.history)?data.history.filter(x=>typeof x==='string'&&x.length<=2000).slice(-20):[];for(const item of data.messages.slice(-40)){if(item&&typeof item.text==='string'&&item.text.length<=4000)bubble(item.text, item.me===true);}if(typeof data.pendingRetryMessage==='string'&&data.pendingRetryMessage.length<=2000){pendingRetryMessage=data.pendingRetryMessage;$('message').value=pendingRetryMessage;}scrollLatest();}catch{history=[];$('messages').replaceChildren();}}
 const status=text=>$('status').textContent=text;
 const scrollLatest=()=>{const list=$('messages');list.scrollTop=list.scrollHeight;};
-const focusInput=()=>{setTimeout(scrollLatest,80);};
-$('message').addEventListener('focus',focusInput);
-if(window.visualViewport)window.visualViewport.addEventListener('resize',focusInput);
+const syncTypingLayout=()=>{
+ const typing=document.activeElement===$('message');
+ document.body.classList.toggle('rx-typing',typing);
+ if(window.visualViewport){
+  const visible=Math.max(240,Math.round(window.visualViewport.height));
+  document.documentElement.style.setProperty('--rx-visible-height',visible+'px');
+ }
+ if(typing)setTimeout(scrollLatest,80);
+};
+$('message').addEventListener('focus',syncTypingLayout);
+$('message').addEventListener('blur',()=>{setTimeout(syncTypingLayout,120);});
+if(window.visualViewport)window.visualViewport.addEventListener('resize',syncTypingLayout);
+window.addEventListener('resize',syncTypingLayout);
 const bubble=(text,me=false)=>{const el=document.createElement('div');el.className='bubble'+(me?' me':'');el.textContent=text;$('messages').append(el);$('messages').scrollTop=$('messages').scrollHeight;};
 async function init(){
   // Reuse the same public Supabase project configuration as VEXORIO, never a service key.
