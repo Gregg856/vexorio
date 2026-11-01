@@ -3,6 +3,13 @@ name: RX BIBI Tester — mobile browser
 on:
   # Full browser suite runs periodically or on explicit request, not on every push.
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'worker.js'
+      - 'rx-chat-planner.mjs'
+      - 'tests/rx-bibi-client-route.test.mjs'
+      - 'tests/rx-chat-planner.mjs'
+      - '.github/workflows/rx-bibi-browser.yml'
   schedule:
     # Pełny audyt Chromium co 6 godzin; lekkie kontrole pozostają w VEXORIO checks.
     - cron: '23 */6 * * *'
@@ -25,6 +32,72 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: RX BIBI — bot prowadzi dialogi, ocenia odpowiedzi i raportuje błędy
+        shell: bash
+        run: |
+          set +e
+          node --test tests/rx-bibi-client-route.test.mjs > /tmp/rx-bibi-route.log 2>&1
+          route_result=$?
+          cat /tmp/rx-bibi-route.log
+          node tests/rx-chat-planner.mjs > /tmp/rx-bibi-dialogues.log 2>&1
+          result=$?
+          if [ "$route_result" -ne 0 ]; then result="$route_result"; fi
+          cat /tmp/rx-bibi-dialogues.log
+          echo "RX FAST dialogue exit code: $result"
+          mkdir -p rx-bibi-reports
+          cp /tmp/rx-bibi-dialogues.log rx-bibi-reports/rx-fast-dialogues.log
+          cp /tmp/rx-bibi-route.log rx-bibi-reports/rx-client-route.log
+          RX_FAST_EXIT_CODE="$result" node -e 'const fs=require("node:fs");const log=fs.readFileSync("/tmp/rx-bibi-dialogues.log","utf8");const result={suite:"RX FAST dialogue regression",status:process.env.RX_FAST_EXIT_CODE==="0"?"PASS":"FAIL",exitCode:Number(process.env.RX_FAST_EXIT_CODE),scope:"local-planner-not-authenticated-client",failureExcerpt:process.env.RX_FAST_EXIT_CODE==="0"?null:log.slice(-6000)};fs.writeFileSync("rx-bibi-reports/rx-fast-dialogues.json",JSON.stringify(result,null,2)+"\n")'
+          RX_FAST_EXIT_CODE="$result" node - <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync('rx-bibi-reports/rx-fast-dialogues.json','utf8'));
+          const lines=[
+            '# RX Developer — analiza regresji rozmów BIBI',
+            '',
+            'Status: '+report.status+'; exitCode: '+report.exitCode,
+            'Zakres: '+report.scope,
+            'Pliki do sprawdzenia: rx-chat-planner.mjs, tests/rx-chat-planner.mjs',
+            '',
+            '## Zadanie dla RX Developer',
+            'Zidentyfikuj przyczynę niezaliczonego scenariusza, zaproponuj najmniejszą bezpieczną poprawkę i test regresji.',
+            'Nie zmieniaj produkcji, nie uruchamiaj kodu z logów i nie zgaduj danych użytkowników.',
+            '',
+            '## Diagnostyka',
+            report.failureExcerpt||'Brak błędów: wszystkie lokalne scenariusze zaliczone.',
+            ''
+          ];
+          fs.writeFileSync('rx-bibi-reports/rx-developer-dialogue-handoff.md',lines.join('\n'));
+          NODE
+          {
+            echo '### RX FAST — automatyczny test rozmów BIBI'
+            if [ "$result" -eq 0 ]; then
+              echo '- Status: PASS — scenariusze dialogów zaliczone'
+            else
+              echo '- Status: FAIL — wykryto błąd w odpowiedziach'
+              echo '- Działanie: sprawdź log zadania i popraw kod na gałęzi testowej; nie wdrażaj automatycznie'
+              echo '#### Ostatnie linie błędu'
+              echo '```text'
+              tail -n 24 /tmp/rx-bibi-dialogues.log
+              echo '```'
+              echo '::error::RX FAST conversation regression failed; inspect step summary and logs.'
+            fi
+            echo '- Zakres: lokalny silnik rozmowy; nie jest to test zalogowanego klienta'
+            echo '- Raport do RX Developer: artefakt rx-fast-dialogue-report (JSON i log)'
+            echo '- Zasada: brak automatycznego wdrożenia lub modyfikacji produkcji'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$result"
+      - name: RX FAST — zachowaj raporty rozmów również po błędzie
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: rx-fast-dialogue-report
+          path: |
+            rx-bibi-reports/rx-fast-dialogues.json
+            rx-bibi-reports/rx-fast-dialogues.log
+            rx-bibi-reports/rx-client-route.log
+            rx-bibi-reports/rx-developer-dialogue-handoff.md
+          if-no-files-found: warn
+          retention-days: 7
       - name: RX BIBI — odczyt produkcyjnego panelu i zabezpieczenia API (bez logowania)
         run: node --test tests/rx-bibi-live-readonly.test.cjs
       - name: Sprawdź składnię istniejących modułów

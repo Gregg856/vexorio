@@ -6,9 +6,11 @@ function parseIntent({prompt,mode}={}){
  const colon=prompt.indexOf(':');
  if(colon<0)return {content:normalize(prompt),constraints:[],recognized:false};
  const head=normalize(prompt.slice(0,colon)).toLocaleLowerCase('pl');
+ // Accept common Polish politeness and word-order variants only in explicit commands.
+ const commandHead=head.replace(/^(?:proszę|prosze)\s+/u,'').replace(/\s+(?:proszę|prosze)$/u,'');
  const content=normalize(prompt.slice(colon+1));
  if(!content)return {content:normalize(prompt),constraints:[],recognized:false};
- const writing=/(?:^|\s)(?:napisz|wiadomość|wiadomosc|odpowiedz|odpowiedź|streszcz|podsumuj|streszczenie|sparafrazuj|przepisz)(?=\s|$)/u.test(head);
+ const writing=/(?:^|\s)(?:napisz|wiadomość|wiadomosc|odpowiedz|odpowiedź|streszcz|podsumuj|streszczenie|sparafrazuj|przepisz|przygotuj|stwórz|stworz|ułóż|uloz)(?=\s|$)/u.test(commandHead);
  const constraints=[];
  const conflicts=[];
  // Explicit opposing instructions: refuse ambiguous combinations rather than guessing.
@@ -21,7 +23,7 @@ function parseIntent({prompt,mode}={}){
  if(conflicts.length)return {content, constraints:[],recognized:false,conflicts,requiresClarification:true};
  if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)bez\s+(?:powitania|przywitania)(?=\s|$)/u.test(head))constraints.push('noGreeting');
  if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)bez\s+(?:pożegnania|zakonczenia|zakończenia)(?=\s|$)/u.test(head))constraints.push('noSignoff');
- if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)(?:krótko|krotko|zwięźle|zwiezle)(?=[\s,;]|$)/u.test(head))constraints.push('short');
+ if(['message','reply'].includes(mode)&&writing&&/(?:^|\s)(?:krótko|krotko|krótką|krotka|krótkie|krotkie|krótki|krotki|krótkie|krotkie|zwięźle|zwiezle|zwięzłą|zwiezla)(?=[\s,;]|$)/u.test(head))constraints.push('short');
  if(mode==='summary'&&writing&&/(?:^|\s)(?:jednym|jedno)\s+zdani(?:u|e|em)(?=\s|$)/u.test(head))constraints.push('oneSentence');
  if(mode==='message'&&writing&&/(?:\bbez\s+cytowania\b|(?:^|\s)własnymi\s+słowami(?=\s|$))/u.test(head))constraints.push('paraphrase');
  return constraints.length?{content,constraints,recognized:true}:{content:normalize(prompt),constraints:[],recognized:false};

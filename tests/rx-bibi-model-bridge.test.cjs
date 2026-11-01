@@ -29,3 +29,53 @@ test('model path remains behind client authentication',()=>{
  const model=worker.indexOf('const model=await askClientModel(message,env)',start);
  assert.ok(start>=0&&auth>start&&model>auth);
 });
+
+test('model bridge package 2: five input and output safeguards',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ assert.equal(await ask(null,{}),null);
+ assert.equal(await ask('  ',{}),null);
+ let sent='';
+ const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch:async(_url,init)=>{sent=JSON.parse(init.body).message;return {ok:true,json:async()=>({answer:'  Gotowe!  '})};}}};
+ const valid=await ask('Zapytaj model:   test   ',env);
+ assert.equal(sent,'test');
+ assert.equal(valid.answer,'Gotowe!');
+ const bad={...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer:'niebezpieczny\u0000tekst'})})}};
+ assert.equal((await ask('Zapytaj model: test',bad)).modelInferenceUsed,false);
+});
+
+test('model bridge package 3: malformed input and service responses are safe',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ assert.equal(await ask('Zapytaj model:    ',{}),null);
+ assert.equal((await ask('Zapytaj model: test',null)).modelInferenceUsed,false);
+ const env=fetch=>({RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch}});
+ assert.equal((await ask('Zapytaj model: test',env(async()=>null))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',env(async()=>({ok:true,json:async()=>null})))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',env(async()=>({ok:true,json:async()=>({answer:'x'.repeat(4001)})})))).modelInferenceUsed,false);
+});
+
+test('model bridge package 4: reject invisible prompt and answer controls',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ let calls=0;
+ const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch:async()=>{calls++;return {ok:true,json:async()=>({answer:'OK'})};}}};
+ assert.equal(await ask('Zapytaj model: a\u0000b',env),null);
+ assert.equal(await ask('test\nnowa linia',env,{direct:true}),null);
+ assert.equal(await ask('test\ttab',env,{direct:true}),null);
+ assert.equal(calls,0);
+ const responseEnv=answer=>({...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer})})}});
+ assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\u007f'))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\u202e'))).modelInferenceUsed,false);
+});
+
+
+test('model bridge package 5: five additional Unicode safety regressions',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ let calls=0;
+ const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch:async()=>{calls++;return {ok:true,json:async()=>({answer:'OK'})};}}};
+ assert.equal(await ask('Zapytaj model: a\u0085b',env),null);
+ assert.equal(await ask('Zapytaj model: a\u202eb',env),null);
+ assert.equal(await ask('Zapytaj model: a\ufffeb',env),null);
+ assert.equal(calls,0);
+ const reply=answer=>({...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer})})}});
+ assert.equal((await ask('Zapytaj model: test',reply('a\u0085b'))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',reply('a\uffffb'))).modelInferenceUsed,false);
+});

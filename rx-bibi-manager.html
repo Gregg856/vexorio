@@ -975,6 +975,25 @@ document.addEventListener('DOMContentLoaded',()=>{
   rxTasks.unshift(task);if(rxTasks.length>50)rxTasks.length=50;
   persistTasks();renderTasks();return {added:true,task};
  };
+ const rxDeferredKey='rx-bibi-deferred-v1';
+ const rxDeferred=(()=>{
+  try{const data=JSON.parse(localStorage.getItem(rxDeferredKey)||'[]');return Array.isArray(data)?data.filter(t=>t&&typeof t.topic==='string'&&typeof t.nextStep==='string').slice(0,50):[];}catch(_){return [];}
+ })();
+ const saveDeferred=()=>{try{localStorage.setItem(rxDeferredKey,JSON.stringify(rxDeferred.slice(0,50)));return true;}catch(_){return false;}};
+ const deferRxTask=(topic,nextStep)=>{
+  topic=String(topic).trim().slice(0,180);nextStep=String(nextStep).trim().slice(0,300);
+  if(!topic||!nextStep)return {ok:false,reason:'Brak tematu lub następnego kroku'};
+  const existing=rxDeferred.find(t=>t.topic.toLocaleLowerCase('pl')===topic.toLocaleLowerCase('pl')&&t.status==='deferred');
+  if(existing)return {ok:true,duplicate:true,task:existing};
+  const task={id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),topic,nextStep,status:'deferred'};
+  rxDeferred.unshift(task);if(rxDeferred.length>50)rxDeferred.length=50;
+  return {ok:saveDeferred(),task};
+ };
+ const resumeRxTask=()=>{
+  const task=rxDeferred.find(t=>t.status==='deferred');
+  if(!task)return null;
+  task.status='active';return saveDeferred()?task:null;
+ };
  const persistTasks=()=>{try{localStorage.setItem(rxTasksKey,JSON.stringify(rxTasks.slice(0,50)));}catch(_){}};
  const renderTasks=()=>{taskList.replaceChildren();if(!rxTasks.length){const p=document.createElement('p');p.textContent='Brak zadań.';taskList.append(p);return;}for(const t of rxTasks){const card=document.createElement('div');card.className='card';card.style.margin='10px 0';card.style.padding='12px';const desc=document.createElement('p');desc.textContent=t.title+' · '+t.module+' · '+t.status;card.append(desc);const toggle=document.createElement('button');toggle.type='button';toggle.textContent=t.status==='oczekuje'?'Oznacz jako zakończone':'Przywróć';toggle.addEventListener('click',()=>{t.status=t.status==='oczekuje'?'zakończone':'oczekuje';persistTasks();renderTasks();});const remove=document.createElement('button');remove.type='button';remove.textContent='Usuń';remove.style.marginLeft='8px';remove.addEventListener('click',()=>{const index=rxTasks.indexOf(t);if(index>=0)rxTasks.splice(index,1);persistTasks();renderTasks();});card.append(toggle,remove);
   if(t.status==='oczekuje'&&rxTaskExecutors[t.module]){
@@ -1122,6 +1141,31 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   // Existing authenticated RX BIBI client bridge for writing tasks; no new chat or model.
   // Explicit AI requests reuse the authenticated client bridge, never admin commands.
+  const deferMatch=message.match(/^(?:bibi[, ]+)?(?:odłóż|odloz|zostaw na później|zostaw na pozniej)\s*[:,-]?\s*(.+?)\s*(?:;|\|)\s*(.+)$/i);
+  if(deferMatch){
+   (async()=>{
+    send.disabled=true;
+    try{
+     if(!window.supabase?.createClient)throw Error('Brak logowania');
+     const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+     const {deferBibiTask}=await import('./rx-bibi-user-tasks-cloud.mjs');
+     const topic=deferMatch[1].trim().slice(0,180);
+     const nextStep=deferMatch[2].trim().slice(0,300);
+     // Cloud stores the task title in the existing owner-scoped table; details remain local.
+     const saved=await deferBibiTask(client,topic);
+     const result=deferRxTask(topic,nextStep);
+     explain('Zadanie zapisane na koncie BIBI: '+saved.title+'. '+(result.ok?'Następny krok zapisany na tym urządzeniu: '+nextStep+'.':'Nie udało się zapisać następnego kroku lokalnie.'));
+    }catch(error){
+     explain('Nie zapisano zadania w RX CLOUD: '+String(error.message||error).slice(0,150)+'. Zaloguj się i spróbuj ponownie.');
+    }finally{send.disabled=false;}
+   })();
+   return;
+  }
+  if(/^(?:bibi[, ]+)?(?:wróć do odłożonego|wroc do odlozonego|kontynuuj odłożone|kontynuuj odlozone)$/i.test(message.trim())){
+   const task=resumeRxTask();
+   explain(task?'Wracamy do: '+task.topic+'. Następny krok: '+task.nextStep+'.':'Brak odłożonego tematu lub nie udało się zapisać wznowienia.');
+   return;
+  }
   if(/^(?:zapytaj (?:model|ai):|(?:(?:proszę|prosze)\s+)?(?:napisz|ułóż|uloz|przygotuj|odpowiedz|sformułuj|sformuluj|stwórz|stworz)\s+(?:(?:wiadomość|wiadomosc|odpowiedź|odpowiedz|streszczenie)\s*)?(?:(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|zwięźle|zwiezle|szczegółowo|obszernie|formalnie|oficjalnie|nieformalnie|i)[\s,]*){0,8}:)/iu.test(message)){
    (async()=>{
     send.disabled=true;

@@ -26,12 +26,47 @@ test('composer follows surface constraints for shuffled instructions',()=>{
   if(kind==='noGreeting')assert.ok(!out.text.includes('Cześć!'),prompt);
   if(kind==='noSignoff')assert.ok(!out.text.includes('Pozdrawiam!'),prompt);
   if(kind==='oneSentence')assert.ok((out.text.match(/[^.!?]+[.!?]+/gu)||[]).length<=1,prompt);
-  if(kind==='paraphrase')assert.ok(!out.text.includes('własnymi słowami')&&!out.text.includes('bez cytowania'),prompt);
+  if(kind==='paraphrase'){
+   assert.equal(out.matched,false,prompt);
+   assert.equal(out.source,'local-semantic-limit',prompt);
+   assert.equal(out.requiresClarification,true,prompt);
+   assert.equal(out.productionConnected,false,prompt);
+  }
  }
 });
 test('unrecognized content and mismatched modes are not stripped',()=>{
  for(const prompt of ['Uwaga: spotkanie jutro.','Napisz bez powitania wiadomość: spotkanie jutro.']){
   const mode=prompt.startsWith('Uwaga')?'message':'summary';
   assert.equal(parseIntent({prompt,mode}).content,prompt);
+ }
+});
+
+test('more Polish writing verbs honor explicit constraints',()=>{
+ const cases=[
+  ['message','Przygotuj wiadomość bez powitania: spotkanie jutro.','noGreeting'],
+  ['message','Stwórz wiadomość bez powitania: spotkanie jutro.','noGreeting'],
+  ['reply','Ułóż odpowiedź bez pożegnania: dokument dotarł.','noSignoff'],
+  ['message','Proszę przygotuj krótką wiadomość: przypomnienie o terminie.','short']
+ ];
+ for(const [mode,prompt,kind] of cases){
+  const intent=parseIntent({mode,prompt});
+  assert.ok(intent.constraints.includes(kind),prompt);
+  const out=compose({mode,prompt});
+  if(kind==='noGreeting')assert.ok(!out.text.includes('Cześć!'),prompt);
+  if(kind==='noSignoff')assert.ok(!out.text.includes('Pozdrawiam!'),prompt);
+  if(kind==='short')assert.ok(!out.text.includes('Cześć!')&&!out.text.includes('Pozdrawiam!'),prompt);
+ }
+});
+
+test('short instructions recognize common Polish grammatical forms',()=>{
+ const samples=[
+  ['reply','Przygotuj krótki tekst odpowiedzi: termin potwierdzony.'],
+  ['message','Ułóż zwięzłą wiadomość: spotkanie w piątek.']
+ ];
+ for(const [mode,prompt] of samples){
+  const parsed=parseIntent({mode,prompt});
+  assert.ok(parsed.constraints.includes('short'),prompt);
+  const output=compose({mode,prompt});
+  assert.ok(!output.text.includes('Cześć!')&&!output.text.includes('Pozdrawiam!'),prompt);
  }
 });

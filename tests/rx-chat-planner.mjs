@@ -956,3 +956,79 @@ assert.match(rememberedFollowup.answer,/Dlaczego niebo jest niebieskie/);
 assert.doesNotMatch(rememberedFollowup.answer,/Nie rozumiem jeszcze tego pytania/);
 const noHistoryFollowup=planRXChat('A dlaczego?');
 assert.doesNotMatch(noHistoryFollowup.answer,/undefined|null/);
+
+// Regression: a multi-sentence RX Ants request must receive examples, not an echo.
+const rxAntExplanation=planRXChat('Porozmawiajmy o RX Mrówkach. Wyjaśnij własnymi słowami, jak grupa małych modułów AI może wspólnie rozwiązywać zadania. Podaj trzy konkretne przykłady.');
+assert.match(rxAntExplanation.answer,/Trzy przykłady:/);
+assert.match(rxAntExplanation.answer,/1\)/);
+assert.match(rxAntExplanation.answer,/2\)/);
+assert.match(rxAntExplanation.answer,/3\)/);
+assert.doesNotMatch(rxAntExplanation.answer,/Co najbardziej Cię w tym temacie interesuje/);
+assert.equal(rxAntExplanation.executed,0);
+
+// RX Ants: an ordinary topic invitation without a concrete question should still invite discussion.
+const rxAntInvitation=planRXChat('Porozmawiajmy o RX Mrówkach.');
+assert.doesNotMatch(rxAntInvitation.answer,/Trzy przykłady:/);
+assert.match(rxAntInvitation.answer,/Co najbardziej Cię w tym temacie interesuje/);
+
+// The explicit RX Ants request remains actionable even with prior conversation history.
+const rxAntWithHistory=planRXChat('Porozmawiajmy o RX Mrówkach. Wyjaśnij, jak moduły wspólnie rozwiązują zadania. Podaj trzy przykłady.', ['Cześć','Witaj!']);
+assert.match(rxAntWithHistory.answer,/Trzy przykłady:/);
+assert.equal(rxAntWithHistory.executed,0);
+
+// Contextual RX Ants follow-up must expand example two without inventing execution.
+const rxAntSecondExample=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o RX Mrówkach. Wyjaśnij, jak moduły wspólnie rozwiązują zadania. Podaj trzy przykłady.',
+ '👑 Trzy przykłady: 1) analiza, 2) testy, 3) podsumowanie.'
+]);
+assert.match(rxAntSecondExample.answer,/Drugi przykład:/);
+assert.match(rxAntSecondExample.answer,/wyniki testów/);
+assert.equal(rxAntSecondExample.executed,0);
+
+// Without earlier RX Ants context, a short follow-up must not invent a specific prior example.
+const rxAntSecondNoContext=planRXChat('Podaj drugi przykład');
+assert.doesNotMatch(rxAntSecondNoContext.answer,/Drugi przykład:/);
+assert.equal(rxAntSecondNoContext.executed,0);
+
+// Unrelated history must not make a short question refer to RX Ants.
+const rxAntUnrelatedHistory=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o gotowaniu. Podaj trzy przykłady.',
+ 'Oto trzy przykłady potraw.'
+]);
+assert.doesNotMatch(rxAntUnrelatedHistory.answer,/Drugi przykład:/);
+assert.equal(rxAntUnrelatedHistory.executed,0);
+
+// A topic change after RX Ants should not reuse an obsolete RX Ants explanation.
+const rxAntChangedTopic=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o RX Mrówkach. Podaj trzy przykłady.',
+ 'Oto trzy przykłady współpracy modułów.',
+ 'Teraz porozmawiajmy o gotowaniu. Podaj przykłady.',
+ 'Oto przykłady potraw.'
+]);
+assert.doesNotMatch(rxAntChangedTopic.answer,/Drugi przykład:/);
+
+// A fresh explicit return to RX Ants should restore the relevant follow-up context.
+const rxAntReturnTopic=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o RX Mrówkach. Podaj trzy przykłady.',
+ 'Trzy przykłady współpracy.',
+ 'Porozmawiajmy o gotowaniu. Podaj przykłady.',
+ 'Oto przykłady potraw.',
+ 'Wróćmy do RX Mrówek. Podaj trzy przykłady współpracy modułów.',
+ 'Oto trzy przykłady.'
+]);
+assert.match(rxAntReturnTopic.answer,/Drugi przykład:/);
+
+// Contextual references to first and third examples use the current RX Ants topic.
+const rxAntExampleHistory=[
+ 'Porozmawiajmy o RX Mrówkach. Wyjaśnij współpracę modułów i podaj trzy przykłady.',
+ 'Trzy przykłady: analiza, testy i podział zadań.'
+];
+assert.match(planRXChat('Podaj pierwszy przykład',rxAntExampleHistory).answer,/Pierwszy przykład:/);
+assert.match(planRXChat('Wyjaśnij trzeci przykład',rxAntExampleHistory).answer,/Trzeci przykład:/);
+assert.match(planRXChat('3',rxAntExampleHistory).answer,/Trzeci przykład:/);
+assert.doesNotMatch(planRXChat('Podaj trzeci przykład').answer,/Trzeci przykład:/);
+
+// Natural conversational variants should resolve the same example in the current topic.
+assert.match(planRXChat('A drugi?',rxAntExampleHistory).answer,/Drugi przykład:/);
+assert.match(planRXChat('A trzeci?',rxAntExampleHistory).answer,/Trzeci przykład:/);
+assert.match(planRXChat('Co z pierwszym?',rxAntExampleHistory).answer,/Pierwszy przykład:/);

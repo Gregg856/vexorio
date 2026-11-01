@@ -15,7 +15,10 @@ test('eight unseen phrasings satisfy their explicit surface constraints',()=>{
  for(const [mode,prompt,forbidden] of variants){
   const result=compose({mode,prompt});
   assert.equal(result.productionConnected,false);
-  if(forbidden)assert.ok(!result.text.includes(forbidden),prompt);
+  if(forbidden&&prompt.toLocaleLowerCase('pl').includes('parafraz')){
+   assert.equal(result.matched,false,prompt);
+   assert.equal(result.source,'local-semantic-limit',prompt);
+  }else if(forbidden)assert.ok(!result.text.includes(forbidden),prompt);
   if(mode==='summary')assert.ok((result.text.match(/[^.!?]+[.!?]+/gu)||[]).length<=1,prompt);
  }
 });

@@ -5,7 +5,7 @@ const start=html.indexOf('  // Existing authenticated RX BIBI client bridge for 
 const end=html.indexOf('  const taskMatch=',start);
 assert.ok(start>=0&&end>start,'existing BIBI bridge must remain');
 const block=html.slice(start,end);
-const match=block.match(/if\(\/(.+?)\/iu\.test\(message\)\)\{/s);
+const match=block.match(/if\(\/((?:\\\/|[^/])+)\/iu\.test\(message\)\)\{/);
 assert.ok(match,'writing route must use explicit anchored regex');
 const route=new RegExp(match[1],'iu');
 test('combined writing constraints reach existing authenticated chat bridge',()=>{
