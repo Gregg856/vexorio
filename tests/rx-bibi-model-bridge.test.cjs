@@ -29,3 +29,16 @@ test('model path remains behind client authentication',()=>{
  const model=worker.indexOf('const model=await askClientModel(message,env)',start);
  assert.ok(start>=0&&auth>start&&model>auth);
 });
+
+test('model bridge package 2: five input and output safeguards',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ assert.equal(await ask(null,{}),null);
+ assert.equal(await ask('  ',{}),null);
+ let sent='';
+ const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch:async(_url,init)=>{sent=JSON.parse(init.body).message;return {ok:true,json:async()=>({answer:'  Gotowe!  '})};}}};
+ const valid=await ask('Zapytaj model:   test   ',env);
+ assert.equal(sent,'test');
+ assert.equal(valid.answer,'Gotowe!');
+ const bad={...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer:'niebezpieczny\\u0000tekst'})})}};
+ assert.equal((await ask('Zapytaj model: test',bad)).modelInferenceUsed,false);
+});
