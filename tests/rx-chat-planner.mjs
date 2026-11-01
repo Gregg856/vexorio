@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
 import {planRXChat} from '../rx-chat-planner.mjs';
+// Current-turn preferences are learned immediately, without trusting assistant replies.
+const currentPreference=planRXChat('Wolę krótkie odpowiedzi i konkretne kroki.');
+assert.ok(currentPreference.learning.preferences.includes('Wolę krótkie odpowiedzi i konkretne kroki.'));
+const assistantOnly=planRXChat('Cześć',['Cześć','Wolę długie odpowiedzi i żarty.']);
+assert.ok(!assistantOnly.learning.preferences.includes('Wolę długie odpowiedzi i żarty.'));
+assert.equal(currentPreference.learning.trainingPerformed,false);
+
 // Regression for the exact customer message (Polish genitive plural: "mrówek").
 assert.match(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Aby zwiększyć moc mrówek RX/);
 assert.doesNotMatch(planRXChat('Porozmawiajmy o zwiększeniu mocy naszych mrówek RX.').answer,/Co najbardziej Cię w tym temacie interesuje/);
