@@ -956,3 +956,12 @@ assert.match(rememberedFollowup.answer,/Dlaczego niebo jest niebieskie/);
 assert.doesNotMatch(rememberedFollowup.answer,/Nie rozumiem jeszcze tego pytania/);
 const noHistoryFollowup=planRXChat('A dlaczego?');
 assert.doesNotMatch(noHistoryFollowup.answer,/undefined|null/);
+
+// Regression: a multi-sentence RX Ants request must receive examples, not an echo.
+const rxAntExplanation=planRXChat('Porozmawiajmy o RX Mrówkach. Wyjaśnij własnymi słowami, jak grupa małych modułów AI może wspólnie rozwiązywać zadania. Podaj trzy konkretne przykłady.');
+assert.match(rxAntExplanation.answer,/Trzy przykłady:/);
+assert.match(rxAntExplanation.answer,/1\)/);
+assert.match(rxAntExplanation.answer,/2\)/);
+assert.match(rxAntExplanation.answer,/3\)/);
+assert.doesNotMatch(rxAntExplanation.answer,/Co najbardziej Cię w tym temacie interesuje/);
+assert.equal(rxAntExplanation.executed,0);
