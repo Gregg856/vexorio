@@ -699,6 +699,15 @@ export default {
         const model=await askQueenModel(payload.message,env);
         return new Response(JSON.stringify({ok:true,...model,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
+      // RX #615: natural Queen messages may use the private model when enabled.
+      // Preserve basic admin identity/status replies and never execute tools.
+      const queenPlain=payload.message.trim();
+      const queenBasic=/^(?:kim jesteś|kim jestes|jak się nazywasz|jak sie nazywasz|przedstaw się|przedstaw sie|cześć|czesc|hej|witaj|witam|co potrafisz|co umiesz|pomoc|help|jak działasz|jak dzialasz|jaki jest status|status|status rx|czy działasz|czy dzialasz|czy jesteś online|czy jestes online|dziękuję|dziekuje|dzięki|dzieki|dobranoc|do widzenia|na razie)[?!. ]*$/iu.test(queenPlain);
+      if(!queenBasic&&env.RX_QUEEN_MODEL_ENABLED==='true'&&typeof env.RX_QUEEN_MODEL_SERVICE?.fetch==='function'&&queenPlain.length<=1000){
+        const {askQueenModel}=await import('./rx-queen-model-bridge.mjs');
+        const model=await askQueenModel('Zapytaj model: '+queenPlain,env);
+        if(model.modelInferenceUsed)return new Response(JSON.stringify({ok:true,...model,executed:0,adminToolsAvailable:false}),{status:200,headers});
+      }
       const normalized=payload.message.trim().toLocaleLowerCase('pl-PL').normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l');
       if(/^(kim jestes|jak sie nazywasz|przedstaw sie|czesc|hej|witaj|witam)[?!. ]*$/.test(normalized)){
         return new Response(JSON.stringify({ok:true,answer:'Jestem Królową RX, prywatnym panelem zarządzania VEXORIO. Ten punkt kontrolny potwierdza tożsamość i uprawnienia; pełny silnik rozmowy nie jest jeszcze podłączony.',engine:'rx-queen-identity',modelInferenceUsed:false,executed:0}),{status:200,headers});
