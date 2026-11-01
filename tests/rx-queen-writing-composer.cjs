@@ -17,6 +17,9 @@ function compose({prompt,mode='answer',tone='friendly'}={}){
   return {text:'Polecenie zawiera sprzeczne wymagania. Doprecyzuj: '+intent.conflicts.join(', ')+'.',mode,tone,matched:false,requiresClarification:true,conflicts:intent.conflicts,source:'local-constraint-check',productionConnected:false};
  }
  const contentPrompt=intent.content;
+ if(intent.constraints.includes('paraphrase')){
+  return {text:'Nie potrafię jeszcze wiarygodnie sparafrazować tego tekstu własnymi słowami. Mogę przygotować prostą wersję, jeśli podasz gotową treść.',mode,tone,matched:false,requiresClarification:true,source:'local-semantic-limit',productionConnected:false};
+ }
  const oneSentence=intent.constraints.includes('oneSentence');
  const noGreeting=intent.constraints.includes('noGreeting');
  const noSignoff=intent.constraints.includes('noSignoff');
