@@ -468,7 +468,7 @@ jobs:
           const summary = read('rx-queen-unified-test-report.json');
           const auth = read('rx-client-auth-e2e.json');
           const tasks = [];
-          if (auth && auth.clientChatVerified !== true) tasks.push({component:'authenticated-client-chat',status:auth.status || 'NOT_VERIFIED',source:'rx-client-auth-e2e.json',requiresReview:true});
+          if (auth && auth.clientChatVerified !== true) tasks.push({component:'authenticated-client-chat',status:auth.status || 'NOT_VERIFIED',failureCategory:auth.failureCategory || 'UNCLASSIFIED',source:'rx-client-auth-e2e.json',requiresReview:true});
           if (summary && summary.localDialogue.status === 'FAIL') tasks.push({component:'local-dialogue',status:'FAIL',source:'rx-dialogue-tests.json',requiresReview:true});
           const handoff = {schema:1,kind:'rx-developer-test-handoff',runId:process.env.GITHUB_RUN_ID || '',tasks,automaticCodeChanges:false};
           fs.mkdirSync(dir,{recursive:true});
@@ -487,7 +487,7 @@ jobs:
             'authenticated-client-chat':{diagnosis:'Authentication rejected; application chat remains unverified',checks:['Inspect the Supabase authentication error code without logging secrets','Verify existing test-account configuration and server auth settings','Rerun authenticated end-to-end chat after correcting configuration'],target:'tests/rx-client-auth-e2e.cjs',safeToAutofix:false},
             'local-dialogue':{diagnosis:'Local dialogue regression',checks:['Inspect failed dialogue scenarios','Reproduce with existing local test harness','Prepare minimal patch and run regression tests'],target:'tests/rx-chat-planner.mjs',safeToAutofix:false}
           };
-          const tasks=(handoff?.tasks||[]).map(task=>({...task,proposal:plans[task.component]||{diagnosis:'Unknown test failure',checks:['Inspect source report'],safeToAutofix:false}}));
+          const tasks=(handoff?.tasks||[]).map(task=>{const proposal={...(plans[task.component]||{diagnosis:'Unknown test failure',checks:['Inspect source report'],safeToAutofix:false})};if(task.component==='authenticated-client-chat'){if(task.failureCategory==='TEST_CREDENTIALS_MISSING'){proposal.diagnosis='Dedicated test credentials missing';proposal.checks=['Check presence of existing RX_BIBI_TEST_EMAIL and RX_BIBI_TEST_PASSWORD secrets (never print values)','Do not change application authentication or bypass login'];}else if(task.failureCategory==='TEST_ACCOUNT_LOGIN_REJECTED'){proposal.diagnosis='Supabase rejected dedicated test account';proposal.checks=['Verify the dedicated account exists and is allowed to sign in','Check test-secret account pairing without logging credentials','Rerun real authenticated E2E'];}else if(task.failureCategory==='AUTH_UI_OR_NETWORK_FAILURE'){proposal.diagnosis='Client authentication UI or network failed';proposal.checks=['Inspect client panel initialization and HTTP errors','Rerun browser E2E with bounded timeouts'];}else if(task.failureCategory==='AUTHENTICATED_CHAT_FAILURE'){proposal.diagnosis='Authentication succeeded but chat failed';proposal.checks=['Inspect failed chat turn and API response','Reproduce with existing real browser E2E'];}}return {...task,proposal};});
           const result={schema:1,kind:'rx-developer-repair-proposals',runId:handoff?.runId||'',tasks,requiresReview:true,codeChanged:false};
           fs.mkdirSync(dir,{recursive:true});
           fs.writeFileSync(dir+'/rx-developer-repair-proposals.json',JSON.stringify(result,null,2)+'\n');
