@@ -989,3 +989,11 @@ assert.equal(rxAntSecondExample.executed,0);
 const rxAntSecondNoContext=planRXChat('Podaj drugi przykład');
 assert.doesNotMatch(rxAntSecondNoContext.answer,/Drugi przykład:/);
 assert.equal(rxAntSecondNoContext.executed,0);
+
+// Unrelated history must not make a short question refer to RX Ants.
+const rxAntUnrelatedHistory=planRXChat('Podaj drugi przykład',[
+ 'Porozmawiajmy o gotowaniu. Podaj trzy przykłady.',
+ 'Oto trzy przykłady potraw.'
+]);
+assert.doesNotMatch(rxAntUnrelatedHistory.answer,/Drugi przykład:/);
+assert.equal(rxAntUnrelatedHistory.executed,0);
