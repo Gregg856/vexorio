@@ -753,9 +753,9 @@ export function planRXChat(message,history=[],learning=null){
   tasks.length=0;plan.work=null;
  }
  // Answer an explicit educational request rather than echoing it as a topic invitation.
- const rxAntExamples=/\\b(?:rx\\s+)?mr[oó]wk\\w*/iu.test(message)
-  &&/\\b(?:wyja[sś]nij|podaj|przyk[lł]ad\\w*|jak\\s+grupa)\\b/iu.test(message)
-  &&/\\b(?:modu[lł]\\w*|wsp[oó]ln\\w*|zadani\\w*)/iu.test(message);
+ const rxAntExamples=/rx\\s+mr[oó]wk|mr[oó]wk/iu.test(message)
+  &&/(?:wyja[sś]nij|podaj|przyk[lł]ad|jak\\s+grupa)/iu.test(message)
+  &&/(?:modu[lł]|wsp[oó]ln|zadani)/iu.test(message);
  if(rxAntExamples){
   answer='👑 RX Mrówki mogą współpracować jak zespół małych modułów: każdy wykonuje wyznaczoną część pracy, a koordynator łączy i sprawdza wyniki. Trzy przykłady: 1) jedna mrówka analizuje błąd kodu, druga proponuje poprawkę, trzecia uruchamia testy; 2) jedna zbiera wyniki testów, druga wykrywa powtarzające się problemy, trzecia przygotowuje podsumowanie; 3) jedna dzieli duże zadanie na części, kilka wykonuje niezależne obliczenia, a koordynator porównuje rezultaty. To opis możliwej architektury, nie potwierdzenie, że te działania zostały teraz wykonane.';
   tasks.length=0;plan.work=null;
