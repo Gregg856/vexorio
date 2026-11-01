@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {validPort}=require('../deploy/rx-queen-live-probe.cjs');
+assert.equal(validPort('8798'),8798);
+for(const value of ['0','65536','-1','not-a-port','1.5'])assert.equal(validPort(value),null);
+const src=fs.readFileSync('deploy/rx-queen-live-probe.cjs','utf8');
+assert.match(src,/hostname:'127\.0\.0\.1'/);
+assert.match(src,/\/api\/tags/);
+assert.match(src,/\/infer/);
+assert.doesNotMatch(src,/https:\/\//);
+console.log('RX #612 Queen local probe contract: PASS');
