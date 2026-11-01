@@ -48,7 +48,7 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
    });
    if(!(await chat.isVisible())){
     const status=await page.locator('#status').textContent().catch(()=>'');
-    if(String(status).includes('Logowanie nie powiodło się.')){report.failureCategory='TEST_ACCOUNT_LOGIN_REJECTED';throw Error('Test-account sign-in rejected by Supabase. Verify dedicated test credentials in GitHub secrets; no password is logged.');}
+    if(String(status).includes('Logowanie nie powiodło się.')){report.failureCategory='TEST_ACCOUNT_LOGIN_REJECTED';report.recoveryAction='CHECK_EXISTING_TEST_CREDENTIAL_PAIR';report.recoveryHint='Supabase rejected the existing test-account credentials. Do not reset user passwords or create accounts automatically.';throw Error('Test-account sign-in rejected by Supabase (invalid credentials). Existing test credential pair requires reconciliation; no password is logged.');}
     throw Error('Authenticated chat did not become visible after sign-in; status: '+String(status||'empty').slice(0,180));
    }
   }
