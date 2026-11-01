@@ -25,13 +25,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: RX BIBI — bot sam prowadzi rozmowy i sprawdza odpowiedzi
-        run: node tests/rx-chat-planner.mjs
-      - name: RX BIBI — wynik dialogów zapisany w logach testera
-        if: always()
+      - name: RX BIBI — bot prowadzi dialogi, ocenia odpowiedzi i raportuje błędy
+        shell: bash
         run: |
-          echo 'RX FAST: scenariusze rozmów BIBI uruchomiono; wynik każdego kroku jest w logach zadania powyżej.'
-          echo 'Nie oznacza to testu zalogowanego klienta ani wdrożenia na produkcji.'
+          set +e
+          node tests/rx-chat-planner.mjs > /tmp/rx-bibi-dialogues.log 2>&1
+          result=$?
+          cat /tmp/rx-bibi-dialogues.log
+          {
+            echo '### RX FAST — automatyczny test rozmów BIBI'
+            if [ "$result" -eq 0 ]; then
+              echo '- Status: PASS — scenariusze dialogów zaliczone'
+            else
+              echo '- Status: FAIL — wykryto błąd w odpowiedziach'
+              echo '- Działanie: sprawdź log zadania i popraw kod na gałęzi testowej; nie wdrażaj automatycznie'
+              echo '#### Ostatnie linie błędu'
+              echo '```text'
+              tail -n 24 /tmp/rx-bibi-dialogues.log
+              echo '```'
+              echo '::error::RX FAST conversation regression failed; inspect step summary and logs.'
+            fi
+            echo '- Zakres: lokalny silnik rozmowy; nie jest to test zalogowanego klienta'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$result"
       - name: RX BIBI — odczyt produkcyjnego panelu i zabezpieczenia API (bez logowania)
         run: node --test tests/rx-bibi-live-readonly.test.cjs
       - name: Sprawdź składnię istniejących modułów
