@@ -551,6 +551,7 @@ jobs:
           const read=name=>{try{return JSON.parse(fs.readFileSync(dir+'/'+name,'utf8'))}catch{return null}};
           const proposals=read('rx-developer-repair-proposals.json');
           const allow=new Set(['tests/rx-client-auth-e2e.cjs','tests/rx-chat-planner.mjs']);
+          const reproductionAllow=new Set(['tests/rx-chat-planner.mjs','tests/rx-client-ui-mock.cjs']);
           const tasks=[];
           for(const item of (proposals?.tasks||[]).slice(0,10)){
             const target=item.proposal?.target;
@@ -562,6 +563,13 @@ jobs:
             if(item.component==='local-dialogue'&&run.status===0){
               const regression=cp.spawnSync(process.execPath,[target],{encoding:'utf8',timeout:90000,maxBuffer:16384,env:{...process.env,CI:'true'}});
               tasks.push({component:item.component,target,check:'local dialogue regression',status:regression.status===0?'PASS':'FAIL',exitCode:regression.status,output:String((regression.stdout||'')+'\\n'+(regression.stderr||'')).slice(-1000)});
+            }
+          }
+          // Independent bounded replay of local chat and UI mock; no production credentials.
+          if((proposals?.tasks||[]).some(t=>t.component==='authenticated-client-chat'&&t.failureCategory==='AUTHENTICATED_CHAT_FAILURE')){
+            for(const target of reproductionAllow){
+              const replay=cp.spawnSync(process.execPath,[target],{encoding:'utf8',timeout:60000,maxBuffer:16384,env:{...process.env,CI:'true'}});
+              tasks.push({component:'authenticated-client-chat',target,check:'isolated reproduction (not authenticated)',status:replay.status===0?'DIAGNOSTIC_ONLY':'FAIL',exitCode:replay.status,output:String((replay.stdout||'')+'\\n'+(replay.stderr||'')).slice(-800)});
             }
           }
           const result={schema:1,kind:'rx-autopilot-executed-checks',runId:process.env.GITHUB_RUN_ID||'',tasks,codeChanged:false,productionChanged:false};
