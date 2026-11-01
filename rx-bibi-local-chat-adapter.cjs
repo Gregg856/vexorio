@@ -36,7 +36,14 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
       result.answer=evidence.ok?`GitHub Actions: przebieg ${evidence.runId}, status ${evidence.status}, wynik ${evidence.conclusion}, commit ${evidence.headSha}. Źródło: ${evidence.url}. To potwierdza wynik testu, nie wdrożenie produkcyjne.`:`Nie udało się potwierdzić przebiegu GitHub Actions: ${evidence.reason}.`;
     }
     if(historyFile){
-     const next=[...history,data.message,result.answer].slice(-6);
+     const turns=[...history,data.message,result.answer];
+     let next=turns.slice(-6);
+     if(turns.length>6){
+      const short=/^(?:dalej|gotowe|zielone|błąd|blad|ok|super|kontynuuj|sprawdź to|sprawdz to|co dalej)[.!?\\s]*$/i;
+      let anchor=-1;
+      for(let i=0;i<turns.length;i+=2){if(!short.test(turns[i].trim()))anchor=i;}
+      if(anchor>=0&&anchor<turns.length-6)next=[turns[anchor],turns[anchor+1],...turns.slice(-4)];
+     }
      const tmp=historyFile+'.'+process.pid+'.tmp';
      await fs.mkdir(path.dirname(historyFile),{recursive:true});
      try{await fs.writeFile(tmp,JSON.stringify(next),{mode:0o600,flag:'wx'});await fs.rename(tmp,historyFile);}
