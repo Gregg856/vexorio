@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const worker=fs.readFileSync('worker.js','utf8');
+const demo=fs.readFileSync('rx-bibi-demo.html','utf8');
+const block=worker.split("if(url.pathname==='/api/rx/client/demo/chat'){")[1]?.split('// RX BIBI client: authenticated')[0];
+assert.ok(block,'Demo endpoint must exist');
+for(const expected of ["request.method!=='POST'","request.headers.get('Origin')!==url.origin","history.length>10","message.length>1000","planRXChat(message,history,null)","adminToolsAvailable:false","modelInferenceUsed:false"])assert.ok(block.includes(expected),'Missing demo protection: '+expected);
+for(const forbidden of ['SUPABASE_SERVICE_ROLE_KEY','RX_GITHUB_DISPATCH_TOKEN','env.AI.run','auth/v1/user','handleRXMemory'])assert.ok(!block.includes(forbidden),'Demo must not access privileged service: '+forbidden);
+assert.ok(demo.includes('/api/rx/client/demo/chat'));
+assert.ok(!demo.includes('localStorage')&&!demo.includes('sessionStorage'));
+assert.ok(worker.includes("if(url.pathname==='/api/rx/client/chat')"),'Keep authenticated chat');
+console.log('PASS: isolated demo and authenticated production chat preserved');
