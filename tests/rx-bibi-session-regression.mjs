@@ -43,7 +43,14 @@ const cases=[
  ['all subtractions', 'Policz 30 - 5 - 4 - 3', [], /18/],
  ['division precedence', 'Policz 20 + 18 / 3 - 2', [], /24/],
  ['multi division zero safe', 'Policz 10 + 20 / 0 - 3', [], null],
- ['multi negative safe', 'Policz -10 + 5 × 3 - 2', [], /3/]
+ ['multi negative safe', 'Policz -10 + 5 × 3 - 2', [], /3/],
+ ['name correction explained', 'Czy podałem dwa różne imiona?', ['Mam na imię Marek','OK','Jednak mam na imię Adam','OK'], /Marek.*Adam/],
+ ['same name not contradiction', 'Czy podałem dwa różne imiona?', ['Mam na imię Marek','OK','Mam na imię Marek','OK'], /Nie widzę/],
+ ['unknown name contradiction', 'Czy podałem dwa różne imiona?', [], /Nie widzę/],
+ ['combined name and tasks', 'Jak mam na imię i ile mam zadań?', ['Mam na imię Marek','OK',tasks,list], /Marek.*3/],
+ ['combined reverse order', 'Ile mam zadań i jak mam na imię?', ['Mam na imię Marek','OK',tasks,list], /Marek.*3/],
+ ['combined missing list', 'Jak mam na imię i ile mam zadań?', ['Mam na imię Marek','OK'], /Marek.*nie podano/],
+ ['name correction query', 'Czy zmieniłem imię?', ['Mam na imię Marek','OK','Mam na imię Adam','OK'], /Marek.*Adam/]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
