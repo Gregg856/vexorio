@@ -142,7 +142,8 @@ export default {
       const rxAntContext=history.filter((_,index)=>index%2===0).slice(-4).some(turn=>/rx\\s*mr[oó]wk|mr[oó]wk/iu.test(turn)&&/przyk[lł]ad|modu[lł]/iu.test(turn));
       const rxAntEducational=/mr[oó]wk/iu.test(message)&&/wyja[sś]nij|podaj|przyk[lł]ad/iu.test(message)&&/modu[lł]|wsp[oó]ln|zadani/iu.test(message);
       const rxAntFollowup=rxAntContext&&/^(?:(?:a|co z|podaj|wyja[sś]nij)\\s+)?(?:pierwsz\\w*|drugi\\w*|trzeci\\w*|[123])(?:\\s+przyk[lł]ad\\w*)?[?!. ]*$/iu.test(message.trim());
-      if(rxAntEducational||rxAntFollowup){
+      const rxAntIntro=/mr[oó]wk/iu.test(message)&&/porozmawiajmy|pogadajmy/iu.test(message)&&/przyk[lł]ad/iu.test(message);
+      if(rxAntEducational||rxAntIntro||rxAntFollowup){
         const planned=planRXChat(message,history,null);
         return new Response(JSON.stringify({ok:true,answer:planned.answer,engine:'rx-bibi-client-context-planner',contextUsed:planned.contextUsed===true,modelInferenceUsed:false,executed:0,adminToolsAvailable:false}),{status:200,headers});
       }
