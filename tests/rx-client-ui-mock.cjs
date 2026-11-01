@@ -30,6 +30,32 @@ window.supabase={createClient:()=>({
   if(!html.includes('id="google-signin"')||!html.includes('id="signup"'))throw Error('Missing registration or Google login control');
   if(!html.includes("signInWithOAuth({provider:'google'")||!html.includes('client.auth.signUp('))throw Error('Missing Supabase auth handlers');
   report.checks.push({name:'registration_and_google_handlers_present',passed:true});
+  // Separate signed-out mobile browser: exercise auth buttons without real credentials.
+  const guest=await browser.newPage({...devices['Pixel 7'],locale:'pl-PL'});
+  const calls=[];
+  await guest.route(origin+'/rx-client',route=>route.fulfill({status:200,contentType:'text/html',body:html}));
+  await guest.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:`
+window.rxAuthCalls=[];
+window.supabase={createClient:()=>({auth:{
+ getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>{},
+ signInWithOAuth:async arg=>{window.rxAuthCalls.push({method:'google',arg});return {error:null}},
+ signUp:async arg=>{window.rxAuthCalls.push({method:'signup',arg:{email:arg.email,redirect:arg.options?.emailRedirectTo}});return {data:{session:null},error:null}},
+ signInWithPassword:async()=>({error:{message:'mock'}})
+}})};`}));
+  await guest.route(origin+'/api/rx/client/config',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({url:'https://mock.invalid',anonKey:'public-test'})}));
+  await guest.goto(origin+'/rx-client',{waitUntil:'load'});
+  await guest.locator('#login').waitFor({state:'visible'});
+  await guest.locator('#google-signin').click();
+  await guest.waitForFunction(()=>window.rxAuthCalls?.length===1);
+  await guest.locator('#email').fill('rx-ui-example@example.invalid');
+  await guest.locator('#password').fill('example-test-only-password');
+  await guest.locator('#signup').click();
+  await guest.waitForFunction(()=>window.rxAuthCalls?.length===2);
+  const authCalls=await guest.evaluate(()=>window.rxAuthCalls);
+  if(authCalls[0].method!=='google'||authCalls[0].arg.provider!=='google'||!authCalls[0].arg.options.redirectTo.endsWith('/rx-client'))throw Error('Google OAuth redirect misconfigured');
+  if(authCalls[1].method!=='signup'||authCalls[1].arg.email!=='rx-ui-example@example.invalid'||!authCalls[1].arg.redirect.endsWith('/rx-client'))throw Error('Signup redirect misconfigured');
+  report.checks.push({name:'mobile_google_and_signup_clicks_mocked',passed:true});
+  await guest.close();
   await page.goto(origin+'/rx-client',{waitUntil:'load'});
   await page.locator('#chat').waitFor({state:'visible',timeout:15000});
   report.checks.push({name:'chat_visible_after_mock_session',passed:true});
