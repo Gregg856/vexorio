@@ -12,6 +12,15 @@ function facts(history){
 export function answerRXSession(message,history=[]){
  const input=normalize(message.trim()),{list:priorList,name,previous,answers}=facts(history);
  if(/gdy nie znasz odpowiedzi|kiedy nie znasz odpowiedzi|co robisz gdy nie wiesz|co zrobisz jesli nie wiesz/.test(input))return {answer:'👑 Gdy nie znam odpowiedzi, powiem wprost, że nie wiem. Nie będę zgadywać ani wymyślać faktów. Poproszę o doprecyzowanie albo zaproponuję sprawdzenie informacji w wiarygodnym źródle.',contextUsed:false};
+ if(/^(?:dlaczego tak odpowiedzialas|skad to wiesz|na jakiej podstawie)[?.! ]*$/u.test(input)){
+  const lastUser=history.length>=2?normalize(history[history.length-2]):'';
+  const lastAnswer=history.length?String(history[history.length-1]):'';
+  if(!lastAnswer)return {answer:'👑 Nie mam wcześniejszej odpowiedzi do wyjaśnienia.',contextUsed:false};
+  if(/wynik\s*:/iu.test(lastAnswer))return {answer:'🧮 Oparłam odpowiedź na obliczeniu wykonanym dla podanych liczb. Sprawdź działanie, jeśli chcesz potwierdzić wynik.',contextUsed:true};
+  if(/imie|imienia|miast|mieszkam|zadani|zadan/.test(lastUser))
+   return {answer:'👑 Oparłam odpowiedź na informacjach, które podałeś wcześniej w tej rozmowie. Nie weryfikowałam ich w zewnętrznym źródle.',contextUsed:true};
+  return {answer:'👑 Nie mogę pewnie ustalić podstawy tej wcześniejszej odpowiedzi na podstawie dostępnego kontekstu.',contextUsed:true};
+ }
  const question=input.replace(/^(?:prosze|powiedz mi|przypomnij mi|czy pamietasz)\s*,?\s*/,'');
  const userTurns=history.filter((_,i)=>i%2===0);
  const names=userTurns.map(x=>/mam na imię\s+([\p{L}]{2,30})/iu.exec(x)?.[1]).filter(Boolean);
