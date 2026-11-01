@@ -589,6 +589,19 @@ jobs:
           const checks=read('rx-autopilot-executed-checks.json');
           const candidate=read('rx-developer-patch-candidate.json');
           const routes=[];
+          const chooseAuth=(category,failedReplay)=>category==='TEST_CREDENTIALS_MISSING'?'CONFIGURE_TEST_SECRETS':category==='TEST_ACCOUNT_LOGIN_REJECTED'?'VERIFY_TEST_ACCOUNT':failedReplay?'REVIEW_REPRODUCED_LOCAL_FAILURE':category==='AUTHENTICATED_CHAT_FAILURE'?'INVESTIGATE_AUTHENTICATED_ONLY_FAILURE':'INSPECT_AUTH_NETWORK';
+          const chooseDialogue=(patch,regression)=>patch?'REVIEW_PATCH':regression==='FAIL'?'REPRODUCED_NEEDS_MANUAL_FIX':'CHECK_DIALOGUE_EVIDENCE';
+          const assert=require('node:assert/strict');
+          for(const [category,failedReplay,expected] of [
+            ['TEST_CREDENTIALS_MISSING',false,'CONFIGURE_TEST_SECRETS'],
+            ['TEST_ACCOUNT_LOGIN_REJECTED',false,'VERIFY_TEST_ACCOUNT'],
+            ['AUTHENTICATED_CHAT_FAILURE',true,'REVIEW_REPRODUCED_LOCAL_FAILURE'],
+            ['AUTHENTICATED_CHAT_FAILURE',false,'INVESTIGATE_AUTHENTICATED_ONLY_FAILURE'],
+            ['AUTH_UI_OR_NETWORK_FAILURE',false,'INSPECT_AUTH_NETWORK']
+          ])assert.equal(chooseAuth(category,failedReplay),expected);
+          assert.equal(chooseDialogue(true,'FAIL'),'REVIEW_PATCH');
+          assert.equal(chooseDialogue(false,'FAIL'),'REPRODUCED_NEEDS_MANUAL_FIX');
+          assert.equal(chooseDialogue(false,'PASS'),'CHECK_DIALOGUE_EVIDENCE');
           for(const task of (plans?.tasks||[]).slice(0,10)){
             const component=task.component;
             const evidence=(checks?.tasks||[]).filter(x=>x.component===component);
@@ -596,17 +609,17 @@ jobs:
             if(component==='authenticated-client-chat'){
               const category=task.failureCategory||'UNCLASSIFIED';
               const failedReplay=evidence.some(x=>x.check==='isolated reproduction (not authenticated)'&&x.status==='FAIL');
-              routes.push({component,failureCategory:category,route:category==='TEST_CREDENTIALS_MISSING'?'CONFIGURE_TEST_SECRETS':category==='TEST_ACCOUNT_LOGIN_REJECTED'?'VERIFY_TEST_ACCOUNT':failedReplay?'REVIEW_REPRODUCED_LOCAL_FAILURE':category==='AUTHENTICATED_CHAT_FAILURE'?'INVESTIGATE_AUTHENTICATED_ONLY_FAILURE':'INSPECT_AUTH_NETWORK',replayEvidence:evidence.length,patchApproved:false,productionChanged:false});
+              routes.push({component,failureCategory:category,route:chooseAuth(category,failedReplay),replayEvidence:evidence.length,patchApproved:false,productionChanged:false});
             }else if(component==='local-dialogue'){
               const regression=evidence.find(x=>x.check==='local dialogue regression');
-              routes.push({component,route:patch?'REVIEW_PATCH':regression?.status==='FAIL'?'REPRODUCED_NEEDS_MANUAL_FIX':'CHECK_DIALOGUE_EVIDENCE',replayEvidence:evidence.length,patchApproved:false,productionChanged:false});
+              routes.push({component,route:chooseDialogue(!!patch,regression?.status),replayEvidence:evidence.length,patchApproved:false,productionChanged:false});
             }else routes.push({component,route:'MANUAL_TRIAGE',replayEvidence:evidence.length,patchApproved:false,productionChanged:false});
           }
           const result={schema:1,kind:'rx-autopilot-repair-routing',runId:process.env.GITHUB_RUN_ID||'',routes,automaticMerge:false,productionChanged:false};
           fs.mkdirSync(dir,{recursive:true});
           fs.writeFileSync(dir+'/rx-autopilot-repair-routing.json',JSON.stringify(result,null,2)+'\n');
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n### RX AUTOPILOT — kierowanie napraw\n'+(routes.length?routes.map(r=>'- '+r.component+': '+r.route).join('\n'):'- Brak zgłoszeń')+'\n');
-          console.log('RX AUTOPILOT repair routes:',routes.length);
+          console.log('RX AUTOPILOT routing self-tests: 8 PASS; repair routes:',routes.length);
           NODE
       - name: RX AUTOPILOT — sprawdź cały łańcuch i zapisz dowody
         if: ${{ always() }}
