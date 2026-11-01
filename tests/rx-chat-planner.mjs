@@ -970,3 +970,8 @@ assert.equal(rxAntExplanation.executed,0);
 const rxAntInvitation=planRXChat('Porozmawiajmy o RX Mrówkach.');
 assert.doesNotMatch(rxAntInvitation.answer,/Trzy przykłady:/);
 assert.match(rxAntInvitation.answer,/Co najbardziej Cię w tym temacie interesuje/);
+
+// The explicit RX Ants request remains actionable even with prior conversation history.
+const rxAntWithHistory=planRXChat('Porozmawiajmy o RX Mrówkach. Wyjaśnij, jak moduły wspólnie rozwiązują zadania. Podaj trzy przykłady.', ['Cześć','Witaj!']);
+assert.match(rxAntWithHistory.answer,/Trzy przykłady:/);
+assert.equal(rxAntWithHistory.executed,0);
