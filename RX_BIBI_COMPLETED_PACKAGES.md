@@ -15,6 +15,19 @@ Kod: `cbc8d5e75011b7a23bbab5642984cebb1098a3bd`.
 CI: `RX BIBI curriculum tests` — success (41312219691); `VEXORIO checks` — success (41312219732).
 Status: zatwierdzony testami na gałęzi PR #708; **nie scalono i nie wdrożono na produkcję**.
 
+## Pakiet 2 — pięć zabezpieczeń adaptera modelu — testy CI zielone
+
+- Bezpieczna obsługa wiadomości o nieprawidłowym typie.
+- Odrzucanie pustych wiadomości.
+- Usuwanie zbędnych spacji z pytania wysyłanego do modelu.
+- Usuwanie zbędnych spacji z odpowiedzi modelu.
+- Odrzucanie odpowiedzi zawierających niedozwolone znaki sterujące.
+
+Pliki: `rx-bibi-model-bridge.mjs`, `tests/rx-bibi-model-bridge.test.cjs`.
+Kod i poprawka testu: `570f4f39473fc2843c6e5925e1f9e2adc358d016`.
+CI: `RX BIBI curriculum tests` — success (41312417058); `VEXORIO checks` — success (41312417056); `RX CLOUD self-host smoke tests` — success (41312417045).
+Status: zatwierdzony testami na gałęzi PR #708; **nie scalono i nie wdrożono na produkcję**.
+
 ## Zasady dalszej pracy
 
 1. Przed nowym pakietem sprawdź ten rejestr oraz kod istniejących modułów.
