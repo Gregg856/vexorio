@@ -975,6 +975,25 @@ document.addEventListener('DOMContentLoaded',()=>{
   rxTasks.unshift(task);if(rxTasks.length>50)rxTasks.length=50;
   persistTasks();renderTasks();return {added:true,task};
  };
+ const rxDeferredKey='rx-bibi-deferred-v1';
+ const rxDeferred=(()=>{
+  try{const data=JSON.parse(localStorage.getItem(rxDeferredKey)||'[]');return Array.isArray(data)?data.filter(t=>t&&typeof t.topic==='string'&&typeof t.nextStep==='string').slice(0,50):[];}catch(_){return [];}
+ })();
+ const saveDeferred=()=>{try{localStorage.setItem(rxDeferredKey,JSON.stringify(rxDeferred.slice(0,50)));return true;}catch(_){return false;}};
+ const deferRxTask=(topic,nextStep)=>{
+  topic=String(topic).trim().slice(0,180);nextStep=String(nextStep).trim().slice(0,300);
+  if(!topic||!nextStep)return {ok:false,reason:'Brak tematu lub następnego kroku'};
+  const existing=rxDeferred.find(t=>t.topic.toLocaleLowerCase('pl')===topic.toLocaleLowerCase('pl')&&t.status==='deferred');
+  if(existing)return {ok:true,duplicate:true,task:existing};
+  const task={id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),topic,nextStep,status:'deferred'};
+  rxDeferred.unshift(task);if(rxDeferred.length>50)rxDeferred.length=50;
+  return {ok:saveDeferred(),task};
+ };
+ const resumeRxTask=()=>{
+  const task=rxDeferred.find(t=>t.status==='deferred');
+  if(!task)return null;
+  task.status='active';return saveDeferred()?task:null;
+ };
  const persistTasks=()=>{try{localStorage.setItem(rxTasksKey,JSON.stringify(rxTasks.slice(0,50)));}catch(_){}};
  const renderTasks=()=>{taskList.replaceChildren();if(!rxTasks.length){const p=document.createElement('p');p.textContent='Brak zadań.';taskList.append(p);return;}for(const t of rxTasks){const card=document.createElement('div');card.className='card';card.style.margin='10px 0';card.style.padding='12px';const desc=document.createElement('p');desc.textContent=t.title+' · '+t.module+' · '+t.status;card.append(desc);const toggle=document.createElement('button');toggle.type='button';toggle.textContent=t.status==='oczekuje'?'Oznacz jako zakończone':'Przywróć';toggle.addEventListener('click',()=>{t.status=t.status==='oczekuje'?'zakończone':'oczekuje';persistTasks();renderTasks();});const remove=document.createElement('button');remove.type='button';remove.textContent='Usuń';remove.style.marginLeft='8px';remove.addEventListener('click',()=>{const index=rxTasks.indexOf(t);if(index>=0)rxTasks.splice(index,1);persistTasks();renderTasks();});card.append(toggle,remove);
   if(t.status==='oczekuje'&&rxTaskExecutors[t.module]){
@@ -1137,6 +1156,17 @@ document.addEventListener('DOMContentLoaded',()=>{
     }catch(error){explain('Nie mogę połączyć pisania BIBI z chmurą: '+String(error.message||error).slice(0,180));}
     finally{send.disabled=false;}
    })();
+   return;
+  }
+  const deferMatch=message.match(/^(?:bibi[, ]+)?(?:odłóż|odloz|zostaw na później|zostaw na pozniej)\\s*[:,-]?\\s*(.+?)\\s*(?:;|\\|)\\s*(.+)$/i);
+  if(deferMatch){
+   const result=deferRxTask(deferMatch[1],deferMatch[2]);
+   explain(result.ok?(result.duplicate?'Ten temat już jest odłożony.':'Zapisałam odłożony temat lokalnie: '+result.task.topic+'. Następny krok: '+result.task.nextStep+'. Nie zapisano w RX CLOUD.'):'Nie udało się zapisać tematu na tym urządzeniu.');
+   return;
+  }
+  if(/^(?:bibi[, ]+)?(?:wróć do odłożonego|wroc do odlozonego|kontynuuj odłożone|kontynuuj odlozone)$/i.test(message.trim())){
+   const task=resumeRxTask();
+   explain(task?'Wracamy do: '+task.topic+'. Następny krok: '+task.nextStep+'.':'Brak odłożonego tematu lub nie udało się zapisać wznowienia.');
    return;
   }
   const taskMatch=message.match(/^(?:(?:rx|strażak|strazak)[, ]+)?(?:dodaj|zapisz|utwórz|utworz)\s+zadani[ea]\s*[:,-]?\s*(.+)$/i);
