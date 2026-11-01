@@ -69,7 +69,7 @@ async function start({port=Number(process.env.PORT||8787),host=process.env.HOST|
   // Same-host RX CLOUD learning bridge: no public URL, no outbound Internet.
   // Admin authentication remains enforced in worker.js before this service is called.
   if((process.env.RX_QUEEN_LOCAL_TOKEN||'').length>=32){
-    env.RX_CLOUD_LOCAL_LEARNING_SERVICE={fetch:async(_url,options={})=>fetch('http://127.0.0.1:'+port+'/__rxcloud/bibi/learning',{
+    env.RX_CLOUD_LOCAL_LEARNING_SERVICE={fetch:async(_url,options={})=>fetch('http://127.0.0.1:'+server.address().port+'/__rxcloud/bibi/learning',{
       method:'GET',headers:{Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN,Accept:'application/json'},
       signal:options.signal||AbortSignal.timeout(7000)
     })};

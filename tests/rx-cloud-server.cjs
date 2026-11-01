@@ -43,6 +43,17 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(server.maxConnections,128,'Concurrent connection count must be bounded');
   const {port}=server.address();
   const base='http://127.0.0.1:'+port;
+  // Offline-only Queen learning bridge: real loopback HTTP, no public hosting.
+  const learningRoute=base+'/__rxcloud/bibi/learning';
+  assert.equal((await fetch(learningRoute)).status,401,'Private learning must require a token');
+  assert.equal((await fetch(learningRoute,{headers:{Authorization:'Bearer invalid'}})).status,401);
+  const learningAuth={Authorization:'Bearer '+process.env.RX_QUEEN_LOCAL_TOKEN};
+  assert.equal((await fetch(learningRoute,{method:'POST',headers:learningAuth})).status,405);
+  const learningResponse=await fetch(learningRoute,{headers:learningAuth});
+  assert.equal(learningResponse.status,200,'Queen learning must respond over local loopback');
+  const offlineLearningData=await learningResponse.json();
+  assert.equal(offlineLearningData.kind,'rx-queen-verified-learning');
+  assert(Array.isArray(offlineLearningData.lessons)&&Array.isArray(offlineLearningData.verified));
   const capability=await fetch(base+'/__rxcloud/model/capabilities');
   assert.equal(capability.status,200);
   assert.equal(capability.headers.get('cache-control'),'no-store');
@@ -59,7 +70,7 @@ const {start,staticFetch}=require('../rx-cloud-server.cjs');
   assert.equal(healthData.connectionsLimit,128);
   assert.equal(healthData.load.activeRequests,1,'Health request should count itself');
   assert.equal(healthData.load.peakActiveRequests,1,'First request should establish peak');
-  assert.equal(healthData.load.completedRequests,3,'Three capability checks should have completed before health snapshot');
+  assert.equal(healthData.load.completedRequests,7,'Three capability and four private learning checks must complete before health snapshot');
   for(const key of ['rssBytes','heapUsedBytes','heapTotalBytes']){
     assert(Number.isSafeInteger(healthData.memory[key])&&healthData.memory[key]>0,'Invalid memory metric: '+key);
   }
