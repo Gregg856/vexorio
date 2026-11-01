@@ -7,7 +7,7 @@ const http=require('node:http');
 const {start}=require('../rx-bibi-local-chat-adapter.cjs');
 const {saveTasks,readTasks}=require('../rx-bibi-task-store.cjs');
 const {createBrainMemory}=require('../rx-brain-memory.cjs');
-const {saveBrain}=require('../rx-brain-store.cjs');
+const {saveBrain,learnAndSaveBrain}=require('../rx-brain-store.cjs');
 function ask(port,message){
  return new Promise((resolve,reject)=>{
   const req=http.request({hostname:'127.0.0.1',port,path:'/chat',method:'POST',headers:{'Content-Type':'application/json'}},res=>{
