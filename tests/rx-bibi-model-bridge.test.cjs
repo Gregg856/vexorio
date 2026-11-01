@@ -39,6 +39,6 @@ test('model bridge package 2: five input and output safeguards',async()=>{
  const valid=await ask('Zapytaj model:   test   ',env);
  assert.equal(sent,'test');
  assert.equal(valid.answer,'Gotowe!');
- const bad={...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer:'niebezpieczny\\u0000tekst'})})}};
+ const bad={...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer:'niebezpieczny\u0000tekst'})})}};
  assert.equal((await ask('Zapytaj model: test',bad)).modelInferenceUsed,false);
 });
