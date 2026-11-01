@@ -458,6 +458,23 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
           console.log('RX QUEEN unified verdict:',JSON.stringify(report));
           NODE
+      - name: RX Developer — przekazanie wyników testera
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const dir = 'rx-bibi-reports';
+          const read = file => { try { return JSON.parse(fs.readFileSync(dir + '/' + file, 'utf8')); } catch { return null; } };
+          const summary = read('rx-queen-unified-test-report.json');
+          const auth = read('rx-client-auth-e2e.json');
+          const tasks = [];
+          if (auth && auth.clientChatVerified !== true) tasks.push({component:'authenticated-client-chat',status:auth.status || 'NOT_VERIFIED',source:'rx-client-auth-e2e.json',requiresReview:true});
+          if (summary && summary.localDialogue.status === 'FAIL') tasks.push({component:'local-dialogue',status:'FAIL',source:'rx-dialogue-tests.json',requiresReview:true});
+          const handoff = {schema:1,kind:'rx-developer-test-handoff',runId:process.env.GITHUB_RUN_ID || '',tasks,automaticCodeChanges:false};
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(dir + '/rx-developer-test-handoff.json',JSON.stringify(handoff,null,2) + '\n');
+          console.log('RX Developer diagnostic handoff:',tasks.length,'tasks');
+          NODE
       - name: RX BIBI — trening kandydatów i ocena na niewidzianych przykładach
         if: ${{ !cancelled() }}
         run: node tests/rx-learning-gate.cjs
