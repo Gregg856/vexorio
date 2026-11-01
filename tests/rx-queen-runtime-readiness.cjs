@@ -3,11 +3,11 @@
 const fs=require('node:fs/promises'),path=require('node:path');
 const {load}=require('../rx-queen-approved-memory.cjs');
 async function check({baseUrl=process.env.RX_CLOUD_BASE_URL||'',file=process.env.RX_QUEEN_APPROVED_FILE||path.join(__dirname,'..','rx-cloud-private-inbox','rx-queen-approved-responses.json'),timeoutMs=5000}={}){
- const result={schema:1,service:'rx-cloud-2',checkedAt:new Date().toISOString(),server:{reachable:false,healthy:false},approvedMemory:{enabled:process.env.RX_BIBI_APPROVED_MEMORY_ENABLED==='true',entries:0,valid:false},ready:false,liveChatVerified:false,errors:[]};
+ const result={schema:1,service:'rx-cloud-2',checkedAt:new Date().toISOString(),server:{reachable:false,healthy:false},approvedMemory:{enabled:process.env.RX_BIBI_APPROVED_MEMORY_ENABLED==='true',entries:0,valid:false},ready:false,liveChatVerified:false,diagnosis:null,errors:[]};
  try{const data=await load(file);result.approvedMemory.entries=data.entries.length;result.approvedMemory.valid=true;}catch{result.errors.push('approved-memory-invalid');}
  if(!result.approvedMemory.enabled)result.errors.push('approved-memory-disabled');
  if(result.approvedMemory.entries===0)result.errors.push('no-approved-responses');
- if(!baseUrl){result.errors.push('rx-cloud-base-url-not-configured');return result;}
+ if(!baseUrl){result.errors.push('rx-cloud-base-url-not-configured');result.diagnosis='configure-rx-cloud-base-url';return result;}
  try{
   const u=new URL(baseUrl);
   if(!['https:','http:'].includes(u.protocol)||u.username||u.password||u.pathname!=='/'||u.search||u.hash)throw Error('invalid');
@@ -18,6 +18,7 @@ async function check({baseUrl=process.env.RX_CLOUD_BASE_URL||'',file=process.env
   if(!result.server.healthy)result.errors.push('health-check-failed');
  }catch{result.errors.push('rx-cloud-unreachable-or-invalid-url');}
  result.ready=result.server.healthy&&result.approvedMemory.enabled&&result.approvedMemory.valid&&result.approvedMemory.entries>0;
+ result.diagnosis=!result.server.healthy?'server-not-confirmed':!result.approvedMemory.enabled?'enable-approved-memory-on-server':!result.approvedMemory.valid?'repair-approved-memory-file':!result.approvedMemory.entries?'approve-first-response':'ready-for-authenticated-chat-test';
  // Health checks cannot prove that authenticated chat uses approved memory.
  return result;
 }
