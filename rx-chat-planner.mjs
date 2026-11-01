@@ -752,6 +752,34 @@ export function planRXChat(message,history=[],learning=null){
   }else answer='👑 Jasne, porozmawiajmy o '+subject+'. Co najbardziej Cię w tym temacie interesuje?';
   tasks.length=0;plan.work=null;
  }
+ // Session-only follow-up to the RX Ants explanation; never claim work was executed.
+ const rxAntRecentUserTurns=history.filter((_,i)=>i%2===0).slice(-4);
+ const rxAntLastTopicTurn=[...rxAntRecentUserTurns].reverse().find(turn=>/(?:porozmawiajmy|pogadajmy)\s+o\s+|(?:teraz|zmieńmy|zmienmy)\s+(?:porozmawiajmy|pogadajmy)|wr[oó]ćmy\s+do\s+/iu.test(turn));
+ const rxAntPrevious=Boolean(rxAntLastTopicTurn&&/mr[oó]w(?:e)?k/iu.test(rxAntLastTopicTurn)&&/(?:przyk[lł]ad|modu[lł]|wsp[oó]ln)/iu.test(rxAntLastTopicTurn));
+ const rxAntFollowup=/^(?:(?:(?:podaj|wyja[sś]nij|rozwi[nń])\s+(?:mi\s+)?)|(?:a\s+)|(?:co\s+z\s+))?(?:(pierwszy[m]?|drugi[m]?|trzeci[m]?)|([123])\.?)(?:\s+przyk[lł]ad\w*)?[.!? ]*$/iu.exec(message.trim());
+ const rxAntSecond=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase().startsWith('drugi')||rxAntFollowup[2]==='2');
+ const rxAntFirst=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase().startsWith('pierwszy')||rxAntFollowup[2]==='1');
+ const rxAntThird=rxAntPrevious&&rxAntFollowup&&((rxAntFollowup[1]||'').toLowerCase().startsWith('trzeci')||rxAntFollowup[2]==='3');
+ if(rxAntSecond){
+  answer='👑 Drugi przykład: jedna RX Mrówka zbiera wyniki testów, druga wyszukuje powtarzające się błędy, a trzecia przygotowuje czytelne podsumowanie dla operatora. Koordynator porównuje wyniki przed zaproponowaniem poprawek. To przykład możliwej współpracy, nie informacja o wykonanym teście.';
+  tasks.length=0;plan.work=null;
+ }
+ if(rxAntFirst){
+  answer='👑 Pierwszy przykład: jedna RX Mrówka analizuje zgłoszony błąd kodu, druga proponuje zmianę, a trzecia weryfikuje ją testami. Koordynator zbiera wyniki. To opis sposobu współpracy, a nie potwierdzenie wykonania działań.';
+  tasks.length=0;plan.work=null;
+ }
+ if(rxAntThird){
+  answer='👑 Trzeci przykład: koordynator dzieli duże zadanie na mniejsze części, kilka RX Mrówek wykonuje niezależne obliczenia, a moduł sprawdzający porównuje wyniki i zgłasza rozbieżności. To przykład architektury, nie wykonana operacja.';
+  tasks.length=0;plan.work=null;
+ }
+ // Answer an explicit educational request rather than echoing it as a topic invitation.
+ const rxAntExamples=/rx\\s+mr[oó]wk|mr[oó]wk/iu.test(message)
+  &&/(?:wyja[sś]nij|podaj|przyk[lł]ad|jak\\s+grupa)/iu.test(message)
+  &&/(?:modu[lł]|wsp[oó]ln|zadani)/iu.test(message);
+ if(rxAntExamples){
+  answer='👑 RX Mrówki mogą współpracować jak zespół małych modułów: każdy wykonuje wyznaczoną część pracy, a koordynator łączy i sprawdza wyniki. Trzy przykłady: 1) jedna mrówka analizuje błąd kodu, druga proponuje poprawkę, trzecia uruchamia testy; 2) jedna zbiera wyniki testów, druga wykrywa powtarzające się problemy, trzecia przygotowuje podsumowanie; 3) jedna dzieli duże zadanie na części, kilka wykonuje niezależne obliczenia, a koordynator porównuje rezultaty. To opis możliwej architektury, nie potwierdzenie, że te działania zostały teraz wykonane.';
+  tasks.length=0;plan.work=null;
+ }
  if(shortReplyAnswer!==null)answer=shortReplyAnswer;
  if(arithmeticAnswer!==null)answer=arithmeticAnswer;
  if(everydayGuide!==null)answer=everydayGuide;
