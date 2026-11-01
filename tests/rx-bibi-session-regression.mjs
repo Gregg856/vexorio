@@ -57,7 +57,14 @@ const cases=[
  ['same city no contradiction', 'Czy zmieniłem miasto?', ['Mieszkam w Krakowie','OK','Mieszkam w Krakowie','OK'], /Nie widzę/],
  ['no city contradiction invented', 'Czy zmieniłem miasto?', [], /Nie widzę/],
  ['combined name and city', 'Jak mam na imię i gdzie mieszkam?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
- ['combined reverse name and city', 'Gdzie mieszkam i jak mam na imię?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/]
+ ['combined reverse name and city', 'Gdzie mieszkam i jak mam na imię?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
+ ['polite city recall', 'Proszę, gdzie mieszkam?', ['Mieszkam w Poznaniu','OK'], /Poznaniu/],
+ ['city paraphrase', 'Przypomnij moje miasto', ['Mieszkam w Poznaniu','OK'], /Poznaniu/],
+ ['city provided paraphrase', 'Jakie miasto podałem?', ['Mieszkam w Poznaniu','OK'], /Poznaniu/],
+ ['combined facts paraphrase', 'Podaj moje imię i miasto', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
+ ['polite combined facts', 'Powiedz mi, jak mam na imię i gdzie mieszkam?', ['Mam na imię Adam','OK','Mieszkam w Poznaniu','OK'], /Adam.*Poznaniu/],
+ ['combined tasks paraphrase', 'Podaj moje imię i liczbę zadań', ['Mam na imię Adam','OK',tasks,list], /Adam.*3/],
+ ['polite combined tasks', 'Proszę, jak mam na imię i ile mam zadań?', ['Mam na imię Adam','OK',tasks,list], /Adam.*3/]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
