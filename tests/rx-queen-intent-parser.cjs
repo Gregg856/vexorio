@@ -6,9 +6,11 @@ function parseIntent({prompt,mode}={}){
  const colon=prompt.indexOf(':');
  if(colon<0)return {content:normalize(prompt),constraints:[],recognized:false};
  const head=normalize(prompt.slice(0,colon)).toLocaleLowerCase('pl');
+ // Accept common Polish politeness and word-order variants only in explicit commands.
+ const commandHead=head.replace(/^(?:proszę|prosze)\s+/u,'').replace(/\s+(?:proszę|prosze)$/u,'');
  const content=normalize(prompt.slice(colon+1));
  if(!content)return {content:normalize(prompt),constraints:[],recognized:false};
- const writing=/(?:^|\s)(?:napisz|wiadomość|wiadomosc|odpowiedz|odpowiedź|streszcz|podsumuj|streszczenie|sparafrazuj|przepisz)(?=\s|$)/u.test(head);
+ const writing=/(?:^|\s)(?:napisz|wiadomość|wiadomosc|odpowiedz|odpowiedź|streszcz|podsumuj|streszczenie|sparafrazuj|przepisz|przygotuj|stwórz|stworz|ułóż|uloz)(?=\s|$)/u.test(commandHead);
  const constraints=[];
  const conflicts=[];
  // Explicit opposing instructions: refuse ambiguous combinations rather than guessing.
