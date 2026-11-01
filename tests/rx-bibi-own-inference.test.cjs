@@ -31,3 +31,11 @@ test('actual trained local CPU inference over RX CLOUD bridge',async()=>{
   assert.equal((await direct.json()).kind,'rx-own-token-classifier');
  }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 });
+
+test('exact training examples win; ambiguous partial evidence abstains safely',()=>{
+ const model=train([{input:'status sieci',answer:'Sieć działa.'},{input:'status pamieci',answer:'Pamięć działa.'}]);
+ assert.equal(infer(model,'status sieci').answer,'Sieć działa.');
+ assert.equal(infer(model,'STATUS PAMIECI').answer,'Pamięć działa.');
+ assert.equal(infer(model,'status'),null,'Ambiguous intent must not guess');
+ assert.throws(()=>train([{input:'status sieci',answer:'A'},{input:'STATUS SIECI',answer:'B'}]),/Conflicting training examples/);
+});

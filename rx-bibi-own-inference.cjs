@@ -6,10 +6,13 @@ function tokens(value){
 }
 function train(samples){
  if(!Array.isArray(samples)||samples.length<2||samples.length>1000)throw Error('Invalid training samples');
- const labels=new Map(),weights=new Map();
+ const labels=new Map(),weights=new Map(),exact=new Map();
  for(const sample of samples){
   if(typeof sample?.input!=='string'||typeof sample?.answer!=='string'||!sample.input.trim()||!sample.answer.trim()||sample.input.length>1000||sample.answer.length>1000)throw Error('Invalid sample');
   const label=sample.answer;
+  const key=tokens(sample.input).join(' ');
+  if(exact.has(key)&&exact.get(key)!==label)throw Error('Conflicting training examples');
+  exact.set(key,label);
   labels.set(label,(labels.get(label)||0)+1);
   const words=new Set(tokens(sample.input));
   for(const word of words){
@@ -17,13 +20,17 @@ function train(samples){
    const row=weights.get(word);row.set(label,(row.get(label)||0)+1);
   }
  }
- return Object.freeze({labels,weights});
+ return Object.freeze({labels,weights,exact});
 }
 function infer(model,input){
  if(typeof input!=='string'||!input.trim()||input.length>1000)return null;
+ const normalized=tokens(input).join(' ');
+ if(model.exact?.has(normalized))return {answer:model.exact.get(normalized),confidence:1,kind:'rx-own-token-classifier'};
  const words=new Set(tokens(input));const scores=new Map();
  for(const word of words)for(const [label,count] of model.weights.get(word)||[])scores.set(label,(scores.get(label)||0)+count);
  const sorted=[...scores].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pl'));
+ // Different answers with equal evidence are ambiguous: abstain instead of guessing.
+ if(sorted.length>1&&sorted[0][1]===sorted[1][1])return null;
  return sorted.length?{answer:sorted[0][0],confidence:sorted[0][1]/Math.max(1,words.size),kind:'rx-own-token-classifier'}:null;
 }
 function start({samples,port=0,host='127.0.0.1'}={}){
