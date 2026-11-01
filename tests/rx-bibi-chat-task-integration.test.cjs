@@ -175,6 +175,19 @@ function ask(port,message,history,historyToken){
    assert.ok(saved.includes('Sprawdź testy'));
    assert.ok(saved.includes('Co dalej?'));
   }finally{await new Promise(resolve=>parallelServer.close(resolve));}
+  // RX #631: known issue suggestions remain read-only and unknown issues are not guessed.
+  const issueServer=await start({memoryFile});
+  try{
+   const known=await ask(issueServer.address().port,'Znany problem: android_chat');
+   assert.equal(known.status,200);
+   assert.match(known.reply,/inspect_logs/);
+   assert.match(known.reply,/nie dowód aktualnej naprawy/);
+   assert.equal(known.executed,0);
+   const unknown=await ask(issueServer.address().port,'Znany problem: brak_takiego_bledu');
+   assert.equal(unknown.status,200);
+   assert.match(unknown.reply,/Nie zgaduję rozwiązania/);
+   assert.equal(unknown.executed,0);
+  }finally{await new Promise(resolve=>issueServer.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
