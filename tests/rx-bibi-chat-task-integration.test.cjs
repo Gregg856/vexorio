@@ -132,6 +132,24 @@ function ask(port,message,history,historyToken){
    assert.ok(persisted.some(turn=>turn.includes('restart_chat')));
    assert.ok(persisted.length<=6);
   }finally{await new Promise(resolve=>combinedSecond.close(resolve));}
+  // RX #627: preserve the last meaningful user request while rotating six saved turns.
+  const rotationFile=path.join(dir,'rotation-history.json');
+  const rotationToken='rx-test-token-627-abcdefghijklmnopqrstuvwxyz';
+  const rotationServer=await start({historyFile:rotationFile,historyToken:rotationToken});
+  try{
+   for(const message of ['Naprawa czatu Android','Gotowe','Dalej','Zielone']){
+    const result=await ask(rotationServer.address().port,message,undefined,rotationToken);
+    assert.equal(result.status,200);
+    assert.equal(result.executed,0);
+   }
+   const rotated=JSON.parse(fs.readFileSync(rotationFile,'utf8'));
+   assert.equal(rotated.length,6);
+   assert.ok(rotated.every(item=>typeof item==='string'));
+   const followup=await ask(rotationServer.address().port,'Sprawdź jeszcze raz',undefined,rotationToken);
+   assert.equal(followup.status,200);
+   assert.equal(followup.executed,0);
+   assert.match(followup.reply,/Naprawa czatu Android/);
+  }finally{await new Promise(resolve=>rotationServer.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
