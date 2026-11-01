@@ -57,11 +57,11 @@ test('model bridge package 4: reject invisible prompt and answer controls',async
  const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
  let calls=0;
  const env={RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch:async()=>{calls++;return {ok:true,json:async()=>({answer:'OK'})};}}};
- assert.equal(await ask('Zapytaj model: a\\u0000b',env),null);
- assert.equal(await ask('test\\nnowa linia',env,{direct:true}),null);
- assert.equal(await ask('test\\ttab',env,{direct:true}),null);
+ assert.equal(await ask('Zapytaj model: a\u0000b',env),null);
+ assert.equal(await ask('test\nnowa linia',env,{direct:true}),null);
+ assert.equal(await ask('test\ttab',env,{direct:true}),null);
  assert.equal(calls,0);
  const responseEnv=answer=>({...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer})})}});
- assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\\u007f'))).modelInferenceUsed,false);
- assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\\u202e'))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\u007f'))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',responseEnv('tekst\u202e'))).modelInferenceUsed,false);
 });
