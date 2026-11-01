@@ -323,6 +323,7 @@ jobs:
         run: node tests/rx-admin-auth-e2e.cjs
       - name: RX BIBI — zalogowany czat klienta (opcjonalny, prawdziwy serwer)
         if: ${{ !cancelled() }}
+        continue-on-error: true
         env:
           RX_BIBI_TEST_EMAIL: ${{ secrets.RX_BIBI_TEST_EMAIL || vars.RX_BIBI_TEST_EMAIL }}
           RX_BIBI_TEST_PASSWORD: ${{ secrets.RX_BIBI_TEST_PASSWORD }}
