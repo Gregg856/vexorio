@@ -59,10 +59,12 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
    {input:'Dalej',expected:/mrówk|mrów/i},
    {input:'Zmieńmy temat',forbidden:/kontynuujemy temat:.*mrów/i},
    {input:'Porozmawiajmy o pamięci',expected:/pamięc|pamięci/i},
-   {input:'Dalej',expected:/pamięc|pamięci/i}
+   {input:'Dalej',expected:/pamięc|pamięci/i},
+   {input:'Co potrafią RX Mrówki?',expected:/mrówk/i},
+   {input:'Wybrałem rozwijanie pamięci. Jak to sprawdzimy?',expected:/pamię/i}
   ];
   report.turns=[];
-  for(const [index,scenario] of scenarios.entries()){
+  const ask=async(scenario,index)=>{
    const started=Date.now();
    const api=page.waitForResponse(r=>r.url().includes('/api/rx/client/chat')&&r.request().method()==='POST',{timeout:30000});
    await page.locator('#message').fill(scenario.input);
@@ -76,8 +78,17 @@ const memoryAnswer=process.env.RX_BIBI_APPROVED_TEST_ANSWER||'';
    report.turns.push({turn:index+1,input:scenario.input,answer,status:reply.status(),latencyMs,passed});
    if(!passed)throw Error('Real chat dialogue failed at turn '+(index+1)+': '+scenario.input+' (HTTP '+reply.status()+')');
    await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Gotowe.',null,{timeout:10000});
-  }
+  };
+  for(const [index,scenario] of scenarios.entries())await ask(scenario,index);
   report.checks.push('authenticated_customer_chat_real_api_multiturn');
+  // A fresh conversation clears the local history. Check that BIBI does not claim
+  // an unverified permanent memory; this is not a test of approved-memory storage.
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator('#new-chat').click();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Nowa rozmowa.',null,{timeout:10000});
+  report.checks.push('new_conversation_ui_reset');
+  await ask({input:'Czy pamiętasz dokładne hasło z poprzedniej rozmowy? Jeśli nie, powiedz, że nie wiesz.',forbidden:/ZIELONA MRÓWKA 847/i},scenarios.length);
+  report.checks.push('new_conversation_no_invented_test_secret');
   report.approvedMemoryVerified=false;
   if(memoryPrompt&&memoryAnswer){
    if(memoryPrompt.length>1000||memoryAnswer.length>4000)throw Error('Approved-memory canary exceeds safe test bounds');
