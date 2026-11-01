@@ -40,7 +40,7 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
     if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000)){
      sendError(res,historyFile?503:400,historyFile?'HISTORY_UNAVAILABLE':'INVALID_REQUEST');return;
     }
-    const diagnosticQuery=/^(?:diagnoza|diagnostyka|pomoc dla błędu|pomoc dla bledu):?\\s+(AUTH_REQUIRED|HISTORY_UNAVAILABLE|INVALID_REQUEST)\\??$/i.exec(data.message.trim());
+    const diagnosticQuery=/^(?:diagnoza|diagnostyka|pomoc dla błędu|pomoc dla bledu):?\s+(AUTH_REQUIRED|HISTORY_UNAVAILABLE|INVALID_REQUEST)\??$/i.exec(data.message.trim());
     let result;
     if(diagnosticQuery){
      const code=diagnosticQuery[1].toUpperCase();
