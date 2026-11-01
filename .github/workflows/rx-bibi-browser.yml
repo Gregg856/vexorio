@@ -3,6 +3,13 @@ name: RX BIBI Tester — mobile browser
 on:
   # Full browser suite runs periodically or on explicit request, not on every push.
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'worker.js'
+      - 'rx-chat-planner.mjs'
+      - 'tests/rx-bibi-client-route.test.mjs'
+      - 'tests/rx-chat-planner.mjs'
+      - '.github/workflows/rx-bibi-browser.yml'
   schedule:
     # Pełny audyt Chromium co 6 godzin; lekkie kontrole pozostają w VEXORIO checks.
     - cron: '23 */6 * * *'
