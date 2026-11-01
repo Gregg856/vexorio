@@ -5,7 +5,7 @@ export function composeClientWriting(message){
  if(!m)return null;
  const instruction=m[3].toLocaleLowerCase('pl').trim();
  // Reject unsupported instructions instead of claiming they were understood.
- const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|krótką|krotka|krótki|krotki|krótkie|krotkie|zwięźle|zwiezle|zwięzłą|zwiezla|szczegółowo|obszernie|nieformalnie|formalnie|oficjalnie|i|[,;\s])/gu,'').trim();
+ const tokens=instruction.replace(/(?:bez\s+(?:powitania|przywitania|pożegnania|zakończenia|podpisu)|z\s+(?:powitaniem|pożegnaniem|podpisem)|dodaj\s+(?:powitanie|pożegnanie|podpis)|krótko|krotko|krótką|krotka|krótki|krotki|krótkie|krotkie|zwięźle|zwiezle|zwięzłą|zwiezla|wiadomość|wiadomosc|odpowiedź|streszczenie|szczegółowo|obszernie|nieformalnie|formalnie|oficjalnie|i|[,;\s])/gu,'').trim();
  if(tokens)return null;
  const has=re=>re.test(instruction);
  const noGreeting=has(/bez\s+(?:powitania|przywitania)(?=[\s,;]|$)/u);
