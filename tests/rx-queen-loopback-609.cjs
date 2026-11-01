@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const server=fs.readFileSync('rx-cloud-server.cjs','utf8');
+const bridge=fs.readFileSync('rx-queen-model-bridge.mjs','utf8');
+assert.match(server,/RX_QUEEN_MODEL_ENABLED==='true'/);
+assert.match(server,/RX_QUEEN_MODEL_PORT/);
+assert.match(server,/env\.RX_QUEEN_MODEL_SERVICE=createLocalModelService\(queenPort\)/);
+assert.match(server,/queenPort<1\|\|queenPort>65535/);
+assert.match(bridge,/RX_QUEEN_MODEL_SERVICE/);
+assert.doesNotMatch(bridge,/RX_BIBI_MODEL_SERVICE/);
+console.log('RX #609 Queen isolated loopback wiring: PASS');
