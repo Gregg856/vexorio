@@ -42,3 +42,13 @@ test('model bridge package 2: five input and output safeguards',async()=>{
  const bad={...env,RX_BIBI_MODEL_SERVICE:{fetch:async()=>({ok:true,json:async()=>({answer:'niebezpieczny\u0000tekst'})})}};
  assert.equal((await ask('Zapytaj model: test',bad)).modelInferenceUsed,false);
 });
+
+test('model bridge package 3: malformed input and service responses are safe',async()=>{
+ const {askClientModel:ask}=await import(pathToFileURL(path.join(__dirname,'..','rx-bibi-model-bridge.mjs')));
+ assert.equal(await ask('Zapytaj model:    ',{}),null);
+ assert.equal((await ask('Zapytaj model: test',null)).modelInferenceUsed,false);
+ const env=fetch=>({RX_BIBI_MODEL_ENABLED:'true',RX_BIBI_MODEL_SERVICE:{fetch}});
+ assert.equal((await ask('Zapytaj model: test',env(async()=>null))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',env(async()=>({ok:true,json:async()=>null})))).modelInferenceUsed,false);
+ assert.equal((await ask('Zapytaj model: test',env(async()=>({ok:true,json:async()=>({answer:'x'.repeat(4001)})})))).modelInferenceUsed,false);
+});
