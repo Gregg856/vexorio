@@ -33,3 +33,18 @@ test('authenticated client endpoint preserves RX Ant examples across turns',asyn
     assert.doesNotMatch(second,/Stan kolejki sprawdzisz/iu);
   }finally{globalThis.fetch=realFetch;}
 });
+
+test('regression: ordinary RX Ants explanation followed by A drugi? keeps context',async()=>{
+  globalThis.fetch=async(input)=>{
+    if(String(input).includes('/auth/v1/user'))return Response.json({id:'test-user',is_anonymous:false});
+    throw new Error('Unexpected network call: '+String(input));
+  };
+  history.length=0;
+  try{
+    const first=await chat('BIBI, wyjaśnij, jak RX Mrówki wspólnie rozwiązują zadania. Podaj trzy przykłady.');
+    assert.match(first,/mr[oó]wk|test|zadani/iu);
+    const second=await chat('A drugi?');
+    assert.match(second,/Drugi przykład/iu);
+    assert.doesNotMatch(second,/Stan kolejki sprawdzisz/iu);
+  }finally{history.length=0;globalThis.fetch=realFetch;}
+});
