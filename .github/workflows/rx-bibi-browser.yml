@@ -51,6 +51,16 @@ jobs:
             echo '- Zakres: lokalny silnik rozmowy; nie jest to test zalogowanego klienta'
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$result"
+      - name: RX FAST — zachowaj raporty rozmów również po błędzie
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: rx-fast-dialogue-report
+          path: |
+            rx-bibi-reports/rx-fast-dialogues.json
+            rx-bibi-reports/rx-fast-dialogues.log
+          if-no-files-found: warn
+          retention-days: 7
       - name: RX BIBI — odczyt produkcyjnego panelu i zabezpieczenia API (bez logowania)
         run: node --test tests/rx-bibi-live-readonly.test.cjs
       - name: Sprawdź składnię istniejących modułów
