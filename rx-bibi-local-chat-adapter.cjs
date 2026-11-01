@@ -21,14 +21,16 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
    try{
     const data=JSON.parse(body);
     if(data.source!=='rx-bibi-learning-test'||typeof data.message!=='string')throw Error('Invalid request');
-    if(historyFile&&data.historyToken!==historyToken)throw Error('Unauthorized history');
+    if(historyFile&&data.historyToken!==historyToken){res.writeHead(401);res.end(JSON.stringify({error:'Unauthorized',code:'AUTH_REQUIRED'}));return;}
     const tasks=taskFile?readTasks(taskFile):[];
     let history=data.history===undefined?[]:data.history;
     if(historyFile){
      try{const stat=await fs.stat(historyFile);if(stat.size>8192)throw Error('History too large');history=JSON.parse(await fs.readFile(historyFile,'utf8'));}
-     catch(error){if(error.code!=='ENOENT')throw error;}
+     catch(error){if(error.code!=='ENOENT'){res.writeHead(503);res.end(JSON.stringify({error:'History unavailable',code:'HISTORY_UNAVAILABLE'}));return;}}
     }
-    if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000))throw Error('Invalid history');
+    if(!Array.isArray(history)||history.length>6||history.some(item=>typeof item!=='string'||item.length>1000)){
+     res.writeHead(historyFile?503:400);res.end(JSON.stringify({error:historyFile?'History unavailable':'Invalid request',code:historyFile?'HISTORY_UNAVAILABLE':'INVALID_REQUEST'}));return;
+    }
     const result=memoryFile?await chatRXWithStoredMemory(data.message,{tasks,memoryFile,history}):await chatRXWithKnowledge(data.message,{tasks,history,...(knowledgeLookup?{knowledgeLookup}:{})});
     const evidenceQuery=/^(?:sprawdź|sprawdz|pokaż|pokaz) (?:wynik |status )?(?:testu |testów |github actions )?(?:run |przebiegu )?(\d{8,20})[?!. ]*$/i.exec(data.message.trim());
     if(evidenceQuery){
@@ -50,7 +52,7 @@ function start({port=0,host='127.0.0.1',taskFile=null,githubFetch=globalThis.fet
      finally{await fs.rm(tmp,{force:true});}
     }
     res.writeHead(200);res.end(JSON.stringify({reply:result.answer,executed:result.executed}));
-   }catch{res.writeHead(400);res.end(JSON.stringify({error:'Invalid request'}));}
+   }catch{res.writeHead(400);res.end(JSON.stringify({error:'Invalid request',code:'INVALID_REQUEST'}));}
    };
    if(historyFile){historyQueue=historyQueue.then(handle,handle);}else{void handle();}
   });
