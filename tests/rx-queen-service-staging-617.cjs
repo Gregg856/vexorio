@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const installer=fs.readFileSync('deploy/rxcloud-install.sh','utf8');
+const unit=fs.readFileSync('deploy/rx-queen-model.service','utf8');
+assert.match(installer,/install -m 0644 -o root -g root deploy\/rx-queen-model\.service \/etc\/systemd\/system\/rx-queen-model\.service/);
+assert.match(installer,/Queen gateway unit staged but NOT enabled or started/);
+assert.doesNotMatch(installer,/systemctl (?:enable|start|restart|enable --now) rx-queen-model/);
+assert.match(unit,/ExecStart=\/usr\/bin\/node \/opt\/rxcloud\/vexorio\/rx-queen-local-model\.cjs/);
+assert.match(unit,/EnvironmentFile=\/etc\/rxcloud\/rxcloud\.env/);
+assert.match(unit,/User=rxcloud/);
+assert.match(installer,/rx-queen-local-model\.cjs/);
+console.log('RX #617 Queen gateway systemd staging without activation: PASS');
