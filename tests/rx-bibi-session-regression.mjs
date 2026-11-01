@@ -90,6 +90,15 @@ const cases=[
  ['interest updated', 'Jakie mam zainteresowania?', ['Interesuję się muzyką','OK','Moje zainteresowanie to fotografia','OK'], /fotografia/],
  ['preference recall', 'Co lubię?', ['Lubię kawę','OK'], /kawę/],
  ['preference updated', 'Jakie mam preferencje?', ['Lubię kawę','OK','Wolę herbatę','OK'], /herbatę/],
+ ['followup name reminder', 'Przypomnij mi', ['Mam na imię Adam','OK','Jak mam na imię?','Masz na imię Adam'], /Adam/],
+ ['followup city reminder', 'A co z tym?', ['Mieszkam w Poznaniu','OK','Gdzie mieszkam?','W Poznaniu'], /Poznaniu/],
+ ['followup interest reminder', 'Przypomnij', ['Interesuję się muzyką','OK','Czym się interesuję?','Muzyką'], /muzyką/],
+ ['followup preference reminder', 'Przypomnij mi', ['Lubię kawę','OK','Co lubię?','Kawę'], /kawę/],
+ ['followup tasks reminder', 'A co z tym?', ['Mam trzy zadania: zakupy, spacer i sprzątanie','OK','Jakie to zadania?','Trzy zadania'], /zakupy.*spacer.*sprzątanie/],
+ ['followup why name', 'Dlaczego?', ['Mam na imię Adam','OK','Jak mam na imię?','Adam'], /imieniu.*rozmowie/],
+ ['followup why city', 'Dlaczego tak?', ['Mieszkam w Poznaniu','OK','Gdzie mieszkam?','Poznaniu'], /mieście.*rozmowie/],
+ ['followup ambiguous', 'Przypomnij mi', [], /Doprecyzuj/],
+ ['followup why ambiguous', 'Dlaczego?', [], /Doprecyzuj/],
  ['explain missing prior answer', 'Na jakiej podstawie?', ['Cześć'], /Nie mogę pewnie ustalić/]
 ];
 for(const [label,message,history,expected] of cases){

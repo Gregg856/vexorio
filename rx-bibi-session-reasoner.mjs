@@ -54,6 +54,16 @@ export function answerRXSession(message,history=[]){
   return {answer:'👑 Według Twojej ostatniej informacji mieszkasz w '+currentCity+'.',contextUsed:true};
  if(/czy zmienilem miasto|czy podalem dwa rozne miasta/.test(input))
   return {answer:cityChanged?'👑 Tak. Najpierw podałeś '+cities[0]+', a później '+currentCity+'.':'👑 Nie widzę dwóch różnych miast w tej rozmowie.',contextUsed:true};
+ const lastAsked=userTurns.length?normalize(userTurns[userTurns.length-1]):'';
+ const previousTopic=/imie|imienia/.test(lastAsked)?'name':/miast|mieszkam/.test(lastAsked)?'city':/zainteresowan|interesuje/.test(lastAsked)?'interest':/preferencj|lubie/.test(lastAsked)?'preference':/zadani|zadan/.test(lastAsked)?'tasks':null;
+ if(/^(?:a co z tym|przypomnij mi|przypomnij)[?.! ]*$/u.test(input)){
+  const remembered=previousTopic==='name'&&name?'imię: '+name:previousTopic==='city'&&currentCity?'miasto: '+currentCity:previousTopic==='interest'&&interest?'zainteresowanie: '+interest:previousTopic==='preference'&&preference?'preferencja: '+preference:previousTopic==='tasks'&&priorList.length===3?'zadania: '+priorList.join('; '):null;
+  return {answer:remembered?'👑 Przypominam z tej rozmowy — '+remembered+'.':'👑 Nie wiem, do której informacji się odnosisz. Doprecyzuj, co mam przypomnieć.',contextUsed:!!remembered};
+ }
+ if(/^(?:dlaczego|dlaczego tak)[?.! ]*$/u.test(input)){
+  if(previousTopic&&history.length>=2)return {answer:'👑 Odniosłam się do informacji o '+({name:'imieniu',city:'mieście',interest:'zainteresowaniach',preference:'preferencjach',tasks:'zadaniach'}[previousTopic])+', którą podałeś wcześniej w tej rozmowie. Nie sprawdzałam jej poza rozmową.',contextUsed:true};
+  return {answer:'👑 Nie potrafię ustalić, do której odpowiedzi odnosi się to pytanie. Doprecyzuj proszę.',contextUsed:false};
+ }
  const shortFollowup=/^(?:a wczesniej|a teraz|co bylo wczesniej|co jest teraz)[?.! ]*$/u.test(question);
  if(shortFollowup&&userTurns.length){
   const lastQuestion=normalize(userTurns[userTurns.length-1]);
