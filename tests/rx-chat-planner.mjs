@@ -1027,3 +1027,8 @@ assert.match(planRXChat('Podaj pierwszy przykład',rxAntExampleHistory).answer,/
 assert.match(planRXChat('Wyjaśnij trzeci przykład',rxAntExampleHistory).answer,/Trzeci przykład:/);
 assert.match(planRXChat('3',rxAntExampleHistory).answer,/Trzeci przykład:/);
 assert.doesNotMatch(planRXChat('Podaj trzeci przykład').answer,/Trzeci przykład:/);
+
+// Natural conversational variants should resolve the same example in the current topic.
+assert.match(planRXChat('A drugi?',rxAntExampleHistory).answer,/Drugi przykład:/);
+assert.match(planRXChat('A trzeci?',rxAntExampleHistory).answer,/Trzeci przykład:/);
+assert.match(planRXChat('Co z pierwszym?',rxAntExampleHistory).answer,/Pierwszy przykład:/);
