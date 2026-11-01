@@ -1143,8 +1143,22 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Explicit AI requests reuse the authenticated client bridge, never admin commands.
   const deferMatch=message.match(/^(?:bibi[, ]+)?(?:odłóż|odloz|zostaw na później|zostaw na pozniej)\s*[:,-]?\s*(.+?)\s*(?:;|\|)\s*(.+)$/i);
   if(deferMatch){
-   const result=deferRxTask(deferMatch[1],deferMatch[2]);
-   explain(result.ok?(result.duplicate?'Ten temat już jest odłożony.':'Zapisałam odłożony temat lokalnie: '+result.task.topic+'. Następny krok: '+result.task.nextStep+'. Nie zapisano w RX CLOUD.'):'Nie udało się zapisać tematu na tym urządzeniu.');
+   (async()=>{
+    send.disabled=true;
+    try{
+     if(!window.supabase?.createClient)throw Error('Brak logowania');
+     const client=window.supabase.createClient('https://lfytoxcnutduahshbsko.supabase.co','sb_publishable_S58StH3HgvtjT1pRw2X3Ug_HiLNwpDz');
+     const {deferBibiTask}=await import('./rx-bibi-user-tasks-cloud.mjs');
+     const topic=deferMatch[1].trim().slice(0,180);
+     const nextStep=deferMatch[2].trim().slice(0,300);
+     // Cloud stores the task title in the existing owner-scoped table; details remain local.
+     const saved=await deferBibiTask(client,topic);
+     const result=deferRxTask(topic,nextStep);
+     explain('Zadanie zapisane na koncie BIBI: '+saved.title+'. '+(result.ok?'Następny krok zapisany na tym urządzeniu: '+nextStep+'.':'Nie udało się zapisać następnego kroku lokalnie.'));
+    }catch(error){
+     explain('Nie zapisano zadania w RX CLOUD: '+String(error.message||error).slice(0,150)+'. Zaloguj się i spróbuj ponownie.');
+    }finally{send.disabled=false;}
+   })();
    return;
   }
   if(/^(?:bibi[, ]+)?(?:wróć do odłożonego|wroc do odlozonego|kontynuuj odłożone|kontynuuj odlozone)$/i.test(message.trim())){
