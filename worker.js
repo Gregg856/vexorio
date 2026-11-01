@@ -253,7 +253,7 @@ export default {
           }
         }catch{/* External lookup failure falls back to planner. */}
       }
-      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji|sprawdź w internecie|sprawdz w internecie|wyszukaj w internecie|poszukaj w internecie|szukaj w internecie|sprawdź w sieci|sprawdz w sieci)(?: o)?\s+/i.test(message.trim()) || /^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|wyjaśnij mi|wyjasnij mi|wyjaśnij|wyjasnij|chciałbym się dowiedzieć(?: o)?|chcialbym sie dowiedziec(?: o)?|chciałabym się dowiedzieć(?: o)?|chcialabym sie dowiedziec(?: o)?)\s+.{3,160}[?!.]?$/i.test(message.trim());
+      const clientResearch=/^(?:znajdź informacje|znajdz informacje|wyszukaj informacje|poszukaj informacji|sprawdź w internecie|sprawdz w internecie|wyszukaj w internecie|poszukaj w internecie|szukaj w internecie|sprawdź w sieci|sprawdz w sieci)(?: o)?[,：:]?\s+/i.test(message.trim()) || /^(?:co to jest|kim jest|kto to|co oznacza|opowiedz o|powiedz mi o|gdzie leży|gdzie jest|czym jest|wyjaśnij mi|wyjasnij mi|wyjaśnij|wyjasnij|chciałbym się dowiedzieć(?: o)?|chcialbym sie dowiedziec(?: o)?|chciałabym się dowiedzieć(?: o)?|chcialabym sie dowiedziec(?: o)?)\s+.{3,160}[?!.]?$/i.test(message.trim());
       const rxInternalTopic=/\b(?:rx|bibi|mrówek|mrówki|wirnik|vexorio|królowa)\b/i.test(message);
       if(clientResearch&&!rxInternalTopic){
         try{
