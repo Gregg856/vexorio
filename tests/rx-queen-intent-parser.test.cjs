@@ -40,3 +40,20 @@ test('unrecognized content and mismatched modes are not stripped',()=>{
   assert.equal(parseIntent({prompt,mode}).content,prompt);
  }
 });
+
+test('more Polish writing verbs honor explicit constraints',()=>{
+ const cases=[
+  ['message','Przygotuj wiadomość bez powitania: spotkanie jutro.','noGreeting'],
+  ['message','Stwórz wiadomość bez powitania: spotkanie jutro.','noGreeting'],
+  ['reply','Ułóż odpowiedź bez pożegnania: dokument dotarł.','noSignoff'],
+  ['message','Proszę przygotuj krótką wiadomość: przypomnienie o terminie.','short']
+ ];
+ for(const [mode,prompt,kind] of cases){
+  const intent=parseIntent({mode,prompt});
+  assert.ok(intent.constraints.includes(kind),prompt);
+  const out=compose({mode,prompt});
+  if(kind==='noGreeting')assert.ok(!out.text.includes('Cześć!'),prompt);
+  if(kind==='noSignoff')assert.ok(!out.text.includes('Pozdrawiam!'),prompt);
+  if(kind==='short')assert.ok(!out.text.includes('Cześć!')&&!out.text.includes('Pozdrawiam!'),prompt);
+ }
+});
