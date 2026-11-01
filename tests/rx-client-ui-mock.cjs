@@ -26,6 +26,10 @@ window.supabase={createClient:()=>({
    const answer=data.message==='Dalej'?'Kontynuujemy rozmowę o ogrodzie.':'Porozmawiajmy o ogrodzie.';
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({answer})});
   });
+  // Check the public entry points without contacting Google or creating an account.
+  if(!html.includes('id="google-signin"')||!html.includes('id="signup"'))throw Error('Missing registration or Google login control');
+  if(!html.includes("signInWithOAuth({provider:'google'")||!html.includes('client.auth.signUp('))throw Error('Missing Supabase auth handlers');
+  report.checks.push({name:'registration_and_google_handlers_present',passed:true});
   await page.goto(origin+'/rx-client',{waitUntil:'load'});
   await page.locator('#chat').waitFor({state:'visible',timeout:15000});
   report.checks.push({name:'chat_visible_after_mock_session',passed:true});
