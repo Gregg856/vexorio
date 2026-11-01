@@ -755,7 +755,7 @@ export function planRXChat(message,history=[],learning=null){
  // Session-only follow-up to the RX Ants explanation; never claim work was executed.
  const rxAntRecentUserTurns=history.filter((_,i)=>i%2===0).slice(-4);
  const rxAntLastTopicTurn=[...rxAntRecentUserTurns].reverse().find(turn=>/(?:porozmawiajmy|pogadajmy)\s+o\s+|(?:teraz|zmieńmy|zmienmy)\s+(?:porozmawiajmy|pogadajmy)|wr[oó]ćmy\s+do\s+/iu.test(turn));
- const rxAntPrevious=Boolean(rxAntLastTopicTurn&&/mr[oó]wk/iu.test(rxAntLastTopicTurn)&&/(?:przyk[lł]ad|modu[lł]|wsp[oó]ln)/iu.test(rxAntLastTopicTurn));
+ const rxAntPrevious=Boolean(rxAntLastTopicTurn&&/mr[oó]w(?:e)?k/iu.test(rxAntLastTopicTurn)&&/(?:przyk[lł]ad|modu[lł]|wsp[oó]ln)/iu.test(rxAntLastTopicTurn));
  const rxAntSecond=rxAntPrevious&&/^(?:podaj|wyja[sś]nij|rozwi[nń])\s+(?:mi\s+)?(?:drugi|2\.?)(?:\s+przyk[lł]ad\w*)?[.!? ]*$/iu.test(message.trim());
  if(rxAntSecond){
   answer='👑 Drugi przykład: jedna RX Mrówka zbiera wyniki testów, druga wyszukuje powtarzające się błędy, a trzecia przygotowuje czytelne podsumowanie dla operatora. Koordynator porównuje wyniki przed zaproponowaniem poprawek. To przykład możliwej współpracy, nie informacja o wykonanym teście.';
