@@ -44,7 +44,10 @@ export function answerRXSession(message,history=[]){
  const interest=interests[interests.length-1],preference=preferences[preferences.length-1];
  // #739: apply latest explicit second-task correction to all recall paths without mutating history.
  const correctedSecond=[...userTurns].reverse().map(x=>/poprawka:\s*drugie zadanie to\s*([^.!?]+)/iu.exec(x)?.[1]?.trim()).find(Boolean);
- if(priorList.length===3&&correctedSecond)priorList[1]=correctedSecond;
+ // #742: a correction applies only when it follows the latest full task list.
+ const lastListIndex=userTurns.findLastIndex(x=>/mam trzy zadania\s*:/iu.test(x));
+ const latestCorrection=[...userTurns.slice(lastListIndex+1)].reverse().map(x=>/poprawka:\s*drugie zadanie to\s*([^.!?]+)/iu.exec(x)?.[1]?.trim()).find(Boolean);
+ if(priorList.length===3&&latestCorrection)priorList[1]=latestCorrection;
  // Preserve the established full-dialogue summary (name, tasks and last result).
  if(input.includes('podsumuj nasza rozmowe')&&priorList.length===3){
   const result=answers.slice().reverse().map(x=>/wynik\s*:\s*(-?\d+(?:[.,]\d+)?)/iu.exec(x)?.[1]).find(Boolean);
@@ -110,7 +113,7 @@ export function answerRXSession(message,history=[]){
  const currentList=/mam trzy zadania\s*:\s*([^.!?]+)/iu.exec(message)?.[1];
  const list=currentList?currentList.split(/\s*,\s*|\s+i\s+/iu).map(x=>x.trim()).filter(Boolean):priorList;
  const correctedTask=[message,...history.filter((_,i)=>i%2===0).reverse()].map(x=>/poprawka:\s*drugie zadanie to\s*([^.!?]+)/iu.exec(x)?.[1]?.trim()).find(Boolean);
- if(list.length===3&&correctedTask)list[1]=correctedTask;
+ if(list.length===3&&latestCorrection)list[1]=latestCorrection;
  const math=/^(?:oblicz|policz|ile to jest)\s+(-?\d{1,7})\s*([×*x+\-/])\s*(-?\d{1,7})\s*(?:([+\-×*x/])\s*(-?\d{1,7}))?[?.! ]*$/iu.exec(message.trim());
  if(math){
   const a=Number(math[1]),b=Number(math[3]),c=math[5]===undefined?null:Number(math[5]);
