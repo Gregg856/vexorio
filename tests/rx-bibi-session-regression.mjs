@@ -31,7 +31,11 @@ const cases=[
  ['recall last result', 'Jaki był poprzedni wynik?', ['Policz 5 + 7','🧮 Wynik: 12'], /12/],
  ['add to previous result', 'Jeśli do poprzedniego wyniku dodaj 5, ile wyjdzie?', ['Policz 5 + 7','🧮 Wynik: 12'], /17/],
  ['no fabricated last result', 'Jaki był poprzedni wynik?', [], null],
- ['no fabricated third task', 'Trzecie zadanie?', [], null]
+ ['no fabricated third task', 'Trzecie zadanie?', [], null],
+ ['corrected name', 'Jak mam na imię?', ['Mam na imię Marek','OK','Jednak mam na imię Adam','Rozumiem'], /Adam/],
+ ['corrected second task', 'Drugie zadanie?', [tasks,list,'Poprawka: drugie zadanie to sprawdzić serwer','Zapisane'], /sprawdzić serwer/],
+ ['corrected list repeat', 'Wymień je', [tasks,list,'Poprawka: drugie zadanie to sprawdzić serwer','Zapisane'], /naprawić czat.*sprawdzić serwer.*przetestować matematykę/],
+ ['no correction invented', 'Drugie zadanie?', [tasks,list], /sprawdzić pamięć/]
 ];
 for(const [label,message,history,expected] of cases){
  const result=answerRXSession(message,history);
