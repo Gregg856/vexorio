@@ -18,3 +18,12 @@ test('reject malformed task IDs',()=>{
  const m=createDeferredTasks();
  assert.throws(()=>m.put({id:'../bad',topic:'x',nextStep:'y',status:'deferred'}));
 });
+
+test('defer active task, complete it and prevent reopening',()=>{
+ const m=createDeferredTasks([{id:'topic',topic:'Test',nextStep:'Verify',status:'active'}]);
+ assert.equal(m.defer('topic').status,'deferred');
+ assert.equal(m.complete('topic').status,'done');
+ assert.equal(m.resume('topic'),null);
+ assert.equal(m.defer('topic'),null);
+ assert.equal(m.get('topic').status,'done');
+});
