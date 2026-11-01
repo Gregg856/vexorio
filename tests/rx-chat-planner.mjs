@@ -1017,3 +1017,13 @@ const rxAntReturnTopic=planRXChat('Podaj drugi przykład',[
  'Oto trzy przykłady.'
 ]);
 assert.match(rxAntReturnTopic.answer,/Drugi przykład:/);
+
+// Contextual references to first and third examples use the current RX Ants topic.
+const rxAntExampleHistory=[
+ 'Porozmawiajmy o RX Mrówkach. Wyjaśnij współpracę modułów i podaj trzy przykłady.',
+ 'Trzy przykłady: analiza, testy i podział zadań.'
+];
+assert.match(planRXChat('Podaj pierwszy przykład',rxAntExampleHistory).answer,/Pierwszy przykład:/);
+assert.match(planRXChat('Wyjaśnij trzeci przykład',rxAntExampleHistory).answer,/Trzeci przykład:/);
+assert.match(planRXChat('3',rxAntExampleHistory).answer,/Trzeci przykład:/);
+assert.doesNotMatch(planRXChat('Podaj trzeci przykład').answer,/Trzeci przykład:/);
