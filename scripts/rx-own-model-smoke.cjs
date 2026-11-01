@@ -44,7 +44,7 @@ const {start}=require('../rx-cloud-server.cjs');
   assert.equal(probeResult.modelVerified,true);
   assert.equal(probeResult.status,422,'unknown input must abstain');
   const endpoint=url+'/api/rx/client/chat';
-  const headers={'Content-Type':'application/json',Origin:url,Authorization:'Bearer rx-test-client-session'};
+  const headers={'Content-Type':'application/json',Origin:'http://localhost',Authorization:'Bearer rx-test-client-session'};
   const client=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify({message:'witaj bibi',history:[]})});
   assert.equal(client.status,200,'authenticated client chat must work');
   const reply=await client.json();
