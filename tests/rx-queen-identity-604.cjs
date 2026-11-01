@@ -24,4 +24,8 @@ assert.match(panel,/fetch\('\/api\/rx\/admin\/queen-chat'/,'Manager must call pr
 assert.match(panel,/Authorization:'Bearer '\+data\.session\.access_token/,'Manager must forward session');
 assert.match(panel,/Panel Królowej RX — zarządzanie BIBI/);
 assert.match(worker,/if\(url\.pathname==='\/api\/rx\/client\/chat'\)/,'BIBI route remains intact');
+assert.match(route,/co potrafisz\\|co umiesz/,'Queen should handle capability questions');
+assert.match(route,/status rx/,'Queen should handle status questions');
+assert.match(route,/rx-queen-basic-chat/,'Queen should label basic dialogue truthfully');
+assert.match(panel,/co potrafisz\\|co umiesz/,'Manager should route basic dialogue privately');
 console.log('RX #604 Queen security and identity contract: PASS');
