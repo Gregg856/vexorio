@@ -150,6 +150,26 @@ function ask(port,message,history,historyToken){
    assert.equal(followup.executed,0);
    assert.match(followup.reply,/Naprawa czatu Android/);
   }finally{await new Promise(resolve=>rotationServer.close(resolve));}
+  // RX #628: malformed history must fail closed without overwriting existing data.
+  const damagedFile=path.join(dir,'damaged-history.json');
+  fs.writeFileSync(damagedFile,'{invalid-json');
+  const damagedServer=await start({historyFile:damagedFile,historyToken:combinedToken});
+  try{
+   const response=await ask(damagedServer.address().port,'Dalej',undefined,combinedToken);
+   assert.equal(response.status,400);
+   assert.equal(fs.readFileSync(damagedFile,'utf8'),'{invalid-json');
+  }finally{await new Promise(resolve=>damagedServer.close(resolve));}
+  // Requests arriving concurrently must be serialized and persist both messages.
+  const parallelFile=path.join(dir,'parallel-history.json');
+  const parallelServer=await start({historyFile:parallelFile,historyToken:combinedToken});
+  try{
+   const responses=await Promise.all(['Sprawdź testy','Co dalej?'].map(message=>ask(parallelServer.address().port,message,undefined,combinedToken)));
+   assert.ok(responses.every(result=>result.status===200&&result.executed===0));
+   const saved=JSON.parse(fs.readFileSync(parallelFile,'utf8'));
+   assert.equal(saved.length,4);
+   assert.ok(saved.includes('Sprawdź testy'));
+   assert.ok(saved.includes('Co dalej?'));
+  }finally{await new Promise(resolve=>parallelServer.close(resolve));}
   console.log('RX BIBI level 8: local chat reads updated persistent task register');
  }finally{
   if(server)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
