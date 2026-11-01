@@ -17,7 +17,18 @@ const password=process.env.RX_BIBI_TEST_PASSWORD;
   // Existing sessions may restore the chat directly; otherwise use the normal sign-in form.
   const chat=page.locator('#chat');
   const login=page.locator('#login');
-  await Promise.race([chat.waitFor({state:'visible',timeout:20000}),login.waitFor({state:'visible',timeout:20000})]);
+  // Wait for application initialization, not just DOM visibility (the login section exists before auth config loads).
+  await page.waitForFunction(()=>{
+   const login=document.querySelector('#login');
+   const chat=document.querySelector('#chat');
+   const status=document.querySelector('#status')?.textContent||'';
+   return (!chat?.hidden)||((!login?.hidden)&&(/Zaloguj się, aby rozpocząć\./.test(status)))||/Konfiguracja logowania|Nie udało się|Błąd/i.test(status);
+  },null,{timeout:20000}).catch(async()=>{
+   const detail=await page.locator('#status').textContent().catch(()=>null);
+   throw Error('Client auth UI did not initialize within 20s; status: '+String(detail||'empty').slice(0,180));
+  });
+  const initialStatus=await page.locator('#status').textContent().catch(()=>'');
+  if(/Konfiguracja logowania|Nie udało się|Błąd/i.test(initialStatus))throw Error('Client auth initialization failed: '+initialStatus);
   if(!(await chat.isVisible())){
    await page.locator('#email').fill(email);
    await page.locator('#password').fill(password);
