@@ -533,8 +533,24 @@ jobs:
             if(syntax.status!==0){result.candidates.push({component:task.component,status:'CANDIDATE_SYNTAX_FAIL'});continue;}
             const patch=cp.spawnSync('diff',['-u','--label','a/'+target,'--label','b/'+target,target,candidatePath],{encoding:'utf8',timeout:10000,maxBuffer:32768});
             if(patch.status!==1){result.candidates.push({component:task.component,status:'PATCH_NOT_CREATED'});continue;}
+            // Validate the candidate in an isolated checkout copy, not the working tree.
+            const os=require('node:os');
+            const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rx-patch-'));
+            let validation='NOT_RUN';
+            try{
+              fs.cpSync('rx-chat-planner.mjs',path.join(temp,'rx-chat-planner.mjs'));
+              fs.mkdirSync(path.join(temp,'tests'),{recursive:true});
+              fs.writeFileSync(path.join(temp,target),fixed);
+              const regression=cp.spawnSync(process.execPath,[path.join(temp,target)],{cwd:temp,encoding:'utf8',timeout:60000,maxBuffer:16384,env:{...process.env,CI:'true'}});
+              validation=regression.status===0?'PASS':'FAIL';
+            }catch{validation='ERROR';}
+            finally{fs.rmSync(temp,{recursive:true,force:true});}
+            if(validation!=='PASS'){
+              result.candidates.push({component:task.component,status:'CANDIDATE_REGRESSION_FAILED',target,validation});
+              continue;
+            }
             fs.writeFileSync(path.join(dir,'rx-developer-proposed.patch'),patch.stdout);
-            result.candidates.push({component:task.component,status:'PATCH_READY_FOR_REVIEW',target,recipe:'known-dialogue-path-typo',syntax:'PASS'});
+            result.candidates.push({component:task.component,status:'PATCH_READY_FOR_REVIEW',target,recipe:'known-dialogue-path-typo',syntax:'PASS',isolatedRegression:validation});
             result.status='PATCH_READY_FOR_REVIEW';
           }
           fs.mkdirSync(dir,{recursive:true});
