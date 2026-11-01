@@ -25,6 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: RX BIBI — bot sam prowadzi rozmowy i sprawdza odpowiedzi
+        run: node tests/rx-chat-planner.mjs
       - name: RX BIBI — odczyt produkcyjnego panelu i zabezpieczenia API (bez logowania)
         run: node --test tests/rx-bibi-live-readonly.test.cjs
       - name: Sprawdź składnię istniejących modułów
