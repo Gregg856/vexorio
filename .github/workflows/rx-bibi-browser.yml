@@ -508,7 +508,7 @@ jobs:
             const target=item.proposal?.target;
             if(!allow.has(target)){tasks.push({component:item.component,status:'SKIPPED_UNAPPROVED_TARGET'});continue;}
             const run=cp.spawnSync(process.execPath,['--check',target],{encoding:'utf8',timeout:15000,maxBuffer:8192});
-            tasks.push({component:item.component,target,check:'node --check',status:run.status===0?'PASS':'FAIL',exitCode:run.status,error:run.status===0?null:String(run.stderr||'syntax check failed').slice(0,300)});
+            tasks.push({component:item.component,target,check:'node --check',status:item.component==='authenticated-client-chat'&&run.status===0?'DIAGNOSTIC_ONLY':run.status===0?'PASS':'FAIL',exitCode:run.status,error:run.status===0?null:String(run.stderr||'syntax check failed').slice(0,300)});
             // Execute the existing regression harness when a local dialogue failure is reported.
             // The authenticated browser check cannot be repeated without valid test credentials.
             if(item.component==='local-dialogue'&&run.status===0){
