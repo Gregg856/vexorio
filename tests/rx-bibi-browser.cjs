@@ -227,7 +227,7 @@ const record = (name, passed, detail) => results.push({ name, passed, detail: St
     record('RX UI: kategorie otwierają się na żądanie',await page.locator('.rx-side').isVisible());
     await openRxTab('🧰 RX Developer');
     record('RX UI: Developer otwiera właściwy panel',await page.locator('#rxFixGuidance').first().isVisible());
-    await openRxTab('🧠 Rozmowa z RX Strażakiem');
+    await openRxTab('👑 Królowa BIBI — czat');
     record('RX UI: powrót do czatu zamyka menu',await page.locator('.rx-chat').isVisible()&&!(await page.locator('.rx-side').isVisible()));
     await page.screenshot({ path: path.join(reportDir, 'rx-bibi-mobile.png'), fullPage: true });
     await openRxTab('📚 Historia');
