@@ -41,6 +41,19 @@ Kod: `ce662a31a2d12de527f1858b97b42d65462da306`.
 CI: `RX BIBI curriculum tests` — success (41312578611); `VEXORIO checks` — success (41312578630); `RX CLOUD self-host smoke tests` — success (41312578595).
 Status: zatwierdzony testami na gałęzi PR #708; **nie scalono i nie wdrożono na produkcję**.
 
+## Pakiet 4 — pięć testów ochrony przed niewidocznymi znakami — CI zielone
+
+- Blokada znaku NUL w pytaniu do modelu.
+- Blokada znaku nowej linii w pytaniu bezpośrednim.
+- Blokada tabulatora w pytaniu bezpośrednim.
+- Odrzucenie znaku DEL w odpowiedzi.
+- Odrzucenie znaku zmieniającego kierunek tekstu w odpowiedzi.
+
+Pliki: `rx-bibi-model-bridge.mjs`, `tests/rx-bibi-model-bridge.test.cjs`.
+Kod i naprawa testów: `55e52366e135f044bc344b7ee579ddefecf05c70`.
+CI: `RX BIBI curriculum tests` — success (41313156868); `VEXORIO checks` — success (41313156873); `RX CLOUD self-host smoke tests` — success (41313156869).
+Status: zatwierdzony testami na gałęzi PR #708; **nie scalono i nie wdrożono na produkcję**.
+
 ## Zasady dalszej pracy
 
 1. Przed nowym pakietem sprawdź ten rejestr oraz kod istniejących modułów.
