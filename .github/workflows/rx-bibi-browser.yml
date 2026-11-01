@@ -503,6 +503,7 @@ jobs:
           const dir='rx-bibi-reports';
           const read=name=>{try{return JSON.parse(fs.readFileSync(path.join(dir,name),'utf8'))}catch{return null}};
           const plans=read('rx-developer-repair-proposals.json');
+          fs.mkdirSync(dir,{recursive:true});
           const result={schema:1,kind:'rx-developer-patch-candidate',status:'NO_SAFE_PATCH',candidates:[],codeChanged:false,productionChanged:false};
           for(const task of (plans?.tasks||[]).slice(0,10)){
             if(task.component!=='local-dialogue'||task.status!=='FAIL')continue;
