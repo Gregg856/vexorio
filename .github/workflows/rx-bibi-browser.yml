@@ -475,6 +475,24 @@ jobs:
           fs.writeFileSync(dir + '/rx-developer-test-handoff.json',JSON.stringify(handoff,null,2) + '\n');
           console.log('RX Developer diagnostic handoff:',tasks.length,'tasks');
           NODE
+      - name: RX Developer — plan napraw na podstawie kolejki
+        if: ${{ always() }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const dir='rx-bibi-reports';
+          const read=name=>{try{return JSON.parse(fs.readFileSync(dir+'/'+name,'utf8'))}catch{return null}};
+          const handoff=read('rx-developer-test-handoff.json');
+          const plans={
+            'authenticated-client-chat':{diagnosis:'Authentication rejected; application chat remains unverified',checks:['Inspect the Supabase authentication error code without logging secrets','Verify existing test-account configuration and server auth settings','Rerun authenticated end-to-end chat after correcting configuration'],target:'tests/rx-client-auth-e2e.cjs',safeToAutofix:false},
+            'local-dialogue':{diagnosis:'Local dialogue regression',checks:['Inspect failed dialogue scenarios','Reproduce with existing local test harness','Prepare minimal patch and run regression tests'],target:'tests/rx-dialogue-tests.cjs',safeToAutofix:false}
+          };
+          const tasks=(handoff?.tasks||[]).map(task=>({...task,proposal:plans[task.component]||{diagnosis:'Unknown test failure',checks:['Inspect source report'],safeToAutofix:false}}));
+          const result={schema:1,kind:'rx-developer-repair-proposals',runId:handoff?.runId||'',tasks,requiresReview:true,codeChanged:false};
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(dir+'/rx-developer-repair-proposals.json',JSON.stringify(result,null,2)+'\n');
+          console.log('RX Developer repair proposals:',tasks.length,'manual review required');
+          NODE
       - name: RX BIBI — trening kandydatów i ocena na niewidzianych przykładach
         if: ${{ !cancelled() }}
         run: node tests/rx-learning-gate.cjs
