@@ -28,7 +28,17 @@ function createDeferredTasks(initial = []) {
     if (!task || task.status==='done') return null;
     return put({...task,status:'active'});
   }
+  function defer(id) {
+    const task=get(id);
+    if(!task || task.status==='done') return null;
+    return put({...task,status:'deferred'});
+  }
+  function complete(id) {
+    const task=get(id);
+    if(!task) return null;
+    return put({...task,status:'done'});
+  }
   function snapshot() { return {schema:1,kind:'rx-bibi-deferred-tasks',tasks:list()}; }
-  return Object.freeze({put,get,list,resume,snapshot});
+  return Object.freeze({put,get,list,resume,defer,complete,snapshot});
 }
 module.exports={createDeferredTasks};
